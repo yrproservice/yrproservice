@@ -1,0 +1,7 @@
+Product catalogue rebuilt from catalog.zip folder structure.
+Total image files / products: 65
+Categories: Connectors, Dental Chairs, Equipment, Handpieces, Stools
+Brands: Cingol, Mocom, Morita, Westcode
+Every product image path exists locally.
+All product names and categories are derived from supplied folder/file names.
+Technical specifications are not fabricated; unknown specs are left empty.
