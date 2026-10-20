@@ -1,6 +1,6 @@
 # YR Proservice — Visual Blueprint V8
 
-This version is a structural visual rebuild based on the supplied Visual & Design Blueprint and the latest feedback.
+This version is a structural visual rebuild based on the supplied Visual and Design Blueprint and the latest feedback.
 
 ## Design direction
 - Montserrat for headings/navigation/UI; Inter for body copy.
@@ -43,7 +43,7 @@ The approved 8 services remain:
 5. Underfloor Piping
 6. Preventive Maintenance
 7. Equipment Relocation
-8. Repair & Technical Support
+8. Repair and Technical Support
 
 ## Contact
 Contact is intentionally HR/careers only. Product and technical enquiries use the product/service request flows.

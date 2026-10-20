@@ -72,9 +72,9 @@ export default function Services({ navigate }) {
           <div className="process-grid">
             {[
               ['01', 'Tell us what you need', 'Share your clinic, equipment and service requirement with our team.'],
-              ['02', 'Review & plan', 'We review the requirement and determine the appropriate service approach.'],
+              ['02', 'Review and plan', 'We review the requirement and determine the appropriate service approach.'],
               ['03', 'Carry out the work', 'Our technical team performs the agreed work with attention to safety and function.'],
-              ['04', 'Test & handover', 'We check the completed work and explain the service outcome to you.']
+              ['04', 'Test and handover', 'We check the completed work and explain the service outcome to you.']
             ].map(([number, title, text]) => (
               <div className="process-step" key={number}>
                 <span>{number}</span>

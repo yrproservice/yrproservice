@@ -50,7 +50,7 @@ export const services = [
     title: 'Preventive Maintenance',
     icon: '◷',
     text: 'Scheduled maintenance to identify wear, operating issues and service requirements before they become larger problems.',
-    points: ['Routine inspection', 'Cleaning & adjustment', 'Maintenance records'],
+    points: ['Routine inspection', 'Cleaning and adjustment', 'Maintenance records'],
     detail: 'Preventive maintenance helps clinics keep equipment under regular observation. Service scope can include inspection, cleaning, adjustment and identification of parts that may require attention.'
   },
   {
@@ -65,7 +65,7 @@ export const services = [
   {
     slug: 'repair-technical-support',
     number: '08',
-    title: 'Repair & Technical Support',
+    title: 'Repair and Technical Support',
     icon: '⚙',
     text: 'Technical troubleshooting, repair coordination and practical support for dental equipment issues.',
     points: ['Fault diagnosis', 'Repair support', 'Technical troubleshooting'],
