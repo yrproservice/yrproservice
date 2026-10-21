@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" fill="none">
+  <rect width="480" height="320" rx="8" fill="#F4F8FB"/>
+  <circle cx="240" cy="145" r="88" fill="#EAF4FA"/>
+  <path d="M197 98h67a16 16 0 0 1 16 16v31h-83V98Z" fill="#8CB5D2"/>
+  <path d="M193 151h111a15 15 0 0 1 15 15v17H193v-32Z" fill="#0B4A88"/>
+  <path d="m235 183 22 12-16 45m65-57h20l13 50" stroke="#567C96" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M223 240h87m27 0h20" stroke="#7894A7" stroke-width="8" stroke-linecap="round"/>
+  <text x="240" y="258" text-anchor="middle" fill="#0B4A88" font-family="Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1.4">DENTAL CHAIR</text>
+  <text x="240" y="281" text-anchor="middle" fill="#687280" font-family="Arial,sans-serif" font-size="12">Product image unavailable</text>
+</svg>

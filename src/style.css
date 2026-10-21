@@ -58,11 +58,3 @@
   outline: 2px solid var(--yr-cyan, #00a8ee);
   outline-offset: 3px;
 }
-
-.products-hero-image img{width:90%;height:92%;object-fit:contain}
-.spotlight-card img{right:-4px;bottom:-4px;width:72%;height:82%;object-fit:contain}
-.bp-catalog-image{padding:16px}
-.bp-product-img{padding:12px}
-.bp-detail-photo-frame img{width:96%;height:96%;object-fit:contain}
-.bp-cart-product img{padding:4px}
-.request-item-image{padding:4px}

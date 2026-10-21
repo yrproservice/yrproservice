@@ -1134,4 +1134,56 @@ const rawProducts = [
   }
 ];
 
-export const products = rawProducts;
+const lowResolutionImageSlugs = new Set([
+  'mocom-goldspeed-evo-d1-l',
+  'mocom-goldspeed-evo-d1',
+  'mocom-goldspeed-evo-e16',
+  'mocom-goldspeed-evo-e4',
+  'mocom-goldspeed-evo-m5-l',
+  'mocom-goldspeed-evo-r20-l',
+  'mocom-goldspeed-evo-s1-l',
+  'mocom-goldspeed-evo-s1',
+  'mocom-silent-power-2',
+  'mocom-silent-power-2l',
+  'mocom-silent-power-4l',
+  'mocom-silent-power-4lk',
+  'mocom-silent-power-miniature-k',
+  'mocom-silent-power-miniature',
+  'morita-w-and-h-roto-quick-coupling',
+  'morita-nsk-coupling',
+  'signo-g20',
+  'morita-dentaport-zx',
+  'morita-lubrina-2',
+  'morita-tcs-ts-2',
+  'morita-veraview-ix',
+  'morita-veraview-x800',
+  'morita-twinpower-par-4hex-o-45',
+  'morita-twinpower-par-4hex-o',
+  'morita-twinpower-par-4hx-o',
+  'westcode-kavo-4-hole-quick-coupling',
+  'westcode-kavo-6-hole-fibre-optic-quick-coupling-no-mist-adjustment',
+  'westcode-qd-4-hole-quick-coupling-with-water-filter-and-non-return-valve',
+  'westcode-nl-201',
+  'westcode-dental-handpiece-oil-spray',
+  'westcode-oil-lubricator',
+  'westcode-ap31',
+  'westcode-m-l530-air-motor',
+  'westcode-m-l530-contra-angle',
+  'westcode-m-l530-straight-handpiece',
+  'westcode-m-l530led-contra-angle',
+  'westcode-x1lg',
+  'westcode-x45kl',
+]);
+
+const imagePlaceholderByCategory = {
+  'Dental Chairs': '/assets/product-placeholder-dental-chairs.svg',
+  Connectors: '/assets/product-placeholder-connectors.svg',
+  Equipment: '/assets/product-placeholder-equipment.svg',
+  Handpieces: '/assets/product-placeholder-handpieces.svg',
+};
+
+export const products = rawProducts.map(product => (
+  lowResolutionImageSlugs.has(product.slug)
+    ? { ...product, img: imagePlaceholderByCategory[product.category] }
+    : product
+));
