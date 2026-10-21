@@ -54,7 +54,7 @@ export default function Home({ navigate }) {
     </section>
 
     <section className="bp-brands">
-      <div className="container"><div className="bp-section-head"><div><p className="bp-eyebrow">OUR BRANDS</p><h2>Trusted Brands We Carry</h2></div><p>We work with established manufacturers and equipment brands across the dental field.</p></div><div className="bp-brand-grid">{brands.map(file => <div className="bp-brand-card" key={file}><img src={`/brand logo/${file}`} alt="Dental equipment brand"/></div>)}</div></div>
+      <div className="container"><div className="bp-section-head"><div><p className="bp-eyebrow">OUR BRANDS</p><h2>Trusted Brands We Carry</h2></div><p>We work with established manufacturers and equipment brands across the dental field.</p></div><div className="bp-brand-grid">{brands.map(file => <div className="bp-brand-card" key={file}><img src={`/brand logo/fitted/${file.replace(/\.[^.]+$/, '.png')}`} alt="Dental equipment brand"/></div>)}</div></div>
     </section>
 
     <section className="bp-services-strip">
