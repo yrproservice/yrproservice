@@ -48,6 +48,11 @@ The approved 8 services remain:
 ## Contact
 Contact is intentionally HR/careers only. Product and technical enquiries use the product/service request flows.
 
+## Request backend
+Service and quotation requests are submitted to the Cloudflare Pages Function at `/api/requests` and saved in the shared D1 `requests` table. The quotation flow stores product/chair selections and location with the request and returns a `YRQ-...` reference; service requests continue to return `YRS-...`.
+
+For deployment, configure a Cloudflare Pages D1 binding named `DB` pointing to `yr-proservice-db`, and apply `migrations/0001_create_requests.sql` if it has not already been applied. No new migration is required for quotation requests. The API does not send email notifications.
+
 ## Verification note
 The source was checked for JSX bracket balance, product image references, product/service counts and removal of the non-functional hero carousel controls. The header has no Get a Quote navigation item; quotation is reached through the product/request workflow. `npm install` timed out in the build environment, so a successful Vite production build is not claimed here.
 

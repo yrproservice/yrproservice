@@ -1,4 +1,141 @@
 /** Product descriptions are model- and category-specific. Technical values are included only when verified from manufacturer documentation. */
+const cattaniCompressors = [
+  { slug: 'cattani-ac-100', model: 'AC 100', image: 'ac-100.jpg', airDelivery: '67.5 N l/min', dimensions: 'W 620 × D 460 × H 720 mm', noiseOptions: 'Noise-reducing plastic cover or soundproof cabinet available.' },
+  { slug: 'cattani-ac-100-q', model: 'AC 100 Q', image: 'ac-100-q.jpg', dimensions: 'W 660 × D 600 × H 860 mm', noiseOptions: 'Shown with a noise-reducing plastic cover.' },
+  { slug: 'cattani-ac-200', model: 'AC 200', image: 'ac-200.jpg', airDelivery: '160 N l/min', dimensions: 'W 620 × D 460 × H 720 mm', noiseOptions: 'Noise-reducing plastic cover or soundproof cabinet available.' },
+  { slug: 'cattani-ac-200-q', model: 'AC 200 Q', image: 'ac-200-q.jpg', dimensions: 'W 660 × D 600 × H 860 mm', noiseOptions: 'Shown with a noise-reducing plastic cover.' },
+  { slug: 'cattani-ac-300', model: 'AC 300', image: 'ac-300.jpg', airDelivery: '238 N l/min', dimensions: 'W 620 × D 520 × H 750 mm', noiseOptions: 'Noise-reducing plastic cover or soundproof cabinet available.' },
+  { slug: 'cattani-ac-300-q', model: 'AC 300 Q', image: 'ac-300-q.jpg', dimensions: 'W 720 × D 600 × H 970 mm', noiseOptions: 'Shown with a noise-reducing plastic cover.' },
+  { slug: 'cattani-ac-400', model: 'AC 400', image: 'ac-400.jpg', airDelivery: '320 N l/min', dimensions: 'W 1155 × D 550 × H 745 mm', noiseOptions: 'Noise-reducing plastic cover available; the brochure does not list a soundproof-cabinet option for this model.' },
+  { slug: 'cattani-ac-400-q', model: 'AC 400 Q', image: 'ac-400.jpg', dimensions: 'W 1160 × D 650 × H 890 mm', noiseOptions: 'Shown with a noise-reducing plastic cover.' },
+  { slug: 'cattani-ac-600', model: 'AC 600', image: 'ac-600.jpg', airDelivery: '476 N l/min', dimensions: 'W 1320 × D 590 × H 890 mm', noiseOptions: 'Noise-reducing plastic cover available; the brochure does not list a soundproof-cabinet option for this model.' },
+  { slug: 'cattani-ac-600-q', model: 'AC 600 Q', image: 'ac-600.jpg', dimensions: 'W 1320 × D 770 × H 1040 mm', noiseOptions: 'Shown with a noise-reducing plastic cover.' },
+  { slug: 'cattani-ac-1800', model: 'AC 1800', image: 'ac-1800.jpg', airDelivery: '1428 N l/min', dimensions: 'W 1800 × D 1100 × H 1100 mm', noiseOptions: 'The brochure recommends soundproofing the equipment room for AC 1800 and larger models.' },
+].map(({ slug, model, image, airDelivery, dimensions, noiseOptions }) => ({
+  slug,
+  name: model,
+  brand: 'Cattani',
+  brandLine: 'Oil-less Dental Air Compressor',
+  category: 'Equipment',
+  purchaseType: 'cart',
+  img: `/catalog/cattani/images/${image}?v=20261021-official`,
+  summary: `Cattani ${model} oil-less compressor for dry compressed air in dental clinics.`,
+  description: `Cattani ${model} is an oil-less compressor for dental compressed-air systems. The supplied Cattani brochure describes the dry-compressor range as including a drying system and filters to provide dry, high-purity compressed air. Confirm the required capacity and installation configuration for your clinic before ordering.`,
+  highlights: [],
+  specifications: [
+    'Compressor type: Oil-less dry compressor',
+    'Air treatment: Drying system and filters described for the Cattani range',
+    `Air delivery at 5 bar: ${airDelivery || 'Not separately stated for this model in the brochure'}`,
+    `Dimensions: ${dimensions}`,
+    noiseOptions,
+  ],
+  docs: [],
+  price: null,
+  stockStatus: 'pending',
+  reviewStatus: 'No customer reviews published yet.',
+}));
+
+const cattaniTurboJets = [
+  {
+    slug: 'cattani-turbo-jet-1',
+    model: 'Turbo Jet 1',
+    image: 'turbo-jet-1.jpg',
+    description: 'Cattani Turbo Jet 1 is a dental suction system for installation under a dental unit or inside a cabinet. The brochure specifies thermal protection and an ISO 4 amalgam separator compliant with ISO 11143; the suction system complies with ISO 10637. An optional sound-reducing cabinet lowers sound output to 52 dB(A) and must be ordered with the unit because it cannot be retrofitted.',
+    specifications: [
+      'Seats: 1',
+      'Maximum air flow: 650 L/min',
+      'Maximum vacuum for continuous operation: 160 mbar',
+      'Power: 4 A / 0.42 kW',
+      'Dimensions: H 400 x W 450 x D 440 mm',
+      'Weight: 33 kg',
+      'Sound output: 61 dB(A); 52 dB(A) with optional sound-reducing cabinet',
+      'Amalgam separation: ISO 4, compliant with ISO 11143',
+      'Vacuum system: Complies with ISO 10637',
+    ],
+  },
+  {
+    slug: 'cattani-turbo-jet-1-without-amalgam-separation',
+    model: 'Turbo Jet 1 (Without Amalgam Separation)',
+    image: 'turbo-jet-1-no-amalgam-separation.jpg',
+    description: 'This Turbo Jet 1 configuration is supplied without amalgam separation. It is designed for installation under a dental unit or inside a cabinet and has the same listed performance and dimensions as the Turbo Jet 1 model in the brochure.',
+    specifications: [
+      'Seats: 1',
+      'Maximum air flow: 650 L/min',
+      'Maximum vacuum for continuous operation: 160 mbar',
+      'Power: 4 A / 0.42 kW',
+      'Dimensions: H 400 x W 450 x D 440 mm',
+      'Weight: 33 kg',
+      'Sound output: 61 dB(A)',
+      'Amalgam separation: Not included',
+    ],
+  },
+  {
+    slug: 'cattani-turbo-jet-compact',
+    model: 'Turbo Jet Compact',
+    image: 'turbo-jet-compact.jpg',
+    description: 'Turbo Jet Compact is a small, lightweight dental suction system designed to fit in a standard surgery cabinet. It is supplied with built-in amalgam separation and is prewired for installation.',
+    specifications: [
+      'Seats: 1',
+      'Maximum air flow: 650 L/min',
+      'Maximum vacuum for continuous operation: 160 mbar',
+      'Power: 4 A / 0.42 kW',
+      'Dimensions: H 495 x W 250 x D 390 mm',
+      'Weight: 33 kg',
+      'Sound output: 61 dB(A)',
+      'Amalgam separation: Built in',
+    ],
+  },
+  {
+    slug: 'cattani-turbo-jet-1-modular-without-box',
+    model: 'Turbo Jet 1 Modular Without Box',
+    image: 'turbo-jet-1-modular.jpg',
+    description: 'Turbo Jet 1 Modular Without Box is a one-seat dental suction system in an open, cabinet-free configuration. Its modular design supports installation within a suitable equipment space.',
+    manufacturerSource: 'https://www.cattani.it/en/prodotto/turbo-jet-1-modular-without-box/',
+    specifications: [
+      'Seats: 1',
+      'Maximum air flow: 650 L/min',
+      'Maximum vacuum for continuous operation: 127 mbar',
+      'Power: 4 A / 0.42 kW',
+      'Dimensions: H 360 x W 540 x D 350 mm',
+      'Weight: 25 kg',
+      'Sound output: 61 dB(A)',
+    ],
+  },
+  {
+    slug: 'cattani-turbo-jet-2-modular-without-box',
+    model: 'Turbo Jet 2 Modular Without Box',
+    image: 'turbo-jet-2-modular.jpg',
+    description: 'Turbo Jet 2 Modular Without Box is a two-seat dental suction system in an open, cabinet-free configuration. Its modular design supports installation within a suitable equipment space.',
+    manufacturerSource: 'https://www.cattani.it/en/prodotto/turbo-jet-2-modular-scarenato/',
+    specifications: [
+      'Seats: 2',
+      'Maximum air flow: 650 L/min',
+      'Maximum vacuum for continuous operation: 255 mbar',
+      'Power: 4 A / 0.42 kW',
+      'Dimensions: H 380 x W 560 x D 440 mm',
+      'Weight: 30 kg',
+      'Sound output: 65 dB(A)',
+    ],
+  },
+].map(({ slug, model, image, description, specifications, manufacturerSource }) => ({
+  slug,
+  name: model,
+  brand: 'Cattani',
+  brandLine: 'Dental Suction System',
+  category: 'Equipment',
+  purchaseType: 'cart',
+  img: `/catalog/cattani/images/${image}`,
+  summary: `Cattani ${model} dental suction system.`,
+  description,
+  highlights: [],
+  specifications,
+  docs: [],
+  price: null,
+  stockStatus: 'pending',
+  reviewStatus: 'No customer reviews published yet.',
+  ...(manufacturerSource ? { manufacturerSource } : {}),
+}));
+
 const rawProducts = [
   {
     "slug": "cingol-x1",
@@ -1131,7 +1268,9 @@ const rawProducts = [
     "price": null,
     "stockStatus": "pending",
     "reviewStatus": "No customer reviews published yet."
-  }
+  },
+  ...cattaniCompressors,
+  ...cattaniTurboJets
 ];
 
 const enhancedImagePaths = {

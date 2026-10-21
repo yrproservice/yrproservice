@@ -52,9 +52,13 @@ export async function onRequest({ request, env }) {
     return json({ error: 'The submitted form could not be read. Please check the fields and try again.' }, 400);
   }
 
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return json({ error: 'The submitted form could not be read. Please check the fields and try again.' }, 400);
+  }
+
   const requestType = cleanString(body.requestType, 30);
-  if (requestType !== 'service') {
-    return json({ error: 'This endpoint currently accepts service requests only.' }, 400);
+  if (!['service', 'quotation'].includes(requestType)) {
+    return json({ error: 'This request type is not supported.' }, 400);
   }
 
   const name = cleanString(body.name, 120);
@@ -63,31 +67,49 @@ export async function onRequest({ request, env }) {
   const email = cleanString(body.email, 254).toLowerCase();
   const serviceSlug = cleanString(body.service, 80);
   const timing = cleanString(body.timing, 160);
+  const location = cleanString(body.location, 200);
+  const productSelection = cleanString(body.product, 8000);
   const message = cleanString(body.message, 5000);
 
-  if (!name || !phone || !email || !serviceSlug || !message) {
+  if (!name || !email || (requestType === 'service' && (!phone || !serviceSlug || !message))) {
     return json({ error: 'Please complete all required fields.' }, 400);
   }
   if (!validEmail(email)) return json({ error: 'Please enter a valid email address.' }, 400);
-  if (!ALLOWED_SERVICE_SLUGS.has(serviceSlug)) return json({ error: 'Please select a valid service.' }, 400);
+  if (requestType === 'service' && !ALLOWED_SERVICE_SLUGS.has(serviceSlug)) {
+    return json({ error: 'Please select a valid service.' }, 400);
+  }
+  if (requestType === 'quotation' && !productSelection && !message) {
+    return json({ error: 'Please include a product selection or describe your quotation requirements.' }, 400);
+  }
 
   const now = new Date();
   const datePart = now.toISOString().slice(0, 10).replaceAll('-', '');
   const randomPart = crypto.randomUUID().replaceAll('-', '').slice(0, 6).toUpperCase();
-  const reference = `YRS-${datePart}-${randomPart}`;
+  const referencePrefix = requestType === 'service' ? 'YRS' : 'YRQ';
+  const reference = `${referencePrefix}-${datePart}-${randomPart}`;
   const id = crypto.randomUUID();
-  const details = JSON.stringify({ source: 'website-service-request' });
+  const details = JSON.stringify(requestType === 'service'
+    ? { source: 'website-service-request' }
+    : { source: 'website-quotation-request', location, productSelection });
+  const storedPhone = phone || 'Not provided';
+  const storedMessage = requestType === 'quotation'
+    ? [message, location ? `Location: ${location}` : '', productSelection ? `Products / Chairs: ${productSelection}` : ''].filter(Boolean).join('\n')
+    : message;
 
   try {
     await env.DB.prepare(`
       INSERT INTO requests
         (id, reference, request_type, status, customer_name, company, phone, email, service_slug, preferred_timing, message, details_json)
-      VALUES (?, ?, 'service', 'received', ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(id, reference, name, company || null, phone, email, serviceSlug, timing || null, message, details).run();
+      VALUES (?, ?, ?, 'received', ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(id, reference, requestType, name, company || null, storedPhone, email, requestType === 'service' ? serviceSlug : null, timing || null, storedMessage, details).run();
   } catch (error) {
-    console.error('Unable to save YR Proservice service request', error);
+    console.error(`Unable to save YR Proservice ${requestType} request`, error);
     return json({ error: 'We could not save your request just now. Your details have not been confirmed as received. Please try again or contact YR Proservice directly.' }, 500);
   }
 
-  return json({ ok: true, reference, message: 'Your service request has been saved.' }, 201);
+  return json({
+    ok: true,
+    reference,
+    message: requestType === 'service' ? 'Your service request has been saved.' : 'Your quotation request has been saved.',
+  }, 201);
 }
