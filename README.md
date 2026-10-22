@@ -51,7 +51,9 @@ Contact is intentionally HR/careers only. Product and technical enquiries use th
 ## Request backend
 Service, quotation, and dental-chair requests are submitted to the Cloudflare Pages Function at `/api/requests` and saved in the shared D1 `requests` table. The quotation flow stores product/chair selections and location with the request and returns a `YRQ-...` reference; dental-chair requests return `YRC-...`; service requests continue to return `YRS-...`.
 
-For deployment, configure a Cloudflare Pages D1 binding named `DB` pointing to `yr-proservice-db`, and apply `migrations/0001_create_requests.sql` if it has not already been applied. No new migration is required for quotation or dental-chair requests. The API does not send email notifications.
+The request tracking flow adds `GET /api/track`. It accepts the reference number and the original request email, then returns only the request type, status and submission date for a matching record. No extra migration is required because it reads the `requests` table already created for the earlier phases.
+
+For deployment, configure a Cloudflare Pages D1 binding named `DB` pointing to `yr-proservice-db`, and apply `migrations/0001_create_requests.sql` if it has not already been applied. No new migration is required for quotation, dental-chair, or tracking requests. The API does not send email notifications.
 
 ## Verification note
 The source was checked for JSX bracket balance, product image references, product/service counts and removal of the non-functional hero carousel controls. The header has no Get a Quote navigation item; quotation is reached through the product/request workflow. `npm install` timed out in the build environment, so a successful Vite production build is not claimed here.

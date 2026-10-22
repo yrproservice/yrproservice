@@ -13,6 +13,7 @@ import Quote from './pages/Quote';
 import DentalChairRequest from './pages/DentalChairRequest';
 import ServiceDetails from './pages/ServiceDetails';
 import ServiceRequest from './pages/ServiceRequest';
+import TrackRequest from './pages/TrackRequest';
 import { services } from './data/services';
 import { products } from './data/products';
 import './style.css';
@@ -42,6 +43,7 @@ function Router() {
     '/quote': <Quote navigate={navigate} />,
     '/dental-chair-request': <DentalChairRequest navigate={navigate} />,
     '/service-request': <ServiceRequest navigate={navigate} />,
+    '/track-request': <TrackRequest navigate={navigate} />,
   };
 
   const serviceMatch = path.match(/^\/services\/([^/]+)$/);

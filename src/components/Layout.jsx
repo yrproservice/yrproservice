@@ -64,6 +64,7 @@ export function SiteFooter({ navigate }) {
         <Link to="/products" navigate={navigate}>Products</Link>
         <Link to="/services" navigate={navigate}>Services</Link>
         <Link to="/team" navigate={navigate}>Team</Link>
+        <Link to="/track-request" navigate={navigate}>Track My Request</Link>
       </div>
       <div>
         <h4>Contact Us</h4>
