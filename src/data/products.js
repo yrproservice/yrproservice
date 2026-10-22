@@ -136,6 +136,38 @@ const cattaniTurboJets = [
   ...(manufacturerSource ? { manufacturerSource } : {}),
 }));
 
+const durrImagingProducts = [
+  {
+    slug: 'durr-vistascan-mini-easy-2-0',
+    name: 'VistaScan Mini Easy 2.0',
+    brand: 'Dürr Dental',
+    brandLine: 'Intraoral Imaging Plate Scanner',
+    category: 'Imaging Equipment',
+    purchaseType: 'cart',
+    img: '/catalog/durr/images/vistascan-mini-easy-2.0.jpg',
+    summary: 'Dürr Dental VistaScan Mini Easy 2.0 intraoral imaging plate scanner.',
+    description: 'VistaScan Mini Easy 2.0 is a compact intraoral imaging plate scanner for dental X-ray workflows. Its Easy Feed concept supports quick successive scanning, and PCS technology is designed to deliver detailed images. It works with VistaScan IQ image plates; in combination with VistaSoft AI, the brochure describes automated image rotation, wrong-side exposure detection, and image plate quality checks. A LAN interface supports integration into a practice network.',
+    highlights: [],
+    specifications: [
+      'Display: 2.4-inch colour glass display',
+      'Image plate sizes: S0 and S2 included; S1, S3, and S4 optional',
+      'Theoretical resolution: 40 lp/mm (2,000 dpi)',
+      'Effective resolution: 22 lp/mm (1,100 dpi)',
+      'Greyscale: 16 bit',
+      'Weight: Approximately 5 kg',
+      'Dimensions (H x W x D): 249 x 211 x 258 mm',
+      'Standby function: Yes',
+      'Network interface: LAN',
+      'Scanning workflow: Easy Feed; scans all intraoral image plate formats',
+    ],
+    docs: [],
+    price: null,
+    stockStatus: 'pending',
+    reviewStatus: 'No customer reviews published yet.',
+    manufacturerSource: 'https://www.duerrdental.com/en/products/imaging/',
+  },
+];
+
 const rawProducts = [
   {
     "slug": "cingol-x1",
@@ -1270,7 +1302,8 @@ const rawProducts = [
     "reviewStatus": "No customer reviews published yet."
   },
   ...cattaniCompressors,
-  ...cattaniTurboJets
+  ...cattaniTurboJets,
+  ...durrImagingProducts
 ];
 
 const enhancedImagePaths = {
