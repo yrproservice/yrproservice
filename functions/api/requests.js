@@ -57,7 +57,7 @@ export async function onRequest({ request, env }) {
   }
 
   const requestType = cleanString(body.requestType, 30);
-  if (!['service', 'quotation'].includes(requestType)) {
+  if (!['service', 'quotation', 'dental_chair'].includes(requestType)) {
     return json({ error: 'This request type is not supported.' }, 400);
   }
 
@@ -69,7 +69,7 @@ export async function onRequest({ request, env }) {
   const timing = cleanString(body.timing, 160);
   const location = cleanString(body.location, 200);
   const productSelection = cleanString(body.product, 8000);
-  const message = cleanString(body.message, 5000);
+  const message = cleanString(body.message, 5000) || (requestType === 'quotation' ? 'Quotation request submitted without additional message.' : '');
 
   if (!name || !email || (requestType === 'service' && (!phone || !serviceSlug || !message))) {
     return json({ error: 'Please complete all required fields.' }, 400);
@@ -78,23 +78,31 @@ export async function onRequest({ request, env }) {
   if (requestType === 'service' && !ALLOWED_SERVICE_SLUGS.has(serviceSlug)) {
     return json({ error: 'Please select a valid service.' }, 400);
   }
-  if (requestType === 'quotation' && !productSelection && !message) {
+  if ((requestType === 'quotation' || requestType === 'dental_chair') && !productSelection) {
     return json({ error: 'Please include a product selection or describe your quotation requirements.' }, 400);
   }
 
   const now = new Date();
   const datePart = now.toISOString().slice(0, 10).replaceAll('-', '');
   const randomPart = crypto.randomUUID().replaceAll('-', '').slice(0, 6).toUpperCase();
-  const referencePrefix = requestType === 'service' ? 'YRS' : 'YRQ';
+  const referencePrefix = requestType === 'service' ? 'YRS' : requestType === 'quotation' ? 'YRQ' : 'YRC';
   const reference = `${referencePrefix}-${datePart}-${randomPart}`;
   const id = crypto.randomUUID();
-  const details = JSON.stringify(requestType === 'service'
-    ? { source: 'website-service-request' }
-    : { source: 'website-quotation-request', location, productSelection });
+  const details = JSON.stringify(
+    requestType === 'service'
+      ? { source: 'website-service-request' }
+      : requestType === 'quotation'
+        ? { source: 'website-quotation-request', location, productSelection }
+        : { source: 'website-dental-chair-request', location, productSelection }
+  );
   const storedPhone = phone || 'Not provided';
-  const storedMessage = requestType === 'quotation'
-    ? [message, location ? `Location: ${location}` : '', productSelection ? `Products / Chairs: ${productSelection}` : ''].filter(Boolean).join('\n')
-    : message;
+  const storedMessage = requestType === 'service'
+    ? message
+    : [
+        message || (requestType === 'dental_chair' ? 'Dental chair request submitted without additional requirements.' : 'Quotation request submitted without additional message.'),
+        location ? `Location: ${location}` : '',
+        productSelection ? `${requestType === 'dental_chair' ? 'Dental Chair Models' : 'Products / Chairs'}: ${productSelection}` : ''
+      ].filter(Boolean).join('\n');
 
   try {
     await env.DB.prepare(`
@@ -107,9 +115,11 @@ export async function onRequest({ request, env }) {
     return json({ error: 'We could not save your request just now. Your details have not been confirmed as received. Please try again or contact YR Proservice directly.' }, 500);
   }
 
-  return json({
-    ok: true,
-    reference,
-    message: requestType === 'service' ? 'Your service request has been saved.' : 'Your quotation request has been saved.',
-  }, 201);
+  const successMessage = requestType === 'service'
+    ? 'Your service request has been saved.'
+    : requestType === 'quotation'
+      ? 'Your quotation request has been saved.'
+      : 'Your dental chair request has been saved.';
+
+  return json({ ok: true, reference, message: successMessage }, 201);
 }
