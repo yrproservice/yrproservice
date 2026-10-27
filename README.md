@@ -3,6 +3,7 @@
 This version is a structural visual rebuild based on the supplied Visual and Design Blueprint and the latest feedback.
 
 ## Design direction
+
 - Montserrat for headings/navigation/UI; Inter for body copy.
 - Blueprint palette: YR navy, primary blue, cyan accent, light ice background, dark text.
 - Each major page has a different visual purpose instead of repeating the same composition:
@@ -17,12 +18,14 @@ This version is a structural visual rebuild based on the supplied Visual and Des
 - Decorative elements are background treatments only; controls are functional.
 
 ## Navigation
+
 - Removed Get a Quote from the main navigation.
 - Services navigation is a reusable dropdown built from the same 8-service data used by the Services page.
 - Home has a dedicated home-mark link.
 - Cart remains available because it is part of the product-selection workflow.
 
 ## Product improvements
+
 - Product catalogue is presented as a showroom rather than a plain database grid.
 - Hero/spotlight areas use product imagery and product-specific links.
 - Product actions have a clear purpose:
@@ -35,7 +38,9 @@ This version is a structural visual rebuild based on the supplied Visual and Des
 - Dental-chair imagery for the 11 chair models is model-specific and refreshed using current product references. Before final deployment, these external image URLs should be downloaded into /public/catalog/verified/ to make the final site independent of third-party image hosting.
 
 ## Services
+
 The approved 8 services remain:
+
 1. Dental Chair Installation
 2. Equipment Installation
 3. Compressor Installation
@@ -46,25 +51,31 @@ The approved 8 services remain:
 8. Repair and Technical Support
 
 ## Contact
+
 Contact is intentionally HR/careers only. Product and technical enquiries use the product/service request flows.
 
 ## Request backend
+
 Service, quotation, and dental-chair requests are submitted to the Cloudflare Pages Function at `/api/requests` and saved in the shared D1 `requests` table. The quotation flow stores product/chair selections and location with the request and returns a `YRQ-...` reference; dental-chair requests return `YRC-...`; service requests continue to return `YRS-...`.
 
 The request tracking flow adds `GET /api/track`. It accepts the reference number and the original request email, then returns only the request type, status and submission date for a matching record. No extra migration is required because it reads the `requests` table already created for the earlier phases.
 
 For deployment, configure a Cloudflare Pages D1 binding named `DB` pointing to `yr-proservice-db`, and apply `migrations/0001_create_requests.sql` if it has not already been applied. No new migration is required for quotation, dental-chair, or tracking requests. The API does not send email notifications.
 
-## Verification note
-The source was checked for JSX bracket balance, product image references, product/service counts and removal of the non-functional hero carousel controls. The header has no Get a Quote navigation item; quotation is reached through the product/request workflow. `npm install` timed out in the build environment, so a successful Vite production build is not claimed here.
+## Admin dashboard
 
+The private request dashboard is available at `/admin`; it lists and filters requests, shows request details, and updates request status. Its API is protected by Cloudflare Access JWT verification and an administrator email allowlist. Configure the Access application and server-side environment variables described in [PHASE5-ADMIN-DASHBOARD-SETUP.md](./docs/PHASE5-ADMIN-DASHBOARD-SETUP.md) before deployment. The dashboard does not require a new D1 migration.
+
+## Verification note
+
+The production build completes successfully with `npm run build`. Automated tests are not configured yet, so the build verifies compilation but not end-to-end request or admin behavior. The header has no Get a Quote navigation item; quotation is reached through the product/request workflow.
 
 ## V8 updates
+
 - Removed the Home text/link from the main navigation; the YR Proservice logo remains the home link.
 - Removed the Home item from the mobile navigation as well.
 - Refreshed the non-dental-chair product imagery into clean product-focused local images, removing brochure/specification text where the source image allowed.
 - Dental-chair imagery and the V7 chair-specific product overrides remain unchanged.
-
 
 ## Image verification pass
 
