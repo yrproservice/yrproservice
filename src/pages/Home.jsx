@@ -73,11 +73,14 @@ export default function Home({ navigate }) {
               YR PROSERVICE · DENTAL EQUIPMENT & SUPPORT
             </p>
             <h1>
-              Complete Dental
+              Trusted dental
               <br />
-              <span>Solutions for Your Clinic</span>
+              <span>solutions for clinics and healthcare facilities</span>
             </h1>
-            <p>Quality equipment. Professional service. Long-term support.</p>
+            <p>
+              Established in 2014, we support dental practices with equipment,
+              installation and ongoing technical service.
+            </p>
             <div className="bp-actions">
               <Link
                 to="/products"

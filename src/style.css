@@ -2389,28 +2389,79 @@ h6 {
   color: #7be6ff;
   margin-right: 5px;
 }
-.about-editorial-image {
+.about-editorial-illustration {
   position: relative;
   height: 430px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(159, 218, 255, 0.06));
+  border: 1px solid rgba(157, 235, 255, 0.18);
+  overflow: hidden;
 }
-.about-editorial-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.about-image-label {
+.about-editorial-illustration:before,
+.about-editorial-illustration:after {
+  content: "";
   position: absolute;
-  right: 15px;
-  bottom: 15px;
-  background: #fff;
-  color: var(--yr-navy);
-  padding: 12px 15px;
+  border: 1px solid rgba(157, 235, 255, 0.2);
+  border-radius: 50%;
 }
-.about-image-label span,
-.about-image-label b {
+.about-editorial-illustration:before {
+  width: 290px;
+  height: 290px;
+  right: -50px;
+  top: 40px;
+}
+.about-editorial-illustration:after {
+  width: 200px;
+  height: 200px;
+  left: 36px;
+  bottom: 30px;
+}
+.about-visual-card {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(11, 85, 151, 0.12);
+  box-shadow: 0 12px 26px rgba(7, 56, 103, 0.06);
+}
+.about-visual-card-main {
+  width: 72%;
+  padding: 24px 28px;
+  margin-bottom: 18px;
+}
+.about-visual-card-main span,
+.about-visual-card-main strong {
   display: block;
-  font-size: 9px;
+}
+.about-visual-card-main span {
+  font: 800 10px Montserrat;
+  color: var(--yr-blue);
+  letter-spacing: 0.12em;
+}
+.about-visual-card-main strong {
+  font-size: 22px;
+  color: var(--yr-navy);
+  margin-top: 8px;
+}
+.about-visual-card-accent {
+  width: 66%;
+  padding: 18px 22px;
+  margin-left: 120px;
+}
+.about-visual-card-accent small,
+.about-visual-card-accent b {
+  display: block;
+}
+.about-visual-card-accent small {
+  color: #627383;
+  font: 800 9px Montserrat;
   letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.about-visual-card-accent b {
+  margin-top: 8px;
+  color: var(--yr-navy);
+  font-size: 16px;
 }
 .about-story,
 .about-process,
@@ -2585,30 +2636,31 @@ h6 {
 .about-person {
   background: #fff;
   border: 1px solid var(--yr-border);
-}
-.about-person-image {
-  height: 250px;
-}
-.about-person-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.about-person-copy {
   padding: 18px;
 }
-.about-person-copy span {
-  font: 800 10px Montserrat;
+.about-person-badge {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  background: var(--yr-soft);
+  border: 1px solid rgba(30, 126, 216, 0.15);
   color: var(--yr-blue);
+  font: 800 11px Montserrat;
+}
+.about-person-copy {
+  padding: 0;
 }
 .about-person-copy h3 {
   font-size: 19px;
   color: var(--yr-navy);
-  margin: 5px 0;
+  margin: 0 0 10px;
 }
 .about-person-copy p {
   font-size: 12px;
   color: var(--yr-muted);
+  margin: 0;
 }
 .about-final {
   padding-top: 0;
@@ -2633,6 +2685,34 @@ h6 {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.about-profile-download {
+  background: #fff;
+  padding: 0 0 35px;
+}
+
+.about-profile-panel {
+  background: linear-gradient(135deg, #f8fbfe, #ffffff);
+  border: 1px solid var(--yr-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 28px;
+  padding: 32px 36px;
+}
+
+.about-profile-panel h2 {
+  font-size: 30px;
+  color: var(--yr-navy);
+  margin: 7px 0;
+}
+
+.about-profile-panel p:not(.eyebrow) {
+  margin: 0;
+  color: var(--yr-muted);
+  max-width: 620px;
+  line-height: 1.7;
 }
 
 /* Service detail / request legacy pages use the same foundation. */

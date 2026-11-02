@@ -1,0 +1,24 @@
+
+name = "yrproservice"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-10-16"
+
+[env.production.vars]
+ACCESS_AUD = "6cc25e5b052b66e6913113cdb3a6efb17c980f908b4492c1e8a41a79ba3d77a4"
+ACCESS_TEAM_DOMAIN = "yr-proservice.cloudflareaccess.com"
+ADMIN_EMAILS = "yr.proservice@gmail.com"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "yr-proservice-db"
+database_id = "9bf690db-a74b-43e9-8c38-cc8bab18a9f1"
+
+[env.preview.vars]
+ACCESS_AUD = "6cc25e5b052b66e6913113cdb3a6efb17c980f908b4492c1e8a41a79ba3d77a4"
+ACCESS_TEAM_DOMAIN = "yr-proservice.cloudflareaccess.com"
+ADMIN_EMAILS = "yr.proservice@gmail.com"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "yr-proservice-test-db"
+database_id = "7fca4ad0-3baa-4148-ad28-bfd2ef416c16"

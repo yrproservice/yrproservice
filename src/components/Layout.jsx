@@ -181,6 +181,9 @@ export function SiteFooter({ navigate }) {
           <Link to="/track-request" navigate={navigate}>
             Track My Request
           </Link>
+          <a href="/yr-proservice-corporate-profile.pdf" target="_blank" rel="noreferrer">
+            Corporate Profile (PDF)
+          </a>
         </div>
         <div>
           <h4>Contact Us</h4>

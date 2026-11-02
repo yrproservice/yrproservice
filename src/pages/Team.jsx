@@ -2,43 +2,39 @@ import React from "react";
 
 const capabilities = [
   {
+    title: "Dental Clinic Setup",
+    text: "We support the planning and setup of dental clinics, including equipment requirements and practical clinic solutions.",
+  },
+  {
     title: "Dental Equipment Supply",
-    text: "A focused catalogue of dental equipment, accessories and clinic essentials for day-to-day operations.",
+    text: "We provide dental equipment, dental X-ray units, lab equipment and supporting materials for clinics and healthcare facilities.",
   },
   {
-    title: "Installation & Setup",
-    text: "Practical support for equipment installation, operatory setup and coordination of site requirements.",
+    title: "Installation & Commissioning",
+    text: "Our team supports installation, site coordination and equipment handover so the system is ready for use.",
   },
   {
-    title: "Technical Service",
-    text: "Repair, maintenance and troubleshooting support to help clinics keep equipment in service.",
-  },
-  {
-    title: "After-Sales Support",
-    text: "Ongoing assistance for product enquiries, service requests and equipment-related follow-up.",
+    title: "Service & Technical Support",
+    text: "We deliver repair, maintenance and technical support for dental chairs, x-ray systems, compressors, suction units and related equipment.",
   },
 ];
 
 const teamFunctions = [
   {
-    image: "/assets/team-1.jpg",
-    title: "Technical Support",
-    text: "Equipment guidance, troubleshooting and practical technical assistance.",
+    title: "Sales & Technical Support",
+    text: "Supporting dental clinics with product guidance, technical advice and practical solutions for equipment needs.",
   },
   {
-    image: "/assets/team-2.jpg",
     title: "Installation & Service",
-    text: "Installation coordination, servicing and on-site technical support.",
+    text: "Coordinating installation work and ongoing technical service for dental chair, x-ray and supporting equipment.",
   },
   {
-    image: "/assets/team-3.jpg",
-    title: "Customer Support",
-    text: "Quotations, product enquiries and coordination with dental clinics.",
+    title: "Account & Administration",
+    text: "Managing customer enquiries, quotations, documentation and operational coordination for project delivery.",
   },
   {
-    image: "/assets/team-4.jpg",
     title: "Project Coordination",
-    text: "Planning and coordination for dental equipment and clinic requirements.",
+    text: "Helping organize equipment requirements, site preparation and project documentation for smooth implementation.",
   },
 ];
 
@@ -46,24 +42,26 @@ const milestones = [
   [
     "01",
     "Understand",
-    "We start with the clinic requirement, space, equipment and practical workflow.",
+    "We look at the clinic's workflow, space and the type of equipment needed before recommending anything.",
   ],
   [
     "02",
     "Plan",
-    "Equipment, installation needs and technical requirements are coordinated before work begins.",
+    "We coordinate the equipment, installation needs and site requirements before the work starts.",
   ],
   [
     "03",
     "Deliver",
-    "Products and technical work are carried through with attention to setup and usability.",
+    "The required products and technical work are arranged with attention to setup, usability and smooth handover.",
   ],
   [
     "04",
     "Support",
-    "After installation, we remain available for service, maintenance and equipment enquiries.",
+    "We remain available for service, maintenance and follow-up after installation so clinics can keep operating smoothly.",
   ],
 ];
+
+const corporateProfileHref = "/yr-proservice-corporate-profile.pdf";
 
 export default function Team({ navigate }) {
   return (
@@ -75,33 +73,36 @@ export default function Team({ navigate }) {
           <div className="about-editorial-copy">
             <p className="eyebrow">About YR Proservice</p>
             <h1>
-              Behind every operatory is a system that needs to{" "}
-              <span>work.</span>
+              Sales & service for the
+              <span> dental world.</span>
             </h1>
             <p className="about-editorial-lead">
-              YR Proservice supports dental clinics with equipment supply,
-              installation, technical service and ongoing after-sales support.
+              YR Proservice Sdn Bhd is a company specialising in the dental
+              industry. Established in 2014 to provide the best and most
+              comprehensive services and solutions for dental clinics in the
+              government sector, private sector and organisations that need
+              support with dental healthcare or programme planning.
             </p>
             <div className="about-editorial-meta">
               <span>
-                <b>01</b> Equipment
+                <b>01</b> Dental clinic setup
               </span>
               <span>
-                <b>02</b> Installation
+                <b>02</b> Equipment supply
               </span>
               <span>
                 <b>03</b> Technical support
               </span>
             </div>
           </div>
-          <div className="about-editorial-image">
-            <img
-              src="/assets/about-team.jpg"
-              alt="YR Proservice dental equipment team"
-            />
-            <div className="about-image-label">
+          <div className="about-editorial-illustration" aria-hidden="true">
+            <div className="about-visual-card about-visual-card-main">
               <span>YR PROSERVICE</span>
-              <b>DENTAL EQUIPMENT</b>
+              <strong>DENTAL EQUIPMENT</strong>
+            </div>
+            <div className="about-visual-card about-visual-card-accent">
+              <small>Established</small>
+              <b>Since 2014</b>
             </div>
           </div>
         </div>
@@ -112,19 +113,20 @@ export default function Team({ navigate }) {
           <div className="about-story-number">01</div>
           <div>
             <p className="eyebrow">Our approach</p>
-            <h2>More than supplying equipment.</h2>
+            <h2>Practical support for dental clinics and healthcare facilities.</h2>
             <p className="about-story-lead">
-              Our work connects products with the practical requirements of a
-              working dental clinic. From selecting equipment to installation,
-              maintenance and repair, we focus on making equipment projects
-              easier to coordinate and simpler to maintain after installation.
+              We provide services and solutions for dental clinic setup, dental
+              equipment and dental X-ray. We also supply dental equipment,
+              dental X-ray units, laboratory equipment and materials to support
+              clinic operations and project delivery.
             </p>
           </div>
           <div className="about-story-note">
-            <span>THE YR APPROACH</span>
-            <strong>Equipment + technical support + follow-through</strong>
+            <span>OUR FOCUS</span>
+            <strong>Quality products, efficient service and dependable support</strong>
             <p>
-              One connected workflow for the equipment behind your practice.
+              We are dedicated to helping clients achieve successful and cost-
+              effective implementation of innovative dental technology.
             </p>
           </div>
         </div>
@@ -135,11 +137,11 @@ export default function Team({ navigate }) {
           <div className="about-process-heading">
             <div>
               <p className="eyebrow">How we work</p>
-              <h2>From requirement to ongoing support.</h2>
+              <h2>From planning to after-sales support.</h2>
             </div>
             <p>
-              Our role can begin before an equipment purchase and continue after
-              installation.
+              We support clinics through equipment planning, installation,
+              servicing and long-term operational assistance.
             </p>
           </div>
           <div className="about-process-line">
@@ -159,11 +161,11 @@ export default function Team({ navigate }) {
           <div className="about-capability-intro">
             <div>
               <p className="eyebrow">What we do</p>
-              <h2>Built around real clinic needs.</h2>
+              <h2>Supporting dental practice needs across the full workflow.</h2>
             </div>
             <p>
-              Our capabilities connect equipment supply with the practical
-              technical support required throughout its working life.
+              Our work covers clinic setup, equipment supply, installation and
+              servicing across both public and private healthcare settings.
             </p>
           </div>
           <div className="about-capability-list">
@@ -181,14 +183,38 @@ export default function Team({ navigate }) {
         </div>
       </section>
 
+      <section className="about-profile-download">
+        <div className="container">
+          <div className="about-profile-panel">
+            <div>
+              <p className="eyebrow">Company overview</p>
+              <h2>Download our corporate profile.</h2>
+              <p>
+                For a fuller overview of YR Proservice, our company background,
+                services and the dental projects we support, please view our
+                corporate profile.
+              </p>
+            </div>
+            <a
+              href={corporateProfileHref}
+              target="_blank"
+              rel="noreferrer"
+              className="bp-btn bp-btn-primary"
+            >
+              Download PDF
+            </a>
+          </div>
+        </div>
+      </section>
+
       <section className="about-people team-pattern-people">
         <div className="container">
           <div className="about-people-heading">
             <p className="eyebrow">Our team</p>
-            <h2>People behind the service.</h2>
+            <h2>People working across the service.</h2>
             <p>
-              Different functions work together to support equipment, service
-              and customer requirements.
+              Different parts of the business come together to support equipment,
+              customer enquiries and the day-to-day needs of dental clinics.
             </p>
           </div>
           <div className="about-people-grid">
@@ -197,11 +223,8 @@ export default function Team({ navigate }) {
                 className={`about-person person-${index + 1}`}
                 key={item.title}
               >
-                <div className="about-person-image">
-                  <img src={item.image} alt="" />
-                </div>
+                <div className="about-person-badge">0{index + 1}</div>
                 <div className="about-person-copy">
-                  <span>0{index + 1}</span>
                   <h3>{item.title}</h3>
                   <p>{item.text}</p>
                 </div>
@@ -214,11 +237,11 @@ export default function Team({ navigate }) {
       <section className="about-final">
         <div className="container about-final-inner">
           <div>
-            <p className="eyebrow">Let's work together</p>
+            <p className="eyebrow">Let’s talk</p>
             <h2>Planning a dental equipment project?</h2>
             <p>
-              Talk to YR Proservice about products, installation, technical
-              support or your clinic requirements.
+              Whether you need equipment, installation help or technical support,
+              we can discuss the best fit for your clinic.
             </p>
           </div>
           <div className="about-final-actions">
