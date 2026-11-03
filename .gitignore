@@ -6,3 +6,6 @@ dist/
 .wrangler/
 .DS_Store
 Thumbs.db
+_worker.bundle
+worker-configuration.d.ts
+production-requests-backup-2026-11-03.sql
