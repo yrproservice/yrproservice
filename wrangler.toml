@@ -3,11 +3,6 @@ name = "yrproservice"
 pages_build_output_dir = "./dist"
 compatibility_date = "2026-10-16"
 
-previews = {}
-
-[assets]
-directory = "./dist"
-
 [env.production.vars]
 ACCESS_AUD = "e146bf36a1dd4d895c0f772288e2af1713bcf8b4e23a2c3ae01c69879f20cdf9"
 ACCESS_TEAM_DOMAIN = "yr-proservice.cloudflareaccess.com"
