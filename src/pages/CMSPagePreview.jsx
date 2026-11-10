@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import HomeCmsRenderer from "../components/HomeCmsRenderer";
+import GenericCmsRenderer from "../components/GenericCmsRenderer";
 
 export default function CMSPagePreview() {
   const [content, setContent] = useState(null);
   const [title, setTitle] = useState("CMS Draft Preview");
+  const [pageKey, setPageKey] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -26,6 +28,7 @@ export default function CMSPagePreview() {
       })
       .then((page) => {
         if (!active) return;
+        setPageKey(page.pageKey || key);
         setContent(page.content);
         setTitle(page.title || "CMS Draft Preview");
       })
@@ -48,7 +51,7 @@ export default function CMSPagePreview() {
       </div>
       {loading ? <div className="cms-full-preview-message">Loading saved draft…</div>
         : error ? <div className="cms-full-preview-message">{error}</div>
-        : content ? <HomeCmsRenderer content={content} navigate={(to) => { window.location.href = to; }} />
+        : content ? (pageKey === "home" ? <HomeCmsRenderer content={content} navigate={(to) => { window.location.href = to; }} /> : <GenericCmsRenderer content={content} navigate={(to) => { window.location.href = to; }} />)
         : <div className="cms-full-preview-message">No preview content is available.</div>}
     </div>
   );
