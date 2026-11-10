@@ -195,6 +195,7 @@ export default function CMSDashboard() {
             <button type="button" className="admin-secondary-button" onClick={loadHomeTemplate} disabled={busy || pages.some((page) => page.page_key === "home")}>Load Home template</button>
             <button type="button" className="admin-secondary-button" onClick={createPage}>New page</button>
             <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save draft</button>
+            <button type="button" className="admin-secondary-button" onClick={() => window.open(`/admin/cms/preview?key=${encodeURIComponent(pageKey)}`, "_blank", "noopener,noreferrer")} disabled={busy || !draftId}>Preview saved draft</button>
             <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish</button>
           </div>
         </div>
