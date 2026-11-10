@@ -94,7 +94,16 @@ export default function CMSDashboard() {
     finally { setBusy(false); }
   }
 
-  function loadHomeTemplate() {\n    const initial = JSON.parse(JSON.stringify(homeCmsTemplate));\n    setPageKey("home"); setPageTitle("Home"); setRoute("/"); setContent(initial);\n    setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null); setPublishedVersion(null);\n    setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2));\n    setNotice("Existing homepage template loaded into a new Home draft. Save it before publishing.");\n    setError("");\n  }\n\n  function createPage() {
+  function loadHomeTemplate() {
+    const initial = JSON.parse(JSON.stringify(homeCmsTemplate));
+    setPageKey("home"); setPageTitle("Home"); setRoute("/"); setContent(initial);
+    setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null); setPublishedVersion(null);
+    setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2));
+    setNotice("Existing homepage template loaded into a new Home draft. Save it before publishing.");
+    setError("");
+  }
+
+  function createPage() {
     const title = window.prompt("New page title");
     if (!title?.trim()) return;
     const key = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -181,7 +190,8 @@ export default function CMSDashboard() {
         <div className="cms-admin-toolbar">
           <div><strong>{pageTitle || "No page selected"}</strong><small>{pageKey ? `${route} · ${draftVersion ? `Draft V${draftVersion}` : publishedVersion ? `Published V${publishedVersion}` : "Not saved"}` : "Choose a page or create a draft"}</small></div>
           <div className="cms-toolbar-actions">
-            <button type="button" className="admin-secondary-button" onClick={loadHomeTemplate} disabled={busy || pages.some((page) => page.page_key === "home")}>Load Home template</button>\n            <button type="button" className="admin-secondary-button" onClick={createPage}>New page</button>
+            <button type="button" className="admin-secondary-button" onClick={loadHomeTemplate} disabled={busy || pages.some((page) => page.page_key === "home")}>Load Home template</button>
+            <button type="button" className="admin-secondary-button" onClick={createPage}>New page</button>
             <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save draft</button>
             <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish</button>
           </div>
@@ -208,13 +218,16 @@ export default function CMSDashboard() {
             {pageKey && <div className="cms-page-settings"><label>Page title<input value={pageTitle} onChange={(event) => setPageTitle(event.target.value)} /></label><label>Route<input value={route} onChange={(event) => setRoute(event.target.value)} /></label></div>}
             {!selectedSection ? <p className="admin-empty">Select a section in the preview to edit its content.</p> : <>
               <div className="cms-inspector-title"><strong>{SECTION_TYPES.find((item) => item.value === selectedSection.type)?.label || selectedSection.type}</strong><small>Section settings</small></div>
-              <label>Show section<input type="checkbox" checked={selectedSection.visible !== false} onChange={(event) => setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, visible: event.target.checked } : item) }))} /></label>\n              <label>Layout variant<input value={selectedSection.layout?.variant || "standard"} onChange={(event) => setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, layout: { ...(item.layout || {}), variant: event.target.value } } : item) }))} /></label>\n              <label>Heading<input value={selectedSection.content?.heading || ""} onChange={(event) => updateSection("heading", event.target.value)} /></label>
+              <label>Show section<input type="checkbox" checked={selectedSection.visible !== false} onChange={(event) => setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, visible: event.target.checked } : item) }))} /></label>
+              <label>Layout variant<input value={selectedSection.layout?.variant || "standard"} onChange={(event) => setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, layout: { ...(item.layout || {}), variant: event.target.value } } : item) }))} /></label>
+              <label>Heading<input value={selectedSection.content?.heading || ""} onChange={(event) => updateSection("heading", event.target.value)} /></label>
               <label>Description<textarea rows="5" value={selectedSection.content?.description || ""} onChange={(event) => updateSection("description", event.target.value)} /></label>
               <label>Image URL<input value={selectedSection.content?.imageUrl || ""} onChange={(event) => updateSection("imageUrl", event.target.value)} placeholder="/assets/example.jpg" /></label>
               <label>Image alt text<input value={selectedSection.content?.imageAlt || ""} onChange={(event) => updateSection("imageAlt", event.target.value)} /></label>
               <label>Button text<input value={selectedSection.content?.buttonText || ""} onChange={(event) => updateSection("buttonText", event.target.value)} /></label>
               <label>Button destination<input value={selectedSection.content?.buttonUrl || ""} onChange={(event) => updateSection("buttonUrl", event.target.value)} placeholder="/products" /></label>
-              <label>Advanced section content (JSON)<textarea rows="12" spellCheck="false" value={structuredJson} onChange={(event) => setStructuredJson(event.target.value)} onBlur={() => { try { const parsed = JSON.parse(structuredJson); if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error(); setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, content: parsed } : item) })); setError(""); } catch { setError("Advanced section content must be valid JSON object data."); } }} /></label>\n              <div className="cms-section-actions"><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, -1)}>Move up</button><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, 1)}>Move down</button><button type="button" className="admin-secondary-button" onClick={() => { setContent((current) => ({...current, sections: current.sections.filter((item) => item.id !== selectedSection.id).map((item, i) => ({...item, order:i+1}))})); setSelectedSectionId(""); }}>Remove</button></div>
+              <label>Advanced section content (JSON)<textarea rows="12" spellCheck="false" value={structuredJson} onChange={(event) => setStructuredJson(event.target.value)} onBlur={() => { try { const parsed = JSON.parse(structuredJson); if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error(); setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, content: parsed } : item) })); setError(""); } catch { setError("Advanced section content must be valid JSON object data."); } }} /></label>
+              <div className="cms-section-actions"><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, -1)}>Move up</button><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, 1)}>Move down</button><button type="button" className="admin-secondary-button" onClick={() => { setContent((current) => ({...current, sections: current.sections.filter((item) => item.id !== selectedSection.id).map((item, i) => ({...item, order:i+1}))})); setSelectedSectionId(""); }}>Remove</button></div>
             </>}
           </aside>
         </div>
