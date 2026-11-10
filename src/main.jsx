@@ -15,6 +15,7 @@ import ServiceDetails from "./pages/ServiceDetails";
 import ServiceRequest from "./pages/ServiceRequest";
 import TrackRequest from "./pages/TrackRequest";
 import AdminDashboard from "./pages/AdminDashboard";
+import CMSDashboard from "./pages/CMSDashboard";
 import { services } from "./data/services";
 import { products } from "./data/products";
 import "./style.css";
@@ -30,6 +31,7 @@ const pageTitles = {
   "/service-request": "Request a Service | YR Proservice",
   "/track-request": "Track a Request | YR Proservice",
   "/admin": "Request Dashboard | YR Proservice",
+  "/admin/cms": "Visual CMS | YR Proservice",
 };
 
 function Router() {
@@ -71,6 +73,7 @@ function Router() {
     "/service-request": <ServiceRequest navigate={navigate} />,
     "/track-request": <TrackRequest navigate={navigate} />,
     "/admin": <AdminDashboard />,
+    "/admin/cms": <CMSDashboard />,
   };
 
   const serviceMatch = path.match(/^\/services\/([^/]+)$/);
@@ -82,7 +85,7 @@ function Router() {
   const productPage = productMatch
     ? products.find((product) => product.slug === productMatch[1])
     : null;
-  const isAdminRoute = path === "/admin";
+  const isAdminRoute = path.startsWith("/admin");
 
   return (
     <>
