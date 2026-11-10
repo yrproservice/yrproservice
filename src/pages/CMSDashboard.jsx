@@ -112,7 +112,7 @@ export default function CMSDashboard() {
     const initial = starterContent(title.trim());
     setPageKey(key); setPageTitle(title.trim()); setRoute(pageRoute); setContent(initial);
     setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null);
-    setPublishedVersion(null); setNotice("New page started. Save it as a draft when ready.");
+    setPublishedVersion(null); setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2)); setNotice("New page started. Save it as a draft when ready.");
   }
 
   function updateSection(field, value) {
@@ -122,6 +122,7 @@ export default function CMSDashboard() {
       sections: current.sections.map((section) => section.id !== selectedSection.id
         ? section : { ...section, content: { ...(section.content || {}), [field]: value } })
     }));
+    setStructuredJson(JSON.stringify({ ...(selectedSection.content || {}), [field]: value }, null, 2));
   }
 
   function addSection(type) {
@@ -130,6 +131,7 @@ export default function CMSDashboard() {
       layout: { variant: type === "hero" ? "split" : "standard" } };
     setContent((current) => ({ ...current, sections: [...current.sections, section] }));
     setSelectedSectionId(section.id);
+    setStructuredJson(JSON.stringify(section.content, null, 2));
   }
 
   function moveSection(id, direction) {
