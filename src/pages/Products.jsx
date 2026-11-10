@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { products } from "../data/products";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
@@ -6,6 +6,22 @@ import { Link } from "../components/Layout";
 
 export default function Products({ navigate }) {
   const [search, setSearch] = useState("");
+  const [cmsProducts, setCmsProducts] = useState([]);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/products", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => { if (active && data?.ok && Array.isArray(data.products)) setCmsProducts(data.products); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const catalogueProducts = useMemo(() => {
+    const overrides = new Map(cmsProducts.map((item) => [item.slug, item]));
+    const merged = products.map((item) => overrides.get(item.slug) || item);
+    const known = new Set(products.map((item) => item.slug));
+    return [...merged, ...cmsProducts.filter((item) => !known.has(item.slug))];
+  }, [cmsProducts]);
+
   const [category, setCategory] = useState("All");
   const [brand, setBrand] = useState("All");
   const [addedSlug, setAddedSlug] = useState("");
@@ -13,16 +29,16 @@ export default function Products({ navigate }) {
   const { addChair } = useChairRequests();
 
   const categories = useMemo(
-    () => ["All", ...new Set(products.map((p) => p.category).filter(Boolean))],
+    () => ["All", ...new Set(catalogueProducts.map((p) => p.category).filter(Boolean))],
     [],
   );
   const brands = useMemo(
-    () => ["All", ...new Set(products.map((p) => p.brand || "Other"))],
+    () => ["All", ...new Set(catalogueProducts.map((p) => p.brand || "Other"))],
     [],
   );
   const filtered = useMemo(
     () =>
-      products.filter(
+      catalogueProducts.filter(
         (p) =>
           (category === "All" || p.category === category) &&
           (brand === "All" || (p.brand || "Other") === brand) &&
@@ -30,12 +46,12 @@ export default function Products({ navigate }) {
             .toLowerCase()
             .includes(search.toLowerCase()),
       ),
-    [search, category, brand],
+    [search, category, brand, catalogueProducts],
   );
-  const chairs = products.filter((p) => p.purchaseType === "quote");
+  const chairs = catalogueProducts.filter((p) => p.purchaseType === "quote");
   const showcaseChair =
     chairs.find((p) => p.slug === "signo-t100") || chairs[0];
-  const spotlight = products.filter((p) =>
+  const spotlight = catalogueProducts.filter((p) =>
     ["mocom-m10", "signo-t100", "cingol-x3"].includes(p.slug),
   );
 
@@ -71,13 +87,13 @@ export default function Products({ navigate }) {
             </p>
             <div className="products-hero-stats">
               <span>
-                <b>{products.length}</b> products
+                <b>{catalogueProducts.length}</b> products
               </span>
               <span>
                 <b>{chairs.length}</b> chair models
               </span>
               <span>
-                <b>{new Set(products.map((p) => p.brand)).size}</b> brands
+                <b>{new Set(catalogueProducts.map((p) => p.brand)).size}</b> brands
               </span>
             </div>
           </div>
