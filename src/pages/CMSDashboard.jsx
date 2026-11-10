@@ -34,7 +34,7 @@ function SectionPreview({ section, selected, onClick }) {
       onClick={onClick} aria-pressed={selected}>
       <span className="cms-preview-type">{SECTION_TYPES.find((item) => item.value === section.type)?.label || section.type}</span>
       {section.type === "hero" ? <div className="cms-preview-hero">
-        <div><h1>{content.heading || "Your heading"}</h1><p>{content.description || "Your description"}</p>
+        <div><h1>{content.heading || "Your heading"}{content.headingHighlight && <><br /><span>{content.headingHighlight}</span></>}</h1><p>{content.description || "Your description"}</p>
           {content.buttonText && <span className="cms-preview-button">{content.buttonText}</span>}</div>
         {content.imageUrl && <img src={content.imageUrl} alt={content.imageAlt || ""} />}
       </div> : section.type === "image-text" ? <div className="cms-preview-image-text">
@@ -223,6 +223,7 @@ export default function CMSDashboard() {
               <label>Show section<input type="checkbox" checked={selectedSection.visible !== false} onChange={(event) => setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, visible: event.target.checked } : item) }))} /></label>
               <label>Layout variant<input value={selectedSection.layout?.variant || "standard"} onChange={(event) => setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, layout: { ...(item.layout || {}), variant: event.target.value } } : item) }))} /></label>
               <label>Heading<input value={selectedSection.content?.heading || ""} onChange={(event) => updateSection("heading", event.target.value)} /></label>
+              {selectedSection.type === "hero" && <label>Heading highlight (second line)<input value={selectedSection.content?.headingHighlight || ""} onChange={(event) => updateSection("headingHighlight", event.target.value)} /></label>}
               <label>Description<textarea rows="5" value={selectedSection.content?.description || ""} onChange={(event) => updateSection("description", event.target.value)} /></label>
               <label>Image URL<input value={selectedSection.content?.imageUrl || ""} onChange={(event) => updateSection("imageUrl", event.target.value)} placeholder="/assets/example.jpg" /></label>
               <label>Image alt text<input value={selectedSection.content?.imageAlt || ""} onChange={(event) => updateSection("imageAlt", event.target.value)} /></label>
