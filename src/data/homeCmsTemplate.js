@@ -8,7 +8,8 @@ export const homeCmsTemplate = {
       layout: { variant: "split" },
       content: {
         eyebrow: "YR PROSERVICE · DENTAL EQUIPMENT & SUPPORT",
-        heading: "Complete Dental Solutions for Your Clinic",
+        heading: "Complete Dental",
+        headingHighlight: "Solutions for Your Clinic",
         description: "Quality equipment. Professional service. Long-term support.",
         imageUrl: "/assets/hero-operatory.jpg",
         imageAlt: "Modern dental operatory",
