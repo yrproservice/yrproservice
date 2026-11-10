@@ -3827,3 +3827,40 @@ h6 {
  .cms-preview-section:hover, .cms-preview-section.is-selected { padding:15px; }
  .cms-add-section { align-items:stretch; flex-direction:column; }
 }
+
+
+/* CMS full-page draft preview */
+.cms-full-preview-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 22px;
+  background: #fff;
+  border-bottom: 1px solid #dce7ef;
+  box-shadow: 0 4px 16px rgba(8, 38, 66, 0.08);
+}
+.cms-full-preview-bar > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cms-full-preview-bar strong {
+  color: #0b3155;
+  font: 700 14px Inter, sans-serif;
+}
+.cms-full-preview-bar span {
+  color: #687280;
+  font: 500 11px Inter, sans-serif;
+}
+.cms-full-preview-message {
+  padding: 48px 24px;
+  color: #1f2937;
+  text-align: center;
+}
+.cms-full-preview .bp-home {
+  margin: 0;
+}
