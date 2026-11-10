@@ -1214,8 +1214,7 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource:
-      "https://www.fdmedical.cn/product_4.html",
+    manufacturerSource: "https://www.fdmedical.cn/product_4.html",
   },
 ];
 
