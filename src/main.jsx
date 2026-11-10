@@ -17,6 +17,7 @@ import TrackRequest from "./pages/TrackRequest";
 import AdminDashboard from "./pages/AdminDashboard";
 import CMSDashboard from "./pages/CMSDashboard";
 import CMSPagePreview from "./pages/CMSPagePreview";
+import CMSManagement from "./pages/CMSManagement";
 import { services } from "./data/services";
 import { products } from "./data/products";
 import "./style.css";
@@ -34,6 +35,7 @@ const pageTitles = {
   "/admin": "Request Dashboard | YR Proservice",
   "/admin/cms": "Visual CMS | YR Proservice",
   "/admin/cms/preview": "CMS Draft Preview | YR Proservice",
+  "/admin/cms/manage": "CMS Management Centre | YR Proservice",
 };
 
 function Router() {
@@ -77,6 +79,7 @@ function Router() {
     "/admin": <AdminDashboard />,
     "/admin/cms": <CMSDashboard />,
     "/admin/cms/preview": <CMSPagePreview />,
+    "/admin/cms/manage": <CMSManagement />,
   };
 
   const serviceMatch = path.match(/^\/services\/([^/]+)$/);
@@ -99,7 +102,7 @@ function Router() {
             (servicePage ? (
               <ServiceDetails service={servicePage} navigate={navigate} />
             ) : productPage ? (
-              <ProductDetails product={productPage} navigate={navigate} />
+              <ProductRoute product={productPage} navigate={navigate} />
             ) : (
               <NotFound navigate={navigate} />
             ))}
@@ -108,6 +111,19 @@ function Router() {
       {!isAdminRoute && <SiteFooter navigate={navigate} />}
     </>
   );
+}
+
+function ProductRoute({ product: fallbackProduct, navigate }) {
+  const [product, setProduct] = useState(fallbackProduct);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/products?slug=" + encodeURIComponent(fallbackProduct.slug), { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (active && data?.ok && data.product) setProduct(data.product); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [fallbackProduct.slug]);
+  return <ProductDetails product={product} navigate={navigate} />;
 }
 
 function NotFound({ navigate }) {
