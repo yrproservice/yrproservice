@@ -30,11 +30,11 @@ export default function Products({ navigate }) {
 
   const categories = useMemo(
     () => ["All", ...new Set(catalogueProducts.map((p) => p.category).filter(Boolean))],
-    [],
+    [catalogueProducts],
   );
   const brands = useMemo(
     () => ["All", ...new Set(catalogueProducts.map((p) => p.brand || "Other"))],
-    [],
+    [catalogueProducts],
   );
   const filtered = useMemo(
     () =>
