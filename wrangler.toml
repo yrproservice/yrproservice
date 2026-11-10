@@ -17,8 +17,13 @@ database_id = "9bf690db-a74b-43e9-8c38-cc8bab18a9f1"
 ACCESS_AUD = "e146bf36a1dd4d895c0f772288e2af1713bcf8b4e23a2c3ae01c69879f20cdf9"
 ACCESS_TEAM_DOMAIN = "yr-proservice.cloudflareaccess.com"
 ADMIN_EMAILS = "yr.proservice@gmail.com"
+CMS_MEDIA_PUBLIC_BASE = "https://pub-64b2b23602564b2ca2ced6d0fa39041f.r2.dev"
 
 [[env.preview.d1_databases]]
 binding = "DB"
 database_name = "yr-proservice-test-db"
 database_id = "7fca4ad0-3baa-4148-ad28-bfd2ef416c16"
+
+[[env.preview.r2_buckets]]
+binding = "CMS_MEDIA"
+bucket_name = "yrproservice-cms-preview"
