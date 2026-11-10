@@ -1,5 +1,3 @@
-import { adminJson } from "../../../_utils/admin-auth.js";
-
 function publicJson(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
