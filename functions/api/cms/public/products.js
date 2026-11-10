@@ -13,7 +13,7 @@ export async function onRequest({ env, request }) {
       const row = await env.DB.prepare(`
         SELECT p.product_slug, v.product_json, v.version_number
         FROM cms_products p JOIN cms_product_versions v ON v.id = p.published_version_id
-        WHERE p.product_slug = ? AND v.state = 'published' LIMIT 1
+        WHERE p.product_slug = ? AND v.state = 'published' AND COALESCE(json_extract(v.product_json, '$.isArchived'), 0) = 0 LIMIT 1
       `).bind(slug).first();
       if (!row) return json({ error: "Published product not found." }, 404);
       return json({ ok: true, product: JSON.parse(row.product_json), version: row.version_number });
@@ -21,7 +21,7 @@ export async function onRequest({ env, request }) {
     const result = await env.DB.prepare(`
       SELECT v.product_json FROM cms_products p
       JOIN cms_product_versions v ON v.id = p.published_version_id
-      WHERE v.state = 'published' ORDER BY p.product_slug
+      WHERE v.state = 'published' AND COALESCE(json_extract(v.product_json, '$.isArchived'), 0) = 0 ORDER BY p.product_slug
     `).all();
     return json({ ok: true, products: (result.results || []).map((row) => JSON.parse(row.product_json)) });
   } catch (error) {
