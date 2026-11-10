@@ -89,7 +89,7 @@ function Router() {
 
   const productMatch = path.match(/^\/products\/([^/]+)$/);
   const productPage = productMatch
-    ? products.find((product) => product.slug === productMatch[1])
+    ? products.find((product) => product.slug === productMatch[1]) || { slug: productMatch[1] }
     : null;
   const isAdminRoute = path.startsWith("/admin");
 
@@ -115,14 +115,23 @@ function Router() {
 
 function ProductRoute({ product: fallbackProduct, navigate }) {
   const [product, setProduct] = useState(fallbackProduct);
+  const [loading, setLoading] = useState(!fallbackProduct.name);
+  const [missing, setMissing] = useState(false);
   useEffect(() => {
     let active = true;
     fetch("/api/cms/public/products?slug=" + encodeURIComponent(fallbackProduct.slug), { cache: "no-store" })
       .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (active && data?.ok && data.product) setProduct(data.product); })
-      .catch(() => {});
+      .then((data) => {
+        if (!active) return;
+        if (data?.ok && data.product) setProduct(data.product);
+        else if (!fallbackProduct.name) setMissing(true);
+      })
+      .catch(() => { if (active && !fallbackProduct.name) setMissing(true); })
+      .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [fallbackProduct.slug]);
+  if (loading) return <section className="page-section container center"><p>Loading product…</p></section>;
+  if (missing) return <NotFound navigate={navigate} />;
   return <ProductDetails product={product} navigate={navigate} />;
 }
 
