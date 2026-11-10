@@ -16,6 +16,7 @@ import ServiceRequest from "./pages/ServiceRequest";
 import TrackRequest from "./pages/TrackRequest";
 import AdminDashboard from "./pages/AdminDashboard";
 import CMSDashboard from "./pages/CMSDashboard";
+import CMSPagePreview from "./pages/CMSPagePreview";
 import { services } from "./data/services";
 import { products } from "./data/products";
 import "./style.css";
@@ -32,6 +33,7 @@ const pageTitles = {
   "/track-request": "Track a Request | YR Proservice",
   "/admin": "Request Dashboard | YR Proservice",
   "/admin/cms": "Visual CMS | YR Proservice",
+  "/admin/cms/preview": "CMS Draft Preview | YR Proservice",
 };
 
 function Router() {
@@ -74,6 +76,7 @@ function Router() {
     "/track-request": <TrackRequest navigate={navigate} />,
     "/admin": <AdminDashboard />,
     "/admin/cms": <CMSDashboard />,
+    "/admin/cms/preview": <CMSPagePreview />,
   };
 
   const serviceMatch = path.match(/^\/services\/([^/]+)$/);
