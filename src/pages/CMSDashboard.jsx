@@ -185,7 +185,7 @@ export default function CMSDashboard() {
         <header className="cms-admin-header">
           <div><p className="eyebrow">YR Proservice · Content Management</p><h1>Visual Website Editor</h1>
             <p>Edit page sections in the preview and manage their content in the inspector. Changes remain drafts until published.</p></div>
-          <a className="admin-public-link" href="/admin">← Request Dashboard</a>
+          <div className="cms-header-links"><a className="admin-public-link" href="/admin/cms/manage">Management Centre →</a><a className="admin-public-link" href="/admin">← Request Dashboard</a></div>
         </header>
         {error && <p className="admin-alert admin-alert-error" role="alert">{error}</p>}
         {notice && <p className="admin-alert admin-alert-success" role="status">{notice}</p>}
