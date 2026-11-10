@@ -104,8 +104,8 @@ export async function onRequestPost(context) {
       await env.DB.batch([
         env.DB.prepare("UPDATE cms_page_versions SET content_json = ?, change_note = ?, created_by = ?, created_at = ? WHERE id = ? AND state = 'draft'")
           .bind(content, clean(body.changeNote, 240) || "Updated draft", actor, now, draft.id),
-        env.DB.prepare("UPDATE cms_pages SET title = ?, updated_at = ? WHERE id = ?")
-          .bind(title, now, page.id),
+        env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ?")
+          .bind(title, route, now, page.id),
         env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'update_draft', 'page', ?, ?)")
           .bind(crypto.randomUUID(), actor, page.id, JSON.stringify({ version: draft.version_number }))
       ]);
