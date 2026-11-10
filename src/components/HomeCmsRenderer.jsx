@@ -18,7 +18,7 @@ function HomeCmsSection({ section, navigate }) {
         <div className="bp-hero-overlay" /><div className="bp-hero-lines" aria-hidden="true" />
         <div className="container bp-hero-content"><div className="bp-hero-copy">
           <p className="bp-eyebrow bp-eyebrow-light">{c.eyebrow}</p>
-          <h1>{c.heading}</h1><p>{c.description}</p>
+          <h1>{c.heading}{c.headingHighlight && <><br /><span>{c.headingHighlight}</span></>}</h1><p>{c.description}</p>
           <div className="bp-actions">
             <CmsLink to={c.buttonUrl || "/products"} navigate={navigate} className="bp-btn bp-btn-primary">{c.buttonText || "Explore Products"} <b>→</b></CmsLink>
             {c.secondaryButtonText && <CmsLink to={c.secondaryButtonUrl || "/services"} navigate={navigate} className="bp-btn bp-btn-outline">{c.secondaryButtonText}</CmsLink>}
