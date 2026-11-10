@@ -142,9 +142,10 @@ export default function AdminDashboard() {
               reflect the current filters.
             </p>
           </div>
-          <a className="admin-public-link" href="/">
-            View public website ↗
-          </a>
+          <div className="admin-header-actions">
+            <a className="admin-public-link" href="/admin/cms">Open Visual CMS ↗</a>
+            <a className="admin-public-link" href="/">View public website ↗</a>
+          </div>
         </header>
 
         {error && (
