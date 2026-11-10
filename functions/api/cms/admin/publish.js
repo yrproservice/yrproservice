@@ -22,15 +22,19 @@ export async function onRequestPost(context) {
   const entityType = clean(body.entityType || "page", 20);
   const entityKey = clean(body.entityKey || body.pageKey, 100);
   const versionId = clean(body.versionId, 80);
-  if (!["page", "product"].includes(entityType)) return adminJson({ error: "Unsupported CMS entity type." }, 400);
+  if (!["page", "product", "setting"].includes(entityType)) return adminJson({ error: "Unsupported CMS entity type." }, 400);
   if (!entityKey || !versionId) return adminJson({ error: "Entity key and version ID are required." }, 400);
 
   const config = entityType === "page"
     ? { table: "cms_pages", keyColumn: "page_key", versions: "cms_page_versions", foreignKey: "page_id", label: "page" }
-    : { table: "cms_products", keyColumn: "product_slug", versions: "cms_product_versions", foreignKey: "product_id", label: "product" };
+    : entityType === "product"
+      ? { table: "cms_products", keyColumn: "product_slug", versions: "cms_product_versions", foreignKey: "product_id", label: "product" }
+      : { table: "cms_site_settings", keyColumn: "setting_key", versions: "cms_site_setting_versions", foreignKey: "setting_key", label: "setting" };
 
   try {
-    const entity = await env.DB.prepare(`SELECT id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first();
+    const entity = entityType === "setting"
+      ? await env.DB.prepare(`SELECT setting_key AS id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first()
+      : await env.DB.prepare(`SELECT id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first();
     if (!entity) return adminJson({ error: `CMS ${config.label} not found.` }, 404);
     const target = await env.DB.prepare(`SELECT id, version_number, state FROM ${config.versions} WHERE id = ? AND ${config.foreignKey} = ? LIMIT 1`)
       .bind(versionId, entity.id).first();
@@ -46,8 +50,9 @@ export async function onRequestPost(context) {
     }
     batch.push(env.DB.prepare(`UPDATE ${config.versions} SET state = 'published', published_at = ? WHERE id = ? AND ${config.foreignKey} = ?`)
       .bind(now, versionId, entity.id));
-    batch.push(env.DB.prepare(`UPDATE ${config.table} SET published_version_id = ?, updated_at = ? WHERE id = ?`)
-      .bind(versionId, now, entity.id));
+    batch.push(entityType === "setting"
+      ? env.DB.prepare(`UPDATE ${config.table} SET published_version_id = ?, updated_at = ? WHERE setting_key = ?`).bind(versionId, now, entity.id)
+      : env.DB.prepare(`UPDATE ${config.table} SET published_version_id = ?, updated_at = ? WHERE id = ?`).bind(versionId, now, entity.id));
     batch.push(env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'publish', ?, ?, ?)")
       .bind(crypto.randomUUID(), auth.email || null, entityType, entity.id, JSON.stringify({ version: target.version_number })));
     await env.DB.batch(batch);
