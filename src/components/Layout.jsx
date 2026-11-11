@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useCart } from "./CartContext";
 import { useChairRequests } from "./ChairRequestContext";
-import { services } from "../data/services";
+import { services as fallbackServices } from "../data/services";
+import { getServicesCmsContent } from "../data/servicesCmsTemplate";
 
 export function Link({ to, children, className = "", navigate, onClick }) {
   return (
@@ -21,7 +22,7 @@ export function Link({ to, children, className = "", navigate, onClick }) {
   );
 }
 
-function ServicesMenu({ navigate, path }) {
+function ServicesMenu({ navigate, path, services }) {
   const [open, setOpen] = useState(false);
   return (
     <div
@@ -49,7 +50,7 @@ function ServicesMenu({ navigate, path }) {
           </span>
         </Link>
         <div className="nav-dropdown-list">
-          {services.map((service) => (
+          {serviceItems.map((service) => (
             <Link
               key={service.slug}
               to={`/services/${service.slug}`}
@@ -71,6 +72,19 @@ export function SiteHeader({ path, navigate }) {
   const { count: chairCount } = useChairRequests();
   const requestCount = cartCount + chairCount;
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [serviceItems, setServiceItems] = useState(fallbackServices);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/pages?key=services", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => {
+        if (!active || !result?.ok) return;
+        const page = getServicesCmsContent(result.page?.content);
+        if (page?.listing?.items?.length) setServiceItems(page.listing.items);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
   const closeMobile = () => setMobileOpen(false);
 
   return (
@@ -96,7 +110,7 @@ export function SiteHeader({ path, navigate }) {
           >
             Products
           </Link>
-          <ServicesMenu navigate={navigate} path={path} />
+          <ServicesMenu navigate={navigate} path={path} services={serviceItems} />
           <Link
             to="/team"
             navigate={navigate}
