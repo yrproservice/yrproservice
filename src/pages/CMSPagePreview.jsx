@@ -3,6 +3,8 @@ import HomeCmsRenderer from "../components/HomeCmsRenderer";
 import GenericCmsRenderer from "../components/GenericCmsRenderer";
 import ServicesCmsRenderer from "../components/ServicesCmsRenderer";
 import ServiceCmsDraftPreview from "../components/ServiceCmsDraftPreview";
+import TeamCmsRenderer from "../components/TeamCmsRenderer";
+import { getTeamCmsContent } from "../data/teamCmsTemplate";
 import { getServicesCmsContent } from "../data/servicesCmsTemplate";
 
 export default function CMSPagePreview() {
@@ -64,6 +66,7 @@ export default function CMSPagePreview() {
       {loading ? <div className="cms-full-preview-message">Loading saved draft…</div>
         : error ? <div className="cms-full-preview-message">{error}</div>
         : content ? pageKey === "home" ? <HomeCmsRenderer content={content} navigate={navigatePreview} />
+          : pageKey === "team" ? <TeamCmsRenderer content={getTeamCmsContent(content)} navigate={navigatePreview} />
           : pageKey === "services" ? (
             <>
               <nav className="cms-service-preview-nav" aria-label="Draft service preview navigation">
