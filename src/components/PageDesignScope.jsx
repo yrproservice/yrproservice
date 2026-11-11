@@ -45,7 +45,7 @@ export default function PageDesignScope({ pageKey, designOverride, children }) {
     () => mergePageDesign(designOverride || publishedDesign),
     [designOverride, publishedDesign]
   );
-  if (!pageKey) return children;
+  if (!pageKey || (!designOverride && !publishedDesign)) return children;
 
   const style = {
     "--page-design-bg": design.backgroundColor,
@@ -67,7 +67,7 @@ export default function PageDesignScope({ pageKey, designOverride, children }) {
       ? "0 16px 38px rgba(15, 42, 68, 0.12)"
       : design.cardStyle === "bordered"
         ? "none"
-        : "0 8px 24px rgba(15, 42, 68, 0.07)"
+        : design.cardStyle === "flat" ? "none" : "0 8px 24px rgba(15, 42, 68, 0.07)"
   };
 
   return (
