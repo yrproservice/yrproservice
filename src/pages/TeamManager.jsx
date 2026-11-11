@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { teamCmsTemplate } from "../data/teamCmsTemplate";
+import { SECTION_LABELS } from "../components/TeamCmsRenderer";
 
 async function request(url, options = {}) {
   const response = await fetch(url, {
@@ -56,7 +57,11 @@ export default function TeamManager() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const data = content.sections[0].content;
+  const dragIndex = React.useRef(null);
+  const teamSection = content.sections.find((section) => section.type === "team-page");
+  const data = teamSection.content;
+  const design = teamSection.design || {};
+  const sectionOrder = content.sectionOrder || ["hero", "story", "process", "capabilities", "people", "cta"];
 
   useEffect(() => {
     let active = true;
@@ -98,6 +103,48 @@ export default function TeamManager() {
         return { ...section, content: { ...section.content, [group]: { ...section.content[group], [arrayKey]: items } } };
       })
     }));
+  }
+
+  function updateGlobalDesign(field, value) {
+    setContent((current) => ({
+      ...current,
+      sections: current.sections.map((section) => section.type !== "team-page" ? section : {
+        ...section,
+        design: { ...(section.design || {}), global: { ...(section.design?.global || {}), [field]: value } }
+      })
+    }));
+  }
+
+  function updateSectionDesign(sectionKey, field, value) {
+    setContent((current) => ({
+      ...current,
+      sections: current.sections.map((section) => section.type !== "team-page" ? section : {
+        ...section,
+        design: {
+          ...(section.design || {}),
+          sections: {
+            ...(section.design?.sections || {}),
+            [sectionKey]: { ...(section.design?.sections?.[sectionKey] || {}), [field]: value }
+          }
+        }
+      })
+    }));
+  }
+
+  function moveSection(from, to) {
+    setContent((current) => {
+      const order = [...(current.sectionOrder || ["hero", "story", "process", "capabilities", "people", "cta"])];
+      if (to < 0 || to >= order.length || from === to) return current;
+      const [moved] = order.splice(from, 1);
+      order.splice(to, 0, moved);
+      return { ...current, sectionOrder: order };
+    });
+  }
+
+  function handleSectionDrop(targetIndex) {
+    if (dragIndex.current === null) return;
+    moveSection(dragIndex.current, targetIndex);
+    dragIndex.current = null;
   }
 
   async function saveDraft() {
@@ -149,6 +196,9 @@ export default function TeamManager() {
           <Field label="Highlighted heading text" value={data.hero.highlight} onChange={(v) => update("hero", "highlight", v)} />
           <Field label="Lead text" value={data.hero.lead} onChange={(v) => update("hero", "lead", v)} multiline rows={3} />
           <Field label="Image alt text" value={data.hero.imageAlt} onChange={(v) => update("hero", "imageAlt", v)} />
+          <label className="cms-services-field"><span>Banner layout</span><select value={data.hero.layout || "split-right"} onChange={(e) => update("hero", "layout", e.target.value)}><option value="split-right">Text left · image right</option><option value="split-left">Image left · text right</option><option value="balanced">Equal columns</option><option value="stacked">Text above · image below</option></select></label>
+          <label className="cms-services-field"><span>Banner image position · {data.hero.imagePosition || "center"}</span><select value={data.hero.imagePosition || "center"} onChange={(e) => update("hero", "imagePosition", e.target.value)}><option value="center">Centre</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="50% 35%">50% · 35%</option></select></label>
+          <label className="cms-services-field"><span>Banner image height · {data.hero.imageHeight || 430}px</span><input type="range" min="300" max="600" step="10" value={data.hero.imageHeight || 430} onChange={(e) => update("hero", "imageHeight", Number(e.target.value))} /></label>
           <Field label="Image overlay label" value={data.hero.imageLabel} onChange={(v) => update("hero", "imageLabel", v)} />
           <Field label="Image overlay sub-label" value={data.hero.imageSubLabel} onChange={(v) => update("hero", "imageSubLabel", v)} />
           <MediaPicker media={media} label="Hero image" value={data.hero.imageUrl} onSelect={(v) => update("hero", "imageUrl", v)} />
