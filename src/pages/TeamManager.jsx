@@ -88,14 +88,14 @@ export default function TeamManager() {
     }));
   }
 
-  function updateItem(group, index, field, value) {
+  function updateItem(group, index, field, value, arrayKey = "items") {
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => {
         if (section.type !== "team-page") return section;
-        const items = [...(section.content[group].items || [])];
+        const items = [...(section.content[group][arrayKey] || [])];
         items[index] = { ...items[index], [field]: value };
-        return { ...section, content: { ...section.content, [group]: { ...section.content[group], items } } };
+        return { ...section, content: { ...section.content, [group]: { ...section.content[group], [arrayKey]: items } } };
       })
     }));
   }
@@ -157,8 +157,8 @@ export default function TeamManager() {
           <div className="cms-services-step" key={index}>
             <strong>Hero highlight {index + 1}</strong>
             <div className="cms-services-fields">
-              <Field label="Number" value={item.number} onChange={(v) => updateItem("hero", index, "number", v)} />
-              <Field label="Label" value={item.label} onChange={(v) => updateItem("hero", index, "label", v)} />
+              <Field label="Number" value={item.number} onChange={(v) => updateItem("hero", index, "number", v, "meta")} />
+              <Field label="Label" value={item.label} onChange={(v) => updateItem("hero", index, "label", v, "meta")} />
             </div>
           </div>
         ))}
