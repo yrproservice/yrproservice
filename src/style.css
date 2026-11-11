@@ -4416,3 +4416,28 @@ h6 {
 .page-design-scope[data-card-style="elevated"] :is(.bp-catalog-card,.spotlight-card,.bp-detail-photo-frame,.bp-detail-commercial > div,.bp-cart-row,.service-request-card,.track-request-form,.bp-quote form,.track-result) {
   box-shadow: 0 16px 38px rgba(15,42,68,.12);
 }
+
+
+/* Shared site chrome design controls */
+.page-design-scope[data-page-design="site-chrome"] .site-header {
+  background: var(--page-design-surface);
+  color: var(--page-design-text);
+  border-bottom-color: var(--page-design-border);
+}
+.page-design-scope[data-page-design="site-chrome"] .site-header :is(.desktop-nav a,.nav-dropdown-trigger,.cart-link,.mobile-nav a) {
+  color: var(--page-design-text);
+}
+.page-design-scope[data-page-design="site-chrome"] .site-header :is(.desktop-nav a.active,.nav-dropdown-trigger.active) {
+  color: var(--page-design-primary);
+}
+.page-design-scope[data-page-design="site-chrome"] .site-footer {
+  background: var(--page-design-bg);
+  color: var(--page-design-text);
+  border-top: 1px solid var(--page-design-border);
+}
+.page-design-scope[data-page-design="site-chrome"] .site-footer :is(h3,h4) {
+  color: var(--page-design-heading);
+}
+.page-design-scope[data-page-design="site-chrome"] .site-footer a {
+  color: var(--page-design-primary);
+}
