@@ -4038,3 +4038,16 @@ h6 {
     flex: 0 0 auto;
   }
 }
+
+
+/* Team CMS manager: role-based content controls and safe Preview media selection */
+.cms-team-manager{min-width:0}
+.cms-team-guidance{margin:0 16px 12px;padding:12px 14px;border:1px solid #cfe3f2;border-radius:7px;background:#f3f9fd;color:#35546b;font-size:12px;line-height:1.6}
+.cms-team-media{grid-column:1/-1;display:grid;gap:10px;padding:0 16px 16px}
+.cms-team-media>strong{color:#344456;font-size:12px}
+.cms-team-media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:10px;max-height:300px;overflow:auto}
+.cms-team-media-grid button{display:grid;gap:6px;min-width:0;padding:7px;border:1px solid #d9e3eb;border-radius:7px;background:#fff;color:#344456;text-align:left;cursor:pointer}
+.cms-team-media-grid button.selected{border-color:#1e7ed8;background:#eaf6fd}
+.cms-team-media-grid img{width:100%;height:82px;object-fit:contain;background:#f5f7fa}
+.cms-team-media-grid span{font-size:10px;overflow-wrap:anywhere}
+@media(max-width:700px){.cms-team-media{padding:0 12px 12px}}
