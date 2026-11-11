@@ -62,6 +62,8 @@ export function getServicesCmsContent(content) {
     intro: { ...base.intro, ...(incoming.intro || {}) },
     listing: { ...base.listing, ...(incoming.listing || {}), items },
     process: { ...base.process, ...(incoming.process || {}), steps },
-    cta: { ...base.cta, ...(incoming.cta || {}) }
+    cta: { ...base.cta, ...(incoming.cta || {}) },
+    design: content?.design || {},
+    sectionOrder: Array.isArray(content?.sectionOrder) ? content.sectionOrder : ["hero", "intro", "listing", "process", "cta"]
   };
 }
