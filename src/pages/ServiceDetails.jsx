@@ -1,7 +1,26 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { services as fallbackServices } from "../data/services";
+import { getServicesCmsContent } from "../data/servicesCmsTemplate";
 import { Link } from "../components/Layout";
 
-export default function ServiceDetails({ service, navigate }) {
+export default function ServiceDetails({ service: fallbackService, navigate }) {
+  const [service, setService] = useState(fallbackService || null);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/pages?key=services", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => {
+        if (!active || !result?.ok) return;
+        const page = getServicesCmsContent(result.page?.content);
+        const current = page?.listing?.items?.find((item) => item.slug === fallbackService?.slug);
+        if (current) setService(current);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [fallbackService?.slug]);
+  useEffect(() => {
+    if (service?.title) document.title = `${service.title} | YR Proservice`;
+  }, [service?.title]);
   if (!service) return null;
   return (
     <section className="service-detail-page">
