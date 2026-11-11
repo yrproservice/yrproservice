@@ -13,9 +13,9 @@ function sectionStyle(design, key) {
   const value = design?.sections?.[key] || {};
   return {
     backgroundColor: value.backgroundColor || undefined,
-    color: value.textColor || undefined,
     textAlign: value.textAlign || undefined,
-    "--team-section-accent": value.accentColor || undefined
+    ...(value.textColor ? { "--team-section-text": value.textColor } : {}),
+    ...(value.accentColor ? { "--team-section-accent": value.accentColor } : {})
   };
 }
 
