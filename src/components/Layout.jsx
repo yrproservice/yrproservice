@@ -50,7 +50,7 @@ function ServicesMenu({ navigate, path, services }) {
           </span>
         </Link>
         <div className="nav-dropdown-list">
-          {serviceItems.map((service) => (
+          {services.map((service) => (
             <Link
               key={service.slug}
               to={`/services/${service.slug}`}
@@ -149,7 +149,7 @@ export function SiteHeader({ path, navigate }) {
             </Link>
             <div className="mobile-nav-group">
               <span>Services</span>
-              {services.map((service) => (
+              {serviceItems.map((service) => (
                 <Link
                   key={service.slug}
                   to={`/services/${service.slug}`}
