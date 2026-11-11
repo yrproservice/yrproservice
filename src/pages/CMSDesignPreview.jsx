@@ -11,10 +11,12 @@ import DentalChairRequest from "./DentalChairRequest";
 import Quote from "./Quote";
 import ServiceRequest from "./ServiceRequest";
 import TrackRequest from "./TrackRequest";
+import { SiteHeader, SiteFooter } from "../components/Layout";
 import { products } from "../data/products";
 import { services } from "../data/services";
 
 const PAGE_LABELS = {
+  "site-chrome": "Shared header and footer",
   home: "Home",
   products: "Products listing",
   "product-detail": "Product details",
@@ -67,6 +69,7 @@ export default function CMSDesignPreview() {
 
   let page = null;
   switch (pageKey) {
+    case "site-chrome": page = <><SiteHeader path="/" navigate={navigatePreview} /><Home navigate={navigatePreview} /><SiteFooter navigate={navigatePreview} /></>; break;
     case "home": page = <Home navigate={navigatePreview} />; break;
     case "products": page = <Products navigate={navigatePreview} />; break;
     case "product-detail": page = <ProductDetails product={products[0]} navigate={navigatePreview} />; break;
