@@ -52,8 +52,7 @@ export default function CMSDesignPreview() {
         const result = await response.json().catch(() => ({}));
         if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load the saved design.");
         const row = (result.settings || []).find((item) => item.setting_key === key);
-        if (!row) throw new Error("No saved design exists for this page yet.");
-        const value = row.draft_value || row.published_value || "{}";
+        const value = row?.draft_value || row?.published_value || "{}";
         return { selectedPage, value: typeof value === "string" ? JSON.parse(value) : value };
       })
       .then((result) => {
