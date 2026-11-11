@@ -18,6 +18,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import CMSDashboard from "./pages/CMSDashboard";
 import CMSPagePreview from "./pages/CMSPagePreview";
 import CMSManagement from "./pages/CMSManagement";
+import CMSDesignPreview from "./pages/CMSDesignPreview";
+import PageDesignScope from "./components/PageDesignScope";
 import { services } from "./data/services";
 import { products } from "./data/products";
 import "./style.css";
@@ -36,6 +38,7 @@ const pageTitles = {
   "/admin/cms": "Visual CMS | YR Proservice",
   "/admin/cms/preview": "CMS Draft Preview | YR Proservice",
   "/admin/cms/manage": "CMS Management Centre | YR Proservice",
+  "/admin/cms/design-preview": "CMS Visual Design Preview | YR Proservice",
 };
 
 function Router() {
@@ -80,6 +83,7 @@ function Router() {
     "/admin/cms": <CMSDashboard />,
     "/admin/cms/preview": <CMSPagePreview />,
     "/admin/cms/manage": <CMSManagement />,
+    "/admin/cms/design-preview": <CMSDesignPreview />,
   };
 
   const serviceMatch = path.match(/^\/services\/([^/]+)$/);
@@ -92,20 +96,34 @@ function Router() {
     ? products.find((product) => product.slug === productMatch[1]) || { slug: productMatch[1] }
     : null;
   const isAdminRoute = path.startsWith("/admin");
+  const pageDesignKey = path === "/" ? "home"
+    : path === "/products" ? "products"
+    : path.match(/^\/products\/[^/]+$/) ? "product-detail"
+    : path === "/services" ? "services"
+    : path.match(/^\/services\/[^/]+$/) ? "service-detail"
+    : path === "/team" ? "team"
+    : path === "/cart" ? "cart"
+    : path === "/dental-chair-request" ? "dental-chair-request"
+    : path === "/quote" ? "quote"
+    : path === "/service-request" ? "service-request"
+    : path === "/track-request" ? "track-request" : "";
+  const routeContent = routes[path] ||
+    (servicePage ? (
+      <ServiceDetails service={servicePage} navigate={navigate} />
+    ) : productPage ? (
+      <ProductRoute product={productPage} navigate={navigate} />
+    ) : (
+      <NotFound navigate={navigate} />
+    ));
 
   return (
     <>
       {!isAdminRoute && <SiteHeader path={path} navigate={navigate} />}
       <main>
         <div key={path} className={isAdminRoute ? "" : "page-transition"}>
-          {routes[path] ||
-            (servicePage ? (
-              <ServiceDetails service={servicePage} navigate={navigate} />
-            ) : productPage ? (
-              <ProductRoute product={productPage} navigate={navigate} />
-            ) : (
-              <NotFound navigate={navigate} />
-            ))}
+          {isAdminRoute || !pageDesignKey ? routeContent : (
+            <PageDesignScope pageKey={pageDesignKey}>{routeContent}</PageDesignScope>
+          )}
         </div>
       </main>
       {!isAdminRoute && <SiteFooter navigate={navigate} />}
