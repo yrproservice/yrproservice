@@ -4279,3 +4279,115 @@ h6 {
   .home-cms-services[data-layout="split-left"] .bp-services-banner,
   .home-cms-services[data-layout="balanced"] .bp-services-banner { grid-template-columns: 1fr; }
 }
+
+
+/* Shared page-level Visual Design Studio */
+.page-design-scope {
+  min-height: 1px;
+  color: var(--page-design-text);
+  background-color: var(--page-design-bg);
+  font-family: var(--page-design-body-font), sans-serif;
+  font-size: var(--page-design-body-size);
+}
+.page-design-scope :is(h1,h2,h3,h4,h5,h6) {
+  color: var(--page-design-heading) !important;
+  font-family: var(--page-design-heading-font), sans-serif !important;
+}
+.page-design-scope h1 { font-size: calc(3rem * var(--page-design-heading-scale)) !important; }
+.page-design-scope h2 { font-size: calc(2rem * var(--page-design-heading-scale)) !important; }
+.page-design-scope h3 { font-size: calc(1.5rem * var(--page-design-heading-scale)) !important; }
+.page-design-scope h4 { font-size: calc(1.25rem * var(--page-design-heading-scale)) !important; }
+.page-design-scope :is(p,li,label,input,textarea,select) {
+  font-family: var(--page-design-body-font), sans-serif;
+}
+.page-design-scope .container {
+  max-width: min(var(--page-design-content-width), calc(100% - 40px));
+}
+.page-design-scope :is(.bp-home,.bp-products,.bp-detail,.bp-cart,.bp-quote,.request-centre,.service-detail-page,.service-request-page,.track-request-page,.services-cms-page) {
+  background-color: var(--page-design-bg);
+  color: var(--page-design-text);
+}
+.page-design-scope :is(.bp-eyebrow,.eyebrow,.service-detail-number) {
+  color: var(--page-design-primary) !important;
+}
+.page-design-scope :is(.bp-btn-primary,.bp-card-action-primary,.button:not(.secondary),.admin-public-link) {
+  border-radius: var(--page-design-button-radius);
+}
+.page-design-scope :is(.bp-btn-primary,.bp-card-action-primary,.button:not(.secondary)) {
+  background-color: var(--page-design-primary);
+  border-color: var(--page-design-primary);
+}
+.page-design-scope :is(.bp-btn-outline,.bp-btn-outline-blue,.button.secondary) {
+  border-radius: var(--page-design-button-radius);
+}
+.page-design-scope :is(.bp-catalog-card,.spotlight-card,.bp-detail-photo-frame,.bp-detail-commercial > div,.bp-cart-row,.service-request-card,.track-request-form,.bp-quote form,.request-form-card,.track-result) {
+  border-radius: var(--page-design-card-radius);
+  border-color: var(--page-design-border);
+  background-color: var(--page-design-surface);
+  box-shadow: var(--page-design-card-shadow);
+}
+.page-design-scope :is(.bp-catalog-image img,.bp-detail-photo-frame img,.bp-thumb-row img,.spotlight-card img,.services-cms-page img,.service-detail-page img) {
+  object-fit: var(--page-design-image-fit, contain);
+}
+.page-design-scope[data-image-fit="contain"] :is(.bp-catalog-image img,.bp-detail-photo-frame img,.bp-thumb-row img) {
+  object-fit: contain;
+}
+.page-design-scope[data-image-fit="cover"] :is(.bp-catalog-image img,.bp-detail-photo-frame img,.bp-thumb-row img) {
+  object-fit: cover;
+}
+.page-design-scope[data-heading-align="center"] :is(.bp-page-heading,.request-heading,.track-request-intro,.products-showroom-hero .products-hero-copy,.service-detail-grid > div:first-child) {
+  text-align: center;
+}
+.page-design-scope[data-card-columns="2"] .bp-catalog-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+.page-design-scope[data-card-columns="3"] .bp-catalog-grid { grid-template-columns: repeat(3,minmax(0,1fr)) !important; }
+.page-design-scope[data-card-columns="4"] .bp-catalog-grid { grid-template-columns: repeat(4,minmax(0,1fr)) !important; }
+.page-design-scope[data-hero-layout="centered"][data-page-design="products"] .products-showroom-hero .products-hero-copy { text-align: center; margin-inline: auto; }
+.page-design-scope[data-hero-layout="compact"][data-page-design="products"] .products-showroom-hero { min-height: 300px; }
+.page-design-scope[data-hero-layout="split"][data-page-design="product-detail"] .bp-detail-main { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+.page-design-scope[data-hero-layout="centered"][data-page-design="service-detail"] .service-detail-grid { text-align: center; justify-items: center; }
+.page-design-scope[data-hero-layout="compact"][data-page-design="service-detail"] .service-detail-hero { padding-block: 44px; }
+.page-design-scope[data-card-style="bordered"] :is(.bp-catalog-card,.spotlight-card,.bp-detail-photo-frame,.bp-detail-commercial > div,.bp-cart-row,.service-request-card,.track-request-form,.bp-quote form,.track-result) {
+  border: 1px solid var(--page-design-border);
+  box-shadow: none;
+}
+.page-design-scope[data-card-style="flat"] :is(.bp-catalog-card,.spotlight-card,.bp-detail-photo-frame,.bp-detail-commercial > div,.bp-cart-row,.service-request-card,.track-request-form,.bp-quote form,.track-result) {
+  box-shadow: none;
+  border-color: transparent;
+}
+@media (max-width: 760px) {
+  .page-design-scope h1 { font-size: calc(2.25rem * var(--page-design-heading-scale)) !important; }
+  .page-design-scope h2 { font-size: calc(1.75rem * var(--page-design-heading-scale)) !important; }
+  .page-design-scope[data-card-columns="3"] .bp-catalog-grid,
+  .page-design-scope[data-card-columns="4"] .bp-catalog-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+  .page-design-scope[data-card-columns="2"] .bp-catalog-grid { grid-template-columns: 1fr !important; }
+}
+
+/* Website-wide Visual Design Studio controls */
+.page-visual-manager { display: grid; gap: 18px; }
+.page-visual-manager-header h2 { margin: 4px 0 8px; }
+.page-visual-manager-header p { max-width: 850px; color: #687280; }
+.page-visual-manager-toolbar { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; padding: 16px; border: 1px solid #dbe5ee; border-radius: 14px; background: #f7fbfe; }
+.page-visual-manager-toolbar > label { display: grid; gap: 7px; min-width: min(100%, 300px); font-weight: 700; }
+.page-visual-manager-toolbar select,.page-visual-panel select { min-height: 42px; padding: 8px 10px; border: 1px solid #cbd8e3; border-radius: 8px; background: white; color: #1f2937; }
+.page-visual-manager-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.page-visual-manager-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.page-visual-panel { min-width: 0; padding: 18px; border: 1px solid #dbe5ee; border-radius: 14px; background: #fff; }
+.page-visual-panel h3 { margin: 0 0 8px; color: #0b3158; }
+.page-visual-panel > p { margin: 0 0 14px; color: #687280; font-size: 13px; }
+.page-visual-colour-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.page-visual-colour-grid label { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 5px 10px; min-width: 0; padding: 10px; border: 1px solid #e4ebf1; border-radius: 10px; }
+.page-visual-colour-grid label span { font-size: 13px; font-weight: 650; }
+.page-visual-colour-grid input[type="color"] { width: 42px; height: 34px; padding: 2px; border: 1px solid #cbd8e3; border-radius: 6px; background: #fff; }
+.page-visual-colour-grid code { grid-column: 1 / -1; color: #687280; font-size: 11px; }
+.page-visual-control-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.page-visual-control-grid label { display: grid; align-content: start; gap: 7px; min-width: 0; color: #344255; font-size: 13px; font-weight: 650; }
+.page-visual-control-grid input[type="range"] { width: 100%; accent-color: #1e7ed8; }
+.page-visual-control-grid select { width: 100%; }
+.page-visual-manager-footnote { padding: 12px 14px; border-left: 3px solid #1e7ed8; background: #f3f8fc; color: #536273; font-size: 13px; }
+.cms-design-preview-content { min-height: 70vh; }
+.cms-design-preview-content :is(a,button,input,select,textarea) { pointer-events: none !important; }
+@media (max-width: 760px) {
+  .page-visual-manager-grid,.page-visual-colour-grid,.page-visual-control-grid { grid-template-columns: 1fr; }
+  .page-visual-manager-toolbar { align-items: stretch; }
+  .page-visual-manager-actions { display: grid; grid-template-columns: 1fr 1fr; }
+}
