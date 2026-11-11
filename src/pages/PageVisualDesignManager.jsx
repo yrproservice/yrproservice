@@ -39,8 +39,9 @@ function readValue(value) {
   catch { return {}; }
 }
 
-export default function PageVisualDesignManager() {
-  const [pageKey, setPageKey] = useState("products");
+export default function PageVisualDesignManager({ pageKey: initialPageKey = "products" }) {
+  const pageKey = initialPageKey;
+  const pageLabel = PAGE_OPTIONS.find(([id]) => id === pageKey)?.[1] || pageKey;
   const [design, setDesign] = useState(DEFAULTS);
   const [settings, setSettings] = useState([]);
   const [draftId, setDraftId] = useState("");
@@ -79,11 +80,11 @@ export default function PageVisualDesignManager() {
         if (!active) return;
         const rows = result.settings || [];
         setSettings(rows);
-        loadPage(pageKey, rows);
+        loadPage(initialPageKey, rows);
       })
       .catch((err) => { if (active) setError(err.message || "Unable to load page design settings."); });
     return () => { active = false; };
-  }, []);
+  }, [initialPageKey]);
 
   function update(field, value) {
     setDesign((current) => ({ ...current, [field]: value }));
@@ -156,8 +157,8 @@ export default function PageVisualDesignManager() {
       <header className="page-visual-manager-header">
         <div>
           <p className="eyebrow">YR Proservice · Visual CMS</p>
-          <h2>Website-wide Visual Design Studio</h2>
-          <p>Choose a page, adjust its visual system, save a draft and inspect the real page layout in Preview. Content, product data and form behaviour are kept separate from these design settings.</p>
+          <h2>{pageLabel} Visual Design Studio</h2>
+          <p>Adjust the appearance of this page independently. Its design draft is stored separately from every other page, without changing content, product data or form behaviour.</p>
         </div>
       </header>
 
@@ -165,16 +166,6 @@ export default function PageVisualDesignManager() {
       {notice && <p className="admin-alert admin-alert-success" role="status">{notice}</p>}
 
       <div className="page-visual-manager-toolbar">
-        <label>
-          Page to design
-          <select value={pageKey} onChange={(event) => {
-            const next = event.target.value;
-            setPageKey(next);
-            loadPage(next);
-          }}>
-            {PAGE_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-          </select>
-        </label>
         <div className="page-visual-manager-actions">
           <button type="button" className="admin-secondary-button" disabled={busy} onClick={resetControls}>Reset controls</button>
           <button type="button" className="admin-primary-button" disabled={busy} onClick={saveDraft}>Save design draft</button>
@@ -222,7 +213,7 @@ export default function PageVisualDesignManager() {
         </section>
       </div>
 
-      <p className="page-visual-manager-footnote">These settings are saved independently for each page template. Product details share one design configuration across all product models; service details share one configuration across all service entries. Saving creates a draft. Publishing here targets Preview only.</p>
+      <p className="page-visual-manager-footnote">This editor controls only the selected page template. Product detail styling applies to the shared product-detail template; service detail styling applies to the shared service-detail template. Saving creates a draft. Publishing here targets Preview only.</p>
     </section>
   );
 }
