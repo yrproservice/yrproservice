@@ -19,6 +19,7 @@ import CMSDashboard from "./pages/CMSDashboard";
 import CMSPagePreview from "./pages/CMSPagePreview";
 import CMSManagement from "./pages/CMSManagement";
 import CMSDesignPreview from "./pages/CMSDesignPreview";
+import CMSDesignReview from "./pages/CMSDesignReview";
 import PageDesignScope from "./components/PageDesignScope";
 import { services } from "./data/services";
 import { products } from "./data/products";
@@ -39,6 +40,7 @@ const pageTitles = {
   "/admin/cms/preview": "CMS Draft Preview | YR Proservice",
   "/admin/cms/manage": "CMS Management Centre | YR Proservice",
   "/admin/cms/design-preview": "CMS Visual Design Preview | YR Proservice",
+  "/admin/cms/design-review": "All Page Design Review | YR Proservice",
 };
 
 function Router() {
@@ -84,6 +86,7 @@ function Router() {
     "/admin/cms/preview": <CMSPagePreview />,
     "/admin/cms/manage": <CMSManagement />,
     "/admin/cms/design-preview": <CMSDesignPreview />,
+    "/admin/cms/design-review": <CMSDesignReview />,
   };
 
   const serviceMatch = path.match(/^\/services\/([^/]+)$/);
