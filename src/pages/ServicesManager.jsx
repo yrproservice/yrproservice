@@ -37,7 +37,11 @@ export default function ServicesManager() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const dragIndex = React.useRef(null);
   const data = content.sections[0].content;
+  const design = content.design || {};
+  const defaultSectionOrder = ["hero", "intro", "listing", "process", "cta"];
+  const sectionOrder = content.sectionOrder || defaultSectionOrder;
 
   useEffect(() => {
     let active = true;
@@ -97,6 +101,42 @@ export default function ServicesManager() {
     }));
   }
 
+  function updateGlobalDesign(field, value) {
+    setContent((current) => ({
+      ...current,
+      design: { ...(current.design || {}), global: { ...(current.design?.global || {}), [field]: value } }
+    }));
+  }
+
+  function updateSectionDesign(sectionKey, field, value) {
+    setContent((current) => ({
+      ...current,
+      design: {
+        ...(current.design || {}),
+        sections: {
+          ...(current.design?.sections || {}),
+          [sectionKey]: { ...(current.design?.sections?.[sectionKey] || {}), [field]: value }
+        }
+      }
+    }));
+  }
+
+  function moveSection(from, to) {
+    setContent((current) => {
+      const order = [...(current.sectionOrder || defaultSectionOrder)];
+      if (to < 0 || to >= order.length || from === to) return current;
+      const [moved] = order.splice(from, 1);
+      order.splice(to, 0, moved);
+      return { ...current, sectionOrder: order };
+    });
+  }
+
+  function handleSectionDrop(targetIndex) {
+    if (dragIndex.current === null) return;
+    moveSection(dragIndex.current, targetIndex);
+    dragIndex.current = null;
+  }
+
   async function saveDraft() {
     setBusy(true); setError(""); setNotice("");
     try {
@@ -138,6 +178,48 @@ export default function ServicesManager() {
         <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Services draft"}</button>
       </div>
 
+
+      <details className="cms-services-group cms-services-design-panel" open>
+        <summary>Visual design studio · typography, colours and layout</summary>
+        <p className="cms-team-guidance">These settings are saved with the Services draft only. The original Services content and five sections remain intact. Leave styling controls unchanged to preserve the current appearance.</p>
+        <div className="cms-team-design-subpanel">
+          <h3>Typography</h3>
+          <div className="cms-services-fields">
+            <label className="cms-services-field"><span>Heading font</span><select value={design.global?.headingFont || "Montserrat"} onChange={(e) => updateGlobalDesign("headingFont", e.target.value)}><option>Montserrat</option><option>Inter</option><option>Arial</option></select></label>
+            <label className="cms-services-field"><span>Body font</span><select value={design.global?.bodyFont || "Inter"} onChange={(e) => updateGlobalDesign("bodyFont", e.target.value)}><option>Inter</option><option>Montserrat</option><option>Arial</option></select></label>
+            <label className="cms-services-field"><span>Heading size scale · {Math.round(Number(design.global?.headingScale || 1) * 100)}%</span><input type="range" min="0.8" max="1.25" step="0.05" value={design.global?.headingScale || 1} onChange={(e) => updateGlobalDesign("headingScale", Number(e.target.value))} /></label>
+            <label className="cms-services-field"><span>Body text size · {design.global?.bodySize || 16}px</span><input type="range" min="13" max="20" step="1" value={design.global?.bodySize || 16} onChange={(e) => updateGlobalDesign("bodySize", Number(e.target.value))} /></label>
+          </div>
+        </div>
+        <div className="cms-team-design-subpanel">
+          <h3>Section arrangement</h3>
+          <p className="cms-team-guidance">Drag a section to reorder it, or use the arrows. The five existing sections are retained.</p>
+          <ol className="cms-team-order-list">
+            {sectionOrder.map((key, index) => <li key={key} draggable onDragStart={() => { dragIndex.current = index; }} onDragOver={(e) => e.preventDefault()} onDrop={() => handleSectionDrop(index)} onDragEnd={() => { dragIndex.current = null; }}>
+              <span className="cms-team-drag-handle" aria-hidden="true">⠿</span><strong>{index + 1}. {{ hero: "Hero banner", intro: "Introduction", listing: "Services list", process: "How we work", cta: "Call to action" }[key] || key}</strong>
+              <span className="cms-team-order-actions"><button type="button" aria-label={`Move ${key} up`} disabled={index === 0} onClick={() => moveSection(index, index - 1)}>↑</button><button type="button" aria-label={`Move ${key} down`} disabled={index === sectionOrder.length - 1} onClick={() => moveSection(index, index + 1)}>↓</button></span>
+            </li>)}
+          </ol>
+        </div>
+        <div className="cms-team-design-subpanel">
+          <h3>Section colours and alignment</h3>
+          <div className="cms-team-style-grid">
+            {sectionOrder.map((key) => {
+              const style = design.sections?.[key] || {};
+              const label = ({ hero: "Hero banner", intro: "Introduction", listing: "Services list", process: "How we work", cta: "Call to action" })[key] || key;
+              return <div className="cms-team-style-card" key={key}>
+                <strong>{label}</strong>
+                <label><span>Background</span><input aria-label={`${label} background colour`} type="color" value={style.backgroundColor || "#ffffff"} onChange={(e) => updateSectionDesign(key, "backgroundColor", e.target.value)} /></label>
+                <label><span>Text</span><input aria-label={`${label} text colour`} type="color" value={style.textColor || "#1f2937"} onChange={(e) => updateSectionDesign(key, "textColor", e.target.value)} /></label>
+                <label><span>Accent</span><input aria-label={`${label} accent colour`} type="color" value={style.accentColor || "#1e7ed8"} onChange={(e) => updateSectionDesign(key, "accentColor", e.target.value)} /></label>
+                <label><span>Text alignment</span><select value={style.textAlign || "left"} onChange={(e) => updateSectionDesign(key, "textAlign", e.target.value)}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></label>
+                <button type="button" className="admin-secondary-button" onClick={() => setContent((current) => ({ ...current, design: { ...(current.design || {}), sections: { ...(current.design?.sections || {}), [key]: {} } } }))}>Reset section styling</button>
+              </div>;
+            })}
+          </div>
+        </div>
+      </details>
+
       <details className="cms-services-group" open>
         <summary>1. Hero section</summary>
         <div className="cms-services-fields">
@@ -146,6 +228,9 @@ export default function ServicesManager() {
           <Field label="Lead text" value={data.hero.lead} onChange={(v) => update("hero", "lead", v)} multiline rows={4} />
           <Field label="Image URL" value={data.hero.imageUrl} onChange={(v) => update("hero", "imageUrl", v)} hint="Uses an existing website asset or a URL from the Preview Media Library." />
           <Field label="Image alt text" value={data.hero.imageAlt} onChange={(v) => update("hero", "imageAlt", v)} />
+          <label className="cms-services-field"><span>Banner layout</span><select value={data.hero.layout || "split-right"} onChange={(e) => update("hero", "layout", e.target.value)}><option value="split-right">Text left · image right</option><option value="split-left">Image left · text right</option><option value="balanced">Equal columns</option><option value="stacked">Text above · image below</option></select></label>
+          <label className="cms-services-field"><span>Banner image position · {data.hero.imagePosition || "center"}</span><select value={data.hero.imagePosition || "center"} onChange={(e) => update("hero", "imagePosition", e.target.value)}><option value="center">Centre</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="50% 35%">50% · 35%</option></select></label>
+          <label className="cms-services-field"><span>Banner image height · {data.hero.imageHeight || 430}px</span><input type="range" min="280" max="620" step="10" value={data.hero.imageHeight || 430} onChange={(e) => update("hero", "imageHeight", Number(e.target.value))} /></label>
           <Field label="Badge heading" value={data.hero.badgeTitle} onChange={(v) => update("hero", "badgeTitle", v)} />
           <Field label="Badge supporting text" value={data.hero.badgeText} onChange={(v) => update("hero", "badgeText", v)} />
           <div className="cms-services-media">
