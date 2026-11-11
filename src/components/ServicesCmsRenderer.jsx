@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "./Layout";
 import { getServicesCmsContent } from "../data/servicesCmsTemplate";
 
-export default function ServicesCmsRenderer({ content, navigate }) {
+export default function ServicesCmsRenderer({ content, navigate, previewMode = false }) {
   const page = getServicesCmsContent(content);
   if (!page) return null;
   const { hero, intro, listing, process, cta } = page;
@@ -52,7 +52,7 @@ export default function ServicesCmsRenderer({ content, navigate }) {
                 <h3>{service.title}</h3>
                 <p>{service.text}</p>
                 <ul>{(service.points || []).map((point, index) => <li key={index}>{point}</li>)}</ul>
-                <Link to={`/services/${service.slug}`} navigate={navigate} className="service-view-button">
+                <Link to={previewMode ? `/admin/cms/preview?key=services&service=${encodeURIComponent(service.slug)}` : `/services/${service.slug}`} navigate={navigate} className="service-view-button">
                   View Service <span>↗</span>
                 </Link>
               </article>
@@ -86,7 +86,7 @@ export default function ServicesCmsRenderer({ content, navigate }) {
               <p>{cta.body}</p>
             </div>
             <div className="services-cta-actions">
-              <Link to={cta.serviceUrl} navigate={navigate} className="button">{cta.serviceButton}</Link>
+              <Link to={previewMode ? "/admin/cms/preview?key=services&request=" : cta.serviceUrl} navigate={navigate} className="button">{cta.serviceButton}</Link>
               <Link to={cta.quoteUrl} navigate={navigate} className="button secondary">{cta.quoteButton}</Link>
             </div>
           </div>
