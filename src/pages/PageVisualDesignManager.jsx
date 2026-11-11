@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { mergePageDesign } from "../components/PageDesignScope";
 
 const PAGE_OPTIONS = [
+  ["site-chrome", "Shared header and footer"],
   ["home", "Home"],
   ["products", "Products listing"],
   ["product-detail", "Product details · all products"],
