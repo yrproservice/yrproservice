@@ -4148,3 +4148,58 @@ h6 {
   .team-cms-hero[data-layout="split-left"] .about-editorial-grid,
   .team-cms-hero[data-layout="balanced"] .about-editorial-grid { grid-template-columns: 1fr; }
 }
+
+
+/* Services Visual Design Studio: draft-only styling hooks, inactive until a setting is changed */
+.services-cms-page {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-family: var(--services-body-font, Inter), sans-serif;
+}
+.services-cms-order-item { display: block; width: 100%; min-width: 0; }
+.services-cms-section { min-width: 0; }
+.services-cms-page h1,
+.services-cms-page h2,
+.services-cms-page h3 { font-family: var(--services-heading-font, Montserrat), sans-serif; }
+.services-cms-page h1 { font-size: calc(48px * var(--services-heading-scale, 1)); }
+.services-cms-page h2 { font-size: calc(34px * var(--services-heading-scale, 1)); }
+.services-cms-page h3 { font-size: calc(20px * var(--services-heading-scale, 1)); }
+.services-cms-page p:not(.eyebrow) { font-size: var(--services-body-size, 16px); }
+.services-cms-section[style*="--services-section-text"] :is(h1,h2,h3,p,span,strong,b,li) {
+  color: var(--services-section-text) !important;
+}
+.services-cms-section[style*="--services-section-accent"] .eyebrow,
+.services-cms-section[style*="--services-section-accent"] .service-number,
+.services-cms-section[style*="--services-section-accent"] .process-step > span {
+  color: var(--services-section-accent) !important;
+}
+.services-cms-hero[data-layout="split-left"] .services-hero-grid { grid-template-columns: 1fr 1fr; }
+.services-cms-hero[data-layout="split-left"] .services-hero-visual { order: 0; }
+.services-cms-hero[data-layout="split-left"] .services-hero-copy { order: 1; }
+.services-cms-hero[data-layout="balanced"] .services-hero-grid { grid-template-columns: 1fr 1fr; }
+.services-cms-hero[data-layout="stacked"] .services-hero-grid { grid-template-columns: 1fr; gap: 24px; }
+.services-cms-hero[data-layout="stacked"] .services-hero-copy { order: 0; }
+.services-cms-hero[data-layout="stacked"] .services-hero-visual { order: 1; }
+.services-cms-hero .services-hero-visual img { max-width: 100%; object-fit: cover; }
+.cms-services-design-panel .cms-team-design-subpanel { padding: 16px; border-top: 1px solid #e2eaf0; }
+.cms-services-design-panel .cms-team-design-subpanel h3 { margin: 0 0 12px; color: #17324b; font-size: 14px; }
+.cms-services-design-panel .cms-team-design-subpanel > p { margin: 0 0 12px; }
+.cms-services-design-panel .cms-team-order-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.cms-services-design-panel .cms-team-order-list li { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 9px 11px; border: 1px solid #dce5ec; border-radius: 7px; background: #fff; cursor: grab; }
+.cms-services-design-panel .cms-team-order-list li:active { cursor: grabbing; }
+.cms-services-design-panel .cms-team-order-list li strong { flex: 1; color: #30465a; font-size: 12px; }
+.cms-services-design-panel .cms-team-style-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.cms-services-design-panel .cms-team-style-card { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 10px; min-width: 0; padding: 12px; border: 1px solid #dce5ec; border-radius: 7px; background: #fff; }
+.cms-services-design-panel .cms-team-style-card > strong { grid-column: 1/-1; color: #29435a; font-size: 12px; }
+.cms-services-design-panel .cms-team-style-card label { display: flex; align-items: center; justify-content: space-between; gap: 7px; color: #526477; font-size: 11px; }
+.cms-services-design-panel .cms-team-style-card input[type="color"] { width: 34px; height: 27px; padding: 2px; border: 1px solid #dce5ec; border-radius: 5px; background: #fff; cursor: pointer; }
+.cms-services-design-panel .cms-team-style-card select { max-width: 100px; padding: 5px; border: 1px solid #dce5ec; border-radius: 5px; color: #30465a; background: #fff; font-size: 11px; }
+.cms-services-design-panel .cms-team-style-card .admin-secondary-button { grid-column: 1/-1; justify-self: start; }
+.cms-services-manager input[type="range"] { width: 100%; accent-color: #1e7ed8; }
+.cms-services-design-panel select { max-width: 100%; }
+@media (max-width: 760px) {
+  .services-cms-hero[data-layout="split-left"] .services-hero-grid,
+  .services-cms-hero[data-layout="balanced"] .services-hero-grid { grid-template-columns: 1fr; }
+  .cms-services-design-panel .cms-team-style-grid { grid-template-columns: 1fr; }
+}
