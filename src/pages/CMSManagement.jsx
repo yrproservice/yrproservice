@@ -3,6 +3,7 @@ import { products as catalogue } from "../data/products";
 import ServicesManager from "./ServicesManager";
 import TeamManager from "./TeamManager";
 import PageVisualDesignManager from "./PageVisualDesignManager";
+import ProductFormEditor from "../components/ProductFormEditor";
 
 async function api(url, options = {}) {
   const response = await fetch(url, { ...options, headers: { Accept: "application/json", ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }), ...(options.headers || {}) }, cache: "no-store" });
@@ -14,25 +15,26 @@ const blankProduct = () => ({ slug:"", name:"", brand:"", brandLine:"", category
 
 export default function CMSManagement() {
   const [tab,setTab]=useState("products"), [items,setItems]=useState([]), [selected,setSelected]=useState(null), [json,setJson]=useState("{}"), [history,setHistory]=useState([]), [media,setMedia]=useState([]), [storageReady,setStorageReady]=useState(false), [settings,setSettings]=useState([]), [settingKey,setSettingKey]=useState("site.navigation"), [settingJson,setSettingJson]=useState('{"items":[]}'), [busy,setBusy]=useState(false), [notice,setNotice]=useState(""), [error,setError]=useState("");
+  const [editorSelection,setEditorSelection]=useState(0);
   const refreshProducts=useCallback(async()=>{const d=await api("/api/cms/admin/products");setItems(d.products||[]);},[]);
   const refreshMedia=useCallback(async()=>{const d=await api("/api/cms/admin/media");setMedia(d.media||[]);setStorageReady(Boolean(d.storageReady));},[]);
   const refreshSettings=useCallback(async()=>{const d=await api("/api/cms/admin/settings");setSettings(d.settings||[]);},[]);
   useEffect(()=>{refreshProducts().catch(e=>setError(e.message));refreshMedia().catch(e=>setError(e.message));refreshSettings().catch(e=>setError(e.message));},[refreshProducts,refreshMedia,refreshSettings]);
   function chooseProduct(row) {
     const data=row ? JSON.parse(row.draft_product||row.published_product||"{}") : blankProduct();
-    setSelected({slug:data.slug||"", draftId:row?.draft_id||"", version:row?.draft_version||null});setJson(JSON.stringify(data,null,2));setHistory([]);setError("");setNotice("");
+    setSelected({slug:data.slug||"", draftId:row?.draft_id||"", version:row?.draft_version||null, isNew:!row});setJson(JSON.stringify(data,null,2));setHistory([]);setError("");setNotice("");setEditorSelection((value)=>value+1);
   }
   async function saveProduct() {
     let product;try{product=JSON.parse(json);}catch{setError("Product data must be valid JSON.");return;}
     if(!product.slug||!product.name){setError("Product slug and name are required.");return;}
-    setBusy(true);setError("");try{const d=await api("/api/cms/admin/products",{method:"POST",body:JSON.stringify(product)});setSelected({slug:product.slug,draftId:d.draftId,version:d.version});setNotice(`Product draft V${d.version} saved.`);await refreshProducts();}catch(e){setError(e.message);}finally{setBusy(false);}
+    setBusy(true);setError("");try{const d=await api("/api/cms/admin/products",{method:"POST",body:JSON.stringify(product)});if(selected?.isNew)setEditorSelection((value)=>value+1);setSelected({slug:product.slug,draftId:d.draftId,version:d.version,isNew:false});setNotice(`Product draft V${d.version} saved.`);await refreshProducts();}catch(e){setError(e.message);}finally{setBusy(false);}
   }
   async function archiveProduct() {
     if(!selected?.slug)return;
     let product;try{product=JSON.parse(json);}catch{setError("Product data must be valid JSON.");return;}
     if(!window.confirm("Archive this product? It will disappear from the public catalogue after its archive draft is published."))return;
     product.isArchived=true;const next=JSON.stringify(product,null,2);setJson(next);setBusy(true);setError("");
-    try{const d=await api("/api/cms/admin/products",{method:"POST",body:JSON.stringify(product)});setSelected({slug:product.slug,draftId:d.draftId,version:d.version});setNotice("Archive draft saved. The public catalogue is unchanged until you publish to Preview.");await refreshProducts();}
+    try{const d=await api("/api/cms/admin/products",{method:"POST",body:JSON.stringify(product)});setSelected({slug:product.slug,draftId:d.draftId,version:d.version,isNew:false});setNotice("Archive draft saved. The public catalogue is unchanged until you publish to Preview.");await refreshProducts();}
     catch(e){setError(e.message);}finally{setBusy(false);}
   }
   async function publishProduct() {
@@ -93,6 +95,31 @@ export default function CMSManagement() {
   async function publishSetting(row) {
     try{await api("/api/cms/admin/publish",{method:"POST",body:JSON.stringify({entityType:"setting",entityKey:row.setting_key,versionId:row.draft_id})});setNotice(`Setting "${row.setting_key}" published to Preview.`);await refreshSettings();}catch(e){setError(e.message);}
   }
+  if(tab==="products")return <section className="cms-admin-page"><div className="cms-admin-shell">
+    <header className="cms-admin-header"><div><p className="eyebrow">YR Proservice · Content Management</p><h1>CMS Management Centre</h1><p>Product changes are saved as drafts in the isolated Preview environment. Existing product image paths are read-only.</p></div><div className="cms-manager-header-actions"><a className="admin-secondary-button" href="/admin/cms/design-review">Review all pages together</a><a className="admin-public-link" href="/admin/cms">← Visual Editor</a></div></header>
+    {error&&<p className="admin-alert admin-alert-error" role="alert">{error}</p>}{notice&&<p className="admin-alert admin-alert-success" role="status">{notice}</p>}
+    <nav className="cms-manager-tabs" aria-label="Page workspaces">{[["products","Products"],["services","Services"],["team","Team"],["cart","Product Cart"],["dental-chair-request","Dental Chair Request"],["quote","Quotation Request"],["service-request","Service Request"],["track-request","Track My Request"],["media","Media library"],["settings","Site settings"],["history","Revision history"]].map(([id,label])=><button key={id} className={tab===id?"active":""} onClick={()=>{setTab(id);setError("");setNotice("");}}>{label}</button>)}</nav>
+    <div className="cms-manager-grid">
+      <section className="cms-manager-panel">
+        <div className="cms-manager-heading"><div><h2>Product catalogue</h2><p>{items.length} CMS products · {catalogue.length} products in existing code catalogue</p></div><button className="admin-secondary-button" disabled={busy} onClick={importCatalogue}>Import missing catalogue products</button></div>
+        <div className="cms-product-list">{items.map(row=>{const p=JSON.parse(row.draft_product||row.published_product||"{}");return <button key={row.id} className={selected?.slug===row.product_slug?"active":""} onClick={()=>chooseProduct(row)}><strong>{p.name||row.product_slug}</strong><small>{p.brand||"Unbranded"} · {p.category||"Uncategorised"}</small><span>{row.draft_id?`Draft V${row.draft_version}`:row.published_version?`Published V${row.published_version}`:"Not published"}</span></button>;})}</div>
+        <button className="admin-secondary-button" onClick={()=>chooseProduct(null)}>＋ Add product</button>
+      </section>
+      <section className="cms-manager-panel">
+        <h2>{selected?.slug?"Edit product":"Product editor"}</h2>
+        <p>Structured fields edit only the chosen values. Specifications, documents, image paths, and unexposed product metadata are preserved when saving.</p>
+        <ProductFormEditor key={editorSelection} json={json} onJsonChange={setJson} slugLocked={Boolean(selected&&!selected.isNew)}/>
+        <div className="cms-manager-actions">
+          <button className="admin-primary-button" disabled={busy||!selected} onClick={saveProduct}>Save product draft</button>
+          <button className="admin-secondary-button" disabled={busy||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button>
+          <button className="admin-secondary-button" disabled={busy||!selected?.slug} onClick={archiveProduct}>Archive product</button>
+          {selected?.slug&&<button className="admin-secondary-button" onClick={()=>loadHistory("product",selected.slug)}>View revisions</button>}
+        </div>
+        {history.length>0&&<RevisionList history={history} onRestore={id=>restoreRevision("product",selected.slug,id)}/>}
+      </section>
+    </div>
+    <section className="cms-manager-panel cms-page-editor-design"><h2>Products page appearance</h2><p>Product listing and product detail templates keep separate visual settings.</p><details className="cms-page-design-accordion" open><summary>Products listing · Visual Design Studio</summary><PageVisualDesignManager key="products" pageKey="products"/></details><details className="cms-page-design-accordion"><summary>Product details · Visual Design Studio</summary><PageVisualDesignManager key="product-detail" pageKey="product-detail"/></details></section>
+  </div></section>;
   return <section className="cms-admin-page"><div className="cms-admin-shell">
     <header className="cms-admin-header"><div><p className="eyebrow">YR Proservice · Content Management</p><h1>CMS Management Centre</h1><p>Each customer-facing page has its own workspace. Open a page to manage its content or visual appearance. All publishing actions here target the isolated Preview database.</p></div><div className="cms-manager-header-actions"><a className="admin-secondary-button" href="/admin/cms/design-review">Review all pages together</a><a className="admin-public-link" href="/admin/cms">← Visual Editor</a></div></header>
     {error&&<p className="admin-alert admin-alert-error" role="alert">{error}</p>}{notice&&<p className="admin-alert admin-alert-success" role="status">{notice}</p>}
