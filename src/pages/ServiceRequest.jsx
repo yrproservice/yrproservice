@@ -1,20 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
-import { services } from "../data/services";
+import { services as fallbackServices } from "../data/services";
+import { getServicesCmsContent } from "../data/servicesCmsTemplate";
 
 export default function ServiceRequest({ navigate }) {
   const [sent, setSent] = useState(false);
   const [service, setService] = useState("");
+  const [services, setServices] = useState(fallbackServices);
   const [submittedReference, setSubmittedReference] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const value = new URLSearchParams(window.location.search).get("service");
-    setService(
-      value && services.some((item) => item.slug === value) ? value : "",
-    );
+    let active = true;
+    fetch("/api/cms/public/pages?key=services", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => {
+        if (!active || !result?.ok) return;
+        const page = getServicesCmsContent(result.page?.content);
+        if (page?.listing?.items?.length) setServices(page.listing.items);
+      })
+      .catch(() => {});
+    return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.search).get("service");
+    setService(value || "");
+  }, [services]);
 
   const selected = services.find((item) => item.slug === service);
 
