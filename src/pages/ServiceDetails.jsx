@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { services as fallbackServices } from "../data/services";
 import { getServicesCmsContent } from "../data/servicesCmsTemplate";
 import { Link } from "../components/Layout";
 
