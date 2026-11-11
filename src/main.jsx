@@ -118,7 +118,7 @@ function Router() {
 
   return (
     <>
-      {!isAdminRoute && <SiteHeader path={path} navigate={navigate} />}
+      {!isAdminRoute && <PageDesignScope pageKey="site-chrome"><SiteHeader path={path} navigate={navigate} /></PageDesignScope>}
       <main>
         <div key={path} className={isAdminRoute ? "" : "page-transition"}>
           {isAdminRoute || !pageDesignKey ? routeContent : (
@@ -126,7 +126,7 @@ function Router() {
           )}
         </div>
       </main>
-      {!isAdminRoute && <SiteFooter navigate={navigate} />}
+      {!isAdminRoute && <PageDesignScope pageKey="site-chrome"><SiteFooter navigate={navigate} /></PageDesignScope>}
     </>
   );
 }
