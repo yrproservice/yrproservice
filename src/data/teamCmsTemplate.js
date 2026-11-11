@@ -77,7 +77,8 @@ export const teamCmsTemplate = {
 };
 
 export function getTeamCmsContent(content) {
-  const incoming = content?.sections?.find((section) => section?.type === "team-page")?.content;
+  const teamSection = content?.sections?.find((section) => section?.type === "team-page");
+  const incoming = teamSection?.content;
   if (!incoming || typeof incoming !== "object") return null;
   const base = teamCmsTemplate.sections[0].content;
   const mergeItems = (group, key) => Array.isArray(incoming[group]?.[key]) ? incoming[group][key] : base[group][key];
@@ -87,6 +88,8 @@ export function getTeamCmsContent(content) {
     process: { ...base.process, ...(incoming.process || {}), steps: mergeItems("process", "steps") },
     capabilities: { ...base.capabilities, ...(incoming.capabilities || {}), items: mergeItems("capabilities", "items") },
     people: { ...base.people, ...(incoming.people || {}), items: mergeItems("people", "items") },
-    cta: { ...base.cta, ...(incoming.cta || {}) }
+    cta: { ...base.cta, ...(incoming.cta || {}) },
+    design: teamSection?.design || {},
+    sectionOrder: Array.isArray(content?.sectionOrder) ? content.sectionOrder : ["hero", "story", "process", "capabilities", "people", "cta"]
   };
 }
