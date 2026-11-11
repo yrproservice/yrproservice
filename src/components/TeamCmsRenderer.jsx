@@ -12,10 +12,10 @@ const SECTION_LABELS = {
 function sectionStyle(design, key) {
   const value = design?.sections?.[key] || {};
   return {
-    "--team-section-bg": value.backgroundColor || "initial",
-    "--team-section-text": value.textColor || "initial",
-    "--team-section-accent": value.accentColor || "initial",
-    "--team-section-align": value.textAlign || "left"
+    backgroundColor: value.backgroundColor || undefined,
+    color: value.textColor || undefined,
+    textAlign: value.textAlign || undefined,
+    "--team-section-accent": value.accentColor || undefined
   };
 }
 
