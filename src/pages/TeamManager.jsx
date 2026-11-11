@@ -188,6 +188,46 @@ export default function TeamManager() {
         <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Team draft"}</button>
       </div>
 
+      <details className="cms-services-group cms-team-design-panel" open>
+        <summary>Visual design studio · typography, colours and layout</summary>
+        <p className="cms-team-guidance">These settings are saved with the Team draft only. Leave the colour controls unchanged to retain the original page styling. You can reset any section's styling independently.</p>
+        <div className="cms-team-design-subpanel">
+          <h3>Typography</h3>
+          <div className="cms-services-fields">
+            <label className="cms-services-field"><span>Heading font</span><select value={design.global?.headingFont || "Montserrat"} onChange={(e) => updateGlobalDesign("headingFont", e.target.value)}><option>Montserrat</option><option>Inter</option><option>Arial</option></select></label>
+            <label className="cms-services-field"><span>Body font</span><select value={design.global?.bodyFont || "Inter"} onChange={(e) => updateGlobalDesign("bodyFont", e.target.value)}><option>Inter</option><option>Montserrat</option><option>Arial</option></select></label>
+            <label className="cms-services-field"><span>Heading size scale · {Math.round(Number(design.global?.headingScale || 1) * 100)}%</span><input type="range" min="0.8" max="1.25" step="0.05" value={design.global?.headingScale || 1} onChange={(e) => updateGlobalDesign("headingScale", Number(e.target.value))} /></label>
+            <label className="cms-services-field"><span>Body text size · {design.global?.bodySize || 16}px</span><input type="range" min="13" max="20" step="1" value={design.global?.bodySize || 16} onChange={(e) => updateGlobalDesign("bodySize", Number(e.target.value))} /></label>
+          </div>
+        </div>
+        <div className="cms-team-design-subpanel">
+          <h3>Section arrangement</h3>
+          <p className="cms-team-guidance">Drag a section to reorder it, or use the arrows. This changes the section order in the preview.</p>
+          <ol className="cms-team-order-list">
+            {sectionOrder.map((key, index) => <li key={key} draggable onDragStart={() => { dragIndex.current = index; }} onDragOver={(e) => e.preventDefault()} onDrop={() => handleSectionDrop(index)} onDragEnd={() => { dragIndex.current = null; }}>
+              <span className="cms-team-drag-handle" aria-hidden="true">⠿</span><strong>{index + 1}. {SECTION_LABELS[key] || key}</strong>
+              <span className="cms-team-order-actions"><button type="button" aria-label={`Move ${SECTION_LABELS[key]} up`} disabled={index === 0} onClick={() => moveSection(index, index - 1)}>↑</button><button type="button" aria-label={`Move ${SECTION_LABELS[key]} down`} disabled={index === sectionOrder.length - 1} onClick={() => moveSection(index, index + 1)}>↓</button></span>
+            </li>)}
+          </ol>
+        </div>
+        <div className="cms-team-design-subpanel">
+          <h3>Section colours and alignment</h3>
+          <div className="cms-team-style-grid">
+            {sectionOrder.map((key) => {
+              const style = design.sections?.[key] || {};
+              return <div className="cms-team-style-card" key={key}>
+                <strong>{SECTION_LABELS[key] || key}</strong>
+                <label><span>Background</span><input aria-label={`${SECTION_LABELS[key]} background colour`} type="color" value={style.backgroundColor || "#ffffff"} onChange={(e) => updateSectionDesign(key, "backgroundColor", e.target.value)} /></label>
+                <label><span>Text</span><input aria-label={`${SECTION_LABELS[key]} text colour`} type="color" value={style.textColor || "#1f2937"} onChange={(e) => updateSectionDesign(key, "textColor", e.target.value)} /></label>
+                <label><span>Accent</span><input aria-label={`${SECTION_LABELS[key]} accent colour`} type="color" value={style.accentColor || "#1e7ed8"} onChange={(e) => updateSectionDesign(key, "accentColor", e.target.value)} /></label>
+                <label><span>Text alignment</span><select value={style.textAlign || "left"} onChange={(e) => updateSectionDesign(key, "textAlign", e.target.value)}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></label>
+                <button type="button" className="admin-secondary-button" onClick={() => setContent((current) => ({ ...current, sections: current.sections.map((section) => section.type !== "team-page" ? section : ({ ...section, design: { ...(section.design || {}), sections: { ...(section.design?.sections || {}), [key]: {} } } })) }))}>Reset section styling</button>
+              </div>;
+            })}
+          </div>
+        </div>
+      </details>
+
       <details className="cms-services-group" open>
         <summary>1. Hero banner</summary>
         <div className="cms-services-fields">
