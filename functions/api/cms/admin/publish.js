@@ -42,6 +42,13 @@ export async function onRequestPost(context) {
     if (target.state === "published" && entity.published_version_id === versionId) {
       return adminJson({ ok: true, alreadyPublished: true, version: target.version_number });
     }
+    // Publishing is only allowed from the current draft workflow. Archived
+    // revisions must first be restored as a new draft through the history API.
+    // This prevents stale editor state or a forged request from republishing an
+    // older archived revision directly over the current public version.
+    if (target.state !== "draft") {
+      return adminJson({ error: "Only a saved draft can be published. Restore an archived revision as a draft first." }, 409);
+    }
 
     const now = new Date().toISOString();
     const batch = [];
