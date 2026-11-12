@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import DocumentManager from "./DocumentManager";
+import { catalogMedia } from "../data/catalogMedia";
 import SpecBuilder from "./SpecBuilder";
 import { createProductSnapshot, mergeProductData, parseProductJson, protectProductImage } from "./productEditorData";
 
@@ -17,16 +18,17 @@ const PRODUCT_FIELDS = [
   ["reviewStatus", "Review status"],
 ];
 
-export default function ProductFormEditor({ json, onJsonChange, slugLocked = false }) {
+export default function ProductFormEditor({ json, onJsonChange, slugLocked = false, media = [] }) {
   const [advancedJson, setAdvancedJson] = useState(json);
   const [advancedError, setAdvancedError] = useState("");
   const initialProduct = useRef(createProductSnapshot(json));
   const advancedEditing = useRef(false);
+  const imageChanged = useRef(false);
   const originalProduct = initialProduct.current || {};
   const product = parseProductJson(json);
 
   function protectProduct(edited) {
-    const protectedProduct = protectProductImage(originalProduct, edited);
+    const protectedProduct = protectProductImage(originalProduct, edited, imageChanged.current);
     if (slugLocked && Object.prototype.hasOwnProperty.call(originalProduct, "slug")) {
       Object.defineProperty(protectedProduct, "slug", {
         value: originalProduct.slug,
@@ -48,6 +50,13 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
     setAdvancedJson(formatted);
     setAdvancedError("");
     onJsonChange(formatted);
+  }
+
+  function selectProductImage(url) {
+    if (!product) return;
+    imageChanged.current = true;
+    const current = mergeProductData(originalProduct, product);
+    commit({ ...current, img: url });
   }
 
   function updateField(key, value) {
@@ -102,9 +111,36 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
           </label>
         ))}
         <label className="cms-editor-field-wide">
-          Existing image path (read-only)
+          Selected product image
           <input value={String(product?.img ?? "")} readOnly aria-readonly="true" />
         </label>
+        <section className="cms-editor-field-wide cms-product-image-library">
+          <h3>Choose an existing catalogue image</h3>
+          <p>These are the original static website images. Selecting one changes only this product's image path; it does not copy, move, or delete the file.</p>
+          <div className="cms-product-media-picker-grid">
+            {catalogMedia.map((item) => (
+              <article key={item.src} className={product?.img === item.src ? "selected" : ""}>
+                <img src={item.src} alt={item.file} loading="lazy" />
+                <strong>{item.file}</strong>
+                <small>{item.brand} · {item.category}</small>
+                <button type="button" className="admin-secondary-button" disabled={!product} onClick={() => selectProductImage(item.src)}>{product?.img === item.src ? "Selected" : "Use this image"}</button>
+              </article>
+            ))}
+          </div>
+          {media.length > 0 && <>
+            <h3>Uploaded Preview media</h3>
+            <div className="cms-product-media-picker-grid">
+              {media.map((item) => (
+                <article key={item.id} className={product?.img === item.public_url ? "selected" : ""}>
+                  <img src={item.public_url} alt={item.alt_text || item.original_file_name} loading="lazy" />
+                  <strong>{item.original_file_name}</strong>
+                  <small>Preview upload</small>
+                  <button type="button" className="admin-secondary-button" disabled={!product} onClick={() => selectProductImage(item.public_url)}>{product?.img === item.public_url ? "Selected" : "Use this image"}</button>
+                </article>
+              ))}
+            </div>
+          </>}
+        </section>
       </div>
       <SpecBuilder specifications={product?.specifications} onChange={(value) => updateArray("specifications", value)} />
       <DocumentManager documents={product?.docs} onChange={(value) => updateArray("docs", value)} />
