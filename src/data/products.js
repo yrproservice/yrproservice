@@ -1227,7 +1227,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/cingol/dental chair/cingol x1.jpg",
+    img: "https://www.cingol.com/attachment/58/source/bd6d04d5d2bd3585dc720b116bbf2034.jpg",
     summary:
       "Cingol X1 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1246,7 +1246,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/cingol/dental chair/cingol x3.jpg",
+    img: "https://www.cingol.com/attachment/58/source/1fe576104d108fcd5d984930fa167669.jpg",
     summary:
       "Cingol X3 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1265,7 +1265,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/cingol/dental chair/cingol x5.jpg",
+    img: "https://www.cingol.com/attachment/58/source/X52_159242.jpg",
     summary:
       "Cingol X5 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
