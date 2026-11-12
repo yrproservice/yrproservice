@@ -67,7 +67,7 @@ function ServicesMenu({ navigate, path, services }) {
   );
 }
 
-export function SiteHeader({ path, navigate }) {
+export function SiteHeader({ path, navigate, isAdmin = false }) {
   const { cartCount } = useCart();
   const { count: chairCount } = useChairRequests();
   const requestCount = cartCount + chairCount;
@@ -118,6 +118,20 @@ export function SiteHeader({ path, navigate }) {
           >
             Team
           </Link>
+          {isAdmin && (
+            <div className="nav-dropdown admin-nav-dropdown">
+              <button type="button" className="nav-dropdown-trigger" aria-haspopup="true">
+                Admin <span aria-hidden="true">⌄</span>
+              </button>
+              <div className="nav-dropdown-menu">
+                <div className="nav-dropdown-list">
+                  <Link to="/admin" navigate={navigate}>Request Dashboard</Link>
+                  <Link to="/admin/cms" navigate={navigate}>Visual CMS</Link>
+                  <Link to="/admin/cms/manage" navigate={navigate}>Management Centre</Link>
+                </div>
+              </div>
+            </div>
+          )}
         </nav>
         <div className="header-actions">
           <Link
@@ -163,6 +177,14 @@ export function SiteHeader({ path, navigate }) {
             <Link to="/team" navigate={navigate} onClick={closeMobile}>
               Team
             </Link>
+            {isAdmin && (
+              <div className="mobile-nav-group">
+                <span>Admin</span>
+                <Link to="/admin" navigate={navigate} onClick={closeMobile}>Request Dashboard</Link>
+                <Link to="/admin/cms" navigate={navigate} onClick={closeMobile}>Visual CMS</Link>
+                <Link to="/admin/cms/manage" navigate={navigate} onClick={closeMobile}>Management Centre</Link>
+              </div>
+            )}
             <Link to="/cart" navigate={navigate} onClick={closeMobile}>
               Quotation Cart {requestCount > 0 && <b>{requestCount}</b>}
             </Link>
