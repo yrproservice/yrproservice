@@ -853,7 +853,7 @@ const xlineProducts = [
     brandLine: "DC Intraoral X-ray Generator",
     category: "Imaging Equipment",
     purchaseType: "quote",
-    img: "/catalog/xline/images/xline-xdi-150.jpg",
+    img: "https://xlineimaging.com/upload/img/xdi-150_01.jpg",
     summary:
       "Xline XDI-150 DC intraoral X-ray generator with removable touchscreen and wireless remote.",
     description:
@@ -887,7 +887,7 @@ const xlineProducts = [
     brandLine: "Intraoral CMOS X-ray Sensor",
     category: "Imaging Equipment",
     purchaseType: "quote",
-    img: "/catalog/xline/images/xline-starx-pro.jpg",
+    img: "https://www.xlineimaging.com/upload/img/starx_5.png",
     summary:
       "Xline StarX PRO intraoral CMOS sensor, available in sizes 1 and 2, with USB plug-and-play imaging.",
     description:
