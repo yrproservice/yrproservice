@@ -51,7 +51,7 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-400",
     model: "AC 400",
-    image: "ac-400.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013432-main-600x600.png",
     airDelivery: "320 N l/min",
     dimensions: "W 1155 × D 550 × H 745 mm",
     noiseOptions:
@@ -60,14 +60,14 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-400-q",
     model: "AC 400 Q",
-    image: "ac-400.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013450-main-600x600.png",
     dimensions: "W 1160 × D 650 × H 890 mm",
     noiseOptions: "Shown with a noise-reducing plastic cover.",
   },
   {
     slug: "cattani-ac-600",
     model: "AC 600",
-    image: "ac-600.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/06/013532-main-600x600.png",
     airDelivery: "476 N l/min",
     dimensions: "W 1320 × D 590 × H 890 mm",
     noiseOptions:
@@ -76,14 +76,14 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-600-q",
     model: "AC 600 Q",
-    image: "ac-600.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/06/013557-main-600x600.png",
     dimensions: "W 1320 × D 770 × H 1040 mm",
     noiseOptions: "Shown with a noise-reducing plastic cover.",
   },
   {
     slug: "cattani-ac-1800",
     model: "AC 1800",
-    image: "ac-1800.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/06/013594-main-600x600.png",
     airDelivery: "1428 N l/min",
     dimensions: "W 1800 × D 1100 × H 1100 mm",
     noiseOptions:
