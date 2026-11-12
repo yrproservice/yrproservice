@@ -1808,7 +1808,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/morita/dental chair/morita signo g10 II.jpg",
+    img: "https://www.morita.com/cms/files/products-SIGNO-G10II-highlights-3-w.jpg",
     summary:
       "Dental treatment unit family with configuration-dependent delivery and chair-side equipment.",
     description:
@@ -2113,7 +2113,7 @@ const rawProducts = [
     brandLine: "Dental Stool",
     category: "Stools",
     purchaseType: "cart",
-    img: "/catalog/morita/stool/morita os-n.jfif",
+    img: "https://www.morita.com/cms/files/product_OSN_1.jpg",
     summary: "Morita OS-N Stool operator stool for dental-clinic workspaces.",
     description:
       "Morita OS-N Stool is an operator stool intended to support seated clinical work around the dental operatory. Adjustment range, upholstery and included options can vary by model and configuration.",
@@ -2131,7 +2131,7 @@ const rawProducts = [
     brandLine: "Dental Stool",
     category: "Stools",
     purchaseType: "cart",
-    img: "/catalog/morita/stool/morita t2.jpg",
+    img: "https://www.morita.com/cms/files/product_OSA40_highlight14.jpg",
     summary: "Morita T2 Stool operator stool for dental-clinic workspaces.",
     description:
       "Morita T2 Stool is an operator stool intended to support seated clinical work around the dental operatory. Adjustment range, upholstery and included options can vary by model and configuration.",
