@@ -25,7 +25,7 @@ function formatDate(value) {
       });
 }
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ entryMode = false, onAuthenticated }) {
   const [requests, setRequests] = useState([]);
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
@@ -58,6 +58,7 @@ export default function AdminDashboard() {
         ? result.requests
         : [];
       setRequests(loadedRequests);
+      onAuthenticated?.();
       setSelected((current) =>
         current
           ? loadedRequests.find(
@@ -70,7 +71,7 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [type, status, search]);
+  }, [type, status, search, onAuthenticated]);
 
   useEffect(() => {
     loadRequests();
