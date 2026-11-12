@@ -1770,7 +1770,7 @@ const rawProducts = [
     brandLine: "Connector and Coupling",
     category: "Connectors",
     purchaseType: "cart",
-    img: "/catalog/morita/connector/morita w&h roto quick.jfif",
+    img: "https://a.storyblok.com/f/45617/57e2b47dfd/coupling-roto-quick-rq-34.png?t=1785127881",
     summary:
       "Morita W&H Roto Quick Coupling dental coupling for compatible handpiece and delivery-unit connections.",
     description:
