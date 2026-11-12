@@ -3,6 +3,7 @@ import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
 const CONFIG = {
   page: { table: "cms_pages", key: "page_key", versions: "cms_page_versions", fk: "page_id", json: "content_json" },
   product: { table: "cms_products", key: "product_slug", versions: "cms_product_versions", fk: "product_id", json: "product_json" },
+  setting: { table: "cms_site_settings", key: "setting_key", versions: "cms_site_setting_versions", fk: "setting_key", json: "value_json" },
 };
 
 function clean(value, max = 100) {
@@ -20,7 +21,9 @@ export async function onRequestGet(context) {
   const config = CONFIG[type];
   if (!config || !key) return adminJson({ error: "A valid entityType and entityKey are required." }, 400);
   try {
-    const entity = await env.DB.prepare(`SELECT id, published_version_id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first();
+    const entity = type === "setting"
+      ? await env.DB.prepare(`SELECT setting_key AS id, published_version_id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first()
+      : await env.DB.prepare(`SELECT id, published_version_id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first();
     if (!entity) return adminJson({ error: "CMS item not found." }, 404);
     const rows = await env.DB.prepare(`
       SELECT id, version_number, state, created_by, change_note, created_at, published_at,
