@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { CartProvider, useCart } from "./components/CartContext";
 import { ChairRequestProvider } from "./components/ChairRequestContext";
@@ -21,6 +21,7 @@ import CMSManagement from "./pages/CMSManagement";
 import CMSDesignPreview from "./pages/CMSDesignPreview";
 import CMSDesignReview from "./pages/CMSDesignReview";
 import PageDesignScope from "./components/PageDesignScope";
+import AccessChoice from "./pages/AccessChoice";
 import { services } from "./data/services";
 import { products } from "./data/products";
 import "./style.css";
@@ -45,6 +46,34 @@ const pageTitles = {
 
 function Router() {
   const [path, setPath] = useState(window.location.pathname);
+  const [accessMode, setAccessMode] = useState(() => {
+    const savedMode = sessionStorage.getItem("yrproservice-access-mode");
+    return savedMode === "client" ? "client" : savedMode === "admin" ? "verifying" : "choose";
+  });
+  const [accessMessage, setAccessMessage] = useState("");
+
+  useEffect(() => {
+    if (accessMode !== "verifying") return undefined;
+    let active = true;
+    fetch("/api/admin/requests?access_check=1", {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Your administrator session could not be verified.");
+        }
+        if (active) setAccessMode("admin");
+      })
+      .catch(() => {
+        if (!active) return;
+        sessionStorage.removeItem("yrproservice-access-mode");
+        setAccessMessage("Your admin session could not be verified. Choose Admin to sign in again.");
+        setAccessMode("choose");
+      });
+    return () => { active = false; };
+  }, [accessMode]);
 
   useEffect(() => {
     const onPopState = () => setPath(window.location.pathname);
@@ -64,12 +93,26 @@ function Router() {
         : (pageTitles[path] ?? "Page Not Found | YR Proservice");
   }, [path]);
 
-  function navigate(to) {
+  const navigate = useCallback((to) => {
     window.history.pushState({}, "", to);
     // Keep route matching separate from query parameters (e.g. /service-request?service=...).
     setPath(window.location.pathname);
     window.scrollTo(0, 0);
+  }, []);
+
+  function chooseClient() {
+    sessionStorage.setItem("yrproservice-access-mode", "client");
+    setAccessMessage("");
+    setAccessMode("client");
   }
+
+  const adminEntry = path === "/admin" && new URLSearchParams(window.location.search).get("entry") === "1";
+  const handleAdminAuthenticated = useCallback(() => {
+    sessionStorage.setItem("yrproservice-access-mode", "admin");
+    setAccessMessage("");
+    setAccessMode("admin");
+    if (adminEntry) navigate("/");
+  }, [adminEntry, navigate]);
 
   const routes = {
     "/": <Home navigate={navigate} />,
@@ -81,7 +124,7 @@ function Router() {
     "/dental-chair-request": <DentalChairRequest navigate={navigate} />,
     "/service-request": <ServiceRequest navigate={navigate} />,
     "/track-request": <TrackRequest navigate={navigate} />,
-    "/admin": <AdminDashboard />,
+    "/admin": <AdminDashboard entryMode={adminEntry} onAuthenticated={handleAdminAuthenticated} />,
     "/admin/cms": <CMSDashboard />,
     "/admin/cms/preview": <CMSPagePreview />,
     "/admin/cms/manage": <CMSManagement />,
@@ -118,18 +161,26 @@ function Router() {
     ) : (
       <NotFound navigate={navigate} />
     ));
+  const publicContent = accessMode === "client" || accessMode === "admin"
+    ? routeContent
+    : <AccessChoice
+        onClient={chooseClient}
+        onAdmin={() => navigate("/admin?entry=1")}
+        checking={accessMode === "verifying"}
+        message={accessMessage}
+      />;
 
   return (
     <>
-      {!isAdminRoute && <PageDesignScope pageKey="site-chrome"><SiteHeader path={path} navigate={navigate} /></PageDesignScope>}
+      {!isAdminRoute && <PageDesignScope pageKey="site-chrome"><SiteHeader path={path} navigate={navigate} isAdmin={accessMode === "admin"} /></PageDesignScope>}
       <main>
         <div key={path} className={isAdminRoute ? "" : "page-transition"}>
-          {isAdminRoute || !pageDesignKey ? routeContent : (
-            <PageDesignScope pageKey={pageDesignKey}>{routeContent}</PageDesignScope>
-          )}
+          {isAdminRoute ? routeContent : accessMode === "client" || accessMode === "admin"
+            ? (!pageDesignKey ? routeContent : <PageDesignScope pageKey={pageDesignKey}>{routeContent}</PageDesignScope>)
+            : publicContent}
         </div>
       </main>
-      {!isAdminRoute && <PageDesignScope pageKey="site-chrome"><SiteFooter navigate={navigate} /></PageDesignScope>}
+      {!isAdminRoute && (accessMode === "client" || accessMode === "admin") && <PageDesignScope pageKey="site-chrome"><SiteFooter navigate={navigate} /></PageDesignScope>}
     </>
   );
 }
