@@ -1910,7 +1910,7 @@ const rawProducts = [
     brandLine: "Dental Equipment and Accessories",
     category: "Equipment",
     purchaseType: "cart",
-    img: "/catalog/morita/equipment/morita dentaport zx.jpg",
+    img: "https://www.morita.com/cms/files/products_root-zx_media_03.jpg",
     summary:
       "Morita endodontic device family for root-canal measurement workflows.",
     description:
@@ -1929,7 +1929,7 @@ const rawProducts = [
     brandLine: "Dental Equipment and Accessories",
     category: "Equipment",
     purchaseType: "cart",
-    img: "/catalog/morita/equipment/morita lubrina 2.jpg",
+    img: "https://www.morita.com/cms/files/Lubrina2_highlight_1.jpg?crop=900%2C500&w=900",
     summary:
       "Automatic maintenance equipment for compatible dental handpieces.",
     description:
