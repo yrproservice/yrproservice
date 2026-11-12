@@ -165,7 +165,7 @@ function Router() {
     ? routeContent
     : <AccessChoice
         onClient={chooseClient}
-        onAdmin={() => navigate("/admin?entry=1")}
+        onAdmin={() => window.location.assign("/admin?entry=1")}
         checking={accessMode === "verifying"}
         message={accessMessage}
       />;
