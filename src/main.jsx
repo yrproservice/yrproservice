@@ -124,7 +124,7 @@ function Router() {
     "/dental-chair-request": <DentalChairRequest navigate={navigate} />,
     "/service-request": <ServiceRequest navigate={navigate} />,
     "/track-request": <TrackRequest navigate={navigate} />,
-    "/admin": <AdminDashboard entryMode={adminEntry} onAuthenticated={handleAdminAuthenticated} />,
+    "/admin": <AdminDashboard onAuthenticated={handleAdminAuthenticated} />,
     "/admin/cms": <CMSDashboard />,
     "/admin/cms/preview": <CMSPagePreview />,
     "/admin/cms/manage": <CMSManagement />,
