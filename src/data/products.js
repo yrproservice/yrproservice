@@ -1165,7 +1165,7 @@ const additionalBrochureProducts = [
     brandLine: "All-in-One Intraoral Camera System",
     category: "Imaging Equipment",
     purchaseType: "quote",
-    img: "/catalog/others/images/m-988plus-intraoral-camera.jpg",
+    img: "https://www.mlgkj.net/Data/mlgkj/upload/image/20241225/M-988PLUS-Wi-Fi%E6%99%BA%E8%83%BD%E5%8F%98%E7%84%A621.5%E5%AF%B8%E8%A7%A6%E5%B1%8F%E5%8F%A3%E8%85%94%E5%86%85%E7%AA%A5%E9%95%9C%E4%B8%80%E4%BD%93%E6%9C%BA.jpg",
     summary:
       "M-988PLUS all-in-one intraoral camera system with a 21.5-inch touchscreen monitor.",
     description:
@@ -1194,7 +1194,7 @@ const additionalBrochureProducts = [
     brandLine: "Wired USB CMOS Intraoral Camera",
     category: "Imaging Equipment",
     purchaseType: "quote",
-    img: "/catalog/others/images/cf-686a-intraoral-camera.jpg",
+    img: "https://image.chukouplus.com/upload/C_4125/file/20240117/a9640efaac31885dc523cf7597234679.jpg?1=&x-oss-process=image%2Fformat%2Cwebp%2Cimage%2Fresize%2Cm_pad%2Ch_460%2Cw_460%2Ccolor_FFFFFF",
     summary:
       "MLG CF-686A wired USB intraoral camera with a 1/4-inch CMOS sensor and six white LEDs.",
     description:
