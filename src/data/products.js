@@ -927,7 +927,7 @@ const additionalBrochureProducts = [
     brandLine: "DC Intraoral X-ray Generator",
     category: "Imaging Equipment",
     purchaseType: "quote",
-    img: "/catalog/others/images/fona-xdc.jpg",
+    img: "https://www.fonadental.com/upload/img/xdc_slide3.png",
     summary:
       "FONA XDC high-frequency DC intraoral X-ray generator with selectable 60 or 70 kV.",
     description:
@@ -963,7 +963,7 @@ const additionalBrochureProducts = [
     brandLine: "AC Intraoral X-ray Generator",
     category: "Imaging Equipment",
     purchaseType: "quote",
-    img: "/catalog/others/images/fona-xdg.jpg",
+    img: "https://www.fonadental.com/upload/img/xdg_slide2.png",
     summary:
       "FONA XDG AC intraoral X-ray generator with automatic exposure settings and a 0.4 mm focal spot.",
     description:
