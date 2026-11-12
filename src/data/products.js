@@ -2430,7 +2430,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "/catalog/westcode/handpiece/westcode x1lg.PNG",
+    img: "https://omo-oss-image.thefastimg.com/portal-saas/pg2024091219023005904/cms/image/6e8767da-7267-4ac9-8446-58b7d40a8375.jpg",
     summary:
       "Westcode X1LG dental handpiece. Review the model-specific details and compatibility information below.",
     description:
