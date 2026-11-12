@@ -119,6 +119,8 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
         body: JSON.stringify({ entityType: "setting", entityKey: `page-design.${pageKey}`, versionId: draftId })
       });
       setPublishedVersion(result.version || draftVersion);
+      setDraftId("");
+      setDraftVersion(null);
       setNotice(`Design V${result.version || draftVersion} published to the isolated Preview website only.`);
       await loadSettings();
     } catch (err) {
