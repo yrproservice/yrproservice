@@ -1,4 +1,4 @@
-// Generated from the original public/catalog folder structure. These files remain static site assets.
+// Generated from the original public/catalog folder structure. Enhanced variants are grouped with their matching manufacturer/category. These files remain static site assets.
 export const catalogMedia = [
   {
     "src": "/catalog/cattani/images/ac-100-q.jpg",
@@ -143,387 +143,387 @@ export const catalogMedia = [
   {
     "src": "/catalog/enhanced/cingol/dental chair/cingol x1.jpg",
     "file": "cingol x1.jpg",
-    "folder": "enhanced/cingol/dental chair",
-    "brand": "enhanced",
-    "category": "cingol"
+    "folder": "cingol/dental chair",
+    "brand": "cingol",
+    "category": "dental chair"
   },
   {
     "src": "/catalog/enhanced/cingol/dental chair/cingol x3.jpg",
     "file": "cingol x3.jpg",
-    "folder": "enhanced/cingol/dental chair",
-    "brand": "enhanced",
-    "category": "cingol"
+    "folder": "cingol/dental chair",
+    "brand": "cingol",
+    "category": "dental chair"
   },
   {
     "src": "/catalog/enhanced/cingol/dental chair/cingol x5.jpg",
     "file": "cingol x5.jpg",
-    "folder": "enhanced/cingol/dental chair",
-    "brand": "enhanced",
-    "category": "cingol"
+    "folder": "cingol/dental chair",
+    "brand": "cingol",
+    "category": "dental chair"
   },
   {
     "src": "/catalog/enhanced/mocom/dental chair/mocom f10.jpg",
     "file": "mocom f10.jpg",
-    "folder": "enhanced/mocom/dental chair",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/dental chair",
+    "brand": "mocom",
+    "category": "dental chair"
   },
   {
     "src": "/catalog/enhanced/mocom/dental chair/mocom m10.jpg",
     "file": "mocom m10.jpg",
-    "folder": "enhanced/mocom/dental chair",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/dental chair",
+    "brand": "mocom",
+    "category": "dental chair"
   },
   {
     "src": "/catalog/enhanced/mocom/dental chair/mocom v10.jpg",
     "file": "mocom v10.jpg",
-    "folder": "enhanced/mocom/dental chair",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/dental chair",
+    "brand": "mocom",
+    "category": "dental chair"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom goldspeed evo d1-l.jpg",
     "file": "mocom goldspeed evo d1-l.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom goldspeed evo d1.jpg",
     "file": "mocom goldspeed evo d1.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom goldspeed evo e16.jpg",
     "file": "mocom goldspeed evo e16.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom goldspeed evo e4.jpg",
     "file": "mocom goldspeed evo e4.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom goldspeed evo m5-l.jpg",
     "file": "mocom goldspeed evo m5-l.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom goldspeed evo r20-l.jpg",
     "file": "mocom goldspeed evo r20-l.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom goldspeed evo s1-l.jpg",
     "file": "mocom goldspeed evo s1-l.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom goldspeed evo s1.jpg",
     "file": "mocom goldspeed evo s1.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom silent power 2.jpg",
     "file": "mocom silent power 2.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom silent power 2l.jpg",
     "file": "mocom silent power 2l.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom silent power 4l.jpg",
     "file": "mocom silent power 4l.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom silent power 4lk.jpg",
     "file": "mocom silent power 4lk.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom silent power miniature k.jpg",
     "file": "mocom silent power miniature k.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/handpiece/mocom silent power miniature.jpg",
     "file": "mocom silent power miniature.jpg",
-    "folder": "enhanced/mocom/handpiece",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/handpiece",
+    "brand": "mocom",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/mocom/stool/mocom m7.jpg",
     "file": "mocom m7.jpg",
-    "folder": "enhanced/mocom/stool",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/stool",
+    "brand": "mocom",
+    "category": "stool"
   },
   {
     "src": "/catalog/enhanced/mocom/stool/mocom m8.jpg",
     "file": "mocom m8.jpg",
-    "folder": "enhanced/mocom/stool",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/stool",
+    "brand": "mocom",
+    "category": "stool"
   },
   {
     "src": "/catalog/enhanced/mocom/stool/mocom m9.jpg",
     "file": "mocom m9.jpg",
-    "folder": "enhanced/mocom/stool",
-    "brand": "enhanced",
-    "category": "mocom"
+    "folder": "mocom/stool",
+    "brand": "mocom",
+    "category": "stool"
   },
   {
     "src": "/catalog/enhanced/morita/connector/morita kavo multiflex lux.jpg",
     "file": "morita kavo multiflex lux.jpg",
-    "folder": "enhanced/morita/connector",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/connector",
+    "brand": "morita",
+    "category": "connector"
   },
   {
     "src": "/catalog/enhanced/morita/connector/morita w&h roto quick.jpg",
     "file": "morita w&h roto quick.jpg",
-    "folder": "enhanced/morita/connector",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/connector",
+    "brand": "morita",
+    "category": "connector"
   },
   {
     "src": "/catalog/enhanced/morita/connector/nsk coupling.jpg",
     "file": "nsk coupling.jpg",
-    "folder": "enhanced/morita/connector",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/connector",
+    "brand": "morita",
+    "category": "connector"
   },
   {
     "src": "/catalog/enhanced/morita/dental chair/morita signo g20.jpg",
     "file": "morita signo g20.jpg",
-    "folder": "enhanced/morita/dental chair",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/dental chair",
+    "brand": "morita",
+    "category": "dental chair"
   },
   {
     "src": "/catalog/enhanced/morita/equipment/morita dentaport zx.jpg",
     "file": "morita dentaport zx.jpg",
-    "folder": "enhanced/morita/equipment",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/equipment",
+    "brand": "morita",
+    "category": "equipment"
   },
   {
     "src": "/catalog/enhanced/morita/equipment/morita lubrina 2.jpg",
     "file": "morita lubrina 2.jpg",
-    "folder": "enhanced/morita/equipment",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/equipment",
+    "brand": "morita",
+    "category": "equipment"
   },
   {
     "src": "/catalog/enhanced/morita/equipment/morita tcs ts 2.jpg",
     "file": "morita tcs ts 2.jpg",
-    "folder": "enhanced/morita/equipment",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/equipment",
+    "brand": "morita",
+    "category": "equipment"
   },
   {
     "src": "/catalog/enhanced/morita/equipment/morita veraview ix.jpg",
     "file": "morita veraview ix.jpg",
-    "folder": "enhanced/morita/equipment",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/equipment",
+    "brand": "morita",
+    "category": "equipment"
   },
   {
     "src": "/catalog/enhanced/morita/equipment/morita veraview x800.jpg",
     "file": "morita veraview x800.jpg",
-    "folder": "enhanced/morita/equipment",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/equipment",
+    "brand": "morita",
+    "category": "equipment"
   },
   {
     "src": "/catalog/enhanced/morita/handpiece/morita tri auto zx2+.jpg",
     "file": "morita tri auto zx2+.jpg",
-    "folder": "enhanced/morita/handpiece",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/handpiece",
+    "brand": "morita",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/morita/handpiece/morita tri auto zx2.jpg",
     "file": "morita tri auto zx2.jpg",
-    "folder": "enhanced/morita/handpiece",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/handpiece",
+    "brand": "morita",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/morita/handpiece/morita twinpower PAR-4HEX-O-45.jpg",
     "file": "morita twinpower PAR-4HEX-O-45.jpg",
-    "folder": "enhanced/morita/handpiece",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/handpiece",
+    "brand": "morita",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/morita/handpiece/morita twinpower PAR-4HEX-O.jpg",
     "file": "morita twinpower PAR-4HEX-O.jpg",
-    "folder": "enhanced/morita/handpiece",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/handpiece",
+    "brand": "morita",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/morita/handpiece/morita twinpower PAR-4HX-O.jpg",
     "file": "morita twinpower PAR-4HX-O.jpg",
-    "folder": "enhanced/morita/handpiece",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/handpiece",
+    "brand": "morita",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/morita/stool/morita os-n.jpg",
     "file": "morita os-n.jpg",
-    "folder": "enhanced/morita/stool",
-    "brand": "enhanced",
-    "category": "morita"
+    "folder": "morita/stool",
+    "brand": "morita",
+    "category": "stool"
   },
   {
     "src": "/catalog/enhanced/westcode/connector/kavo 4 hole quick coupling.jpg",
     "file": "kavo 4 hole quick coupling.jpg",
-    "folder": "enhanced/westcode/connector",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/connector",
+    "brand": "westcode",
+    "category": "connector"
   },
   {
     "src": "/catalog/enhanced/westcode/connector/kavo 6 hole fiber optic quick coupling, without mist adjustment.jpg",
     "file": "kavo 6 hole fiber optic quick coupling, without mist adjustment.jpg",
-    "folder": "enhanced/westcode/connector",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/connector",
+    "brand": "westcode",
+    "category": "connector"
   },
   {
     "src": "/catalog/enhanced/westcode/connector/qd 4 hole quick coupling, with water filter and non-return valve.jpg",
     "file": "qd 4 hole quick coupling, with water filter and non-return valve.jpg",
-    "folder": "enhanced/westcode/connector",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/connector",
+    "brand": "westcode",
+    "category": "connector"
   },
   {
     "src": "/catalog/enhanced/westcode/equipment/nl 201.jpg",
     "file": "nl 201.jpg",
-    "folder": "enhanced/westcode/equipment",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/equipment",
+    "brand": "westcode",
+    "category": "equipment"
   },
   {
     "src": "/catalog/enhanced/westcode/equipment/westcode dental handpiece oil spray.jpg",
     "file": "westcode dental handpiece oil spray.jpg",
-    "folder": "enhanced/westcode/equipment",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/equipment",
+    "brand": "westcode",
+    "category": "equipment"
   },
   {
     "src": "/catalog/enhanced/westcode/equipment/westcode oil lubricator.jpg",
     "file": "westcode oil lubricator.jpg",
-    "folder": "enhanced/westcode/equipment",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/equipment",
+    "brand": "westcode",
+    "category": "equipment"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode ap31.jpg",
     "file": "westcode ap31.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode m-l530 air motor.jpg",
     "file": "westcode m-l530 air motor.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode m-l530 contra angle.jpg",
     "file": "westcode m-l530 contra angle.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode m-l530 straight handpiece.jpg",
     "file": "westcode m-l530 straight handpiece.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode m-l530led contra angle.jpg",
     "file": "westcode m-l530led contra angle.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode x1lg.jpg",
     "file": "westcode x1lg.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode x45 pro.jpg",
     "file": "westcode x45 pro.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode x45kl.jpg",
     "file": "westcode x45kl.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode x45lg pro.jpg",
     "file": "westcode x45lg pro.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode x5kl.jpg",
     "file": "westcode x5kl.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/enhanced/westcode/handpiece/westcode za15l.jpg",
     "file": "westcode za15l.jpg",
-    "folder": "enhanced/westcode/handpiece",
-    "brand": "enhanced",
-    "category": "westcode"
+    "folder": "westcode/handpiece",
+    "brand": "westcode",
+    "category": "handpiece"
   },
   {
     "src": "/catalog/fussen/images/imaging-plate-scanner.jpg",
