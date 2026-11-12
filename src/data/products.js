@@ -1853,7 +1853,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/morita/dental chair/morita signo t100.jpg",
+    img: "https://www.morita.com/cms/files/product_T100_2_news.jpg",
     summary:
       "Morita Signo T100 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1967,7 +1967,7 @@ const rawProducts = [
     brandLine: "Dental Equipment and Accessories",
     category: "Equipment",
     purchaseType: "cart",
-    img: "/catalog/morita/equipment/morita veraview ix.jpg",
+    img: "https://www.morita.com/cms/files/products_veraview-iX_highlights_01.jpg?crop=900%2C500&w=900",
     summary:
       "Dental X-ray imaging equipment; exact configuration depends on the model version.",
     description:
