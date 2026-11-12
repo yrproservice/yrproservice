@@ -1808,7 +1808,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/morita/dental chair/morita signo g10 II.jpg",
+    img: "https://www.morita.com/cms/files/products-SIGNO-G10II-highlights-3-w.jpg",
     summary:
       "Dental treatment unit family with configuration-dependent delivery and chair-side equipment.",
     description:
@@ -1834,7 +1834,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/morita/dental chair/morita signo g20.jpg",
+    img: "https://www.morita.com/cms/files/Signo-G20-product.jpg",
     summary:
       "Morita Signo G20 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
