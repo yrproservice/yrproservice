@@ -2449,7 +2449,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "/catalog/westcode/handpiece/westcode x45 pro.jpg",
+    img: "https://omo-oss-image.thefastimg.com/portal-saas/pg2024091219023005904/cms/image/a6dd5b33-f641-42d7-a8b4-ce05f55bb248.jpg",
     summary:
       "Westcode X45 Pro dental handpiece. Review the model-specific details and compatibility information below.",
     description:
@@ -2496,7 +2496,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "/catalog/westcode/handpiece/westcode x45lg pro.jpg",
+    img: "https://omo-oss-image.thefastimg.com/portal-saas/pg2024091219023005904/cms/image/9219a8cc-17bd-4e2d-9afb-680dc170080e.jpg",
     summary:
       "Westcode X45LG Pro dental handpiece. Review the model-specific details and compatibility information below.",
     description:
