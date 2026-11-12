@@ -1,6 +1,11 @@
 name: Apply CMS Migration to Preview D1
 
 on:
+  push:
+    branches: [cms-development]
+    paths:
+      - migrations/0002_create_cms.sql
+      - .github/workflows/cms-preview-migration.yml
   workflow_dispatch:
 
 permissions:
