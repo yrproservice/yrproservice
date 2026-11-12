@@ -169,7 +169,7 @@ const cattaniTurboJets = [
   {
     slug: "cattani-turbo-jet-1-modular-without-box",
     model: "Turbo Jet 1 Modular Without Box",
-    image: "turbo-jet-1-modular.jpg",
+    image: "https://www.cattani.it/wp-content/uploads/2016/08/1470669438_img_77_97-image.jpg",
     description:
       "Turbo Jet 1 Modular Without Box is a one-seat dental suction system in an open, cabinet-free configuration. Its modular design supports installation within a suitable equipment space.",
     manufacturerSource:
@@ -187,7 +187,7 @@ const cattaniTurboJets = [
   {
     slug: "cattani-turbo-jet-2-modular-without-box",
     model: "Turbo Jet 2 Modular Without Box",
-    image: "turbo-jet-2-modular.jpg",
+    image: "https://www.cattani.it/wp-content/uploads/2016/08/1470669439_img_80_103-image.jpg",
     description:
       "Turbo Jet 2 Modular Without Box is a two-seat dental suction system in an open, cabinet-free configuration. Its modular design supports installation within a suitable equipment space.",
     manufacturerSource:
@@ -217,7 +217,7 @@ const cattaniTurboJets = [
     brandLine: "Dental Suction System",
     category: "Equipment",
     purchaseType: "cart",
-    img: `/catalog/cattani/images/${image}`,
+    img: image.startsWith("http") ? image : `/catalog/cattani/images/${image}`,
     summary: `Cattani ${model} dental suction system.`,
     description,
     highlights: [],
