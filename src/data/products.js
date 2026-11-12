@@ -302,7 +302,7 @@ const durrImagingProducts = [
     brandLine: "3D, Panoramic and Cephalometric X-ray System",
     category: "Imaging Equipment",
     purchaseType: "cart",
-    img: "/catalog/durr/images/vistavox-s-ceph.jpg",
+    img: "https://media.duerrdental.com/asset/e91d4b7c-7cea-492a-ad58-b8adb54e0c9f/thumbnail/webimage-VistaVox-S-Ceph-Website-jpg",
     summary: "Dürr Dental VistaVox S Ceph 3-in-1 dental X-ray imaging system.",
     description:
       "VistaVox S Ceph combines CBCT, panoramic, and cephalometric imaging in one system. Its jaw-shaped 3D field of view is designed around the dental arch, while S-Pan technology uses image regions that best match patient anatomy to create clear panoramic images and help compensate for some positioning deviations. The brochure describes a 1.9-second quick scan for lateral cephalometric images and two integrated CsI sensors, so switching between the 3D unit and Ceph arm is not required.",
