@@ -60,3 +60,12 @@ The public application now presents a first-entry choice. Client mode opens the 
 On page refresh, Admin mode is revalidated through the existing `GET /api/admin/requests` endpoint. No new API, Access application, database, or Production binding is introduced by this feature.
 
 For Preview, ensure the existing **YR Proservice Admin** Access application covers `/admin*` and the existing **YR Proservice Admin API** application covers both `/api/admin*` and `/api/cms/admin*` on the current Preview hostname. The API application's AUD must match the Preview `ACCESS_AUD` value. Access hostname/path configuration is managed in Cloudflare Zero Trust, not in this repository.
+
+
+## Single-device Admin session and logout
+
+The Preview application enforces one active Admin browser session using the existing Preview D1 database binding. The first Admin device atomically acquires the singleton `admin_session_lock` row through `POST /api/admin/session`. The lock is renewed every 30 seconds and expires after 90 seconds without a heartbeat. A second device receives HTTP 409 and is not allowed into Admin. The lock table is created automatically on first use in the bound D1 database; no additional database or API application is required.
+
+Logout is available in the Admin navigation and on Admin workspace routes. It calls `DELETE /api/admin/session`, releases only the current browser's lock, clears its HttpOnly session cookie and returns to the Client/Admin entry screen. If the browser closes unexpectedly or loses connection, the lock expires within 90 seconds. All existing dashboard and CMS API handlers use `requireAdmin`, which now checks both the Cloudflare Access identity and the active single-device session.
+
+The lock is scoped to the Cloudflare Pages environment's existing D1 binding: Preview uses `yr-proservice-test-db`; Production would use `yr-proservice-db` only when a separately approved Production deployment is made. Do not merge or deploy to Production as part of Preview verification.
