@@ -381,7 +381,7 @@ const melagProducts = [
     brandLine: "Steam Sterilizer",
     category: "Equipment",
     purchaseType: "quote",
-    img: "/catalog/melag/images/vacuclave-118-123.png",
+    img: "https://images.ctfassets.net/u7s89gwxh9vm/5wsywYcMyqgTNEllsNqpWV/18ec564137cfa8ab027bcde0a4ef5a2a/MicrosoftTeams-image__819_-min.png",
     summary:
       "MELAG Vacuclave 118 steam sterilizer for dental instrument reprocessing and clinic hygiene workflows.",
     description:
@@ -475,7 +475,7 @@ const melagProducts = [
     brandLine: "Prime Line Steam Sterilizer",
     category: "Equipment",
     purchaseType: "quote",
-    img: "/catalog/melag/images/vacuclave-318.png",
+    img: "https://shopware.melag.com/media/f5/c0/7e/1688550309/ME10318.jpg?ts=1688550309",
     summary:
       "MELAG Vacuclave 318 Prime Line steam sterilizer with enhanced drying and batch approval features.",
     description:
@@ -508,7 +508,7 @@ const melagProducts = [
     brandLine: "Prime Line Steam Sterilizer",
     category: "Equipment",
     purchaseType: "quote",
-    img: "/catalog/melag/images/vacuclave-323.jpg",
+    img: "https://shopware.melag.com/media/3d/69/60/1688549563/ME10323.jpg?ts=1688549563",
     summary:
       "MELAG Vacuclave 323 Prime Line steam sterilizer with enhanced drying and high load capacity.",
     description:
