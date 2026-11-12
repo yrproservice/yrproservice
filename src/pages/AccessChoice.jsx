@@ -2,7 +2,7 @@ import React from "react";
 
 export default function AccessChoice({ onClient, onAdmin, checking = false, message = "" }) {
   return (
-    <main className="access-choice-page">
+    <section className="access-choice-page">
       <section className="access-choice-shell" aria-labelledby="access-choice-title">
         <img className="access-choice-logo" src="/YR%20LOGO.jpg" alt="YR Proservice Sdn Bhd" />
         {checking ? (
@@ -36,6 +36,6 @@ export default function AccessChoice({ onClient, onAdmin, checking = false, mess
           </>
         )}
       </section>
-    </main>
+    </section>
   );
 }
