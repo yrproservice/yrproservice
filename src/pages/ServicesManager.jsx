@@ -151,6 +151,26 @@ export default function ServicesManager() {
     finally { setBusy(false); }
   }
 
+  async function publishDraft() {
+    if (!draftId) return;
+    if (!window.confirm("Publish this Services revision to the isolated Preview website? Production will not change.")) return;
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const result = await request("/api/cms/admin/publish", {
+        method: "POST",
+        body: JSON.stringify({ entityType: "page", entityKey: "services", versionId: draftId })
+      });
+      setDraftId("");
+      setDraftVersion(null);
+      setPublishedVersion(result.version);
+      setNotice(`Services revision V${result.version} published to Preview. Production has not changed.`);
+    } catch (err) {
+      setError(err.message || "Unable to publish the Services page to Preview.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function openPreview() {
     if (!draftId) return;
     window.open("/admin/cms/preview?key=services", "_blank", "noopener,noreferrer");
@@ -175,6 +195,7 @@ export default function ServicesManager() {
       <div className="cms-services-toolbar">
         <button type="button" className="admin-secondary-button" onClick={resetToTemplate} disabled={busy}>Restore original content in editor</button>
         <button type="button" className="admin-secondary-button" onClick={openPreview} disabled={busy || !draftId}>Preview saved draft</button>
+        <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish to Preview</button>
         <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Services draft"}</button>
       </div>
 
@@ -303,6 +324,7 @@ export default function ServicesManager() {
 
       <div className="cms-services-toolbar bottom">
         <button type="button" className="admin-secondary-button" onClick={openPreview} disabled={busy || !draftId}>Preview saved draft</button>
+        <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish to Preview</button>
         <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Services draft"}</button>
       </div>
       <p className="cms-services-note">Saving creates a draft in the Preview CMS database. It does not publish this page or change the Production website.</p>
