@@ -28,14 +28,14 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-200-q",
     model: "AC 200 Q",
-    image: "ac-200-q.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013244-main-600x600.png",
     dimensions: "W 660 × D 600 × H 860 mm",
     noiseOptions: "Shown with a noise-reducing plastic cover.",
   },
   {
     slug: "cattani-ac-300",
     model: "AC 300",
-    image: "ac-300.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013308-main-600x600.png",
     airDelivery: "238 N l/min",
     dimensions: "W 620 × D 520 × H 750 mm",
     noiseOptions:
@@ -44,7 +44,7 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-300-q",
     model: "AC 300 Q",
-    image: "ac-300-q.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013344-main-600x600.png",
     dimensions: "W 720 × D 600 × H 970 mm",
     noiseOptions: "Shown with a noise-reducing plastic cover.",
   },
