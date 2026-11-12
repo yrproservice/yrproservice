@@ -1303,7 +1303,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/mocom/dental chair/mocom m10.png",
+    img: "https://www.mocom.it/hubfs/Mocom%20img%20sito%20nuovo%20%281%29-1.png",
     summary:
       "Mocom M10 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1322,7 +1322,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/mocom/dental chair/mocom v10.png",
+    img: "https://www.mocom.it/hubfs/Sternweber2025/Prodotti/Mocom%20img%20sito%20nuovo%20%288%29.png",
     summary:
       "Mocom V10 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
