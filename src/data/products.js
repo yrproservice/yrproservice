@@ -615,7 +615,7 @@ const melagProducts = [
     brandLine: "Tabletop Steam Sterilizer",
     category: "Equipment",
     purchaseType: "quote",
-    img: "/catalog/melag/images/melatronic-23-en.png",
+    img: "https://images.ctfassets.net/u7s89gwxh9vm/2GnPHXIXkzPoa2dlu5cyuJ/cbf39d1a054da13a1aca3817dd67f789/MicrosoftTeams-image__633_-min.png",
     summary:
       "Largest MELAG MELAtronic EN tabletop autoclave, with a 19-litre chamber and 4 kg instrument capacity.",
     description:
@@ -652,7 +652,7 @@ const melagProducts = [
     brandLine: "Tabletop Steam Sterilizer",
     category: "Equipment",
     purchaseType: "quote",
-    img: "/catalog/melag/images/melatronic-23.png",
+    img: "https://images.ctfassets.net/u7s89gwxh9vm/4kPGeFwHnWP7WWvUgQu38o/49d26603ed331ac65d018b4dd9f6c78b/MicrosoftTeams-image__893_.png",
     summary:
       "MELAG MELAtronic 23 standard steam sterilizer with a 19-litre chamber for medical practice use.",
     description:
