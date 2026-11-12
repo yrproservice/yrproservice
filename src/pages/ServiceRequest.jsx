@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
 import { services as fallbackServices } from "../data/services";
 import { getServicesCmsContent } from "../data/servicesCmsTemplate";
+import { downloadRequestConfirmationPdf } from "../utils/requestConfirmationPdf";
 
 export default function ServiceRequest({ navigate }) {
   const [sent, setSent] = useState(false);
   const [service, setService] = useState("");
   const [services, setServices] = useState(fallbackServices);
   const [submittedReference, setSubmittedReference] = useState("");
+  const [confirmationData, setConfirmationData] = useState(null);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -72,6 +74,7 @@ export default function ServiceRequest({ navigate }) {
       }
 
       setSubmittedReference(result.reference || "");
+      setConfirmationData({ ...payload, serviceTitle: selected?.title || service, reference: result.reference, submittedAt: new Date().toISOString() });
       setSent(true);
     } catch (submitError) {
       setError(
@@ -96,6 +99,9 @@ export default function ServiceRequest({ navigate }) {
             </p>
           )}
           <div className="success-actions">
+            <button type="button" className="button" onClick={() => downloadRequestConfirmationPdf(confirmationData)}>
+              Download PDF
+            </button>
             <Link to="/services" navigate={navigate} className="button">
               Back to Services
             </Link>
