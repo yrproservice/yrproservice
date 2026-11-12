@@ -22,6 +22,7 @@ import CMSDesignPreview from "./pages/CMSDesignPreview";
 import CMSDesignReview from "./pages/CMSDesignReview";
 import PageDesignScope from "./components/PageDesignScope";
 import AccessChoice from "./pages/AccessChoice";
+import AdminEntry from "./pages/AdminEntry";
 import { services } from "./data/services";
 import { products } from "./data/products";
 import "./style.css";
@@ -55,7 +56,7 @@ function Router() {
   useEffect(() => {
     if (accessMode !== "verifying") return undefined;
     let active = true;
-    fetch("/api/admin/requests?access_check=1", {
+    fetch("/api/admin/session", {
       headers: { Accept: "application/json" },
       cache: "no-store",
     })
@@ -73,6 +74,29 @@ function Router() {
         setAccessMode("choose");
       });
     return () => { active = false; };
+  }, [accessMode]);
+
+  useEffect(() => {
+    if (accessMode !== "admin") return undefined;
+    const heartbeat = async () => {
+      try {
+        const response = await fetch("/api/admin/session", {
+          method: "PATCH",
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (response.status === 401 || response.status === 409) {
+          sessionStorage.removeItem("yrproservice-access-mode");
+          setAccessMessage("Your Admin session ended or was taken over. Choose Admin to sign in again.");
+          setAccessMode("choose");
+        }
+      } catch {
+        // A transient network failure does not immediately discard the UI.
+        // The server-side lock expires automatically if heartbeats stop.
+      }
+    };
+    const interval = window.setInterval(heartbeat, 30000);
+    return () => window.clearInterval(interval);
   }, [accessMode]);
 
   useEffect(() => {
@@ -111,8 +135,27 @@ function Router() {
     sessionStorage.setItem("yrproservice-access-mode", "admin");
     setAccessMessage("");
     setAccessMode("admin");
-    if (adminEntry) navigate("/");
-  }, [adminEntry, navigate]);
+    navigate("/");
+  }, [navigate]);
+
+  const handleAdminLogout = useCallback(async () => {
+    let logoutError = "";
+    try {
+      const response = await fetch("/api/admin/session", {
+        method: "DELETE",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) logoutError = result.error || "The server could not confirm logout.";
+    } catch {
+      logoutError = "The server could not be reached. The Admin lock will expire automatically within 90 seconds.";
+    }
+    sessionStorage.removeItem("yrproservice-access-mode");
+    setAccessMessage(logoutError || "You have logged out of Admin.");
+    setAccessMode("choose");
+    if (window.location.pathname !== "/") navigate("/");
+  }, [navigate]);
 
   const routes = {
     "/": <Home navigate={navigate} />,
@@ -124,7 +167,9 @@ function Router() {
     "/dental-chair-request": <DentalChairRequest navigate={navigate} />,
     "/service-request": <ServiceRequest navigate={navigate} />,
     "/track-request": <TrackRequest navigate={navigate} />,
-    "/admin": <AdminDashboard onAuthenticated={handleAdminAuthenticated} />,
+    "/admin": adminEntry
+      ? <AdminEntry onAuthenticated={handleAdminAuthenticated} onCancel={() => { window.history.replaceState({}, "", "/"); setPath("/"); }} />
+      : <AdminDashboard />,
     "/admin/cms": <CMSDashboard />,
     "/admin/cms/preview": <CMSPagePreview />,
     "/admin/cms/manage": <CMSManagement />,
@@ -172,12 +217,29 @@ function Router() {
 
   return (
     <>
-      {!isAdminRoute && (accessMode === "client" || accessMode === "admin") && <PageDesignScope pageKey="site-chrome"><SiteHeader path={path} navigate={navigate} isAdmin={accessMode === "admin"} /></PageDesignScope>}
+      {!isAdminRoute && (accessMode === "client" || accessMode === "admin") && <PageDesignScope pageKey="site-chrome"><SiteHeader path={path} navigate={navigate} isAdmin={accessMode === "admin"} onAdminLogout={handleAdminLogout} /></PageDesignScope>}
+      {isAdminRoute && accessMode === "admin" && (
+        <div className="admin-session-utility">
+          <span>Admin session active</span>
+          <button type="button" onClick={handleAdminLogout}>Log out</button>
+        </div>
+      )}
       <main>
         <div key={path} className={isAdminRoute ? "" : "page-transition"}>
-          {isAdminRoute ? routeContent : accessMode === "client" || accessMode === "admin"
-            ? (!pageDesignKey ? routeContent : <PageDesignScope pageKey={pageDesignKey}>{routeContent}</PageDesignScope>)
-            : publicContent}
+          {isAdminRoute
+            ? adminEntry
+              ? routeContent
+              : accessMode === "admin"
+                ? routeContent
+                : <AccessChoice
+                    onClient={chooseClient}
+                    onAdmin={() => window.location.assign("/admin?entry=1")}
+                    checking={accessMode === "verifying"}
+                    message={accessMessage}
+                  />
+            : accessMode === "client" || accessMode === "admin"
+              ? (!pageDesignKey ? routeContent : <PageDesignScope pageKey={pageDesignKey}>{routeContent}</PageDesignScope>)
+              : publicContent}
         </div>
       </main>
       {!isAdminRoute && (accessMode === "client" || accessMode === "admin") && <PageDesignScope pageKey="site-chrome"><SiteFooter navigate={navigate} /></PageDesignScope>}
