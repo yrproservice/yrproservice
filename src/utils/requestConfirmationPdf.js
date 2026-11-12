@@ -179,7 +179,7 @@ export function downloadRequestConfirmationPdf(data) {
 
   sectionHeading("Reference details");
   field("Reference number", data.reference);
-  field("Request type", data.requestType === "dental_chair" ? "Dental chair request" : "Quotation request");
+  field("Request type", data.requestType === "service" ? "Service request" : data.requestType === "dental_chair" ? "Dental chair request" : "Quotation request");
   field("Submitted", data.submittedAt ? new Date(data.submittedAt).toLocaleString() : new Date().toLocaleString());
   page.y += 14;
   sectionHeading("Customer details");
@@ -187,9 +187,16 @@ export function downloadRequestConfirmationPdf(data) {
   field("Company / Clinic", data.clinic);
   field("Email", data.email);
   field("Phone", data.phone);
-  field("Location", data.location);
-  paragraph(data.requestType === "dental_chair" ? "Selected dental chairs" : "Products / chair selection", data.product);
-  paragraph("Additional message / requirements", data.message);
+  if (data.requestType === "service") {
+    field("Service required", data.serviceTitle || data.service);
+    field("Preferred date / timing", data.timing);
+  } else {
+    field("Location", data.location);
+  }
+  if (data.requestType !== "service") {
+    paragraph(data.requestType === "dental_chair" ? "Selected dental chairs" : "Products / chair selection", data.product);
+  }
+  paragraph(data.requestType === "service" ? "Service details / message" : "Additional message / requirements", data.message);
   ensureSpace(100);
   page.context.fillStyle = MUTED;
   page.context.font = "400 17px Arial, sans-serif";
