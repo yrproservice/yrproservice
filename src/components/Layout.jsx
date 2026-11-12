@@ -22,6 +22,31 @@ export function Link({ to, children, className = "", navigate, onClick }) {
   );
 }
 
+function AdminMenu({ navigate }) {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
+  return (
+    <div className={`nav-dropdown ${open ? "open" : ""}`} onMouseLeave={close}>
+      <button
+        type="button"
+        className="nav-dropdown-trigger"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        aria-haspopup="true"
+      >
+        Admin <span aria-hidden="true">⌄</span>
+      </button>
+      <div className="nav-dropdown-menu">
+        <div className="nav-dropdown-list">
+          <Link to="/admin" navigate={navigate} onClick={close}>Request Dashboard</Link>
+          <Link to="/admin/cms" navigate={navigate} onClick={close}>Visual CMS</Link>
+          <Link to="/admin/cms/manage" navigate={navigate} onClick={close}>Management Centre</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ServicesMenu({ navigate, path, services }) {
   const [open, setOpen] = useState(false);
   return (
@@ -118,20 +143,7 @@ export function SiteHeader({ path, navigate, isAdmin = false }) {
           >
             Team
           </Link>
-          {isAdmin && (
-            <div className="nav-dropdown admin-nav-dropdown">
-              <button type="button" className="nav-dropdown-trigger" aria-haspopup="true">
-                Admin <span aria-hidden="true">⌄</span>
-              </button>
-              <div className="nav-dropdown-menu">
-                <div className="nav-dropdown-list">
-                  <Link to="/admin" navigate={navigate}>Request Dashboard</Link>
-                  <Link to="/admin/cms" navigate={navigate}>Visual CMS</Link>
-                  <Link to="/admin/cms/manage" navigate={navigate}>Management Centre</Link>
-                </div>
-              </div>
-            </div>
-          )}
+          {isAdmin && <AdminMenu navigate={navigate} />}
         </nav>
         <div className="header-actions">
           <Link
