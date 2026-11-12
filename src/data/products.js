@@ -1891,7 +1891,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/morita/dental chair/morita signo z300.jpg",
+    img: "https://www.morita.com/cms/files/product_Z300_27.jpg",
     summary:
       "Morita Signo Z300 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
