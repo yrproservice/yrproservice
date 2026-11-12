@@ -25,7 +25,7 @@ function formatDate(value) {
       });
 }
 
-export default function AdminDashboard({ entryMode = false, onAuthenticated }) {
+export default function AdminDashboard({ onAuthenticated }) {
   const [requests, setRequests] = useState([]);
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
