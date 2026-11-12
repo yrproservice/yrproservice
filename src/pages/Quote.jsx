@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
+import { downloadRequestConfirmationPdf } from "../utils/requestConfirmationPdf";
 
 export default function Quote({ navigate }) {
   const { items } = useCart();
@@ -10,6 +11,7 @@ export default function Quote({ navigate }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
+  const [confirmationData, setConfirmationData] = useState(null);
   const initial =
     new URLSearchParams(window.location.search).get("product") || "";
   const [product, setProduct] = useState(initial);
@@ -60,6 +62,7 @@ export default function Quote({ navigate }) {
         );
       }
       setReference(result.reference);
+      setConfirmationData({ ...payload, reference: result.reference, submittedAt: new Date().toISOString() });
       setSent(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (submitError) {
@@ -85,6 +88,13 @@ export default function Quote({ navigate }) {
             <strong>Reference: {reference}</strong>
           </p>
           <div className="bp-actions">
+            <button
+              type="button"
+              className="bp-btn bp-btn-primary"
+              onClick={() => downloadRequestConfirmationPdf(confirmationData)}
+            >
+              Download PDF
+            </button>
             <Link
               to="/products"
               navigate={navigate}
