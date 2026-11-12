@@ -12,10 +12,14 @@ export async function onRequestGet(context) {
   const auth = await requireAdmin(context);
   if (!auth.ok) return auth.response;
   const { env, request } = context;
+  const url = new URL(request.url);
+  // A minimal authenticated session check avoids returning customer request data
+  // merely to decide whether the public header should show Admin navigation.
+  if (url.searchParams.get("access_check") === "1")
+    return adminJson({ ok: true, authorized: true });
   if (!env.DB)
     return adminJson({ error: "Request storage is not configured." }, 503);
 
-  const url = new URL(request.url);
   const type = url.searchParams.get("type") || "";
   const status = url.searchParams.get("status") || "";
   const search = (url.searchParams.get("search") || "").trim().slice(0, 100);
