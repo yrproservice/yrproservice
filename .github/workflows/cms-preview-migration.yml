@@ -5,7 +5,6 @@ on:
     branches: [cms-development]
     paths:
       - migrations/0002_create_cms.sql
-      - .github/workflows/cms-preview-migration.yml
   workflow_dispatch:
 
 permissions:
@@ -36,19 +35,19 @@ jobs:
         run: |
           npx wrangler@4.157.0 d1 info yr-proservice-test-db
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Apply CMS migration to Preview database
         run: |
           npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --file=migrations/0002_create_cms.sql
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Verify CMS tables exist in Preview database
         run: |
           npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'cms_%' ORDER BY name;"
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
