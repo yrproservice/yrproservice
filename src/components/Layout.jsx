@@ -22,7 +22,7 @@ export function Link({ to, children, className = "", navigate, onClick }) {
   );
 }
 
-function AdminMenu({ navigate }) {
+function AdminMenu({ navigate, onLogout }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   return (
@@ -41,6 +41,7 @@ function AdminMenu({ navigate }) {
           <Link to="/admin" onClick={close}>Request Dashboard</Link>
           <Link to="/admin/cms" onClick={close}>Visual CMS</Link>
           <Link to="/admin/cms/manage" onClick={close}>Management Centre</Link>
+          <button type="button" className="admin-menu-logout" onClick={() => { close(); onLogout?.(); }}>Log out</button>
         </div>
       </div>
     </div>
@@ -92,7 +93,7 @@ function ServicesMenu({ navigate, path, services }) {
   );
 }
 
-export function SiteHeader({ path, navigate, isAdmin = false }) {
+export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
   const { cartCount } = useCart();
   const { count: chairCount } = useChairRequests();
   const requestCount = cartCount + chairCount;
@@ -143,7 +144,7 @@ export function SiteHeader({ path, navigate, isAdmin = false }) {
           >
             Team
           </Link>
-          {isAdmin && <AdminMenu navigate={navigate} />}
+          {isAdmin && <AdminMenu navigate={navigate} onLogout={onAdminLogout} />}
         </nav>
         <div className="header-actions">
           <Link
@@ -195,6 +196,7 @@ export function SiteHeader({ path, navigate, isAdmin = false }) {
                 <Link to="/admin" onClick={closeMobile}>Request Dashboard</Link>
                 <Link to="/admin/cms" onClick={closeMobile}>Visual CMS</Link>
                 <Link to="/admin/cms/manage" onClick={closeMobile}>Management Centre</Link>
+                <button type="button" className="admin-menu-logout" onClick={() => { closeMobile(); onAdminLogout?.(); }}>Log out</button>
               </div>
             )}
             <Link to="/cart" navigate={navigate} onClick={closeMobile}>
