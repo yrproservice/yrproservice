@@ -217,11 +217,7 @@ const cattaniTurboJets = [
     brandLine: "Dental Suction System",
     category: "Equipment",
     purchaseType: "cart",
-    img: slug === "cattani-turbo-jet-1-modular-without-box"
-      ? "https://www.cattani.it/wp-content/uploads/2016/08/1470669438_img_77_97-image.jpg"
-      : slug === "cattani-turbo-jet-2-modular-without-box"
-        ? "https://www.cattani.it/wp-content/uploads/2016/08/1470669439_img_80_103-image.jpg"
-        : `/catalog/cattani/images/${image}`,
+    img: `/catalog/cattani/images/${image}`,
     summary: `Cattani ${model} dental suction system.`,
     description,
     highlights: [],
