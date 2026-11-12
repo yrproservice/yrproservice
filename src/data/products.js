@@ -1872,7 +1872,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/morita/dental chair/morita signo t500.jpg",
+    img: "https://www.morita.com/cms/files/products_signo_t500_highlights_02.jpg",
     summary:
       "Morita Signo T500 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
