@@ -2037,7 +2037,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "/catalog/morita/handpiece/morita tri auto zx2.jfif",
+    img: "https://www.morita.com/cms/files/JMMC_TR-ZX2_feature_01.jpg",
     summary:
       "Morita Tri Auto ZX2 dental handpiece. Review the model-specific details and compatibility information below.",
     description:
@@ -2056,7 +2056,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "https://www.morita.com/cms/files/PAR-4HEX-O-45_01.jpg",
+    img: "https://www.morita.com/cms/files/products_twinpower_technical-details_03.jpg?w=300",
     summary:
       "Morita TwinPower PAR-4HEX-O-45 dental handpiece. Review the model-specific details and compatibility information below.",
     description:
@@ -2075,7 +2075,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "https://www.morita.com/cms/files/PAR-4HEX-O_01.jpg",
+    img: "https://www.morita.com/cms/files/products_twinpower_technical-details_02.jpg?w=300",
     summary:
       "Morita TwinPower PAR-4HEX-O dental handpiece. Review the model-specific details and compatibility information below.",
     description:
@@ -2094,7 +2094,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "https://www.morita.com/cms/files/PAR-4HX-O_01.jpg",
+    img: "https://www.morita.com/cms/files/products_twinpower_technical-details_01.jpg?w=300",
     summary:
       "Morita TwinPower PAR-4HX-O dental handpiece. Review the model-specific details and compatibility information below.",
     description:
