@@ -18,7 +18,7 @@ This phase adds a private request dashboard while preserving public request subm
 Create two separate Self-hosted Access applications on the same public website hostname because Cloudflare reports that a destination already belongs to another application when the paths are combined:
 
 - **YR Proservice Admin** — path `/admin*` — Allow policy includes only `yr.proservice@gmail.com`.
-- **YR Proservice Admin API** — path `/api/admin*` — Allow policy includes only `yr.proservice@gmail.com`.
+- **YR Proservice Admin API** — protect both `/api/admin*` and `/api/cms/admin*` on each Preview hostname used for CMS administration. Keep the Allow policy limited to `yr.proservice@gmail.com`. The existing CMS endpoints use the same server-side Access JWT verifier and API audience; no second API application is required.
 
 Do not protect the entire public hostname: public pages, `/api/requests`, and `/api/track` must remain available to customers. Do not use a broad “Everyone” allow policy.
 
@@ -51,3 +51,12 @@ Do not use `VITE_` prefixes or put these values in frontend code. Keep the exist
 - Dashboard counts apply to the currently filtered result set.
 - The API does not send email notifications.
 - Before high-volume public use, add rate limiting or Cloudflare Turnstile/rate-limiting rules to reduce automated lookup attempts against public tracking.
+
+
+## Client / Admin entry mode
+
+The public application now presents a first-entry choice. Client mode opens the public site and remembers the choice for the current browser tab. Admin mode navigates to the existing protected `/admin` route; after the existing request-dashboard API returns a successful, server-verified response, the application returns the administrator to the public homepage and displays the Admin navigation menu. The menu is a convenience only: all dashboard and CMS endpoints continue to enforce Cloudflare Access JWT validation and the administrator allowlist on the server.
+
+On page refresh, Admin mode is revalidated through the existing `GET /api/admin/requests` endpoint. No new API, Access application, database, or Production binding is introduced by this feature.
+
+For Preview, ensure the existing **YR Proservice Admin** Access application covers `/admin*` and the existing **YR Proservice Admin API** application covers both `/api/admin*` and `/api/cms/admin*` on the current Preview hostname. The API application's AUD must match the Preview `ACCESS_AUD` value. Access hostname/path configuration is managed in Cloudflare Zero Trust, not in this repository.
