@@ -43,7 +43,7 @@ function buildPageCanvas(pageNumber, totalPages) {
   context.fillText("Request Confirmation", MARGIN, 208);
   context.fillStyle = MUTED;
   context.font = "400 18px Arial, sans-serif";
-  context.fillText(`Page ${pageNumber} of ${totalPages}`, PAGE_WIDTH - MARGIN - 170, PAGE_HEIGHT - 48);
+  context.fillText("YR Proservice | Request confirmation", PAGE_WIDTH - MARGIN - 390, PAGE_HEIGHT - 48);
   context.fillStyle = MUTED;
   context.fillRect(MARGIN, PAGE_HEIGHT - 78, PAGE_WIDTH - MARGIN * 2, 1);
   return { canvas, context, y: 320 };
