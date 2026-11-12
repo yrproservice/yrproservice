@@ -172,7 +172,7 @@ function Router() {
 
   return (
     <>
-      {!isAdminRoute && <PageDesignScope pageKey="site-chrome"><SiteHeader path={path} navigate={navigate} isAdmin={accessMode === "admin"} /></PageDesignScope>}
+      {!isAdminRoute && (accessMode === "client" || accessMode === "admin") && <PageDesignScope pageKey="site-chrome"><SiteHeader path={path} navigate={navigate} isAdmin={accessMode === "admin"} /></PageDesignScope>}
       <main>
         <div key={path} className={isAdminRoute ? "" : "page-transition"}>
           {isAdminRoute ? routeContent : accessMode === "client" || accessMode === "admin"
