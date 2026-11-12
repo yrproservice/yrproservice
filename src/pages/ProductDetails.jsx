@@ -10,6 +10,26 @@ function stockLabel(status) {
   return "Availability to be updated";
 }
 
+function formatProductPrice(price) {
+  if (price === null || price === undefined || price === "") {
+    return "Price on request";
+  }
+
+  const numericPrice =
+    typeof price === "number"
+      ? price
+      : Number(String(price).replace(/[^0-9.-]/g, ""));
+
+  if (!Number.isFinite(numericPrice)) return String(price);
+
+  return new Intl.NumberFormat("en-MY", {
+    style: "currency",
+    currency: "MYR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numericPrice);
+}
+
 export default function ProductDetails({ product, navigate }) {
   const { addToCart } = useCart();
   const { addChair } = useChairRequests();
@@ -81,7 +101,7 @@ export default function ProductDetails({ product, navigate }) {
           <div className="bp-detail-commercial">
             <div>
               <small>PRICE</small>
-              <strong>{product.price || "Price on request"}</strong>
+              <strong>{formatProductPrice(product.price)}</strong>
             </div>
             <div>
               <small>AVAILABILITY</small>
