@@ -49,6 +49,12 @@ function Router() {
   const [path, setPath] = useState(window.location.pathname);
   const [accessMode, setAccessMode] = useState(() => {
     const savedMode = sessionStorage.getItem("yrproservice-access-mode");
+    const isAdminEntryRoute = window.location.pathname === "/admin"
+      && new URLSearchParams(window.location.search).get("entry") === "1";
+    // Admin workspaces and preview tabs may open in a new tab where
+    // sessionStorage is not shared. Re-verify the HttpOnly server session
+    // instead of assuming that a missing tab flag means the user is signed out.
+    if (window.location.pathname.startsWith("/admin") && !isAdminEntryRoute) return "verifying";
     return savedMode === "client" ? "client" : savedMode === "admin" ? "verifying" : "choose";
   });
   const [accessMessage, setAccessMessage] = useState("");
