@@ -3,7 +3,7 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-100",
     model: "AC 100",
-    image: "ac-100.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/03/013125-main-600x600.png",
     airDelivery: "67.5 N l/min",
     dimensions: "W 620 × D 460 × H 720 mm",
     noiseOptions:
@@ -12,14 +12,14 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-100-q",
     model: "AC 100 Q",
-    image: "ac-100-q.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013144-main-600x600.png",
     dimensions: "W 660 × D 600 × H 860 mm",
     noiseOptions: "Shown with a noise-reducing plastic cover.",
   },
   {
     slug: "cattani-ac-200",
     model: "AC 200",
-    image: "ac-200.jpg",
+    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013208-main-600x600.png",
     airDelivery: "160 N l/min",
     dimensions: "W 620 × D 460 × H 720 mm",
     noiseOptions:
@@ -96,7 +96,7 @@ const cattaniCompressors = [
   brandLine: "Oil-less Dental Air Compressor",
   category: "Equipment",
   purchaseType: "cart",
-  img: `/catalog/cattani/images/${image}?v=20261021-official`,
+  img: image.startsWith("http") ? image : `/catalog/cattani/images/${image}?v=20261021-official`,
   summary: `Cattani ${model} oil-less compressor for dry compressed air in dental clinics.`,
   description: `Cattani ${model} is an oil-less compressor for dental compressed-air systems. The supplied Cattani brochure describes the dry-compressor range as including a drying system and filters to provide dry, high-purity compressed air. Confirm the required capacity and installation configuration for your clinic before ordering.`,
   highlights: [],
