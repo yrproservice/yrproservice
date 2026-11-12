@@ -269,7 +269,7 @@ const durrImagingProducts = [
     brandLine: "Intraoral X-ray Generator",
     category: "Imaging Equipment",
     purchaseType: "cart",
-    img: "/catalog/durr/images/vistaintra-dc.jpg",
+    img: "https://d2csxpduxe849s.cloudfront.net/media/0763C253-D45E-4E0F-B8A7F25ED9675E4B/E9748B9D-6680-4F7F-A666595CDDAE7178/mini-636CAC8A-D1EE-432E-81B63D8FFEA48F08.png",
     summary: "Dürr Dental VistaIntra DC intraoral X-ray generator.",
     description:
       "VistaIntra DC is an intraoral X-ray generator designed to work with image plates, sensors, and film. The brochure describes pre-programmed exposure doses for tooth areas when used with Dürr Dental image plates and sensors, adjustable X-ray parameters, and easy switching between image plate and sensor settings. Its DC technology delivers repeatable radiation output and, according to the brochure, reduces patient dose by more than 25% compared with conventional AC generators.",
