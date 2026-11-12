@@ -102,9 +102,10 @@ export function mergeProductData(original, edited) {
   return edited;
 }
 
-export function protectProductImage(original, edited) {
+export function protectProductImage(original, edited, allowImageChange = false) {
   const merged = mergeProductData(original, edited);
   if (!merged || typeof merged !== "object" || Array.isArray(merged)) return merged;
+  if (allowImageChange) return merged;
   if (!original || typeof original !== "object" || !hasOwn(original, "img")) {
     delete merged.img;
   } else {
