@@ -1732,7 +1732,7 @@ const rawProducts = [
     brandLine: "Connector and Coupling",
     category: "Connectors",
     purchaseType: "cart",
-    img: "/catalog/morita/connector/morita kavo multiflex lux.png",
+    img: "https://www.kavo.com/sites/default/files/styles/mq_media_16_9_1400_xl_2_full/public/mq_acquia_dam/MULTIflex-460LED-transparent-1000px.png?itok=KqbyNhZ2",
     summary:
       "Morita KaVo MULTIflex LUX Coupling dental coupling for compatible handpiece and delivery-unit connections.",
     description:
