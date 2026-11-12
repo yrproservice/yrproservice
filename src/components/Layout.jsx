@@ -38,9 +38,9 @@ function AdminMenu({ navigate }) {
       </button>
       <div className="nav-dropdown-menu">
         <div className="nav-dropdown-list">
-          <Link to="/admin" navigate={navigate} onClick={close}>Request Dashboard</Link>
-          <Link to="/admin/cms" navigate={navigate} onClick={close}>Visual CMS</Link>
-          <Link to="/admin/cms/manage" navigate={navigate} onClick={close}>Management Centre</Link>
+          <Link to="/admin" onClick={close}>Request Dashboard</Link>
+          <Link to="/admin/cms" onClick={close}>Visual CMS</Link>
+          <Link to="/admin/cms/manage" onClick={close}>Management Centre</Link>
         </div>
       </div>
     </div>
@@ -192,9 +192,9 @@ export function SiteHeader({ path, navigate, isAdmin = false }) {
             {isAdmin && (
               <div className="mobile-nav-group">
                 <span>Admin</span>
-                <Link to="/admin" navigate={navigate} onClick={closeMobile}>Request Dashboard</Link>
-                <Link to="/admin/cms" navigate={navigate} onClick={closeMobile}>Visual CMS</Link>
-                <Link to="/admin/cms/manage" navigate={navigate} onClick={closeMobile}>Management Centre</Link>
+                <Link to="/admin" onClick={closeMobile}>Request Dashboard</Link>
+                <Link to="/admin/cms" onClick={closeMobile}>Visual CMS</Link>
+                <Link to="/admin/cms/manage" onClick={closeMobile}>Management Centre</Link>
               </div>
             )}
             <Link to="/cart" navigate={navigate} onClick={closeMobile}>
