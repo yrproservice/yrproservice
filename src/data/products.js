@@ -1751,7 +1751,7 @@ const rawProducts = [
     brandLine: "Connector and Coupling",
     category: "Connectors",
     purchaseType: "cart",
-    img: "/catalog/morita/connector/morita twinpower 4 hole coupling.webp",
+    img: "https://www.morita.com/cms/files/TwinPower_CP4_JMA.jpg?w=300",
     summary:
       "Morita TwinPower 4-Hole Coupling dental coupling for compatible handpiece and delivery-unit connections.",
     description:
