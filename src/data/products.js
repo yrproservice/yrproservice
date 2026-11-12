@@ -686,7 +686,7 @@ const melagProducts = [
     brandLine: "Large-Chamber Class B Steam Sterilizer",
     category: "Equipment",
     purchaseType: "quote",
-    img: "/catalog/melag/images/vacuclave-550.png",
+    img: "https://images.ctfassets.net/u7s89gwxh9vm/4omsrokyu8xYzQdSPfO2lm/ef18d3d9a1d0ad6bb86e2488207715da/MicrosoftTeams-image__607_-min.png",
     summary:
       "MELAG Vacuclave 550 53-litre autoclave for high-capacity instrument reprocessing.",
     description:
