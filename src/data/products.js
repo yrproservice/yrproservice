@@ -3,7 +3,7 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-100",
     model: "AC 100",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/03/013125-main-600x600.png",
+    image: "ac-100.jpg",
     airDelivery: "67.5 N l/min",
     dimensions: "W 620 × D 460 × H 720 mm",
     noiseOptions:
@@ -12,14 +12,14 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-100-q",
     model: "AC 100 Q",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013144-main-600x600.png",
+    image: "ac-100-q.jpg",
     dimensions: "W 660 × D 600 × H 860 mm",
     noiseOptions: "Shown with a noise-reducing plastic cover.",
   },
   {
     slug: "cattani-ac-200",
     model: "AC 200",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013208-main-600x600.png",
+    image: "ac-200.jpg",
     airDelivery: "160 N l/min",
     dimensions: "W 620 × D 460 × H 720 mm",
     noiseOptions:
@@ -28,14 +28,14 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-200-q",
     model: "AC 200 Q",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013244-main-600x600.png",
+    image: "ac-200-q.jpg",
     dimensions: "W 660 × D 600 × H 860 mm",
     noiseOptions: "Shown with a noise-reducing plastic cover.",
   },
   {
     slug: "cattani-ac-300",
     model: "AC 300",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013308-main-600x600.png",
+    image: "ac-300.jpg",
     airDelivery: "238 N l/min",
     dimensions: "W 620 × D 520 × H 750 mm",
     noiseOptions:
@@ -44,14 +44,14 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-300-q",
     model: "AC 300 Q",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013344-main-600x600.png",
+    image: "ac-300-q.jpg",
     dimensions: "W 720 × D 600 × H 970 mm",
     noiseOptions: "Shown with a noise-reducing plastic cover.",
   },
   {
     slug: "cattani-ac-400",
     model: "AC 400",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013432-main-600x600.png",
+    image: "ac-400.jpg",
     airDelivery: "320 N l/min",
     dimensions: "W 1155 × D 550 × H 745 mm",
     noiseOptions:
@@ -60,14 +60,14 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-400-q",
     model: "AC 400 Q",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/05/013450-main-600x600.png",
+    image: "ac-400.jpg",
     dimensions: "W 1160 × D 650 × H 890 mm",
     noiseOptions: "Shown with a noise-reducing plastic cover.",
   },
   {
     slug: "cattani-ac-600",
     model: "AC 600",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/06/013532-main-600x600.png",
+    image: "ac-600.jpg",
     airDelivery: "476 N l/min",
     dimensions: "W 1320 × D 590 × H 890 mm",
     noiseOptions:
@@ -76,14 +76,14 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-600-q",
     model: "AC 600 Q",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/06/013557-main-600x600.png",
+    image: "ac-600.jpg",
     dimensions: "W 1320 × D 770 × H 1040 mm",
     noiseOptions: "Shown with a noise-reducing plastic cover.",
   },
   {
     slug: "cattani-ac-1800",
     model: "AC 1800",
-    image: "https://www.cattani.com.au/wp-content/uploads/2025/06/013594-main-600x600.png",
+    image: "ac-1800.jpg",
     airDelivery: "1428 N l/min",
     dimensions: "W 1800 × D 1100 × H 1100 mm",
     noiseOptions:
@@ -169,7 +169,7 @@ const cattaniTurboJets = [
   {
     slug: "cattani-turbo-jet-1-modular-without-box",
     model: "Turbo Jet 1 Modular Without Box",
-    image: "https://www.cattani.it/wp-content/uploads/2016/08/1470669438_img_77_97-image.jpg",
+    image: "turbo-jet-1-modular.jpg",
     description:
       "Turbo Jet 1 Modular Without Box is a one-seat dental suction system in an open, cabinet-free configuration. Its modular design supports installation within a suitable equipment space.",
     manufacturerSource:
@@ -187,7 +187,7 @@ const cattaniTurboJets = [
   {
     slug: "cattani-turbo-jet-2-modular-without-box",
     model: "Turbo Jet 2 Modular Without Box",
-    image: "https://www.cattani.it/wp-content/uploads/2016/08/1470669439_img_80_103-image.jpg",
+    image: "turbo-jet-2-modular.jpg",
     description:
       "Turbo Jet 2 Modular Without Box is a two-seat dental suction system in an open, cabinet-free configuration. Its modular design supports installation within a suitable equipment space.",
     manufacturerSource:
@@ -302,7 +302,7 @@ const durrImagingProducts = [
     brandLine: "3D, Panoramic and Cephalometric X-ray System",
     category: "Imaging Equipment",
     purchaseType: "cart",
-    img: "https://media.duerrdental.com/asset/e91d4b7c-7cea-492a-ad58-b8adb54e0c9f/thumbnail/webimage-VistaVox-S-Ceph-Website-jpg",
+    img: "/catalog/durr/images/vistavox-s-ceph.jpg",
     summary: "Dürr Dental VistaVox S Ceph 3-in-1 dental X-ray imaging system.",
     description:
       "VistaVox S Ceph combines CBCT, panoramic, and cephalometric imaging in one system. Its jaw-shaped 3D field of view is designed around the dental arch, while S-Pan technology uses image regions that best match patient anatomy to create clear panoramic images and help compensate for some positioning deviations. The brochure describes a 1.9-second quick scan for lateral cephalometric images and two integrated CsI sensors, so switching between the 3D unit and Ceph arm is not required.",
@@ -343,7 +343,7 @@ const fussenImagingProducts = [
     brandLine: "Dental Imaging Plate Scanner",
     category: "Imaging Equipment",
     purchaseType: "cart",
-    img: "https://en.fussengroup.com/file/upload/2024-08/01/202408011102496609.jpg",
+    img: "/catalog/fussen/images/imaging-plate-scanner.jpg",
     summary:
       "Fussen digital dental imaging plate scanner for intraoral radiography.",
     description:
@@ -428,7 +428,7 @@ const melagProducts = [
     brandLine: "Steam Sterilizer",
     category: "Equipment",
     purchaseType: "quote",
-    img: "https://images.ctfassets.net/u7s89gwxh9vm/1a3ISL8EQQVps6KDJvunef/4ae8dca9d5e1524530f0cbbdecdec4b6/2022-12-01_JG_005_opt2-geraet-fortal-123-DE-Flagge-min.png",
+    img: "/catalog/melag/images/vacuclave-123.jpg",
     summary:
       "MELAG Vacuclave 123 steam sterilizer for dental instrument reprocessing and clinic hygiene workflows.",
     description:
@@ -853,7 +853,7 @@ const xlineProducts = [
     brandLine: "DC Intraoral X-ray Generator",
     category: "Imaging Equipment",
     purchaseType: "quote",
-    img: "https://xlineimaging.com/upload/img/xdi-150_01.jpg",
+    img: "/catalog/xline/images/xline-xdi-150.jpg",
     summary:
       "Xline XDI-150 DC intraoral X-ray generator with removable touchscreen and wireless remote.",
     description:
@@ -887,7 +887,7 @@ const xlineProducts = [
     brandLine: "Intraoral CMOS X-ray Sensor",
     category: "Imaging Equipment",
     purchaseType: "quote",
-    img: "https://www.xlineimaging.com/upload/img/starx_5.png",
+    img: "/catalog/xline/images/xline-starx-pro.jpg",
     summary:
       "Xline StarX PRO intraoral CMOS sensor, available in sizes 1 and 2, with USB plug-and-play imaging.",
     description:
@@ -927,7 +927,7 @@ const additionalBrochureProducts = [
     brandLine: "DC Intraoral X-ray Generator",
     category: "Imaging Equipment",
     purchaseType: "quote",
-    img: "https://www.fonadental.com/upload/img/xdc_slide3.png",
+    img: "/catalog/others/images/fona-xdc.jpg",
     summary:
       "FONA XDC high-frequency DC intraoral X-ray generator with selectable 60 or 70 kV.",
     description:
@@ -963,7 +963,7 @@ const additionalBrochureProducts = [
     brandLine: "AC Intraoral X-ray Generator",
     category: "Imaging Equipment",
     purchaseType: "quote",
-    img: "https://www.fonadental.com/upload/img/xdg_slide2.png",
+    img: "/catalog/others/images/fona-xdg.jpg",
     summary:
       "FONA XDG AC intraoral X-ray generator with automatic exposure settings and a 0.4 mm focal spot.",
     description:
@@ -1057,7 +1057,7 @@ const additionalBrochureProducts = [
     brandLine: "Condor Lab Dental Laboratory Furniture",
     category: "Laboratory Equipment",
     purchaseType: "quote",
-    img: "https://www.rossicaws.it/wp-content/uploads/2021/04/condorlab-bl1-830x391.jpg",
+    img: "/catalog/others/images/condor-lab-workstation.jpg",
     summary:
       "Modular Condor Lab dental laboratory workbench system with configurable modules and accessories.",
     description:
@@ -1086,7 +1086,7 @@ const additionalBrochureProducts = [
     brandLine: "Dental Laboratory Finishing Box",
     category: "Laboratory Equipment",
     purchaseType: "quote",
-    img: "https://www.rossicaws.it/wp-content/uploads/2021/04/BLbox-1-1500x951.jpg",
+    img: "/catalog/others/images/condor-lab-blbox.jpg",
     summary:
       "Condor Lab BLbox finishing box with Dustinet suction, two intake points, and a long-life filter.",
     description:
@@ -1115,7 +1115,7 @@ const additionalBrochureProducts = [
     brandLine: "Dental Laboratory Finishing Box",
     category: "Laboratory Equipment",
     purchaseType: "quote",
-    img: "https://www.rossicaws.it/wp-content/uploads/2021/04/BLbox-easy-1-1500x951.jpg",
+    img: "/catalog/others/images/condor-lab-blbox-easy.jpg",
     summary:
       "Condor Lab BLbox Easy finishing box with microfibre-filter suction and compressed-air syringe.",
     description:
@@ -1227,7 +1227,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "https://www.cingol.com/attachment/58/source/bd6d04d5d2bd3585dc720b116bbf2034.jpg",
+    img: "/catalog/cingol/dental chair/cingol x1.jpg",
     summary:
       "Cingol X1 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1246,7 +1246,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "https://www.cingol.com/attachment/58/source/1fe576104d108fcd5d984930fa167669.jpg",
+    img: "/catalog/cingol/dental chair/cingol x3.jpg",
     summary:
       "Cingol X3 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1265,7 +1265,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "https://www.cingol.com/attachment/58/source/X52_159242.jpg",
+    img: "/catalog/cingol/dental chair/cingol x5.jpg",
     summary:
       "Cingol X5 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1808,7 +1808,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "https://www.morita.com/cms/files/products-SIGNO-G10II-highlights-3-w.jpg",
+    img: "/catalog/morita/dental chair/morita signo g10 II.jpg",
     summary:
       "Dental treatment unit family with configuration-dependent delivery and chair-side equipment.",
     description:
@@ -1834,7 +1834,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "https://www.morita.com/cms/files/Signo-G20-product.jpg",
+    img: "/catalog/morita/dental chair/morita signo g20.jpg",
     summary:
       "Morita Signo G20 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1986,7 +1986,7 @@ const rawProducts = [
     brandLine: "Dental Equipment and Accessories",
     category: "Equipment",
     purchaseType: "cart",
-    img: "https://www.morita.com/cms/files/JMMC_Veraview_X800_F150_Feature_001.jpg",
+    img: "/catalog/morita/equipment/morita veraview x800.jpg",
     summary:
       "Extraoral panoramic and 3D CBCT imaging system with configuration-dependent imaging fields.",
     description:
@@ -2037,7 +2037,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "https://www.morita.com/cms/files/JMMC_TR-ZX2_feature_01.jpg",
+    img: "/catalog/morita/handpiece/morita tri auto zx2.jfif",
     summary:
       "Morita Tri Auto ZX2 dental handpiece. Review the model-specific details and compatibility information below.",
     description:
@@ -2113,7 +2113,7 @@ const rawProducts = [
     brandLine: "Dental Stool",
     category: "Stools",
     purchaseType: "cart",
-    img: "https://www.morita.com/cms/files/product_OSN_1.jpg?crop=900%2C500&w=900",
+    img: "/catalog/morita/stool/morita os-n.jfif",
     summary: "Morita OS-N Stool operator stool for dental-clinic workspaces.",
     description:
       "Morita OS-N Stool is an operator stool intended to support seated clinical work around the dental operatory. Adjustment range, upholstery and included options can vary by model and configuration.",
@@ -2131,7 +2131,7 @@ const rawProducts = [
     brandLine: "Dental Stool",
     category: "Stools",
     purchaseType: "cart",
-    img: "https://www.morita.com/cms/files/product_OSA40_highlight14.jpg?crop=900%2C500&w=900",
+    img: "/catalog/morita/stool/morita t2.jpg",
     summary: "Morita T2 Stool operator stool for dental-clinic workspaces.",
     description:
       "Morita T2 Stool is an operator stool intended to support seated clinical work around the dental operatory. Adjustment range, upholstery and included options can vary by model and configuration.",
@@ -2430,7 +2430,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "https://omo-oss-image.thefastimg.com/portal-saas/pg2024091219023005904/cms/image/6e8767da-7267-4ac9-8446-58b7d40a8375.jpg",
+    img: "/catalog/westcode/handpiece/westcode x1lg.PNG",
     summary:
       "Westcode X1LG dental handpiece. Review the model-specific details and compatibility information below.",
     description:
@@ -2449,7 +2449,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "https://omo-oss-image.thefastimg.com/portal-saas/pg2024091219023005904/cms/image/a6dd5b33-f641-42d7-a8b4-ce05f55bb248.jpg",
+    img: "/catalog/westcode/handpiece/westcode x45 pro.jpg",
     summary:
       "Westcode X45 Pro dental handpiece. Review the model-specific details and compatibility information below.",
     description:
@@ -2496,7 +2496,7 @@ const rawProducts = [
     brandLine: "Dental Handpiece",
     category: "Handpieces",
     purchaseType: "cart",
-    img: "https://omo-oss-image.thefastimg.com/portal-saas/pg2024091219023005904/cms/image/9219a8cc-17bd-4e2d-9afb-680dc170080e.jpg",
+    img: "/catalog/westcode/handpiece/westcode x45lg pro.jpg",
     summary:
       "Westcode X45LG Pro dental handpiece. Review the model-specific details and compatibility information below.",
     description:
