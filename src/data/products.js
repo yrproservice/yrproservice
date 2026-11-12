@@ -1853,7 +1853,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "https://www.morita.com/cms/files/headers-product-signo-T100_SW_2.jpg?crop=1400%2C280&max_w=1400",
+    img: "/catalog/morita/dental chair/morita signo t100.jpg",
     summary:
       "Morita Signo T100 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1910,7 +1910,7 @@ const rawProducts = [
     brandLine: "Dental Equipment and Accessories",
     category: "Equipment",
     purchaseType: "cart",
-    img: "/catalog/morita/equipment/morita dentaport zx.jpg",
+    img: "https://www.morita.com/cms/files/products_dentaport-zx-set-otr_media_10.jpg",
     summary:
       "Morita endodontic device family for root-canal measurement workflows.",
     description:
@@ -1929,7 +1929,7 @@ const rawProducts = [
     brandLine: "Dental Equipment and Accessories",
     category: "Equipment",
     purchaseType: "cart",
-    img: "/catalog/morita/equipment/morita lubrina 2.jpg",
+    img: "https://www.morita.com/cms/files/Lubrina2_highlight_2.jpg?max_box=1500",
     summary:
       "Automatic maintenance equipment for compatible dental handpieces.",
     description:
