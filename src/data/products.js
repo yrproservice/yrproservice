@@ -1789,7 +1789,7 @@ const rawProducts = [
     brandLine: "Connector and Coupling",
     category: "Connectors",
     purchaseType: "cart",
-    img: "/catalog/morita/connector/nsk coupling.jpg",
+    img: "https://www.asia-mea.nsk-dental.com/admin/wp-content/uploads/FM-CL-M4.png",
     summary:
       "Morita Nsk coupling dental coupling for compatible handpiece and delivery-unit connections.",
     description:
