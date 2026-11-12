@@ -4628,3 +4628,87 @@ h6 {
   .access-choice-card { min-height: 220px; padding: 23px; }
   .access-choice-logo { width: 68px; height: 68px; margin-bottom: 22px; }
 }
+
+
+/* Single-device Admin session and logout controls */
+.admin-menu-logout {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid #e6edf3;
+  padding: 12px 16px;
+  background: transparent;
+  color: #a52a2a;
+  text-align: left;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.admin-menu-logout:hover,
+.admin-menu-logout:focus-visible {
+  background: #fff4f3;
+  color: #842020;
+  outline: none;
+}
+.admin-session-utility {
+  position: fixed;
+  z-index: 1200;
+  top: 14px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px 8px 14px;
+  border: 1px solid #c8dced;
+  border-radius: 999px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 5px 20px rgba(11,49,87,.12);
+  color: #0b4a88;
+  font-size: 12px;
+  font-weight: 700;
+}
+.admin-session-utility button {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #0b4a88;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.admin-session-utility button:hover { background: #1e7ed8; }
+.admin-entry-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 18px;
+  box-sizing: border-box;
+  background: #f5f7fa;
+  color: #1f2937;
+}
+.admin-entry-card {
+  width: min(560px, 100%);
+  padding: 36px;
+  border: 1px solid #dce6ef;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 14px 40px rgba(11,49,87,.08);
+  text-align: center;
+}
+.admin-entry-card h1 {
+  margin: 8px 0 14px;
+  color: #0b3157;
+  font-size: clamp(27px, 4vw, 36px);
+}
+.admin-entry-card p {
+  color: #687280;
+  line-height: 1.65;
+}
+.admin-entry-card .admin-primary-button {
+  margin-top: 12px;
+}
+@media (max-width: 640px) {
+  .admin-session-utility { top: 8px; right: 8px; }
+  .admin-entry-card { padding: 26px 20px; }
+}
