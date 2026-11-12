@@ -1057,7 +1057,7 @@ const additionalBrochureProducts = [
     brandLine: "Condor Lab Dental Laboratory Furniture",
     category: "Laboratory Equipment",
     purchaseType: "quote",
-    img: "/catalog/others/images/condor-lab-workstation.jpg",
+    img: "https://www.rossicaws.it/wp-content/uploads/2021/04/condorlab-bl1-830x391.jpg",
     summary:
       "Modular Condor Lab dental laboratory workbench system with configurable modules and accessories.",
     description:
@@ -1086,7 +1086,7 @@ const additionalBrochureProducts = [
     brandLine: "Dental Laboratory Finishing Box",
     category: "Laboratory Equipment",
     purchaseType: "quote",
-    img: "/catalog/others/images/condor-lab-blbox.jpg",
+    img: "https://www.rossicaws.it/wp-content/uploads/2021/04/BLbox-1-1500x951.jpg",
     summary:
       "Condor Lab BLbox finishing box with Dustinet suction, two intake points, and a long-life filter.",
     description:
@@ -1115,7 +1115,7 @@ const additionalBrochureProducts = [
     brandLine: "Dental Laboratory Finishing Box",
     category: "Laboratory Equipment",
     purchaseType: "quote",
-    img: "/catalog/others/images/condor-lab-blbox-easy.jpg",
+    img: "https://www.rossicaws.it/wp-content/uploads/2021/04/BLbox-easy-1-1500x951.jpg",
     summary:
       "Condor Lab BLbox Easy finishing box with microfibre-filter suction and compressed-air syringe.",
     description:
