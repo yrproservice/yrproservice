@@ -1227,7 +1227,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "/catalog/cingol/dental chair/cingol x1.jpg",
+    img: "https://www.cingol.com/attachment/58/source/29ba869efa4f69a2332e58114fe2e535.jpg",
     summary:
       "Cingol X1 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1986,7 +1986,7 @@ const rawProducts = [
     brandLine: "Dental Equipment and Accessories",
     category: "Equipment",
     purchaseType: "cart",
-    img: "/catalog/morita/equipment/morita veraview x800.jpg",
+    img: "https://www.morita.com/cms/files/JMMC_Veraview_X800_F150_Feature_001.jpg",
     summary:
       "Extraoral panoramic and 3D CBCT imaging system with configuration-dependent imaging fields.",
     description:
