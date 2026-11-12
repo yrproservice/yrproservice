@@ -343,7 +343,7 @@ const fussenImagingProducts = [
     brandLine: "Dental Imaging Plate Scanner",
     category: "Imaging Equipment",
     purchaseType: "cart",
-    img: "/catalog/fussen/images/imaging-plate-scanner.jpg",
+    img: "https://en.fussengroup.com/file/upload/2024-08/01/202408011102496609.jpg",
     summary:
       "Fussen digital dental imaging plate scanner for intraoral radiography.",
     description:
