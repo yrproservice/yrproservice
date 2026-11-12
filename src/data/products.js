@@ -1853,7 +1853,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "https://www.morita.com/cms/files/product_T100_2_news.jpg",
+    img: "https://www.morita.com/cms/files/product_T100_4_news.jpg",
     summary:
       "Morita Signo T100 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
