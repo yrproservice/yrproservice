@@ -1227,7 +1227,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "https://www.cingol.com/attachment/58/source/29ba869efa4f69a2332e58114fe2e535.jpg",
+    img: "/catalog/cingol/dental chair/cingol x1.jpg",
     summary:
       "Cingol X1 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1246,7 +1246,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "https://www.cingol.com/attachment/58/source/X31_158153.jpg",
+    img: "/catalog/cingol/dental chair/cingol x3.jpg",
     summary:
       "Cingol X3 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1265,7 +1265,7 @@ const rawProducts = [
     brandLine: "Dental Chair and Treatment Unit",
     category: "Dental Chairs",
     purchaseType: "quote",
-    img: "https://www.cingol.com/attachment/58/source/X51_159054.jpg",
+    img: "/catalog/cingol/dental chair/cingol x5.jpg",
     summary:
       "Cingol X5 dental treatment unit for patient positioning and chair-side clinical workflows.",
     description:
@@ -1910,7 +1910,7 @@ const rawProducts = [
     brandLine: "Dental Equipment and Accessories",
     category: "Equipment",
     purchaseType: "cart",
-    img: "https://www.morita.com/cms/files/products_root-zx_media_03.jpg",
+    img: "/catalog/morita/equipment/morita dentaport zx.jpg",
     summary:
       "Morita endodontic device family for root-canal measurement workflows.",
     description:
@@ -1929,7 +1929,7 @@ const rawProducts = [
     brandLine: "Dental Equipment and Accessories",
     category: "Equipment",
     purchaseType: "cart",
-    img: "https://www.morita.com/cms/files/Lubrina2_highlight_1.jpg?crop=900%2C500&w=900",
+    img: "/catalog/morita/equipment/morita lubrina 2.jpg",
     summary:
       "Automatic maintenance equipment for compatible dental handpieces.",
     description:
@@ -1986,7 +1986,7 @@ const rawProducts = [
     brandLine: "Dental Equipment and Accessories",
     category: "Equipment",
     purchaseType: "cart",
-    img: "https://www.morita.com/cms/files/JMMC_Veraview_X800_F150_Feature_001.jpg",
+    img: "/catalog/morita/equipment/morita veraview x800.jpg",
     summary:
       "Extraoral panoramic and 3D CBCT imaging system with configuration-dependent imaging fields.",
     description:
