@@ -451,3 +451,25 @@ The W&H and NSK images are definitely cross-brand products. The product record b
 #### Morita stool
 - Enhanced `morita os-n.jpg` shows the complete stool, including backrest, seat, support column, base and casters. The framing is clean and suitable for a stool card, subject to OS-N model provenance.
 No product data or image paths changed.
+
+### Final enhanced handpiece, connector and equipment inspection — 13 November 2026
+
+#### Mocom Goldspeed EVO
+The enhanced D1, D1-L, E16, E4, M5-L, R20-L, S1 and S1-L files were visually checked. The images show isolated Goldspeed EVO handpiece components on white. The D1/D1-L, M5-L, R20-L and S1/S1-L model markings are visible enough to distinguish the suffix variants. E4 and E16 appear visually identical in the current enhanced render and need exact product-source comparison before claiming they are distinct. This is a clean image family; preserve model/variant separation.
+
+#### Westcode enhanced connectors
+- KaVo 4-hole and 6-hole fibre-optic connectors are fully visible, isolated on white, in narrow portrait compositions.
+- QD 4-hole connector with water filter/non-return valve is fully visible, isolated on white, but has a black body and different shape from the KaVo connectors.
+- These assets have clear connector-specific filenames and are reasonable visual candidates; exact interface/model compatibility must still match the relevant product record.
+
+#### Westcode enhanced equipment
+- NL201 control unit and handpiece are fully visible together on white, with generous whitespace.
+- Westcode 500 ml dental handpiece oil spray can is fully visible, isolated on white.
+- Westcode oil lubricator cabinet is fully visible on white, front-on. Internal handpieces are displayed in the cabinet.
+All are visually complete. Confirm each product record's exact name/variant before treating them as approved final assets.
+
+#### Morita enhanced handpieces
+- Tri Auto ZX2+ image shows the handpiece in its charging stand; complete set visible.
+- Tri Auto ZX2 image shows the complete handheld endodontic motor on white.
+- Three TwinPower assets show complete horizontal contra-angle/turbine handpieces; their model codes and optic suffixes must match the corresponding product record. The source renders are wide/short and will require contain-style presentation rather than crop.
+No product data or image paths changed.
