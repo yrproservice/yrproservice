@@ -346,3 +346,14 @@ These findings describe framing/visual quality only. The asset filenames and vis
 - `westcode za15l.jpg` shows two complete handpieces from different angles, similar to `westcode za15.webp`; ensure record expects the L variant and the paired presentation before use.
 
 This audit identifies several visually complete images that may be suitable after exact model verification, as well as two cross-brand connector assets currently stored under the Morita folder. No product data or image references were changed.
+
+### Product image-reference integrity scan — 13 November 2026
+
+A recursive Git tree scan of branch `cms-development` was compared with the product image fields in `src/data/products.js`.
+- Parsed 90 product records with slug/name/image fields.
+- 89 records have a non-empty image path that resolves to an existing repository file.
+- 1 record has no image path: `melag-vacuclave-118` (record image value is currently empty).
+- No non-empty product image path was found to point to a missing file in this scan.
+- The scan is path-existence validation only; it does not certify that the image is the correct model, high enough resolution, or visually acceptable.
+- Source file SHA at scan time: `b7c4f4edaceb02c219a89d00d208ff9d217d66bd`.
+No product data or image references changed.
