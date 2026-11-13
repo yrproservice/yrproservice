@@ -5,14 +5,18 @@ import { services as fallbackServices } from "../data/services";
 import { getServicesCmsContent } from "../data/servicesCmsTemplate";
 
 export function Link({ to, children, className = "", navigate, onClick }) {
+  const value = typeof to === "string" ? to.trim() : "";
+  const internal = safeInternalRoute(value);
+  const external = /^(https:\/\/|mailto:|tel:)/i.test(value);
+  const href = internal || (external ? value : "#");
   return (
     <a
-      href={to}
+      href={href}
       className={className}
       onClick={(event) => {
-        if (navigate) {
+        if (navigate && internal) {
           event.preventDefault();
-          navigate(to);
+          navigate(internal);
         }
         onClick?.(event);
       }}
