@@ -58,7 +58,7 @@ These content edits have regression tests in `tests/product-catalog.test.js`. Th
 ## Production release gates
 
 Do not merge PR #2 or deploy to Production until:
-- Review the PR merge base and full commit history before any merge. At the time of this audit, `cms-development` is 313 commits ahead of `main`; the PR must not be merged without confirming that this full history and its diff are intended.
+- Review the PR merge base and full commit history before any merge. The initial audit recorded `cms-development` as 313 commits ahead of `main`; a fresh comparison on 13 November 2026 reports it is now 325 commits ahead and 0 behind. The PR must not be merged without confirming that this full history and its diff are intended.
 
 - The outstanding product-image/source/specification gaps are resolved or explicitly accepted.
 - The HR contact destination is confirmed.
