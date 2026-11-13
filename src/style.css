@@ -4324,7 +4324,7 @@ h6 {
 .page-design-scope .container {
   max-width: min(var(--page-design-content-width), calc(100% - 40px));
 }
-.page-design-scope :is(.bp-home,.bp-products,.bp-detail,.bp-cart,.bp-quote,.request-centre,.service-detail-page,.service-request-page,.track-request-page,.services-cms-page) {
+.page-design-scope :is(.bp-home,.bp-products,.bp-detail,.bp-cart,.bp-quote,.request-centre,.service-detail-page,.service-request-page,.track-request-page,.services-cms-page,.bp-contact-page) {
   background-color: var(--page-design-bg);
   color: var(--page-design-text);
 }
@@ -4341,7 +4341,7 @@ h6 {
 .page-design-scope :is(.bp-btn-outline,.bp-btn-outline-blue,.button.secondary) {
   border-radius: var(--page-design-button-radius);
 }
-.page-design-scope :is(.bp-catalog-card,.spotlight-card,.bp-detail-photo-frame,.bp-detail-commercial > div,.bp-cart-row,.service-request-card,.track-request-form,.bp-quote form,.request-form-card,.track-result) {
+.page-design-scope :is(.bp-catalog-card,.spotlight-card,.bp-detail-photo-frame,.bp-detail-commercial > div,.bp-cart-row,.service-request-card,.track-request-form,.bp-quote form,.request-form-card,.track-result,.bp-contact-card) {
   border-radius: var(--page-design-card-radius);
   border-color: var(--page-design-border);
   background-color: var(--page-design-surface);
