@@ -91,8 +91,8 @@ const cattaniCompressors = [
     tankCapacity: "150 L",
     soundLevel: "70.4 dB(A)",
     weight: "169 kg net; 200 kg gross",
-    recommendedCapacity: "Suggested for 6–9 dental units",
-    manufacturerSource: "https://www.cattani.it/en/prodotto/ac-600-q-three-cylinder-twin-head-compressor-with-noise-reducing-plastic-covers-and-2-air-driers/",
+    recommendedCapacity: "Suggested for 7–8 dental chairs (Cattani Asia 2026 regional catalogue)",
+    manufacturerSource: "https://cattaniasia.com/wp-content/uploads/2026/01/2026-Catalogue-Asia_Region-1_web.pdf",
   },
   {
     slug: "cattani-ac-1800",
