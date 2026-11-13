@@ -211,3 +211,32 @@ The brochure's visual description includes both a close-up of the intraoral X-ra
 - https://www.morita.com/group/en/products/diagnostic-and-imaging-equipment/intraoral-imaging/veraview-ix/?tab=configuration
 
 The brochure PDF binary could not be downloaded into the working environment. This is a manufacturer visual reference, not an extracted production asset. The existing local Veraview iX images remain uninspected. Before replacement, confirm the intended wall-mounted or patient-chair configuration for the exact product record.
+
+### Actual repository image binary inspection — 13 November 2026
+
+A working inspection path was established: GitHub `fetch_file` with `encoding: "base64"`, then whitespace-stripping the returned base64 before decoding/viewing. This overcomes the previous UTF-8-only limitation of the generic GitHub fetch endpoint. The following repository images were visually inspected directly from the `cms-development` branch. No image bytes or product references were changed.
+
+#### MELAG
+- `public/catalog/melag/images/vacuclave-118-123.png` (blob SHA `b6806bd969ee6de4f7591cf8b5de6b594e3feb90`) visibly shows a complete Vacuclave 118 on a plain background, but has a prominent circular “S Class” badge obscuring the lower-right portion and large whitespace/shadow. It is a 471 × 471-style square presentation and lower resolution than the separate Vacuclave 123 asset. The product record `melag-vacuclave-118` currently has `img: ""`; no reference change was made.
+- `public/catalog/melag/images/vacuclave-123.jpg` (blob SHA `a53b80547ef51c4880f8986992bf2e1ac946ca45`) is a clean, full-front product photo with screen and complete body visible. It visibly identifies itself as Vacuclave 123 and is correctly assigned to the Vacuclave 123 record. Do not reuse it for Vacuclave 118.
+
+#### Mocom Silent Power legacy records
+All six product records point to files whose names imply legacy Silent Power models, but the files are not six unique product views:
+- `mocom silent power 2.jfif` and `mocom silent power 2l.jfif` have the same blob SHA `67da3b12cd1329a787670fc632adbe981d3c44a5` and show the same close-up of a handpiece held in a gloved hand. Not a clean isolated product photo.
+- `mocom silent power 4l.jfif` and `mocom silent power 4lk.jfif` have the same blob SHA `9a62777b093071f37cba9ec9c335bf660c1f382c` and show the same close-up of a handpiece held in a gloved hand. Not a clean isolated product photo.
+- `mocom silent power miniature.jfif` and `mocom silent power miniature k.jfif` are visually the same isolated handpiece photo. The handpiece barrel visibly reads “silent power EVO”; they are therefore not verified images for the legacy non-EVO product records. Their binary SHAs differ, so do not claim byte-identical files.
+- This visual mismatch strengthens the decision not to reuse the official 2025 EVO brochure/photo for legacy Silent Power variants. All six records need exact model/source verification and suitable images; no references changed.
+
+#### Morita
+- `public/catalog/morita/equipment/morita veraview ix.jpg` (SHA `8d812abaa7d5776d26e5fc6b3f56f5631aa0a61c`) is a close-up of the X-ray head only, not a full-system image.
+- `public/catalog/enhanced/morita/equipment/morita veraview ix.jpg` (SHA `23778f1123d5a41db9ac4e90941aebeaf4035a00`) is also a close-up of the same head; it is larger but not a full-system image.
+- The iX product record currently points to the enhanced close-up. It should not be changed to a chair-mounted image until the intended wall-mounted or chair-mounted configuration is confirmed.
+- `public/catalog/morita/equipment/morita veraview x800.jpg` (SHA `e55db68b76f214ab8b3a24ea2ddb3f8da1116a9a`) shows a partial/cropped view of the X800; the upper imaging unit and column are visible but the full installation/base is not. This is not a complete product photo.
+- Official Morita X800/iX source references are documented above; actual manufacturer image binaries still need retrieval.
+
+#### Fussen F200
+- `public/catalog/fussen/images/imaging-plate-scanner.jpg` (SHA `ba8cb5e92f7da7b4f9a5cbc6cc7b17808e7e343c`) is a close-up crop of the scanner. The full unit is not visible; the image also contains promotional copy and a gloved hand. It does not meet the requested clean full-product card-image standard.
+- Product record still points to this existing image; no change made.
+
+#### Outcome
+The repository's existing media has now been visually checked for these six areas. The inspection revealed actual image-quality and model-matching problems rather than merely missing documentation. Do not silently preserve these as “verified product images.” Continue sourcing exact, clean manufacturer assets and replace only after binary retrieval, model/configuration verification, and visual quality checks. No product data, image reference, or binary was modified in this inspection step.
