@@ -1063,7 +1063,6 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-      "https://www.rossicaws.it/en/products/laboratory/condor-lab/",
   },
   {
     slug: "condor-lab-blbox",
@@ -1092,7 +1091,6 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-      "https://www.rossicaws.it/en/products/laboratory/blbox-dustinet/",
   },
   {
     slug: "condor-lab-blbox-easy",
@@ -1117,7 +1115,6 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-      "https://www.rossicaws.it/en/products/laboratory/blbox-dustinet/",
   },
   {
     slug: "dentalart-lab-workstation",
@@ -1203,7 +1200,6 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-      "https://www.fdmedical.cn/product_4.html",
   },
 ];
 
