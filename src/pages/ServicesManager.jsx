@@ -151,6 +151,26 @@ export default function ServicesManager() {
     finally { setBusy(false); }
   }
 
+  async function deleteDraft() {
+    if (!draftId) return;
+    if (!window.confirm("Delete the saved Services draft? The published page and archived revision history will remain unchanged. This draft cannot be recovered.")) return;
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const result = await request("/api/cms/admin/draft", {
+        method: "DELETE",
+        body: JSON.stringify({ entityType: "page", entityKey: "services", versionId: draftId })
+      });
+      const refreshed = await request("/api/cms/admin/preview?key=services").catch(() => null);
+      if (refreshed?.page?.content) setContent(refreshed.page.content);
+      else setContent(cloneTemplate());
+      setDraftId("");
+      setDraftVersion(null);
+      setPublishedVersion(refreshed?.page?.publishedVersion || publishedVersion);
+      setNotice(`Services draft V${result.deletedVersion} deleted. The published page and archived history were preserved.`);
+    } catch (err) { setError(err.message || "Unable to delete the Services draft."); }
+    finally { setBusy(false); }
+  }
+
   async function publishDraft() {
     if (!draftId) return;
     if (!window.confirm("Publish this Services revision to the isolated Preview website? Production will not change.")) return;
@@ -195,7 +215,7 @@ export default function ServicesManager() {
       <div className="cms-services-toolbar">
         <button type="button" className="admin-secondary-button" onClick={resetToTemplate} disabled={busy}>Restore original content in editor</button>
         <button type="button" className="admin-secondary-button" onClick={openPreview} disabled={busy || !draftId}>Preview saved draft</button>
-        <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish to Preview</button>
+        <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish to Preview</button>\n        <button type="button" className="admin-secondary-button" onClick={deleteDraft} disabled={busy || !draftId}>Delete Draft</button>
         <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Services draft"}</button>
       </div>
 
