@@ -27,6 +27,7 @@ import AccessChoice from "./pages/AccessChoice";
 import AdminEntry from "./pages/AdminEntry";
 import { services } from "./data/services";
 import { products } from "./data/products";
+import { mergePublishedProduct } from "./data/productImages";
 import "./style.css";
 
 const pageTitles = {
@@ -274,7 +275,7 @@ function ProductRoute({ product: fallbackProduct, navigate }) {
       })
       .then((data) => {
         if (!active) return;
-        if (data?.ok && data.product) setProduct(data.product);
+        if (data?.ok && data.product) setProduct(mergePublishedProduct(fallbackProduct, data.product));
         else if (data?.archived || !fallbackProduct.name) setMissing(true);
       })
       .catch(() => { if (active && !fallbackProduct.name) setMissing(true); })
