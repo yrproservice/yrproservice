@@ -216,7 +216,7 @@ export default function ProductDetails({ product, navigate, previewMode = false 
                     target="_blank"
                     rel="noreferrer"
                   >
-                    View official product page ↗
+                    View manufacturer information ↗
                   </a>
                 </p>
               )}
