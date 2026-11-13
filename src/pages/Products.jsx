@@ -186,12 +186,12 @@ export default function Products({ navigate }) {
                 >
                   <div className="bp-catalog-image">
                     <img
-                      src={product.img}
+                      src={product.img || "/favicon.png"}
                       onError={(event) => {
                         event.currentTarget.src = "/favicon.png";
                         event.currentTarget.onerror = null;
                       }}
-                      alt={product.name}
+                      alt={product.img ? product.name : `${product.name} image unavailable`}
                     />
                     <span className="bp-image-badge">
                       {product.purchaseType === "quote"
