@@ -16,7 +16,7 @@ export function CartProvider({ children }) {
     try {
       const stored = JSON.parse(localStorage.getItem("yr-cart") || "[]");
       if (!Array.isArray(stored)) return [];
-      return stored.map((item) => {
+      return stored.filter((item) => item && typeof item === "object").map((item) => {
         const base = catalogue.find((product) => product.slug === item.slug);
         return mergePublishedProduct(base, item);
       });
