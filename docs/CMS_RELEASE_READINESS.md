@@ -97,3 +97,16 @@ A distributor storefront was inspected as a fallback image lead, not as an appro
 - An attempt to download the AC600Q image binary from the CDN into the working container failed. The image was visible in the web result, but no local file was created, so it has not been saved, inspected locally, or installed.
 
 This storefront finding does not supersede the Malaysia-applicable Cattani Asia 2026 catalogue as the preferred regional source. Both Cattani product image references remain unchanged.
+
+### Follow-up manufacturer and regional image-source pass — 13 November 2026
+
+No image binary was downloaded, saved, or installed during this pass. Product image references remain unchanged.
+
+- **Cattani AC400Q:** Found an exact AC400Q page on Cattani Australasia. It identifies the model as a quiet tandem two-cylinder oil-free compressor, code 013450, and publishes a complete specification set. This is an official regional manufacturer/distributor site and provides a potentially useful exact-model visual source, but its item code differs from the Malaysia-facing Asia Region 1 catalogue (013449). Keep the Asia catalogue as the preferred Malaysia source and verify the image/variant before adoption. Source: https://www.cattani.com.au/product/ac400q/
+- **Cattani AC400Q regional image cross-check:** A separate 2024 Australasia catalogue visibly distinguishes AC400Q from AC400 and depicts the AC400Q with two white acoustic housings on a black tank. It is an older regional catalogue and not the preferred Malaysia source. Source: https://www.presidental.com.au/wp-content/uploads/2024/07/2024_Presidental_Catalogue_Equipment_12.pdf
+- **MELAG Vacuclave 118:** Reconfirmed that MELAG's official Pro Line page explicitly labels the product family "Vacuclave 118 & Vacuclave 123" and exposes an image named "MicrosoftTeams-image (819)-min" in the 118/123 section. The official manual also confirms the 118/123 family. The image endpoint still has not been downloaded as a local binary or visually checked in the repository. Sources: https://www.melag.com/en/products/autoclaves/pro-line-b and https://global.melag.com/sites/default/files/ba_vc_118_123_en_1.pdf
+- **Fussen F200:** A distributor PDF contains a clearly model-labelled F200 full-product image. This is useful as a fallback lead, but it is not manufacturer-hosted and has not been adopted. The official Fussen product page remains the preferred source. Source: https://www.tudepositodental.com/fichas-pdf/ESCANER-FUSSEN-F200.pdf
+- **Mocom Silent Power:** The official 2025 brochure confirms the Silent Power Evo family, but does not establish equivalence with the six legacy Silent Power records. No legacy product specs or images were changed. Source: https://www.mocom.it/hubfs/MOCOM%202025/Documents/Mocom_HANDPIECES_10.10.2025%20EN.pdf
+
+### Status and limitations
+This pass was source research only. No repository media file was created, and no product image reference was modified. The local environment's external DNS/network limitation continues to block reliable binary retrieval. Exact source discovery is not equivalent to image installation.
