@@ -137,6 +137,7 @@ export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
     { label: "Products", url: "/products" },
     { label: "Services", url: "/services", type: "services" },
     { label: "Team", url: "/team" },
+    { label: "HR Contact", url: "/contact" },
   ];
   const navigationItems = Array.isArray(navigationSettings?.items) && navigationSettings.items.length
     ? navigationSettings.items
@@ -247,6 +248,7 @@ export function SiteFooter({ navigate }) {
     { label: "Services", url: "/services" },
     { label: "Team", url: "/team" },
     { label: "Track My Request", url: "/track-request" },
+    { label: "HR Enquiries", url: "/contact" },
   ];
   const links = Array.isArray(footer.links) ? footer.links : defaultLinks;
   const companyName = typeof footer.companyName === "string" ? footer.companyName : "YR Proservice";
