@@ -1162,6 +1162,7 @@ const additionalBrochureProducts = [
       "The brochure does not specify complete-system dimensions",
     ],
     docs: [],
+    manufacturerSource: "https://www.dental-art.it/en/dental-furniture-and-laboratory/",
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
