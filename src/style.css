@@ -4712,3 +4712,11 @@ h6 {
   .admin-session-utility { top: 8px; right: 8px; }
   .admin-entry-card { padding: 26px 20px; }
 }
+
+
+/* CMS product editor: live image preview */
+.cms-product-selected-image-preview{display:grid;gap:8px;padding:12px;background:#f5f7fa;border:1px solid #dce5ed;border-radius:8px}
+.cms-product-selected-image-preview>strong{font-size:13px;color:#1f2937}
+.cms-product-selected-image-preview>div{display:flex;align-items:center;gap:12px;min-height:120px}
+.cms-product-selected-image-preview img{width:min(220px,48%);height:150px;object-fit:contain;background:#fff;border:1px solid #e1e8ef;border-radius:6px}
+.cms-product-selected-image-preview span{font-size:12px;color:#687280}
