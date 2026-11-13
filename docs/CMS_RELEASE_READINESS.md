@@ -189,3 +189,14 @@ The PDF is a distributor attachment, not a manufacturer-hosted original. Its pag
 The Malaysia-hosted 2024 The Lab Shop catalogue PDF was opened and its actual product page (PDF zero-indexed page 50; printed page 49) visually inspected. The page labels two distinct product photographs: Vacuclave 123 on the left and Vacuclave 118 on the right, with separate captions. The Vacuclave 118 photograph shows the complete white tabletop sterilizer with front door, top-front display and right-side panel. The same page lists the 118 as a 17 L Class B tabletop autoclave. This is a model-labelled Malaysia-market visual reference, rather than an inference from a combined filename. Source: https://www.its-labshop.com.my/product_attachment/product_attachment-A00237.pdf
 
 The PDF page is a catalogue layout with relatively small embedded product photographs. The PDF binary could not be downloaded into the working environment, and the screenshot is not a production-ready extracted image. Do not crop/enlarge this screenshot or use it as the website asset. The existing repository file `public/catalog/melag/images/vacuclave-118-123.png` remains uninspected at binary level; no image reference was changed.
+
+### Morita Veraview X800 — new official full-product image reference — 13 November 2026
+
+A fresh search found the official Morita Veraview X800 2026 Instructions for Use PDF:
+https://www.morita.com/cms/files/VeraviewX800-PanCT_IFU_X800-93221-50F_20260421_en_W.pdf?download=1
+
+The PDF's first page includes a manufacturer product photograph of the Veraview X800 against a plain white background, with the full upper imaging assembly, support columns, lower arm and control panel visible. The PDF identifies the manufacturer as MORITA, product as Veraview X800, publication date 2026-04-21, publication number X800-93221-50F (en). The official X800 page also provides a Media tab with product-related images. Sources:
+- https://www.morita.com/cms/files/VeraviewX800-PanCT_IFU_X800-93221-50F_20260421_en_W.pdf?download=1
+- https://www.morita.com/jmmc/en/products/diagnostic-and-imaging-equipment/2d-/-3d-imaging/veraview-x800/?tab=media
+
+The official PDF is readable through the web document viewer, but its binary download failed in the working environment. The product photo is therefore a verified manufacturer visual reference, not an extracted repository asset. The existing local X800 file remains uninspected. Do not replace the current path until the original image binary can be lawfully extracted or the manufacturer supplies a direct image file and its resolution/quality can be checked.
