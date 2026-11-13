@@ -163,3 +163,17 @@ Inspected GitHub directory listings on `cms-development` (metadata only; binary 
 - `public/catalog/mocom/handpiece/` contains six Silent Power filename variants: `mocom silent power 2.jfif`, `2l.jfif`, `4l.jfif`, `4lk.jfif`, `miniature.jfif`, and `miniature k.jfif`. This establishes that local files exist, not that each image/model variant is correctly matched.
 
 This inventory identifies several local candidates and possible mismatches but is not a visual audit. No binary was downloaded, modified, or replaced; no product image reference was changed. Next step is to inspect the actual image files and dimensions before deciding which can be approved.
+
+### Mocom Silent Power legacy-vs-EVO source distinction — 13 November 2026
+
+The current official Mocom 2025 handpieces brochure documents the Silent Power EVO family and its six variants (EVO 2, EVO 2L, EVO 4L, EVO 4LK, EVO Miniature and EVO Miniature K). It is not evidence for the older non-EVO Silent Power records. Source: https://www.mocom.it/hubfs/MOCOM%202025/Documents/Mocom_HANDPIECES_10.10.2025%20EN.pdf
+
+The repository has six local non-EVO filenames under `public/catalog/mocom/handpiece/`: Silent Power 2, 2L, 4L, 4LK, Miniature and Miniature K. These names correspond to the legacy family, but the actual images have not been visually checked against the model variants. Do not replace them with EVO product images or apply the 2025 EVO brochure image set to legacy records.
+
+A reseller spare-parts catalogue also distinguishes legacy Silent Power 2/2L/4L/4LK and Silent Power Miniature from Silent Power EVO families, but this is parts compatibility evidence rather than manufacturer photo approval. Source: https://asident.com.tr/dosyalar/177_6479.pdf
+
+### Fussen F200 official image-page limitation — 13 November 2026
+
+The official Fussen F200 page confirms the F200 Image Plate System and technical specifications, but the accessible image links on the page illustrate image-plate scans, plate sizes, controls and operating steps. The retrieved page view does not expose a clearly identified full-product scanner hero image. Do not treat those clinical images or feature illustrations as a substitute for the scanner photograph. Source: https://en.fussengroup.com/f200
+
+No media binaries or product references were changed in this source pass.
