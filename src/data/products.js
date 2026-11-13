@@ -698,6 +698,7 @@ const melagProducts = [
       "Features: Double Jacket Technology, DRYtelligence, heat recovery, Coolify cooling without cooling water, Power Safe standby mode and ProControl batch approval",
     ],
     docs: [],
+    manufacturerSource: "https://www.melag.com/en/products/autoclaves/vacuclave550",
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
