@@ -87,3 +87,13 @@ A further manufacturer-source pass was completed. No product image reference was
 ### Retrieval blocker
 
 The web research tools can identify and inspect the manufacturer sources, but the current execution environment cannot retrieve the source image bytes (external DNS/network access is unavailable, and the Cattani PDF screenshot endpoint redirects to a host the PDF renderer cannot access). No generated substitute, hotlinked external image, or unverified binary was committed. Resume binary retrieval when an accessible download path or user-provided manufacturer asset is available.
+
+### Additional Cattani image-source check — 13 November 2026
+
+A distributor storefront was inspected as a fallback image lead, not as an approved installation source:
+
+- Borg Dental Australia's collection explicitly lists separate AC600Q and AC400Q product entries. The AC600Q product page links to a transparent-background front image named `AC600Q_Front-1.png`; the displayed image shows the complete twin-unit compressor on its tank. This is a useful visual cross-check for the AC600Q, but it remains a distributor-hosted asset, not the preferred Malaysia-applicable Cattani Asia catalogue binary. Source: https://borgdental.com.au/products/ac600q-cattani-compressor-copy
+- The AC400Q product page's image link unexpectedly resolves to an asset also named `AC600Q_Front-1.png` and visually depicts the AC600Q twin-unit configuration. This is a model/asset mismatch warning. Do not use that image for AC400Q. Source: https://borgdental.com.au/products/ac400q-cattani-compressor
+- An attempt to download the AC600Q image binary from the CDN into the working container failed. The image was visible in the web result, but no local file was created, so it has not been saved, inspected locally, or installed.
+
+This storefront finding does not supersede the Malaysia-applicable Cattani Asia 2026 catalogue as the preferred regional source. Both Cattani product image references remain unchanged.
