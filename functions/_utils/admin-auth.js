@@ -1,4 +1,5 @@
 const encoder = new TextEncoder();
+const AUTHORIZED_ADMIN_EMAIL = "yr.proservice@gmail.com";
 
 function jsonError(message, status = 401) {
   return new Response(JSON.stringify({ error: message }), {
@@ -38,14 +39,23 @@ async function validateAccessJwt(token, env) {
     .replace(/^https?:\/\//, "")
     .replace(/\/$/, "");
   const audience = String(env.ACCESS_AUD || "").trim();
-  const adminEmails = String(env.ADMIN_EMAILS || "")
+  const configuredEmails = String(env.ADMIN_EMAILS || "")
     .split(",")
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
-  if (!teamDomain || !audience || adminEmails.length === 0) {
+
+  // Fail closed if the environment is configured with zero or multiple
+  // administrator identities. Several people may share this one account,
+  // while the D1 session lock below still permits only one active device.
+  if (
+    !teamDomain ||
+    !audience ||
+    configuredEmails.length !== 1 ||
+    !constantTimeEqual(configuredEmails[0], AUTHORIZED_ADMIN_EMAIL)
+  ) {
     return {
       ok: false,
-      response: jsonError("Admin access is not configured.", 503),
+      response: jsonError("Admin access is not configured for the single authorized account.", 503),
     };
   }
 
@@ -142,10 +152,7 @@ async function validateAccessJwt(token, env) {
 
   const email =
     typeof claims.email === "string" ? claims.email.trim().toLowerCase() : "";
-  if (
-    !email ||
-    !adminEmails.some((allowed) => constantTimeEqual(allowed, email))
-  ) {
+  if (!email || !constantTimeEqual(AUTHORIZED_ADMIN_EMAIL, email)) {
     return {
       ok: false,
       response: jsonError(
