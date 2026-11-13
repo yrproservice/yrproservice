@@ -4,6 +4,16 @@ import { products } from "../data/products";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
 
+function safeHttpsUrl(value) {
+  if (typeof value !== "string") return "";
+  try {
+    const parsed = new URL(value.trim());
+    return parsed.protocol === "https:" ? parsed.href : "";
+  } catch {
+    return "";
+  }
+}
+
 function stockLabel(status) {
   if (status === "in-stock") return "In Stock";
   if (status === "out-of-stock") return "Out of Stock";
@@ -54,6 +64,7 @@ export default function ProductDetails({ product, navigate, previewMode = false 
 
   const description = product.description || product.summary;
   const specifications = product.specifications || product.highlights || [];
+  const manufacturerSource = safeHttpsUrl(product.manufacturerSource);
 
   return (
     <main className="bp-detail">
@@ -178,11 +189,11 @@ export default function ProductDetails({ product, navigate, previewMode = false 
               <p className="bp-eyebrow">PRODUCT DESCRIPTION</p>
               <h2>Designed for the way the clinic works.</h2>
               <p>{description}</p>
-              {product.manufacturerSource && (
+              {manufacturerSource && (
                 <p className="bp-source-note">
                   Manufacturer information:{" "}
                   <a
-                    href={product.manufacturerSource}
+                    href={manufacturerSource}
                     target="_blank"
                     rel="noreferrer"
                   >
