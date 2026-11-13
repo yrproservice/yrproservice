@@ -151,3 +151,15 @@ A fresh direct inspection of the official 2026 Cattani Asia Region 1 catalogue c
 The catalogue text also confirms the exact product names and specifications. These are stronger regional model/image matches than the previously considered Australasia catalogue. Source: https://cattaniasia.com/wp-content/uploads/2026/01/2026-Catalogue-Asia_Region-1_web.pdf
 
 Important distinction: this verifies that the official regional catalogue depicts the exact products, but the catalogue PDF is not yet extracted into repository image binaries. No image binary has been installed and neither product image reference has been changed. Continue attempting to retrieve the PDF itself or a manufacturer-supplied original image file; do not crop a web screenshot or use a page screenshot as a production product image without checking image quality and rights.
+
+### Existing repository media inventory — targeted manufacturer paths — 13 November 2026
+
+Inspected GitHub directory listings on `cms-development` (metadata only; binary files were not downloaded or visually inspected):
+
+- `public/catalog/cattani/images/` contains `ac-400.jpg` (502,437 bytes) and `ac-600.jpg` (407,365 bytes), but no filenames explicitly identify AC400Q or AC600Q. Product records for AC 400 Q and AC 600 Q still have empty image values. Do not reuse the non-Q AC400/AC600 files for Q variants without visual/model verification.
+- `public/catalog/melag/images/` contains `vacuclave-118-123.png` (24,836 bytes) and `vacuclave-123.jpg` (56,541 bytes). The Vacuclave 118 product record still has an empty image value. The combined 118/123 asset is a candidate only; its image content, resolution and whether it clearly depicts the 118 variant have not been visually verified.
+- `public/catalog/fussen/images/` contains only `imaging-plate-scanner.jpg` (12,047 bytes), currently referenced by the Fussen F200 record. Its actual dimensions and full-product framing have not been independently inspected in this pass.
+- `public/catalog/morita/equipment/` contains existing Veraview iX (5,891 bytes) and X800 (3,573 bytes) files. The records point to enhanced iX and original X800 paths respectively. Neither existing binary was visually inspected in this metadata-only inventory.
+- `public/catalog/mocom/handpiece/` contains six Silent Power filename variants: `mocom silent power 2.jfif`, `2l.jfif`, `4l.jfif`, `4lk.jfif`, `miniature.jfif`, and `miniature k.jfif`. This establishes that local files exist, not that each image/model variant is correctly matched.
+
+This inventory identifies several local candidates and possible mismatches but is not a visual audit. No binary was downloaded, modified, or replaced; no product image reference was changed. Next step is to inspect the actual image files and dimensions before deciding which can be approved.
