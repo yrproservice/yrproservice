@@ -385,3 +385,15 @@ These are materially better than some original lower-resolution PNG versions and
 - `fona-x70.jpg`, `fona-xdc.jpg`, and `fona-xdg.jpg` are visibly taken from promotional/catalogue layouts: the equipment is cut at one or more edges and captions/graphics are embedded. They are not clean isolated full-product images.
 
 The above are visual inspections only. Exact model matching and source provenance must be checked before any changes. No product references or binary files were changed.
+
+### Remaining general catalogue image audit — 13 November 2026
+
+#### Other equipment
+- `cf-686a-intraoral-camera.jpg`: complete intraoral camera and USB lead visible on white; full-product candidate, subject to exact model verification.
+- `condor-lab-blbox-easy.jpg` and `condor-lab-blbox.jpg`: complete lab workstation/enclosure shown, but product titles are embedded above and a cyan graphic background is part of the image. Full product visible.
+- `condor-lab-workstation.jpg`: complete workstation on a bright yellow promotional background; image is not a neutral isolated product shot.
+- `dentalart-lab-workstation.jpg`: complete workstation visible, but promotional text is embedded/cropped along the lower edge.
+- `m-988plus-intraoral-camera.jpg`: promotional poster with extensive text, feature claims, clinical images and product picture; not suitable as a clean product-card image.
+- `servotome.jpg`: complete Acteon Servotome unit and handpiece visible on a light background; clean full-product candidate, subject to exact model/source verification.
+
+These files were visually checked only. The current image path integrity scan still reports all non-empty image paths resolving to files; this does not imply every asset meets the desired full-product image standard. No product references changed.
