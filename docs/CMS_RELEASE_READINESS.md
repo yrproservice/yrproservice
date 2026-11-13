@@ -177,3 +177,9 @@ A reseller spare-parts catalogue also distinguishes legacy Silent Power 2/2L/4L/
 The official Fussen F200 page confirms the F200 Image Plate System and technical specifications, but the accessible image links on the page illustrate image-plate scans, plate sizes, controls and operating steps. The retrieved page view does not expose a clearly identified full-product scanner hero image. Do not treat those clinical images or feature illustrations as a substitute for the scanner photograph. Source: https://en.fussengroup.com/f200
 
 No media binaries or product references were changed in this source pass.
+
+### MELAG Vacuclave 118 — Malaysian market image lead — 13 November 2026
+
+A Malaysia-hosted distributor product-attachment PDF was located. It lists Vacuclave 123 and Vacuclave 118 separately, including their chamber volumes and model-specific captions, and its parsed visual description says both product images appear beneath the table. This is a more locally relevant lead for an exact 118 image than a generic combined 118/123 filename. Source: https://www.its-labshop.com.my/product_attachment/product_attachment-A00237.pdf
+
+The PDF is a distributor attachment, not a manufacturer-hosted original. Its page image/binary has not yet been extracted or inspected for resolution, full-product framing, or image reuse rights. Do not treat the listing description alone as approval to use the image. The existing local `vacuclave-118-123.png` remains an unverified candidate and the product record image remains empty.
