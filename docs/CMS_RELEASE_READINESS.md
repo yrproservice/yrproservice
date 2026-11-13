@@ -28,6 +28,7 @@ This audit was performed against the current `cms-development` source. Changes i
 
 - GitHub Actions run **#552** on the updated `cms-development` commit `05f40d45df70a01c29b73df6905641ff01777123`: **28/28 automated tests passed**; locked dependency installation and Vite production build also passed. This run includes the new Fussen F200 catalogue-data regression test.
 - The Vite build still reports a main JavaScript chunk of **610.10 kB minified (143.97 kB gzip)**, above the 500 kB warning threshold. Performance sign-off and route/component code-splitting review remain outstanding.
+- A subsequent AC400Q regional-variant update exposed one stale manufacturer-source assertion in the existing catalogue test (GitHub Actions run **#557**, 27/28 passed). The assertion was corrected in commit `815127a7774d16d468d3d1901e9a715f422573d6`; a passing CI rerun for that correction has not yet been confirmed.
 - Cloudflare Workers build success was reported by the earlier audit, but was not rerun in GitHub Actions run #534.
 - Cloudflare Pages Preview deployment of the latest source commit and authenticated browser verification remain unconfirmed.
 - The earlier 43/43 browser tests were user-reported against the previous Preview build. They have not been independently repeated against the current audit changes.
