@@ -37,7 +37,7 @@ This audit was performed against the current `cms-development` source. Changes i
 
 After the initial audit, exact manufacturer references and additional verified technical data were added for:
 - **Cattani AC 400 Q:** the Cattani Asia 2026 catalogue applicable to Malaysia identifies AC400Q (item 013449) as 3-phase, 400 V, 3.0 kW / 7.4 A, and AC400Q-1P (item 013452) as the separate single-phase 230 V variant. The YR Proservice AC400Q record has been corrected to the regional three-phase configuration; the two variants must remain distinct.
-- **Cattani AC 600 Q:** official Cattani model page now records the 400 V / 50 Hz three-phase configuration, 476 N l/min delivery at 5 bar, 150 L tank, 70.4 dB(A), dimensions and weight.
+- **Cattani AC 600 Q:** the Cattani Asia 2026 regional catalogue applicable to Malaysia identifies item 013549, recommends 7–8 chairs, and records 400 V / 50 Hz three-phase power, 476 N l/min delivery at 5 bar, 150 L tank, 70.4 dB(A), dimensions and weight. The regional recommendation is used instead of the broader 6–9 dental-unit recommendation on Cattani's global page.
 - **Morita TCS-TS2:** the official Signo Z300 brochure identifies TCS-TS2 (220 V) as a dental suction device. The source is linked, but no standalone technical specifications have been added.
 - **Mocom M7, M8 and M9 stools:** matching Mocom Stools catalogue entries now link to the Mocom brochure and describe only its model-specific features. No unverified dimensions or numeric specifications were added.
 - **MELAG Vacuclave 118:** the official MELAG user manual states noise emission is **71 dB(A)**. The catalogue value previously shown as 60.9 dB(A) was corrected. The product image remains unassigned.
@@ -58,7 +58,7 @@ These content edits have regression tests in `tests/product-catalog.test.js`. Th
 ## Production release gates
 
 Do not merge PR #2 or deploy to Production until:
-- Review the PR merge base and full commit history before any merge. The initial audit recorded `cms-development` as 313 commits ahead of `main`; a fresh comparison on 13 November 2026 reports it is now 325 commits ahead and 0 behind. The PR must not be merged without confirming that this full history and its diff are intended.
+- Review the PR merge base and full commit history before any merge. A fresh comparison on 13 November 2026 reported `cms-development` as 326 commits ahead of `main` and 0 behind before the latest catalogue correction commits. Recheck the count and review the full history/diff before any merge; do not infer that a large ahead count is safe.
 
 - The outstanding product-image/source/specification gaps are resolved or explicitly accepted.
 - The HR contact destination is confirmed.
@@ -67,3 +67,9 @@ Do not merge PR #2 or deploy to Production until:
 - The final regression, security and accessibility reviews are complete.
 - The user explicitly approves the merge and Production release.
 
+
+
+## Additional regional catalogue correction — 13 November 2026
+
+- The AC 600 Q record now uses the Cattani Asia 2026 Region 1 catalogue, which is the relevant regional source for the Malaysia-facing catalogue. It lists item code 013549 and recommends 7–8 chairs. This replaces the broader 6–9 dental-unit recommendation from Cattani's global product page. The AC 600 Q image remains unassigned; no image binary was saved or image reference changed.
+- Regression coverage now checks the regional source and 7–8 chair recommendation. This latest code/test change still requires a fresh GitHub Actions run before it can be marked passed.
