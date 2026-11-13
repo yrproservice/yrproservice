@@ -35,7 +35,7 @@ This audit was performed against the current `cms-development` source. Changes i
 ## Follow-up source verification — 13 November 2026
 
 After the initial audit, exact manufacturer references and additional verified technical data were added for:
-- **Cattani AC 400 Q:** the official Cattani model page records the 230 V / 50 Hz single-phase configuration, 320 N l/min delivery at 5 bar, 100 L tank and 63.8 dB(A). However, the Cattani Asia 2026 regional catalogue distinguishes AC400Q (three-phase 400 V) from AC400Q-1P (single-phase 230 V). Confirm which regional variant the YR Proservice listing intends before changing its current single-phase record or assigning a model-specific image.
+- **Cattani AC 400 Q:** the Cattani Asia 2026 catalogue applicable to Malaysia identifies AC400Q (item 013449) as 3-phase, 400 V, 3.0 kW / 7.4 A, and AC400Q-1P (item 013452) as the separate single-phase 230 V variant. The YR Proservice AC400Q record has been corrected to the regional three-phase configuration; the two variants must remain distinct.
 - **Cattani AC 600 Q:** official Cattani model page now records the 400 V / 50 Hz three-phase configuration, 476 N l/min delivery at 5 bar, 150 L tank, 70.4 dB(A), dimensions and weight.
 - **Morita TCS-TS2:** the official Signo Z300 brochure identifies TCS-TS2 (220 V) as a dental suction device. The source is linked, but no standalone technical specifications have been added.
 - **Mocom M7, M8 and M9 stools:** matching Mocom Stools catalogue entries now link to the Mocom brochure and describe only its model-specific features. No unverified dimensions or numeric specifications were added.
