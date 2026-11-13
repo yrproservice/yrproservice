@@ -355,7 +355,6 @@ const fussenImagingProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource: "https://en.fussengroup.com/",
   },
 ];
 
