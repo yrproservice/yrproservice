@@ -134,7 +134,7 @@ export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
     { label: "Services", url: "/services", type: "services" },
     { label: "Team", url: "/team" },
   ];
-  const navigationItems = Array.isArray(navigationSettings?.items)
+  const navigationItems = Array.isArray(navigationSettings?.items) && navigationSettings.items.length
     ? navigationSettings.items
     : defaultNavigation;
   const renderDesktopNavigationItem = (item, index) => {
