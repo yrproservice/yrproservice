@@ -3,6 +3,7 @@ import { products } from "../data/products";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
+import { mergePublishedProduct } from "../data/productImages";
 
 export default function Products({ navigate }) {
   const [search, setSearch] = useState("");
@@ -18,9 +19,9 @@ export default function Products({ navigate }) {
   }, []);
   const catalogueProducts = useMemo(() => {
     const overrides = new Map(cmsProducts.map((item) => [item.slug, item]));
-    const merged = products.filter((item) => !archivedSlugs.includes(item.slug)).map((item) => overrides.get(item.slug) || item);
+    const merged = products.filter((item) => !archivedSlugs.includes(item.slug)).map((item) => overrides.has(item.slug) ? mergePublishedProduct(item, overrides.get(item.slug)) : item);
     const known = new Set(products.map((item) => item.slug));
-    return [...merged, ...cmsProducts.filter((item) => !known.has(item.slug))];
+    return [...merged, ...cmsProducts.filter((item) => !known.has(item.slug)).map((item) => mergePublishedProduct(null, item))];
   }, [cmsProducts, archivedSlugs]);
 
   const [category, setCategory] = useState("All");
