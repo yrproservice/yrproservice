@@ -551,3 +551,29 @@ Nine more repository binaries were retrieved through GitHub `fetch_file` with `e
 - Practical next step: use the authorised dealer-image folder (or request the high-resolution image directly from Morita) and inspect the actual downloaded files for complete T100, T500 and G20 configurations before repository changes.
 
 **Disposition:** source route identified, but no original high-resolution binary was retrieved. No product data, image path, repository binary, or website code changed. No image replacement is approved from this finding alone.
+
+
+### Cattani official product-page image originals located — 13 November 2026
+
+A new route was found through Cattani Australasia's own product pages. Unlike the catalogue PDF screenshot route, the product pages expose standalone main-image media URLs.
+
+**AC400Q**
+- Official product page: https://www.cattani.com.au/product/ac400q/
+- Product page identifies AC400Q, product code 013450, and the 5–6 chair configuration.
+- Its main image link resolves to a 100 × 100 thumbnail at `https://www.cattani.com.au/wp-content/uploads/2025/05/013450-main-100x100.png`.
+- The corresponding full-size URL `https://www.cattani.com.au/wp-content/uploads/2025/05/013450-main.png` was opened and visually inspected. It displays a complete tandem Q compressor on a black horizontal tank, with both white acoustic hoods visible. The product is fully in frame on a transparent/black-rendered background and is a strong exact AC400Q visual match.
+
+**AC600Q**
+- Official product page: https://www.cattani.com.au/product/ac600q/
+- Product page identifies AC600Q, product code 013557, and the 7–8 chair configuration.
+- Its main image link resolves to `https://www.cattani.com.au/wp-content/uploads/2025/06/013557-main-100x100.png`. The thumbnail visually shows the matching twin-unit Q compressor.
+- Attempt to open the corresponding full-size URL `https://www.cattani.com.au/wp-content/uploads/2025/06/013557-main.png` was not accessible in the current web retrieval environment. Do not assume the full-size URL is valid until retrieved and inspected.
+
+**Regional model boundary**
+- These are Cattani Australasia product-page assets and product codes (013450 / 013557), not the Cattani Asia Region 1 catalogue item codes (013449 / 013549).
+- The visual identity is model-specific and useful as an authoritative reference, but the Asia Region 1 assets remain preferable for the Malaysia-facing product records if they can be retrieved.
+- Do not overwrite Malaysia-facing item codes or specifications with Australasia codes.
+- The AC400Q full-size image is visually verified as a candidate source, but it has NOT been downloaded into the working environment or committed to the repository. The AC600Q full-size image is not yet verified.
+- The available container download route failed for the AC400Q full-size URL. Therefore, neither binary is installed.
+
+**Disposition:** new official full-size AC400Q image URL and visual verification recorded. No image binary, product data, image reference or website code changed. No claim of installation or Preview verification.
