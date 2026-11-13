@@ -35,7 +35,7 @@ This audit was performed against the current `cms-development` source. Changes i
 ## Follow-up source verification — 13 November 2026
 
 After the initial audit, exact manufacturer references and additional verified technical data were added for:
-- **Cattani AC 400 Q:** official Cattani model page now records the 230 V / 50 Hz single-phase configuration, 320 N l/min delivery at 5 bar, 100 L tank, 63.8 dB(A), dimensions and weight.
+- **Cattani AC 400 Q:** the official Cattani model page records the 230 V / 50 Hz single-phase configuration, 320 N l/min delivery at 5 bar, 100 L tank and 63.8 dB(A). However, the Cattani Asia 2026 regional catalogue distinguishes AC400Q (three-phase 400 V) from AC400Q-1P (single-phase 230 V). Confirm which regional variant the YR Proservice listing intends before changing its current single-phase record or assigning a model-specific image.
 - **Cattani AC 600 Q:** official Cattani model page now records the 400 V / 50 Hz three-phase configuration, 476 N l/min delivery at 5 bar, 150 L tank, 70.4 dB(A), dimensions and weight.
 - **Morita TCS-TS2:** the official Signo Z300 brochure identifies TCS-TS2 (220 V) as a dental suction device. The source is linked, but no standalone technical specifications have been added.
 - **Mocom M7, M8 and M9 stools:** matching Mocom Stools catalogue entries now link to the Mocom brochure and describe only its model-specific features. No unverified dimensions or numeric specifications were added.
@@ -45,8 +45,8 @@ These content edits have regression tests in `tests/product-catalog.test.js`. Th
 
 ## Outstanding content and release items
 
-1. **Three exact catalogue images are not available in the current image library:** Cattani AC 400 Q, Cattani AC 600 Q and MELAG Vacuclave 118. They are left without a product image rather than being assigned a visually similar but potentially incorrect model.
-2. **Seven product records still lack a verified exact-model manufacturer source:** Fussen Imaging Plate Scanner and six Mocom Silent Power variants. Fussen's official site documents an F200 Image Plate System, but the model number on the YR Proservice record has not been confirmed as F200, so that source has not been assigned to the record. The six Silent Power variants do not yet have an exact match to the current Mocom Evo brochure.
+1. **Three exact catalogue images are not available in the current image library:** Cattani AC 400 Q, Cattani AC 600 Q and MELAG Vacuclave 118. They remain unassigned rather than being given visually similar substitutes. The currently assigned Fussen scanner image is also a cropped close-up; replace it only after the original full-product F200 image binary is saved and checked in the repository.
+2. **Six product records still lack a verified exact-model manufacturer source:** the six Mocom Silent Power variants do not yet have an exact match to the current Mocom Evo brochure. The Fussen Imaging Plate Scanner record has now been reconciled to the manufacturer's F200 Image Plate System page and updated with its published model specifications; the existing repository photograph remains a cropped close-up and still needs a better full-product image.
 3. **Twenty-seven product records still have no verified specification list.** These are primarily legacy/variant-specific items for which an exact official technical document was not found. Do not fill these with guessed or distributor-derived values without verification.
 4. **Product pricing and stock values remain business data.** Keep unconfirmed values as pending until YR Proservice supplies or enters the actual price and stock status.
 5. **HR email destination needs confirmation.** The new HR-only page currently opens an email to the existing public company inbox; a dedicated HR contact was not present in the inspected source.
