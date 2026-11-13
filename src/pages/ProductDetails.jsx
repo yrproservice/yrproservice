@@ -123,13 +123,14 @@ export default function ProductDetails({ product, navigate, previewMode = false 
             <button type="button" onClick={() => setQuantity((q) => q + 1)}>
               +
             </button>
-          </div>
+          </div>}
           <button
             className="bp-btn bp-btn-primary bp-detail-main-action"
             type="button"
             onClick={submitSelection}
+            disabled={previewMode}
           >
-            {chair
+            {previewMode ? "Preview only — ordering disabled" : chair
               ? "Request a Quote →"
               : added
                 ? "Added to Cart ✓"
