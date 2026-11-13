@@ -93,12 +93,29 @@ function ServicesMenu({ navigate, path, services }) {
   );
 }
 
+function safeInternalRoute(value) {
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "";
+}
+
 export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
   const { cartCount } = useCart();
   const { count: chairCount } = useChairRequests();
   const requestCount = cartCount + chairCount;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [serviceItems, setServiceItems] = useState(fallbackServices);
+  const [navigationSettings, setNavigationSettings] = useState(null);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/settings?key=site.navigation", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => {
+        if (active && result?.ok && result.setting?.value && typeof result.setting.value === "object") {
+          setNavigationSettings(result.setting.value);
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
   useEffect(() => {
     let active = true;
     fetch("/api/cms/public/pages?key=services", { cache: "no-store" })
@@ -112,6 +129,35 @@ export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
     return () => { active = false; };
   }, []);
   const closeMobile = () => setMobileOpen(false);
+  const defaultNavigation = [
+    { label: "Products", url: "/products" },
+    { label: "Services", url: "/services", type: "services" },
+    { label: "Team", url: "/team" },
+  ];
+  const navigationItems = Array.isArray(navigationSettings?.items)
+    ? navigationSettings.items
+    : defaultNavigation;
+  const renderDesktopNavigationItem = (item, index) => {
+    const url = safeInternalRoute(item?.url || item?.href);
+    const label = typeof item?.label === "string" ? item.label.trim() : "";
+    if (!url || !label || item?.visible === false) return null;
+    if (item.type === "services" || url === "/services") {
+      return <ServicesMenu key={item.id || url || index} navigate={navigate} path={path} services={serviceItems} />;
+    }
+    return <Link key={item.id || url || index} to={url} navigate={navigate} className={path === url || (url !== "/" && path.startsWith(url + "/")) ? "active" : ""}>{label}</Link>;
+  };
+  const renderMobileNavigationItem = (item, index) => {
+    const url = safeInternalRoute(item?.url || item?.href);
+    const label = typeof item?.label === "string" ? item.label.trim() : "";
+    if (!url || !label || item?.visible === false) return null;
+    if (item.type === "services" || url === "/services") {
+      return <div className="mobile-nav-group" key={item.id || url || index}>
+        <Link to="/services" navigate={navigate} onClick={closeMobile}>{label}</Link>
+        {serviceItems.map((service) => <Link key={service.slug} to={`/services/${service.slug}`} navigate={navigate} onClick={closeMobile}>{service.title}</Link>)}
+      </div>;
+    }
+    return <Link key={item.id || url || index} to={url} navigate={navigate} onClick={closeMobile}>{label}</Link>;
+  };
 
   return (
     <header className="site-header">
@@ -129,21 +175,7 @@ export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
           />
         </Link>
         <nav className="desktop-nav" aria-label="Primary navigation">
-          <Link
-            to="/products"
-            navigate={navigate}
-            className={path.startsWith("/products") ? "active" : ""}
-          >
-            Products
-          </Link>
-          <ServicesMenu navigate={navigate} path={path} services={serviceItems} />
-          <Link
-            to="/team"
-            navigate={navigate}
-            className={path === "/team" ? "active" : ""}
-          >
-            Team
-          </Link>
+          {navigationItems.map(renderDesktopNavigationItem)}
           {isAdmin && <AdminMenu navigate={navigate} onLogout={onAdminLogout} />}
         </nav>
         <div className="header-actions">
@@ -171,25 +203,7 @@ export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
       {mobileOpen && (
         <div className="mobile-nav">
           <div className="container">
-            <Link to="/products" navigate={navigate} onClick={closeMobile}>
-              Products
-            </Link>
-            <div className="mobile-nav-group">
-              <span>Services</span>
-              {serviceItems.map((service) => (
-                <Link
-                  key={service.slug}
-                  to={`/services/${service.slug}`}
-                  navigate={navigate}
-                  onClick={closeMobile}
-                >
-                  {service.title}
-                </Link>
-              ))}
-            </div>
-            <Link to="/team" navigate={navigate} onClick={closeMobile}>
-              Team
-            </Link>
+            {navigationItems.map(renderMobileNavigationItem)}
             {isAdmin && (
               <div className="mobile-nav-group">
                 <span>Admin</span>
@@ -210,38 +224,58 @@ export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
 }
 
 export function SiteFooter({ navigate }) {
+  const [footerSettings, setFooterSettings] = useState(null);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/settings?key=site.footer", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => {
+        if (active && result?.ok && result.setting?.value && typeof result.setting.value === "object") {
+          setFooterSettings(result.setting.value);
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const footer = footerSettings || {};
+  const defaultLinks = [
+    { label: "Products", url: "/products" },
+    { label: "Services", url: "/services" },
+    { label: "Team", url: "/team" },
+    { label: "Track My Request", url: "/track-request" },
+  ];
+  const links = Array.isArray(footer.links) ? footer.links : defaultLinks;
+  const companyName = typeof footer.companyName === "string" ? footer.companyName : "YR Proservice";
+  const description = typeof footer.description === "string" ? footer.description : "Dental equipment, installation, repair and technical support.";
+  const phone = typeof footer.contactPhone === "string" ? footer.contactPhone : "011-1608 0623";
+  const phoneHref = typeof footer.contactPhoneHref === "string" ? footer.contactPhoneHref : "tel:+601116080623";
+  const email = typeof footer.contactEmail === "string" ? footer.contactEmail : "yr.proservice@gmail.com";
+  const copyright = typeof footer.copyright === "string" ? footer.copyright : "All rights reserved.";
   return (
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <h3>YR Proservice</h3>
-          <p>Dental equipment, installation, repair and technical support.</p>
+          <h3>{companyName}</h3>
+          <p>{description}</p>
         </div>
         <div>
           <h4>Quick Links</h4>
-          <Link to="/products" navigate={navigate}>
-            Products
-          </Link>
-          <Link to="/services" navigate={navigate}>
-            Services
-          </Link>
-          <Link to="/team" navigate={navigate}>
-            Team
-          </Link>
-          <Link to="/track-request" navigate={navigate}>
-            Track My Request
-          </Link>
+          {links.filter((item) => item && typeof item.label === "string" && typeof item.url === "string").map((item, index) => {
+            const internal = safeInternalRoute(item.url);
+            const external = /^(https:\/\/|mailto:|tel:)/i.test(item.url);
+            if (internal) return <Link key={item.id || item.url || index} to={internal} navigate={navigate}>{item.label}</Link>;
+            if (external) return <a key={item.id || item.url || index} href={item.url} rel={item.url.startsWith("https://") ? "noopener noreferrer" : undefined}>{item.label}</a>;
+            return null;
+          })}
         </div>
         <div>
           <h4>Contact Us</h4>
-          <a className="footer-contact-phone" href="tel:+601116080623">
-            011-1608 0623
-          </a>
-          <a href="mailto:yr.proservice@gmail.com">yr.proservice@gmail.com</a>
+          <a className="footer-contact-phone" href={phoneHref}>{phone}</a>
+          <a href={`mailto:${email}`}>{email}</a>
         </div>
       </div>
       <div className="container footer-bottom">
-        © {new Date().getFullYear()} YR Proservice Sdn Bhd. All rights reserved.
+        © {new Date().getFullYear()} {companyName} {copyright}
       </div>
     </footer>
   );
