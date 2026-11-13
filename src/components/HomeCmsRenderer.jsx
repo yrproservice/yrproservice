@@ -49,7 +49,7 @@ function HomeCmsSection({ section, navigate, design }) {
       const featured = catalogueProducts.filter((p) => (c.productSlugs || []).includes(p.slug));
       return <section className="bp-featured home-cms-section" key={section.id} style={sectionStyle}><div className="container">
         <div className="bp-section-head bp-head-light"><div><p className="bp-eyebrow bp-eyebrow-light">{c.eyebrow}</p><h2>{c.heading}</h2></div><CmsLink to={c.buttonUrl || "/products"} navigate={navigate} className="bp-outline-light">{c.buttonText || "View All Products"} →</CmsLink></div>
-        <div className="bp-product-grid">{featured.map((p) => <article className="bp-product-card" key={p.slug}><Link to={`/products/${p.slug}`} navigate={navigate}><div className="bp-product-img"><img src={p.img} alt={p.name} /></div><div className="bp-product-body"><small>{p.brand || "YR Proservice"}</small><h3>{p.name}</h3><p>{p.summary}</p><span>View Details →</span></div></Link></article>)}</div>
+        <div className="bp-product-grid">{featured.map((p) => <article className="bp-product-card" key={p.slug}><Link to={`/products/${p.slug}`} navigate={navigate}><div className="bp-product-img"><img src={p.img || "/favicon.png"} alt={p.img ? p.name : `${p.name} image unavailable`} /></div><div className="bp-product-body"><small>{p.brand || "YR Proservice"}</small><h3>{p.name}</h3><p>{p.summary}</p><span>View Details →</span></div></Link></article>)}</div>
       </div></section>;
     }
     case "brand-grid":
