@@ -110,3 +110,15 @@ No image binary was downloaded, saved, or installed during this pass. Product im
 
 ### Status and limitations
 This pass was source research only. No repository media file was created, and no product image reference was modified. The local environment's external DNS/network limitation continues to block reliable binary retrieval. Exact source discovery is not equivalent to image installation.
+
+### Additional official-source image inspection — 13 November 2026
+
+Further inspection established exact image-link details, but still did not produce a repository-ready binary.
+
+- **Cattani AC400Q:** The official Cattani Australasia product page has an image link named `013450-main`, but the link resolves only to a 100 × 100 PNG thumbnail. The page identifies model AC400Q and item code 013450. The Malaysia-facing Asia Region 1 catalogue lists item 013449, so treat the Australasia page as an exact model-family cross-check, not as proof that its regional SKU/photo is the exact Malaysia variant. Do not install the tiny thumbnail. Source: https://www.cattani.com.au/product/ac400q/
+- **Cattani AC600Q:** The official Cattani Australasia 2025 catalogue explicitly depicts AC600Q and lists item 013557, while the Malaysia-facing Asia Region 1 catalogue lists item 013549. The model family and published technical configuration are aligned, but the regional item codes differ. Keep the Asia catalogue as preferred regional evidence and do not silently substitute the AU asset as the Malaysian image. Source: https://www.cattani.com.au/wp-content/uploads/2025/09/Catalogue-AU_web.pdf
+- **MELAG Vacuclave 118:** The official Pro Line page's dedicated product section exposes a link labelled `MicrosoftTeams-image (819)-min` directly beside the Vacuclave 118/123 selector and 17-litre product description. The image target is a Contentful asset delivered through MELAG's Next image proxy. Both the proxy and direct Contentful image endpoint failed to open in the current retrieval environment. This is a much stronger exact-section image lead than the earlier generic image reference, but the binary remains unavailable and unverified locally. Source: https://www.melag.com/en/products/autoclaves/pro-line-b
+- **Fussen F200:** No new manufacturer-hosted full-product image binary was obtained. Keep the existing repository image unchanged.
+- **Mocom Silent Power:** No exact legacy-variant source was established in this pass.
+
+No media files were added and no product image references were changed. This was a source-inspection/documentation-only update.
