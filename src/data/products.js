@@ -2736,13 +2736,17 @@ const rawProducts = [
     purchaseType: "cart",
     img: "/catalog/westcode/handpiece/westcode za15.webp",
     summary:
-      "Westcode ZA15 dental handpiece. Review the model-specific details and compatibility information below.",
+      "Westcode ZA15 is the non-light configuration in the ZA15 1:5 increasing contra-angle family.",
     description:
-      "Westcode ZA15 is listed in the Westcode dental handpiece range for rotary dental procedures. Exact speed, torque, bur compatibility, spray and lighting depend on the model variant and connection type.",
+      "Westcode identifies ZA15 as the non-light model in the ZA15 family; the L suffix identifies the light-equipped ZA15L configuration. Confirm the exact motor fitting and applicable product record before ordering.",
     highlights: [],
-    specifications: [],
+    specifications: [
+      "Family: ZA15 1:5 increasing contra-angle",
+      "Light configuration: non-light (ZA15)",
+      "Confirm the motor fitting and exact configuration before ordering",
+    ],
     docs: [],
-    manufacturerSource: "https://www.westcodedental.com/product-catalogs/",
+    manufacturerSource: "https://www.westcodedental.com/high-speed-dental-handpiece-air-turbine-vs-1-5/",
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
