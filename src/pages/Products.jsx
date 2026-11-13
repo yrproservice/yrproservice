@@ -101,7 +101,7 @@ export default function Products({ navigate }) {
           </div>
           <div className="products-hero-image">
             <img
-              src={showcaseChair?.img}
+              src={showcaseChair?.img || "/favicon.png"}
               alt={showcaseChair?.name || "Dental chair"}
             />
             <div className="products-hero-label">
@@ -170,7 +170,7 @@ export default function Products({ navigate }) {
                   <h3>{p.name}</h3>
                   <span>{p.brandLine}</span>
                 </div>
-                <img src={p.img} alt={p.name} />
+                <img src={p.img || "/favicon.png"} alt={p.img ? p.name : `${p.name} image unavailable`} />
                 <b>Explore →</b>
               </Link>
             ))}
