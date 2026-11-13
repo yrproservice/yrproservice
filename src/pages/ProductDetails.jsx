@@ -100,18 +100,18 @@ export default function ProductDetails({ product, navigate, previewMode = false 
         <div className="bp-detail-photo">
           <div className="bp-detail-photo-frame">
             <img
-              src={product.img}
+              src={product.img || "/favicon.png"}
               onError={(event) => {
                 event.currentTarget.src = "/favicon.png";
                 event.currentTarget.onerror = null;
               }}
-              alt={product.name}
+              alt={product.img ? product.name : `${product.name} image unavailable`}
             />
           </div>
           <div className="bp-thumb-row">
             <span className="active">
               <img
-                src={product.img}
+                src={product.img || "/favicon.png"}
                 onError={(event) => {
                   event.currentTarget.src = "/favicon.png";
                   event.currentTarget.onerror = null;
@@ -313,12 +313,12 @@ export default function ProductDetails({ product, navigate, previewMode = false 
                 >
                   <div className="bp-product-img">
                     <img
-                      src={item.img}
+                      src={item.img || "/favicon.png"}
                       onError={(event) => {
                         event.currentTarget.src = "/favicon.png";
                         event.currentTarget.onerror = null;
                       }}
-                      alt={item.name}
+                      alt={item.img ? item.name : `${item.name} image unavailable`}
                     />
                   </div>
                   <div className="bp-product-body">
