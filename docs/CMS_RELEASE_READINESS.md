@@ -397,3 +397,36 @@ The above are visual inspections only. Exact model matching and source provenanc
 - `servotome.jpg`: complete Acteon Servotome unit and handpiece visible on a light background; clean full-product candidate, subject to exact model/source verification.
 
 These files were visually checked only. The current image path integrity scan still reports all non-empty image paths resolving to files; this does not imply every asset meets the desired full-product image standard. No product references changed.
+
+### Enhanced-image paths actually rendered by the catalogue — follow-up inspection, 13 November 2026
+
+Important correction to the earlier audit approach: `src/data/products.js` remaps many original image paths through `enhancedImagePaths`. For those records, the enhanced file—not the original file—is what the product catalogue renders. The following currently rendered enhanced files were inspected directly.
+
+#### Cingol chairs
+- Enhanced X1: complete chair and delivery system on white; all major elements including lamp, tray, spittoon, chair and base are visible. Cingol logo and CE/ISO marks remain embedded in the image. Visually suitable framing for the X1 record.
+- Enhanced X3: complete chair and delivery system on white; lamp, chair, delivery arm, spittoon and base visible. No prominent promotional background. Visually suitable framing for the X3 record.
+- Enhanced X5: complete chair/unit visible but has a stylized landscape background, large Cingol logo and CE/ISO marks. Not as neutral/clean as X1/X3.
+These correspond to the product records `cingol-x1`, `cingol-x3`, and `cingol-x5` by the existing mapping. Manufacturer URLs in the records are X1 and X3 product pages; verify exact source match before claiming official provenance.
+
+#### Mocom stools
+- Enhanced M7: full stool, including seat, backrest, height column, base and casters.
+- Enhanced M8: full stool including backrest, seat, height column, base and casters.
+- Enhanced M9: full saddle stool including seat, support column, foot ring, base and casters.
+All three are visually complete and their filenames correspond to the M7/M8/M9 stool records. This is a stronger candidate set than many other existing catalogue images. Exact manufacturer catalogue model match should still be retained in the provenance record.
+
+#### Morita G20 chair
+- Enhanced `morita signo g20.jpg` is still a close crop of the chair seat, delivery arm and spittoon. It does not show the complete treatment unit. The enhanced file does not resolve the original framing issue.
+
+#### Mocom Silent Power enhanced handpieces
+- Enhanced 2 and 2L images are byte-identical (same blob SHA `46ffdda843b56c639df3c01bda086f30f29ae6ca`) and show a close-up handpiece held in a gloved hand, not a clean isolated product photo.
+- Enhanced 4L and 4LK images are byte-identical (same blob SHA `216f1d412470c00c3a6c37399f6aa476eb3757ff`) and show a close-up handpiece held in a gloved hand.
+- Enhanced miniature and miniature K show a clean isolated handpiece, but the body text visibly reads “Silent Power EVO”; not verified for the legacy non-EVO product records.
+The enhanced mapping therefore does not fix the legacy Silent Power model/quality mismatch.
+
+#### Westcode enhanced handpieces
+- Enhanced M-L530 air motor, M-L530 contra-angle, M-L530 straight handpiece, M-L530LED contra-angle, X1LG and X45KL show complete individual instruments on white, but all use very wide, shallow framing. The instrument is visible; card scaling must preserve the entire image without cropping and may leave unused vertical space.
+- Enhanced X45 Pro and X45LG Pro each show two handpieces together, not one isolated unit. The image may be valid if the catalogue record intentionally represents the paired presentation; otherwise use a single-item source.
+- Enhanced X5KL shows two views of the handpiece (front/angled and rear) on white. This is a product-detail composite rather than a single view, but both views are complete.
+- Enhanced ZA15L shows two views of the instrument and its model/brand markings. This is useful for model identification, but a paired image rather than a single isolated view.
+- The two JA20 enhanced paths do not exist at the attempted enhanced paths; the product records should continue using their original existing paths unless a verified asset is created. Do not leave the mapping pointing to nonexistent files.
+These checks apply to the enhanced assets used by the runtime mapping, not just the original files. No image paths or binaries were changed during this audit.
