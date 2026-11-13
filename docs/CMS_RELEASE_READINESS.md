@@ -522,3 +522,19 @@ Nine more repository binaries were retrieved through GitHub `fetch_file` with `e
 - `public/catalog/enhanced/morita/equipment/morita lubrina 2.jpg` shows a complete front-facing cabinet-style maintenance unit with handpiece bays visible. It is a promising complete-product image, though the front is dark and fine detail is limited.
 
 **Disposition:** no binary or image reference was changed. The visually readable CPA-4WO, RQ-34 and FM-CL-M4 markings narrow what each connector image can safely represent. Stool model identities remain unverified from the binary alone. The TCS TS 2 and Lubrina 2 images are complete views; DentaPort Root ZX is a composite/cropped presentation.
+
+### Official Morita and Mocom catalogue cross-check — 13 November 2026
+
+#### Morita Signo T100 and Operating Stool T2
+- The official Morita Signo T100 English brochure (2025) was opened and visually inspected. Its cover identifies the Signo T100 and shows a complete treatment-unit configuration, including the patient chair, equipment column and delivery element. The interior spread also shows complete treatment-unit configurations. This is stronger model-specific visual provenance than a generic reseller image or an unlabelled chair crop.
+- The brochure's operating-stool section explicitly names **Operating Stool T2** and describes its rotating backrest/armrest. This confirms that T2 is a genuine Morita accessory/model name, but does not by itself prove that an unlabelled repository photograph is the T2 variant.
+- Official brochure: https://www.morita.com/cms/files/Brochure_Signo_T100_SA_Europe_EN_2025.pdf?download=1
+- The PDF page screenshot is suitable for visual source verification only. The original embedded image binary has not been extracted and saved into the repository. Keep the current T100 and stool image references unchanged until a clean original binary is retrieved and compared.
+
+#### Mocom Silent Power naming and model boundary
+- Mocom's official October 2025 handpieces brochure is titled **Goldspeed Evo – Silent Power Evo** and lists Silent Power Evo turbine variants: EVO 4L, EVO 4LK, EVO Miniature, EVO Miniature K, EVO 2L and EVO 2.
+- The brochure describes these as the Evo range and includes model-specific feature distinctions. This is useful manufacturer evidence for the current Evo family, but it does not establish that legacy repository records named "Silent Power 2", "Silent Power 2L", "Silent Power 4L", "Silent Power 4LK", "Silent Power Miniature" and "Silent Power Miniature K" are interchangeable with the corresponding Evo variants.
+- Official brochure: https://www.mocom.it/hubfs/MOCOM%202025/Documents/Mocom_HANDPIECES_10.10.2025%20EN.pdf
+- Do not rename legacy records or assign Evo images based on similar model names alone. Obtain legacy model documentation or an exact part/model cross-reference before approving replacements.
+
+**Disposition:** manufacturer source research only. No product records, image paths, image binaries, or website code changed in this audit entry. The T100 brochure image and Mocom Evo images are not repository-installed assets.
