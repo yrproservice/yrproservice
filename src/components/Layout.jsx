@@ -94,7 +94,7 @@ function ServicesMenu({ navigate, path, services }) {
 }
 
 function safeInternalRoute(value) {
-  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "";
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\") ? value : "";
 }
 
 export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
@@ -248,7 +248,7 @@ export function SiteFooter({ navigate }) {
   const companyName = typeof footer.companyName === "string" ? footer.companyName : "YR Proservice";
   const description = typeof footer.description === "string" ? footer.description : "Dental equipment, installation, repair and technical support.";
   const phone = typeof footer.contactPhone === "string" ? footer.contactPhone : "011-1608 0623";
-  const phoneHref = typeof footer.contactPhoneHref === "string" ? footer.contactPhoneHref : "tel:+601116080623";
+  const phoneHref = typeof footer.contactPhoneHref === "string" && footer.contactPhoneHref.startsWith("tel:") ? footer.contactPhoneHref : "tel:+601116080623";
   const email = typeof footer.contactEmail === "string" ? footer.contactEmail : "yr.proservice@gmail.com";
   const copyright = typeof footer.copyright === "string" ? footer.copyright : "All rights reserved.";
   return (
