@@ -131,3 +131,14 @@ No media files were added and no product image references were changed. This was
 - The dealer image folder may require dealer permissions or interactive Google Drive access. No file was downloaded or installed. Do not infer access to the images from the existence of the folder link.
 
 No Morita product image references were changed. The actual repository media remains pending visual inspection and exact-model matching.
+
+### Morita asset-to-record mapping check — 13 November 2026
+
+The current product data was inspected on `cms-development` to avoid treating the official image-library discovery as an installation:
+
+- `morita-veraview-ix` currently points to `/catalog/enhanced/morita/equipment/morita veraview ix.jpg`.
+- `morita-veraview-x800` currently points to `/catalog/morita/equipment/morita veraview x800.jpg`.
+- Morita's North American Download Center links to a Google Drive folder titled "J. Morita USA Dealer Images" and describes its contents as high-resolution JPEG product images for authorized dealers. The folder could not be enumerated in the available retrieval environment, so the existence of the folder does not establish that either required image is present or downloadable.
+- Morita's South East Asia Download Center confirms current Veraview iX documentation; Morita's other official download pages list Veraview X800 documentation. These are model documentation sources, not verified image binaries.
+
+No image file was downloaded or inspected locally. No product image path was changed. In the next image pass, inspect the actual contents of the official dealer folder (if authorized access is available), then compare the image's model and configuration against the exact record before replacing either path.
