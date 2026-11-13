@@ -13,7 +13,8 @@ const PAGE_OPTIONS = [
   ["dental-chair-request", "Dental chair request"],
   ["quote", "Quotation request"],
   ["service-request", "Service request"],
-  ["track-request", "Track a request"]
+  ["track-request", "Track a request"],
+  ["contact", "HR Contact"]
 ];
 
 const DEFAULTS = mergePageDesign();
