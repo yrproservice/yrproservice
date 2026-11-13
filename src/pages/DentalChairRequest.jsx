@@ -158,7 +158,7 @@ export default function DentalChairRequest({ navigate }) {
               {items.map((item) => (
                 <div className="request-item" key={item.slug}>
                   <div className="request-item-image">
-                    <img src={item.img} alt={item.name} />
+                    <img src={item.img || "/favicon.png"} alt={item.img ? item.name : `${item.name} image unavailable`} />
                   </div>
                   <div className="request-item-info">
                     <small>
