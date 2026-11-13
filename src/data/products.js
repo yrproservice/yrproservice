@@ -61,8 +61,15 @@ const cattaniCompressors = [
     slug: "cattani-ac-400-q",
     model: "AC 400 Q",
     image: "",
+    airDelivery: "320 N l/min",
     dimensions: "W 1160 × D 650 × H 890 mm",
-    noiseOptions: "Shown with a noise-reducing plastic cover.",
+    noiseOptions: "Noise-reducing plastic covers and two air dryers.",
+    electricalConfiguration: "230 V, 50 Hz, single-phase; two motors, total 2.4 kW and 15.4 A.",
+    tankCapacity: "100 L",
+    soundLevel: "63.8 dB(A)",
+    weight: "135 kg net; 173 kg gross",
+    recommendedCapacity: "Suggested for 4–5 dental units",
+    manufacturerSource: "https://www.cattani.it/en/prodotto/ac-400-q-twin-cylinder-twin-head-compressor-with-noise-reducing-plastic-covers-and-2-air-driers/",
   },
   {
     slug: "cattani-ac-600",
@@ -77,8 +84,15 @@ const cattaniCompressors = [
     slug: "cattani-ac-600-q",
     model: "AC 600 Q",
     image: "",
+    airDelivery: "476 N l/min",
     dimensions: "W 1320 × D 770 × H 1040 mm",
-    noiseOptions: "Shown with a noise-reducing plastic cover.",
+    noiseOptions: "Noise-reducing plastic covers and two air dryers.",
+    electricalConfiguration: "400 V, 50 Hz, three-phase; two motors, total 3 kW and 7.4 A.",
+    tankCapacity: "150 L",
+    soundLevel: "70.4 dB(A)",
+    weight: "169 kg net; 200 kg gross",
+    recommendedCapacity: "Suggested for 6–9 dental units",
+    manufacturerSource: "https://www.cattani.it/en/prodotto/ac-600-q-three-cylinder-twin-head-compressor-with-noise-reducing-plastic-covers-and-2-air-driers/",
   },
   {
     slug: "cattani-ac-1800",
@@ -89,7 +103,7 @@ const cattaniCompressors = [
     noiseOptions:
       "The brochure recommends soundproofing the equipment room for AC 1800 and larger models.",
   },
-].map(({ slug, model, image, airDelivery, dimensions, noiseOptions }) => ({
+].map(({ slug, model, image, airDelivery, dimensions, noiseOptions, electricalConfiguration, tankCapacity, soundLevel, weight, recommendedCapacity, manufacturerSource }) => ({
   slug,
   name: model,
   brand: "Cattani",
@@ -106,12 +120,17 @@ const cattaniCompressors = [
     `Air delivery at 5 bar: ${airDelivery || "Not separately stated for this model in the brochure"}`,
     `Dimensions: ${dimensions}`,
     noiseOptions,
+    ...(electricalConfiguration ? [`Electrical configuration: ${electricalConfiguration}`] : []),
+    ...(tankCapacity ? [`Air tank capacity: ${tankCapacity}`] : []),
+    ...(soundLevel ? [`Sound pressure level: ${soundLevel}`] : []),
+    ...(weight ? [`Weight: ${weight}`] : []),
+    ...(recommendedCapacity ? [recommendedCapacity] : []),
   ],
   docs: [],
   price: null,
   stockStatus: "pending",
   reviewStatus: "No customer reviews published yet.",
-  manufacturerSource: "https://www.cattani.it/en/categorie-prodotti/cattani-air-care-horizontal-oil-less-compressors/",
+  manufacturerSource: manufacturerSource || "https://www.cattani.it/en/categorie-prodotti/cattani-air-care-horizontal-oil-less-compressors/",
 }));
 
 const cattaniTurboJets = [
@@ -387,7 +406,7 @@ const melagProducts = [
       "Electrical power: 2100 W",
       "Building fuse: separate power circuit, minimum 10 A with residual current device 30 mA",
       "Water system: one-way feed-water system using demineralised or distilled water",
-      "Noise emission: 60.9 dB(A)",
+      "Noise emission: 71 dB(A)",
       "Ambient temperature: 5-40 °C (ideal 16-26 °C)",
       "Protection class: IP20",
       "Max. altitude: 3000 m",
@@ -404,7 +423,7 @@ const melagProducts = [
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
     manufacturerSource:
-      "https://www.melag.com/en/products/steam-sterilizers/vacuclave-118-123/",
+      "https://global.melag.com/sites/default/files/ba_vc_118_123_en.pdf",
   },
   {
     slug: "melag-vacuclave-123",
@@ -2115,14 +2134,15 @@ const rawProducts = [
     slug: "morita-tcs-ts-2",
     name: "TCS TS 2",
     brand: "Morita",
-    brandLine: "Dental Equipment and Accessories",
+    brandLine: "Dental Suction Device",
     category: "Equipment",
     purchaseType: "cart",
     img: "/catalog/morita/equipment/morita tcs ts 2.jfif",
     summary:
-      "Morita TCS TS 2 dental equipment; model-specific technical details are being verified.",
+      "Morita TCS-TS2 dental suction device.",
     description:
-      "Morita TCS TS 2 is listed as dental equipment in the supplied Morita catalogue. The precise function and configuration should be confirmed against the exact model's manufacturer documentation; unsupported technical values are not displayed.",
+      "Morita identifies the TCS-TS2 (220 V) as a dental suction device in its Signo Z300 treatment-unit brochure. The brochure lists it as an optional configuration; separate technical specifications for the standalone device have not yet been verified.",
+    manufacturerSource: "https://www.morita.com/cms/files/Brochure_Signo_Z300_2023_EN.pdf?download=1",
     highlights: [],
     specifications: [],
     docs: [],
