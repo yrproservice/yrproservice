@@ -26,9 +26,10 @@ This audit was performed against the current `cms-development` source. Changes i
 
 ## Automated verification
 
-- GitHub Actions automated checks: **passed** on the latest checked commit.
+- GitHub Actions automated checks: **23/23 tests passed** on the latest checked commit.
 - Vite production build: **passed** on the latest checked commit.
-- Cloudflare Pages Preview deployment: status must be checked again before browser verification.
+- Cloudflare Workers build: **passed** on the latest checked commit.
+- Cloudflare Pages Preview deployment: **completed successfully** for the latest checked commit; authenticated browser verification remains pending.
 - The earlier 43/43 browser tests were user-reported against the previous Preview build. They have not been independently repeated against the current audit changes.
 
 ## Outstanding content and release items
