@@ -9,13 +9,14 @@ const ALLOWED_SERVICE_SLUGS = new Set([
   "repair-technical-support",
 ]);
 
-function json(data, status = 200) {
+function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
+      ...extraHeaders,
     },
   });
 }
@@ -27,6 +28,43 @@ function cleanString(value, maxLength) {
 
 function validEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+async function hashValue(value) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function checkSubmissionRateLimit(db, request, email) {
+  const now = Math.floor(Date.now() / 1000);
+  const windowStart = now - 60 * 60;
+  const ip = request.headers.get("CF-Connecting-IP") || "";
+  const ipHash = ip ? await hashValue(ip) : "";
+  const emailHash = await hashValue(email.toLowerCase());
+
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS request_submission_attempts (
+      id TEXT PRIMARY KEY,
+      ip_hash TEXT,
+      email_hash TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    )
+  `).run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_submission_ip_time ON request_submission_attempts(ip_hash, created_at)").run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_submission_email_time ON request_submission_attempts(email_hash, created_at)").run();
+  await db.prepare("DELETE FROM request_submission_attempts WHERE created_at < ?").bind(now - 86400).run();
+
+  const [ipCount, emailCount] = await Promise.all([
+    ipHash
+      ? db.prepare("SELECT COUNT(*) AS count FROM request_submission_attempts WHERE ip_hash = ? AND created_at > ?").bind(ipHash, windowStart).first()
+      : Promise.resolve({ count: 0 }),
+    db.prepare("SELECT COUNT(*) AS count FROM request_submission_attempts WHERE email_hash = ? AND created_at > ?").bind(emailHash, windowStart).first(),
+  ]);
+  if ((ipCount?.count || 0) >= 20 || (emailCount?.count || 0) >= 5) return false;
+
+  await db.prepare("INSERT INTO request_submission_attempts (id, ip_hash, email_hash, created_at) VALUES (?, ?, ?, ?)")
+    .bind(crypto.randomUUID(), ipHash || null, emailHash, now).run();
+  return true;
 }
 
 export async function onRequest({ request, env }) {
@@ -119,12 +157,22 @@ export async function onRequest({ request, env }) {
     );
   }
 
+  try {
+    const allowed = await checkSubmissionRateLimit(env.DB, request, email);
+    if (!allowed) {
+      return json({ error: "Too many requests have been submitted. Please wait one hour before trying again." }, 429, { "Retry-After": "3600" });
+    }
+  } catch (error) {
+    console.error("Unable to apply public request rate limit", error);
+    return json({ error: "Request submission is temporarily unavailable. Please try again later." }, 503);
+  }
+
   const now = new Date();
   const datePart = now.toISOString().slice(0, 10).replaceAll("-", "");
   const randomPart = crypto
     .randomUUID()
     .replaceAll("-", "")
-    .slice(0, 6)
+    .slice(0, 16)
     .toUpperCase();
   const referencePrefix =
     requestType === "service"

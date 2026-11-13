@@ -1,0 +1,53 @@
+name: Apply CMS Migration to Preview D1
+
+on:
+  push:
+    branches: [cms-development]
+    paths:
+      - migrations/0002_create_cms.sql
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cms-preview-d1-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate-preview:
+    name: Apply CMS schema to yr-proservice-test-db only
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out selected branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify target database identity
+        run: |
+          npx wrangler@4.157.0 d1 info yr-proservice-test-db
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Apply CMS migration to Preview database
+        run: |
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --file=migrations/0002_create_cms.sql
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Verify CMS tables exist in Preview database
+        run: |
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'cms_%' ORDER BY name;"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -1,0 +1,98 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { products } from "../src/data/products.js";
+
+test("every assigned product image uses the local catalogue", () => {
+  for (const product of products) {
+    if (!product.img) continue;
+    assert.ok(
+      product.img.startsWith("/catalog/"),
+      `${product.slug} has a non-catalogue image: ${product.img}`,
+    );
+  }
+});
+
+test("every assigned catalogue image exists in the repository", () => {
+  for (const product of products) {
+    if (!product.img) continue;
+    const imagePath = product.img.split("?")[0];
+    const localPath = fileURLToPath(new URL(`../public${imagePath}`, import.meta.url));
+    assert.ok(existsSync(localPath), `${product.slug} image file is missing: ${imagePath}`);
+  }
+});
+
+test("only exact-model image gaps remain unassigned", () => {
+  const missing = products.filter((product) => !product.img).map((product) => product.slug).sort();
+  assert.deepEqual(missing, [
+    "cattani-ac-400-q",
+    "cattani-ac-600-q",
+    "melag-vacuclave-118",
+  ]);
+});
+
+
+test("Cattani AC 400 Q and AC 600 Q use exact manufacturer technical data", () => {
+  const ac400q = products.find((product) => product.slug === "cattani-ac-400-q");
+  const ac600q = products.find((product) => product.slug === "cattani-ac-600-q");
+
+  assert.ok(ac400q);
+  assert.ok(ac600q);
+  assert.equal(ac400q.manufacturerSource, "https://cattaniasia.com/wp-content/uploads/2026/01/2026-Catalogue-Asia_Region-1_web.pdf");
+  assert.equal(ac600q.manufacturerSource, "https://cattaniasia.com/wp-content/uploads/2026/01/2026-Catalogue-Asia_Region-1_web.pdf");
+  assert.ok(ac600q.specifications.includes("Suggested for 7–8 dental chairs (Cattani Asia 2026 regional catalogue)"));
+  assert.ok(ac400q.specifications.includes("Air delivery at 5 bar: 320 N l/min"));
+  assert.ok(ac400q.specifications.includes("Sound pressure level: 63.8 dB(A)"));
+  assert.ok(ac400q.specifications.includes("Electrical configuration: 400 V, 50 Hz, three-phase; two motors, total 3.0 kW and 7.4 A."));
+  assert.ok(ac400q.specifications.includes("Dimensions: W 1200 × D 650 × H 890 mm"));
+  assert.ok(ac400q.specifications.includes("Suggested for 5–6 dental chairs"));
+  assert.equal(ac400q.manufacturerSource, "https://cattaniasia.com/wp-content/uploads/2026/01/2026-Catalogue-Asia_Region-1_web.pdf");
+  assert.ok(ac600q.specifications.includes("Air delivery at 5 bar: 476 N l/min"));
+  assert.ok(ac600q.specifications.includes("Sound pressure level: 70.4 dB(A)"));
+  assert.equal(ac400q.img, "");
+  assert.equal(ac600q.img, "");
+});
+
+test("Fussen imaging plate scanner is matched to the official F200 model and specifications", () => {
+  const product = products.find((item) => item.slug === "fussen-imaging-plate-scanner");
+  assert.ok(product);
+  assert.equal(product.name, "Fussen F200 Imaging Plate Scanner");
+  assert.equal(product.manufacturerSource, "https://en.fussengroup.com/f200");
+  assert.ok(product.specifications.includes("Theoretical resolution: 12 lp/mm"));
+  assert.ok(product.specifications.includes("Grayscale: 14 bit"));
+  assert.ok(product.specifications.includes("Pixel size: 35 μm"));
+  assert.ok(product.specifications.includes("Scan time: Under 20 seconds"));
+});
+
+test("MELAG Vacuclave 118 uses the manufacturer manual's 71 dB(A) noise value", () => {
+  const product = products.find((item) => item.slug === "melag-vacuclave-118");
+  assert.ok(product);
+  assert.equal(product.manufacturerSource, "https://global.melag.com/sites/default/files/ba_vc_118_123_en.pdf");
+  assert.ok(product.specifications.includes("Noise emission: 71 dB(A)"));
+  assert.ok(!product.specifications.includes("Noise emission: 60.9 dB(A)"));
+});
+
+test("Morita TCS-TS2 classification links to the manufacturer's Signo Z300 brochure", () => {
+  const product = products.find((item) => item.slug === "morita-tcs-ts-2");
+  assert.ok(product);
+  assert.equal(product.brandLine, "Dental Suction Device");
+  assert.equal(product.manufacturerSource, "https://www.morita.com/cms/files/Brochure_Signo_Z300_2023_EN.pdf?download=1");
+  assert.deepEqual(product.specifications, []);
+});
+
+
+test("Mocom M7 M8 and M9 stool records link to the matching manufacturer catalogue", () => {
+  const m7 = products.find((item) => item.slug === "mocom-m7-stool");
+  const m8 = products.find((item) => item.slug === "mocom-m8-stool");
+  const m9 = products.find((item) => item.slug === "mocom-m9-stool");
+  const source = "https://pdf.medicalexpo.com/pdf/mocom/stools-mocom/73324-292879.html";
+
+  for (const product of [m7, m8, m9]) {
+    assert.ok(product);
+    assert.equal(product.manufacturerSource, source);
+  }
+  assert.match(m7.description, /lumbar support/i);
+  assert.match(m8.description, /360-degree rotating armrest/i);
+  assert.match(m9.description, /saddle-shaped/i);
+});

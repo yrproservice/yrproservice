@@ -87,7 +87,7 @@ export default function TrackRequest() {
               maxLength={40}
               autoCapitalize="characters"
               autoComplete="off"
-              placeholder="e.g. YRQ-20261022-ABC123"
+              placeholder="e.g. YRQ-20261113-0123456789ABCDEF"
             />
           </label>
           <label>

@@ -1,8 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
+import { mergePublishedProduct } from "../data/productImages";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
+
+function safeHttpsUrl(value) {
+  if (typeof value !== "string") return "";
+  try {
+    const parsed = new URL(value.trim());
+    return parsed.protocol === "https:" ? parsed.href : "";
+  } catch {
+    return "";
+  }
+}
 
 function stockLabel(status) {
   if (status === "in-stock") return "In Stock";
@@ -10,14 +21,52 @@ function stockLabel(status) {
   return "Availability to be updated";
 }
 
-export default function ProductDetails({ product, navigate }) {
+function formatProductPrice(price) {
+  if (price === null || price === undefined || price === "") {
+    return "Price on request";
+  }
+
+  const numericPrice =
+    typeof price === "number"
+      ? price
+      : Number(String(price).replace(/[^0-9.-]/g, ""));
+
+  if (!Number.isFinite(numericPrice)) return String(price);
+
+  return new Intl.NumberFormat("en-MY", {
+    style: "currency",
+    currency: "MYR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numericPrice);
+}
+
+export default function ProductDetails({ product, navigate, previewMode = false }) {
   const { addToCart } = useCart();
   const { addChair } = useChairRequests();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [tab, setTab] = useState("description");
+  const [catalogueProducts, setCatalogueProducts] = useState(products);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/products", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (!active || !data?.ok || !Array.isArray(data.products)) return;
+        const overrides = new Map(data.products.map((item) => [item.slug, item]));
+        const archived = new Set(Array.isArray(data.archivedSlugs) ? data.archivedSlugs : []);
+        const known = new Set(products.map((item) => item.slug));
+        setCatalogueProducts([
+          ...products.filter((item) => !archived.has(item.slug)).map((item) => overrides.has(item.slug) ? mergePublishedProduct(item, overrides.get(item.slug)) : item),
+          ...data.products.filter((item) => !known.has(item.slug)).map((item) => mergePublishedProduct(null, item)),
+        ]);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
   const chair = product.purchaseType === "quote";
-  const related = products
+  const related = catalogueProducts
     .filter((p) => p.slug !== product.slug && p.category === product.category)
     .slice(0, 4);
 
@@ -34,6 +83,7 @@ export default function ProductDetails({ product, navigate }) {
 
   const description = product.description || product.summary;
   const specifications = product.specifications || product.highlights || [];
+  const manufacturerSource = safeHttpsUrl(product.manufacturerSource);
 
   return (
     <main className="bp-detail">
@@ -50,18 +100,18 @@ export default function ProductDetails({ product, navigate }) {
         <div className="bp-detail-photo">
           <div className="bp-detail-photo-frame">
             <img
-              src={product.img}
+              src={product.img || "/favicon.png"}
               onError={(event) => {
                 event.currentTarget.src = "/favicon.png";
                 event.currentTarget.onerror = null;
               }}
-              alt={product.name}
+              alt={product.img ? product.name : `${product.name} image unavailable`}
             />
           </div>
           <div className="bp-thumb-row">
             <span className="active">
               <img
-                src={product.img}
+                src={product.img || "/favicon.png"}
                 onError={(event) => {
                   event.currentTarget.src = "/favicon.png";
                   event.currentTarget.onerror = null;
@@ -81,7 +131,7 @@ export default function ProductDetails({ product, navigate }) {
           <div className="bp-detail-commercial">
             <div>
               <small>PRICE</small>
-              <strong>{product.price || "Price on request"}</strong>
+              <strong>{formatProductPrice(product.price)}</strong>
             </div>
             <div>
               <small>AVAILABILITY</small>
@@ -91,7 +141,7 @@ export default function ProductDetails({ product, navigate }) {
             </div>
           </div>
           <p className="bp-detail-summary">{description}</p>
-          <div className="bp-detail-qty">
+          {!previewMode && <div className="bp-detail-qty">
             <span>Quantity</span>
             <button
               type="button"
@@ -103,23 +153,24 @@ export default function ProductDetails({ product, navigate }) {
             <button type="button" onClick={() => setQuantity((q) => q + 1)}>
               +
             </button>
-          </div>
+          </div>}
           <button
             className="bp-btn bp-btn-primary bp-detail-main-action"
             type="button"
             onClick={submitSelection}
+            disabled={previewMode}
           >
-            {chair
+            {previewMode ? "Preview only — ordering disabled" : chair
               ? "Request a Quote →"
               : added
                 ? "Added to Cart ✓"
                 : "Add to Cart →"}
           </button>
-          <p className="bp-admin-note">
+          {previewMode ? <p className="bp-admin-note">This is an administrator preview. No cart or quotation action will be submitted.</p> : <p className="bp-admin-note">
             Price and availability are catalogue fields reserved for future
             admin updates. Manufacturer-specific technical details are shown
             below when verified.
-          </p>
+          </p>}
         </div>
       </section>
 
@@ -157,15 +208,15 @@ export default function ProductDetails({ product, navigate }) {
               <p className="bp-eyebrow">PRODUCT DESCRIPTION</p>
               <h2>Designed for the way the clinic works.</h2>
               <p>{description}</p>
-              {product.manufacturerSource && (
+              {manufacturerSource && (
                 <p className="bp-source-note">
                   Manufacturer information:{" "}
                   <a
-                    href={product.manufacturerSource}
+                    href={manufacturerSource}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    View official product page ↗
+                    View manufacturer information ↗
                   </a>
                 </p>
               )}
@@ -262,12 +313,12 @@ export default function ProductDetails({ product, navigate }) {
                 >
                   <div className="bp-product-img">
                     <img
-                      src={item.img}
+                      src={item.img || "/favicon.png"}
                       onError={(event) => {
                         event.currentTarget.src = "/favicon.png";
                         event.currentTarget.onerror = null;
                       }}
-                      alt={item.name}
+                      alt={item.img ? item.name : `${item.name} image unavailable`}
                     />
                   </div>
                   <div className="bp-product-body">

@@ -1,4 +1,5 @@
 const encoder = new TextEncoder();
+const AUTHORIZED_ADMIN_EMAIL = "yr.proservice@gmail.com";
 
 function jsonError(message, status = 401) {
   return new Response(JSON.stringify({ error: message }), {
@@ -38,14 +39,23 @@ async function validateAccessJwt(token, env) {
     .replace(/^https?:\/\//, "")
     .replace(/\/$/, "");
   const audience = String(env.ACCESS_AUD || "").trim();
-  const adminEmails = String(env.ADMIN_EMAILS || "")
+  const configuredEmails = String(env.ADMIN_EMAILS || "")
     .split(",")
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
-  if (!teamDomain || !audience || adminEmails.length === 0) {
+
+  // Fail closed if the environment is configured with zero or multiple
+  // administrator identities. Several people may share this one account,
+  // while the D1 session lock below still permits only one active device.
+  if (
+    !teamDomain ||
+    !audience ||
+    configuredEmails.length !== 1 ||
+    !constantTimeEqual(configuredEmails[0], AUTHORIZED_ADMIN_EMAIL)
+  ) {
     return {
       ok: false,
-      response: jsonError("Admin access is not configured.", 503),
+      response: jsonError("Admin access is not configured for the single authorized account.", 503),
     };
   }
 
@@ -142,10 +152,7 @@ async function validateAccessJwt(token, env) {
 
   const email =
     typeof claims.email === "string" ? claims.email.trim().toLowerCase() : "";
-  if (
-    !email ||
-    !adminEmails.some((allowed) => constantTimeEqual(allowed, email))
-  ) {
+  if (!email || !constantTimeEqual(AUTHORIZED_ADMIN_EMAIL, email)) {
     return {
       ok: false,
       response: jsonError(
@@ -155,13 +162,6 @@ async function validateAccessJwt(token, env) {
     };
   }
   return { ok: true, email };
-}
-
-export async function requireAdmin(context) {
-  const token = context.request.headers.get("Cf-Access-Jwt-Assertion");
-  if (!token)
-    return { ok: false, response: jsonError("Authentication required.", 401) };
-  return validateAccessJwt(token, context.env);
 }
 
 export function adminJson(data, status = 200) {
@@ -174,4 +174,98 @@ export function adminJson(data, status = 200) {
       "Referrer-Policy": "no-referrer",
     },
   });
+}
+
+const ADMIN_SESSION_COOKIE = "yr_admin_session";
+const ADMIN_SESSION_TTL_SECONDS = 90;
+
+function readCookie(request, name) {
+  const cookieHeader = request.headers.get("Cookie") || "";
+  for (const part of cookieHeader.split(";")) {
+    const separator = part.indexOf("=");
+    if (separator < 0) continue;
+    if (part.slice(0, separator).trim() === name)
+      return part.slice(separator + 1).trim();
+  }
+  return "";
+}
+
+async function hashAdminSession(token) {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(token),
+  );
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+}
+
+export async function ensureAdminSessionTable(db) {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS admin_session_lock (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      session_hash TEXT NOT NULL,
+      admin_email TEXT NOT NULL,
+      expires_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `).run();
+}
+
+export function adminSessionCookie(token, maxAge = 86400) {
+  return `${ADMIN_SESSION_COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`;
+}
+
+export function clearAdminSessionCookie() {
+  return `${ADMIN_SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`;
+}
+
+export async function getAdminSessionHash(request) {
+  const token = readCookie(request, ADMIN_SESSION_COOKIE);
+  return token ? hashAdminSession(token) : "";
+}
+
+export async function requireAdmin(context, options = {}) {
+  const token = context.request.headers.get("Cf-Access-Jwt-Assertion");
+  if (!token)
+    return { ok: false, response: jsonError("Authentication required.", 401) };
+  const identity = await validateAccessJwt(token, context.env);
+  if (!identity.ok || options.skipSessionLock) return identity;
+
+  if (!context.env.DB)
+    return {
+      ok: false,
+      response: jsonError("Admin session storage is not configured.", 503),
+    };
+
+  try {
+    await ensureAdminSessionTable(context.env.DB);
+    const sessionHash = await getAdminSessionHash(context.request);
+    if (!sessionHash)
+      return {
+        ok: false,
+        response: jsonError("Admin session required. Sign in through the Admin entry.", 401),
+      };
+    const active = await context.env.DB.prepare(
+      "SELECT session_hash, expires_at FROM admin_session_lock WHERE id = 1 LIMIT 1",
+    ).first();
+    const now = Math.floor(Date.now() / 1000);
+    if (!active || active.expires_at <= now)
+      return {
+        ok: false,
+        response: jsonError("Your Admin session has expired. Sign in again.", 401),
+      };
+    if (active.session_hash !== sessionHash)
+      return {
+        ok: false,
+        response: jsonError("Admin is already active on another device. Log out there or wait for the session to expire.", 409),
+      };
+    return { ...identity, sessionHash };
+  } catch (error) {
+    console.error("Admin session lock check failed", error);
+    return {
+      ok: false,
+      response: jsonError("Unable to verify the active Admin session.", 503),
+    };
+  }
 }

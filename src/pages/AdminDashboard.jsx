@@ -25,7 +25,7 @@ function formatDate(value) {
       });
 }
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ onAuthenticated }) {
   const [requests, setRequests] = useState([]);
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
@@ -58,6 +58,7 @@ export default function AdminDashboard() {
         ? result.requests
         : [];
       setRequests(loadedRequests);
+      onAuthenticated?.();
       setSelected((current) =>
         current
           ? loadedRequests.find(
@@ -70,7 +71,7 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [type, status, search]);
+  }, [type, status, search, onAuthenticated]);
 
   useEffect(() => {
     loadRequests();
@@ -142,9 +143,10 @@ export default function AdminDashboard() {
               reflect the current filters.
             </p>
           </div>
-          <a className="admin-public-link" href="/">
-            View public website ↗
-          </a>
+          <div className="admin-header-actions">
+            <a className="admin-public-link" href="/admin/cms">Open Visual CMS ↗</a>
+            <a className="admin-public-link" href="/">View public website ↗</a>
+          </div>
         </header>
 
         {error && (

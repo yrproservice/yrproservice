@@ -1,11 +1,29 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { products } from "../data/products";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
+import { mergePublishedProduct } from "../data/productImages";
 
 export default function Products({ navigate }) {
   const [search, setSearch] = useState("");
+  const [cmsProducts, setCmsProducts] = useState([]);
+  const [archivedSlugs, setArchivedSlugs] = useState([]);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/products", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => { if (active && data?.ok && Array.isArray(data.products)) { setCmsProducts(data.products); setArchivedSlugs(Array.isArray(data.archivedSlugs) ? data.archivedSlugs : []); } })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const catalogueProducts = useMemo(() => {
+    const overrides = new Map(cmsProducts.map((item) => [item.slug, item]));
+    const merged = products.filter((item) => !archivedSlugs.includes(item.slug)).map((item) => overrides.has(item.slug) ? mergePublishedProduct(item, overrides.get(item.slug)) : item);
+    const known = new Set(products.map((item) => item.slug));
+    return [...merged, ...cmsProducts.filter((item) => !known.has(item.slug)).map((item) => mergePublishedProduct(null, item))];
+  }, [cmsProducts, archivedSlugs]);
+
   const [category, setCategory] = useState("All");
   const [brand, setBrand] = useState("All");
   const [addedSlug, setAddedSlug] = useState("");
@@ -13,16 +31,16 @@ export default function Products({ navigate }) {
   const { addChair } = useChairRequests();
 
   const categories = useMemo(
-    () => ["All", ...new Set(products.map((p) => p.category).filter(Boolean))],
-    [],
+    () => ["All", ...new Set(catalogueProducts.map((p) => p.category).filter(Boolean))],
+    [catalogueProducts],
   );
   const brands = useMemo(
-    () => ["All", ...new Set(products.map((p) => p.brand || "Other"))],
-    [],
+    () => ["All", ...new Set(catalogueProducts.map((p) => p.brand || "Other"))],
+    [catalogueProducts],
   );
   const filtered = useMemo(
     () =>
-      products.filter(
+      catalogueProducts.filter(
         (p) =>
           (category === "All" || p.category === category) &&
           (brand === "All" || (p.brand || "Other") === brand) &&
@@ -30,12 +48,12 @@ export default function Products({ navigate }) {
             .toLowerCase()
             .includes(search.toLowerCase()),
       ),
-    [search, category, brand],
+    [search, category, brand, catalogueProducts],
   );
-  const chairs = products.filter((p) => p.purchaseType === "quote");
+  const chairs = catalogueProducts.filter((p) => p.purchaseType === "quote");
   const showcaseChair =
     chairs.find((p) => p.slug === "signo-t100") || chairs[0];
-  const spotlight = products.filter((p) =>
+  const spotlight = catalogueProducts.filter((p) =>
     ["mocom-m10", "signo-t100", "cingol-x3"].includes(p.slug),
   );
 
@@ -71,19 +89,19 @@ export default function Products({ navigate }) {
             </p>
             <div className="products-hero-stats">
               <span>
-                <b>{products.length}</b> products
+                <b>{catalogueProducts.length}</b> products
               </span>
               <span>
                 <b>{chairs.length}</b> chair models
               </span>
               <span>
-                <b>{new Set(products.map((p) => p.brand)).size}</b> brands
+                <b>{new Set(catalogueProducts.map((p) => p.brand)).size}</b> brands
               </span>
             </div>
           </div>
           <div className="products-hero-image">
             <img
-              src={showcaseChair?.img}
+              src={showcaseChair?.img || "/favicon.png"}
               alt={showcaseChair?.name || "Dental chair"}
             />
             <div className="products-hero-label">
@@ -152,7 +170,7 @@ export default function Products({ navigate }) {
                   <h3>{p.name}</h3>
                   <span>{p.brandLine}</span>
                 </div>
-                <img src={p.img} alt={p.name} />
+                <img src={p.img || "/favicon.png"} alt={p.img ? p.name : `${p.name} image unavailable`} />
                 <b>Explore →</b>
               </Link>
             ))}
@@ -168,12 +186,12 @@ export default function Products({ navigate }) {
                 >
                   <div className="bp-catalog-image">
                     <img
-                      src={product.img}
+                      src={product.img || "/favicon.png"}
                       onError={(event) => {
                         event.currentTarget.src = "/favicon.png";
                         event.currentTarget.onerror = null;
                       }}
-                      alt={product.name}
+                      alt={product.img ? product.name : `${product.name} image unavailable`}
                     />
                     <span className="bp-image-badge">
                       {product.purchaseType === "quote"

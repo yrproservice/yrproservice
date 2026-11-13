@@ -43,7 +43,7 @@ export default function Cart({ navigate }) {
                 {items.map((item) => (
                   <div className="bp-cart-row" key={item.slug}>
                     <div className="bp-cart-product">
-                      <img src={item.img} alt={item.name} />
+                      <img src={item.img || "/favicon.png"} alt={item.img ? item.name : `${item.name} image unavailable`} />
                       <div>
                         <small>{item.brand}</small>
                         <h3>{item.name}</h3>

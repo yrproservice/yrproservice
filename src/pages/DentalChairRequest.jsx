@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useChairRequests } from "../components/ChairRequestContext";
 import { useCart } from "../components/CartContext";
 import { Link } from "../components/Layout";
+import { downloadRequestConfirmationPdf } from "../utils/requestConfirmationPdf";
 
 export default function DentalChairRequest({ navigate }) {
   const {
@@ -17,6 +18,7 @@ export default function DentalChairRequest({ navigate }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
+  const [confirmationData, setConfirmationData] = useState(null);
   const selectedProducts = useMemo(
     () => items.map((item) => `${item.name} x${item.quantity || 1}`).join(", "),
     [items],
@@ -57,6 +59,7 @@ export default function DentalChairRequest({ navigate }) {
       }
 
       setReference(result.reference);
+      setConfirmationData({ ...payload, reference: result.reference, submittedAt: new Date().toISOString() });
       setSent(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (submitError) {
@@ -83,6 +86,13 @@ export default function DentalChairRequest({ navigate }) {
             <strong>Reference: {reference}</strong>
           </p>
           <div className="bp-actions" style={{ justifyContent: "center" }}>
+            <button
+              type="button"
+              className="bp-btn bp-btn-primary"
+              onClick={() => downloadRequestConfirmationPdf(confirmationData)}
+            >
+              Download PDF
+            </button>
             <button
               className="bp-btn bp-btn-primary"
               onClick={() => navigate("/cart")}
@@ -148,7 +158,7 @@ export default function DentalChairRequest({ navigate }) {
               {items.map((item) => (
                 <div className="request-item" key={item.slug}>
                   <div className="request-item-image">
-                    <img src={item.img} alt={item.name} />
+                    <img src={item.img || "/favicon.png"} alt={item.img ? item.name : `${item.name} image unavailable`} />
                   </div>
                   <div className="request-item-info">
                     <small>

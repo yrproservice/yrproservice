@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import HomeCmsRenderer from "../components/HomeCmsRenderer";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
 
@@ -56,7 +57,7 @@ const provide = [
   ],
 ];
 
-export default function Home({ navigate }) {
+function StaticHome({ navigate }) {
   return (
     <main className="bp-home">
       <section className="bp-home-hero">
@@ -341,4 +342,34 @@ export default function Home({ navigate }) {
       </section>
     </main>
   );
+}
+
+
+export default function Home({ navigate }) {
+  const [publishedContent, setPublishedContent] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/pages?key=home", {
+      headers: { Accept: "application/json" },
+      cache: "no-store"
+    })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        const result = await response.json();
+        if (!result?.ok || !Array.isArray(result.page?.content?.sections) || result.page.content.sections.length === 0) return null;
+        return result.page.content;
+      })
+      .then((content) => {
+        if (active && content) setPublishedContent(content);
+      })
+      .catch(() => {
+        // Keep the verified static homepage available if CMS content is not published or unavailable.
+      });
+    return () => { active = false; };
+  }, []);
+
+  return publishedContent
+    ? <HomeCmsRenderer content={publishedContent} navigate={navigate} />
+    : <StaticHome navigate={navigate} />;
 }
