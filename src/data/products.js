@@ -865,7 +865,6 @@ const xlineProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource: "https://www.xlineimaging.com/",
   },
   {
     slug: "xline-starx-pro",
@@ -903,7 +902,6 @@ const xlineProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource: "https://www.xlineimaging.com/",
   },
 ];
 
@@ -943,7 +941,6 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource: "https://www.fonadental.com/",
   },
   {
     slug: "fona-xdg",
@@ -976,7 +973,6 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource: "https://www.fonadental.com/",
   },
   {
     slug: "fona-x70",
@@ -1067,7 +1063,6 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource:
       "https://www.rossicaws.it/en/products/laboratory/condor-lab/",
   },
   {
@@ -1097,7 +1092,6 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource:
       "https://www.rossicaws.it/en/products/laboratory/blbox-dustinet/",
   },
   {
@@ -1123,7 +1117,6 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource:
       "https://www.rossicaws.it/en/products/laboratory/blbox-dustinet/",
   },
   {
@@ -1210,7 +1203,6 @@ const additionalBrochureProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource:
       "https://www.fdmedical.cn/product_4.html",
   },
 ];
