@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
 import { useCart } from "../components/CartContext";
@@ -46,8 +46,26 @@ export default function ProductDetails({ product, navigate, previewMode = false 
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [tab, setTab] = useState("description");
+  const [catalogueProducts, setCatalogueProducts] = useState(products);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/products", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (!active || !data?.ok || !Array.isArray(data.products)) return;
+        const overrides = new Map(data.products.map((item) => [item.slug, item]));
+        const archived = new Set(Array.isArray(data.archivedSlugs) ? data.archivedSlugs : []);
+        const known = new Set(products.map((item) => item.slug));
+        setCatalogueProducts([
+          ...products.filter((item) => !archived.has(item.slug)).map((item) => overrides.get(item.slug) || item),
+          ...data.products.filter((item) => !known.has(item.slug)),
+        ]);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
   const chair = product.purchaseType === "quote";
-  const related = products
+  const related = catalogueProducts
     .filter((p) => p.slug !== product.slug && p.category === product.category)
     .slice(0, 4);
 
