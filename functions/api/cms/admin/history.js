@@ -48,7 +48,9 @@ export async function onRequestPost(context) {
   const config = CONFIG[type];
   if (!config || !key || !versionId) return adminJson({ error: "A valid entityType, entityKey and versionId are required." }, 400);
   try {
-    const entity = await env.DB.prepare(`SELECT id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first();
+    const entity = type === "setting"
+      ? await env.DB.prepare(`SELECT setting_key AS id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first()
+      : await env.DB.prepare(`SELECT id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first();
     if (!entity) return adminJson({ error: "CMS item not found." }, 404);
     const source = await env.DB.prepare(`SELECT version_number, ${config.json} AS content FROM ${config.versions} WHERE id = ? AND ${config.fk} = ?`).bind(versionId, entity.id).first();
     if (!source) return adminJson({ error: "Revision does not belong to this item." }, 404);
