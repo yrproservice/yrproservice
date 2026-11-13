@@ -300,3 +300,29 @@ These are visually suitable full-system candidates, subject to exact record/mode
 Morita chair assets therefore need better full-system versions if the product cards are expected to show the entire configured chair system. Exact model matching remains essential (especially Signo T100 vs T500); do not interchange these assets based on visual similarity alone.
 
 This is a visual framing audit, not a manufacturer-source validation. The repository's file names are not sufficient evidence that each chair photo is the exact current model/configuration. No product image references changed.
+
+### Westcode image-folder visual audit — 13 November 2026
+
+The following Westcode assets were visually inspected directly from `cms-development`:
+
+#### Connectors
+- `kavo 4 hole quick coupling.PNG`, `kavo 6 hole fiber optic quick coupling, without mist adjustment.PNG`, and `qd 4 hole quick coupling, with water filter and non-return valve.PNG` each show a single connector isolated on white. The products are fully visible, but the source images are narrow portrait crops with generous whitespace and modest resolution. Suitable candidates if exact model/connection matching is verified.
+
+#### Equipment
+- `nl 201.jpg` shows a control unit and handpiece together on white; the composition is complete but compact.
+- `westcode dental handpiece oil spray.PNG` shows the full 500 ml can on white.
+- `westcode oil lubricator.PNG` shows the full lubricator on white.
+These are visually complete product shots, pending exact record matching.
+
+#### Handpieces
+- `westcode ap31.jfif` shows three coloured handpieces together and has visible watermarking; not a clean isolated product shot.
+- `westcode ja20 non optic.webp` and `westcode ja20.webp` each show a complete JA20 contra-angle handpiece on a clean neutral background, with different orientation/details; model variant must match.
+- `westcode m-l530 air motor.PNG`, `westcode m-l530 contra angle.PNG`, `westcode m-l530 straight handpiece.PNG`, and `westcode m-l530led contra angle.PNG` show complete individual handpiece components on white, but are very wide/short landscape crops. The LED and non-LED contra-angle variants must not be mixed.
+- `westcode s20.webp` shows a complete contra-angle handpiece in a tall portrait composition on a neutral background.
+- `westcode x1lg.PNG` shows a complete straight-looking handpiece in a very wide, shallow crop.
+- `westcode x45 pro.jpg` and `westcode x45lg pro.jpg` show two complete handpieces each; suitable only if the record expects the corresponding pair/variant, not a single exact model.
+- `westcode x45kl.PNG` shows one complete contra-angle handpiece in a very wide, shallow crop.
+- `westcode x5kl.PNG` shows two complete handpieces from different angles, with the model text visible.
+- `westcode za15.webp` shows a complete contra-angle handpiece in portrait orientation; `westcode za15l.jpg` was not reached in this inspection batch and remains unchecked.
+
+These findings describe framing/visual quality only. The asset filenames and visual resemblance do not independently prove exact catalogue variant matching. Product records and manufacturer source documentation must be cross-checked before any reference change. No Westcode product image reference was changed.
