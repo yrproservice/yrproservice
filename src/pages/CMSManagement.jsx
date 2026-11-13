@@ -132,7 +132,8 @@ export default function CMSManagement() {
         <ProductFormEditor key={editorSelection} json={json} onJsonChange={setJson} slugLocked={Boolean(selected&&!selected.isNew)} media={media}/>
         <div className="cms-manager-actions">
           <button className="admin-primary-button" disabled={busy||!selected} onClick={saveProduct}>Save product draft</button>
-          <button className="admin-secondary-button" disabled={busy||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button>\n          <button className="admin-secondary-button" disabled={!selected?.slug} onClick={() => window.open("/admin/cms/product-preview?slug=" + encodeURIComponent(selected.slug), "_blank", "noopener,noreferrer")}>Preview Product</button>
+          <button className="admin-secondary-button" disabled={busy||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button>
+          <button className="admin-secondary-button" disabled={!selected?.slug} onClick={() => window.open("/admin/cms/product-preview?slug=" + encodeURIComponent(selected.slug), "_blank", "noopener,noreferrer")}>Preview Product</button>
           <button className="admin-secondary-button" disabled={busy||!selected?.slug} onClick={archiveProduct}>Archive product</button>
           {selected?.slug&&<button className="admin-secondary-button" onClick={()=>loadHistory("product",selected.slug)}>View revisions</button>}
           {selected?.draftId&&<button className="admin-secondary-button" disabled={busy} onClick={()=>deleteDraft("product",selected.slug,selected.draftId)}>Delete Draft</button>}
