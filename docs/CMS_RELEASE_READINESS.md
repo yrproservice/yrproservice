@@ -500,3 +500,25 @@ A focused source-to-record check found a stronger official image lead for the Si
 - **Cattani Q compressors:** The Malaysia-applicable Cattani Asia 2026 Region 1 PDF text confirms the exact AC400Q image on catalogue page 20 (item 013449; 3-phase 400 V) and AC600Q image on page 23 (item 013549; 7–8 chairs). The PDF's visual descriptions show the required acoustic-hood configurations. The PDF screenshot endpoint still redirects to a host inaccessible to the screenshot renderer, so neither image has been extracted as a binary. Existing repository AC400/AC600 images remain non-Q exposed assemblies and must not be assigned to Q records. Source: https://cattaniasia.com/wp-content/uploads/2026/01/2026-Catalogue-Asia_Region-1_web.pdf
 
 **Disposition:** no media files added, no image paths changed, no product data changed. Exact source discovery and remote visual inspection do not count as a repository-installed asset. Continue binary retrieval before making any image-reference change.
+
+
+### Additional repository binary audit — Morita connectors, stools and equipment — 13 November 2026
+
+Nine more repository binaries were retrieved through GitHub `fetch_file` with `encoding: "base64"`, whitespace-stripped, and visually inspected. This is a binary-level audit, not a path-existence-only check.
+
+**Connectors**
+- `public/catalog/morita/connector/morita twinpower 4 hole coupling.webp` visibly carries the marking **CPA-4WO** and Morita / J. Morita MFG Corp. branding. It is a complete coupling photograph, but the record is titled generically "TwinPower 4-Hole Coupling". Treat CPA-4WO as the visible exact identifier; confirm that the intended product record is specifically CPA-4WO before claiming model-level match. Do not broaden this image to other TwinPower coupling variants.
+- `public/catalog/enhanced/morita/connector/morita kavo multiflex lux.jpg` shows a complete coupling, with "Made in Germany" visible, but no clear KaVo model marking in the inspected view. The record correctly identifies the brand as KaVo; the image is not sufficient to verify a specific MULTIflex LUX variant.
+- `public/catalog/enhanced/morita/connector/morita w&h roto quick.jpg` visibly carries the W&H logo and RQ-34 marking. This supports the W&H brand association and shows a complete coupling. The record remains generic "W&H Roto Quick Coupling"; exact RQ-34 variant matching should be checked before describing it as the definitive image for every Roto Quick version.
+- `public/catalog/enhanced/morita/connector/nsk coupling.jpg` visibly carries NSK branding and FM-CL-M4 marking. This supports the NSK brand association but only verifies this specific connector variant, not all NSK coupling models.
+
+**Stools**
+- `public/catalog/morita/stool/morita os-n.jfif` shows a complete Morita-branded? No visible manufacturer marking was identified in the image itself. It is a complete operator stool with backrest and five-caster base; visual form is plausible for a stool, but the binary alone does not establish the OS-N model.
+- `public/catalog/morita/stool/morita t2.jpg` shows a complete stool with backrest, circular seat, foot ring and caster base. No model label is visible; exact T2 identity remains dependent on official model documentation.
+
+**Equipment**
+- `public/catalog/morita/equipment/morita tcs ts 2.jfif` shows a compact suction unit with Morita wordmark and attached hoses; it is a complete product view, though the small image limits detail.
+- `public/catalog/enhanced/morita/equipment/morita dentaport zx.jpg` shows the DentaPort Root ZX device and several accessories together. It is a composite product presentation rather than a clean isolated product photo; the device is visible but the overall composition is crowded and cropped at the lower edge.
+- `public/catalog/enhanced/morita/equipment/morita lubrina 2.jpg` shows a complete front-facing cabinet-style maintenance unit with handpiece bays visible. It is a promising complete-product image, though the front is dark and fine detail is limited.
+
+**Disposition:** no binary or image reference was changed. The visually readable CPA-4WO, RQ-34 and FM-CL-M4 markings narrow what each connector image can safely represent. Stool model identities remain unverified from the binary alone. The TCS TS 2 and Lubrina 2 images are complete views; DentaPort Root ZX is a composite/cropped presentation.
