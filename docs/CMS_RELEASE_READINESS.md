@@ -240,3 +240,14 @@ All six product records point to files whose names imply legacy Silent Power mod
 
 #### Outcome
 The repository's existing media has now been visually checked for these six areas. The inspection revealed actual image-quality and model-matching problems rather than merely missing documentation. Do not silently preserve these as “verified product images.” Continue sourcing exact, clean manufacturer assets and replace only after binary retrieval, model/configuration verification, and visual quality checks. No product data, image reference, or binary was modified in this inspection step.
+
+### Fussen F200 manufacturer media review — 13 November 2026
+
+The official Fussen F200 page was opened and its linked image assets reviewed:
+https://en.fussengroup.com/f200
+
+The page's indexed image set is primarily diagnostic X-ray examples, imaging plate size illustrations, and feature/operation images (smart touch control, standby, detection, optimization, energy saving, erasure, and the three-step workflow). The page text identifies the product model and official technical specifications, but no direct, clean full-product hero photograph was exposed in the accessible page links. This supports retaining the existing exact model source for technical content while continuing to seek a suitable product image. The local Fussen image remains a close-up crop and is not acceptable as a full-product card photo.
+- Official Fussen page: https://en.fussengroup.com/f200
+- Official page lines 138–192 identify feature and operation images; lines 194–205 list model F200 and specifications.
+- A distributor PDF result has a visually described full F200 product image, but it is not a manufacturer source and includes promotional composition. It is not adopted: https://belmonthm.com/wp-content/uploads/2022/01/haifa-medical-catalog_2022-01.pdf
+- The local image remains unchanged and no product record was modified.
