@@ -263,3 +263,11 @@ Inspected repository assets:
 - `public/catalog/cattani/images/turbo-jet-1.jpg` (SHA `ab36cf6214a5b863b58158c5704d9fe9c7561d59`): full standalone suction motor assembly, not a compressor substitute.
 
 The existing AC400/AC600 assets are clean enough as general full-product photographs for their respective non-Q models, but must not be assigned to AC400Q/AC600Q. The Q-model product records remain unillustrated until the correct exact assets are retrieved. The AC300-Q asset visually demonstrates the acoustic-enclosure product family but is not evidence for AC400Q/AC600Q. No image references changed.
+
+#### Additional Cattani Q-series assets inspected
+
+- `ac-100-q.jpg` (SHA `09dab5dc0e22636d3fb8b02ef39419dd580c58af`) and `ac-200-q.jpg` (SHA `e6547ba3b9d4518b1884276704f3efa7536cdb0a`) visually show the compact acoustic-hood Q compressor design, but are extremely small thumbnails (approximately 100 pixels wide in the rendered inspection) and are unsuitable for the site's product-card imagery at V10 display sizes.
+- The corresponding non-Q `ac-100.jpg` (SHA `0bfcfe44d44948d43798c3916764e4865a0ee908`) and `ac-200.jpg` (SHA `3d7cd43234cfd60935ef8d919cd9738e63b37606`) show exposed compressor assemblies, not the Q acoustic-hood design.
+- `turbo-jet-1-modular.jpg` and `turbo-jet-2-modular.jpg` are technical line drawings, not photographic product assets.
+- `turbo-jet-1-no-amalgam-separation.jpg` is a small full product photo; `turbo-jet-compact.jpg` is a larger close-up/full-unit view but fills the frame tightly. Neither is an AC compressor asset.
+- This confirms the Cattani asset folder has mixed quality: some Q-series images are exact-family but too small; larger non-Q photos cannot be substituted for Q models. No product image reference changed.
