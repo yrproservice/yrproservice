@@ -38,6 +38,7 @@ After the initial audit, exact manufacturer references and additional verified t
 - **Cattani AC 400 Q:** official Cattani model page now records the 230 V / 50 Hz single-phase configuration, 320 N l/min delivery at 5 bar, 100 L tank, 63.8 dB(A), dimensions and weight.
 - **Cattani AC 600 Q:** official Cattani model page now records the 400 V / 50 Hz three-phase configuration, 476 N l/min delivery at 5 bar, 150 L tank, 70.4 dB(A), dimensions and weight.
 - **Morita TCS-TS2:** the official Signo Z300 brochure identifies TCS-TS2 (220 V) as a dental suction device. The source is linked, but no standalone technical specifications have been added.
+- **Mocom M7, M8 and M9 stools:** matching Mocom Stools catalogue entries now link to the Mocom brochure and describe only its model-specific features. No unverified dimensions or numeric specifications were added.
 - **MELAG Vacuclave 118:** the official MELAG user manual states noise emission is **71 dB(A)**. The catalogue value previously shown as 60.9 dB(A) was corrected. The product image remains unassigned.
 
 These content edits have regression tests in `tests/product-catalog.test.js`. Their new CI result must be checked before treating the tests as passed.
@@ -45,7 +46,7 @@ These content edits have regression tests in `tests/product-catalog.test.js`. Th
 ## Outstanding content and release items
 
 1. **Three exact catalogue images are not available in the current image library:** Cattani AC 400 Q, Cattani AC 600 Q and MELAG Vacuclave 118. They are left without a product image rather than being assigned a visually similar but potentially incorrect model.
-2. **Ten product records still lack a verified official manufacturer source:** Fussen Imaging Plate Scanner; six Mocom Silent Power variants; and Mocom M7/M8/M9 stools. Fussen's official site documents an F200 Image Plate System, but the model number on the YR Proservice record has not been confirmed as F200, so that source has not been assigned to the record.
+2. **Seven product records still lack a verified exact-model manufacturer source:** Fussen Imaging Plate Scanner and six Mocom Silent Power variants. Fussen's official site documents an F200 Image Plate System, but the model number on the YR Proservice record has not been confirmed as F200, so that source has not been assigned to the record. The six Silent Power variants do not yet have an exact match to the current Mocom Evo brochure.
 3. **Twenty-seven product records still have no verified specification list.** These are primarily legacy/variant-specific items for which an exact official technical document was not found. Do not fill these with guessed or distributor-derived values without verification.
 4. **Product pricing and stock values remain business data.** Keep unconfirmed values as pending until YR Proservice supplies or enters the actual price and stock status.
 5. **HR email destination needs confirmation.** The new HR-only page currently opens an email to the existing public company inbox; a dedicated HR contact was not present in the inspected source.
