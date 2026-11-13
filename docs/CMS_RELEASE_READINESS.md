@@ -538,3 +538,16 @@ Nine more repository binaries were retrieved through GitHub `fetch_file` with `e
 - Do not rename legacy records or assign Evo images based on similar model names alone. Obtain legacy model documentation or an exact part/model cross-reference before approving replacements.
 
 **Disposition:** manufacturer source research only. No product records, image paths, image binaries, or website code changed in this audit entry. The T100 brochure image and Mocom Evo images are not repository-installed assets.
+
+
+### Morita official high-resolution dealer-image route — 13 November 2026
+
+- Morita North America's official Download Center has a dedicated **Dealer Support – Product Images** section. It states that authorised dealers can download high-resolution JPEG product images sized for catalogue listings and advertising, and provides a Google Drive folder titled **J. Morita USA Dealer Images**.
+- Official Download Center page: https://www.morita.com/america/en/support/download-center/69152/?categoryid=579&dateOfManufacture=&filterTagIds=&languageIds=&page=2&specialistsTagIds=
+- Linked dealer-image folder: https://drive.google.com/drive/folders/14tUkmnF3yxJTIIMFLpQbhtxCXMLd9YJh?usp=sharing
+- The Google Drive folder opens as a Drive landing page in the available research interface, but its file listing and original image binaries were not exposed for retrieval in this pass. Therefore, no individual file name, resolution, or T100/T500/G20 image match is claimed.
+- Morita's official media page separately exposes a T100 header image, but that asset is a shallow, wide crop (1400 × 280 presentation) and is not suitable as a complete product-card image. Do not substitute it for a full-system product photograph.
+- The official South-East Asia T100 brochure remains a valid model-specific visual reference; the official T500 media page and G20 catalogue remain candidate model references. They are not repository-installed image binaries.
+- Practical next step: use the authorised dealer-image folder (or request the high-resolution image directly from Morita) and inspect the actual downloaded files for complete T100, T500 and G20 configurations before repository changes.
+
+**Disposition:** source route identified, but no original high-resolution binary was retrieved. No product data, image path, repository binary, or website code changed. No image replacement is approved from this finding alone.
