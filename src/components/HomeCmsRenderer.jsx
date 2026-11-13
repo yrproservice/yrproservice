@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
+import { mergePublishedProduct } from "../data/productImages";
 
 function CmsLink({ to, navigate, className, children }) {
   return to ? <Link to={to} navigate={navigate} className={className}>{children}</Link> : null;
@@ -88,8 +89,8 @@ export default function HomeCmsRenderer({ content, navigate }) {
         const archived = new Set(Array.isArray(data.archivedSlugs) ? data.archivedSlugs : []);
         const known = new Set(products.map((item) => item.slug));
         setCatalogueProducts([
-          ...products.filter((item) => !archived.has(item.slug)).map((item) => overrides.get(item.slug) || item),
-          ...data.products.filter((item) => !known.has(item.slug)),
+          ...products.filter((item) => !archived.has(item.slug)).map((item) => overrides.has(item.slug) ? mergePublishedProduct(item, overrides.get(item.slug)) : item),
+          ...data.products.filter((item) => !known.has(item.slug)).map((item) => mergePublishedProduct(null, item)),
         ]);
       })
       .catch(() => {});
