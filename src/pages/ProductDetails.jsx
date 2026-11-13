@@ -30,7 +30,7 @@ function formatProductPrice(price) {
   }).format(numericPrice);
 }
 
-export default function ProductDetails({ product, navigate }) {
+export default function ProductDetails({ product, navigate, previewMode = false }) {
   const { addToCart } = useCart();
   const { addChair } = useChairRequests();
   const [quantity, setQuantity] = useState(1);
@@ -111,7 +111,7 @@ export default function ProductDetails({ product, navigate }) {
             </div>
           </div>
           <p className="bp-detail-summary">{description}</p>
-          <div className="bp-detail-qty">
+          {!previewMode && <div className="bp-detail-qty">
             <span>Quantity</span>
             <button
               type="button"
@@ -135,11 +135,11 @@ export default function ProductDetails({ product, navigate }) {
                 ? "Added to Cart ✓"
                 : "Add to Cart →"}
           </button>
-          <p className="bp-admin-note">
+          {previewMode ? <p className="bp-admin-note">This is an administrator preview. No cart or quotation action will be submitted.</p> : <p className="bp-admin-note">
             Price and availability are catalogue fields reserved for future
             admin updates. Manufacturer-specific technical details are shown
             below when verified.
-          </p>
+          </p>}
         </div>
       </section>
 
