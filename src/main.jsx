@@ -267,7 +267,7 @@ function ProductRoute({ product: fallbackProduct, navigate }) {
       .then((data) => {
         if (!active) return;
         if (data?.ok && data.product) setProduct(data.product);
-        else if (!fallbackProduct.name) setMissing(true);
+        else if (data?.archived || !fallbackProduct.name) setMissing(true);
       })
       .catch(() => { if (active && !fallbackProduct.name) setMissing(true); })
       .finally(() => { if (active) setLoading(false); });
