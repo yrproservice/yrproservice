@@ -1,82 +1,72 @@
-# YR Proservice — Visual Blueprint V8
+# YR Proservice — Full Visual CMS
 
-This version is a structural visual rebuild based on the supplied Visual and Design Blueprint and the latest feedback.
+The YR Proservice website is a dental equipment and services platform with a Preview-only Full Visual CMS. The CMS combines live visual editing beside a page preview with structured management panels for products, specifications, images, documents, and site settings.
 
-## Design direction
+## Source of truth and design
 
-- Montserrat for headings/navigation/UI; Inter for body copy.
-- Blueprint palette: YR navy, primary blue, cyan accent, light ice background, dark text.
-- Each major page has a different visual purpose instead of repeating the same composition:
-  - Home: cinematic / welcoming
-  - Products: showroom / commercial
-  - Product Details: premium information
-  - Services: technical / engineering
-  - Team: human / editorial
-  - Contact HR: quiet corporate / recruitment
-  - Request Centre: one shared visual shell for Product Cart and Dental Chair Requests
-  - Quote: focused conversion / enquiry
-- Decorative elements are background treatments only; controls are functional.
+- The approved V10 visual blueprint is the sole visual baseline for layout, page identity, proportions, spacing, cards, and typography.
+- Headings use Montserrat; body text uses Inter.
+- The design palette is Deep Navy `#0B4A88`, Primary Blue `#1E7ED8`, Cyan `#00C2FF`, Pale Blue `#EAF6FD`, Light Grey `#F5F7FA`, Text `#1F2937`, Muted `#687280`, and White `#FFFFFF`.
+- Product images must preserve the full image and aspect ratio: contain-style presentation, no crop, stretch, distortion, or overflow.
+- Do not use older project archives as a replacement for V10 or redesign existing pages as a shortcut to CMS integration.
 
-## Navigation
+## Environments and release safety
 
-- Removed Get a Quote from the main navigation.
-- Services navigation is a reusable dropdown built from the same 8-service data used by the Services page.
-- Home has a dedicated home-mark link.
-- Cart remains available because it is part of the product-selection workflow.
+| Purpose | Configuration |
+| --- | --- |
+| Preview branch | `cms-development` |
+| Preview site | `https://cms-development.yrproservice.pages.dev` |
+| Preview D1 binding | `DB` → `yr-proservice-test-db` |
+| Preview D1 ID | `7fca4ad0-3baa-4148-ad28-bfd2ef416c16` |
+| Preview R2 binding | `CMS_MEDIA` → `yrproservice-cms-preview` |
+| Production site | `https://yrproservice.pages.dev` |
+| Production D1 binding | `DB` → `yr-proservice-db` |
+| Production D1 ID | `9bf690db-a74b-43e9-8c38-cc8bab18a9f1` |
 
-## Product improvements
+**Production is protected.** Keep all development, experiments, migrations, and verification on `cms-development` and Preview. Do not merge to `main`, change Production resources, or deploy a Production release without explicit user approval. Never run Preview migration commands against `yr-proservice-db`.
 
-- Product catalogue is presented as a showroom rather than a plain database grid.
-- Hero/spotlight areas use product imagery and product-specific links.
-- Product actions have a clear purpose:
-  - normal product -> Add to Cart
-  - dental chair -> Request Chair
-  - View Details -> dedicated product detail page
-- Product detail tabs are functional: Description, Specifications and Reviews.
-- No star ratings or invented review counts are displayed.
-- Price and stock are catalogue fields intended for a future admin workspace.
-- Dental-chair imagery for the 11 chair models is model-specific and refreshed using current product references. Before final deployment, these external image URLs should be downloaded into /public/catalog/verified/ to make the final site independent of third-party image hosting.
+## CMS capabilities
 
-## Services
+The current development branch contains:
 
-The approved 8 services remain:
+- Draft, preview, publish-to-Preview, revision-history, restore-as-draft, and draft-deletion workflows.
+- Product management, including structured product data, specifications, documents, image selection, and catalogue import.
+- Media-library upload, listing, and removal through the Preview R2 bucket, with file-signature checks, a 12 MB limit, and protection against deleting media referenced by saved content or revisions.
+- CMS page/settings support and management interfaces for Home, Products, Services, Team, navigation/footer, and Visual Design Studio.
+- Public renderers for CMS-managed page, product, navigation, and footer content.
+- Cloudflare Access-protected Admin APIs and a single-device Admin session lock with a 90-second expiry/heartbeat.
+- Separate customer flows: normal products use the Product Cart; dental chairs use the dedicated Dental Chair Request. Quotation, service requests, request tracking, and HR-focused Contact remain separate workflows.
 
-1. Dental Chair Installation
-2. Equipment Installation
-3. Compressor Installation
-4. Dental Suction Installation
-5. Underfloor Piping
-6. Preventive Maintenance
-7. Equipment Relocation
-8. Repair and Technical Support
+The request dashboard and CMS Admin are private. Public customer request and tracking endpoints must remain accessible without exposing Admin APIs.
 
-## Contact
+## Product and content integrity
 
-Contact is intentionally HR/careers only. Product and technical enquiries use the product/service request flows.
+- Match every product image to the exact model; do not substitute a visually similar model.
+- Prefer approved local catalogue assets and Preview R2 media. Do not silently fall back to obsolete external image URLs.
+- Use official manufacturer pages first, then official catalogues/manuals. Do not invent specifications, reviews, ratings, prices, or stock values.
+- Unconfirmed pricing and stock are business data and must remain pending until supplied or entered by YR Proservice.
+- Products without verified images or technical sources should remain clearly identified as incomplete rather than populated with guesses.
 
-## Request backend
+## Local development and automated checks
 
-Service, quotation, and dental-chair requests are submitted to the Cloudflare Pages Function at `/api/requests` and saved in the shared D1 `requests` table. The quotation flow stores product/chair selections and location with the request and returns a `YRQ-...` reference; dental-chair requests return `YRC-...`; service requests continue to return `YRS-...`.
+Use Node.js 22 and the committed lockfile:
 
-The request tracking flow adds `GET /api/track`. It accepts the reference number and the original request email, then returns only the request type, status and submission date for a matching record. No extra migration is required because it reads the `requests` table already created for the earlier phases.
+```bash
+npm ci
+npm test
+npm run build
+```
 
-For deployment, configure a Cloudflare Pages D1 binding named `DB` pointing to `yr-proservice-db`, and apply `migrations/0001_create_requests.sql` if it has not already been applied. No new migration is required for quotation, dental-chair, or tracking requests. The API does not send email notifications.
+The GitHub Actions workflow `.github/workflows/cms-build-check.yml` runs the locked install, automated Node tests, and Vite build for pushes to `cms-development`. A successful build confirms compilation; it does not replace authenticated browser testing of CMS workflows or verification that Cloudflare Pages Preview deployed the same branch commit.
 
-## Admin dashboard
+The migration workflow `.github/workflows/cms-preview-migration.yml` targets only `yr-proservice-test-db`. Review migration contents and workflow output before treating a schema change as complete.
 
-The private request dashboard is available at `/admin`; it lists and filters requests, shows request details, and updates request status. Its API is protected by Cloudflare Access JWT verification and an administrator email allowlist. Configure the Access application and server-side environment variables described in [PHASE5-ADMIN-DASHBOARD-SETUP.md](./docs/PHASE5-ADMIN-DASHBOARD-SETUP.md) before deployment. The dashboard does not require a new D1 migration.
+## Release readiness
 
-## Verification note
+See [CMS_RELEASE_READINESS.md](./docs/CMS_RELEASE_READINESS.md) for the dated audit, completed fixes, known content gaps, and remaining release gates. See [CMS-PREVIEW-OPERATIONS.md](./docs/CMS-PREVIEW-OPERATIONS.md) for Preview operations and the dedicated D1 migration secret.
 
-The production build completes successfully with `npm run build`. Automated tests are not configured yet, so the build verifies compilation but not end-to-end request or admin behavior. The header has no Get a Quote navigation item; quotation is reached through the product/request workflow.
+The 13 November 2026 audit reports 23/23 automated tests passing, a successful Vite build, a successful Workers build, and a completed Preview deployment. Authenticated browser verification of the latest audit changes remains outstanding. The earlier 43/43 browser checks were user-reported against a previous Preview build and have not been independently repeated against the latest audit changes.
 
-## V8 updates
+Outstanding release items include three missing exact catalogue images, eleven product records without verified official manufacturer sources, twenty-seven records without verified specifications, confirmation of the HR email destination, Preview browser verification, accessibility/performance review, and a backup-recovery drill.
 
-- Removed the Home text/link from the main navigation; the YR Proservice logo remains the home link.
-- Removed the Home item from the mobile navigation as well.
-- Refreshed the non-dental-chair product imagery into clean product-focused local images, removing brochure/specification text where the source image allowed.
-- Dental-chair imagery and the V7 chair-specific product overrides remain unchanged.
-
-## Image verification pass
-
-The dental-chair catalogue now uses model-specific image URLs verified against manufacturer/product sources rather than the previous local brochure screenshots. The 11 chair models are mapped individually for Cingol X1/X3/X5, Mocom F10/M10/V10, and Morita Signo G20/T100/Z300/G10 II/T500. Old chair `fallbackImg` entries have been removed so a failed remote image cannot silently display the previous brochure screenshot. Before final Cloudflare deployment, these verified images should be downloaded into `/public/catalog/verified/` (or another owned/licensed image directory) and the URLs changed to those local files.
+**Production release status: not approved.** Do not merge PR #2 or deploy Production until the release gates in `docs/CMS_RELEASE_READINESS.md` are resolved or explicitly accepted and the user approves the release.
