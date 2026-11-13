@@ -570,7 +570,7 @@ const melagProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    manufacturerSource: "https://www.melag.com/",
+    manufacturerSource: "https://configurator.melag.com/sites/default/files/import/Pro-Class.pdf",
   },
   {
     slug: "melag-melatronic-17-en",
