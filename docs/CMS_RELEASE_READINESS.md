@@ -357,3 +357,31 @@ A recursive Git tree scan of branch `cms-development` was compared with the prod
 - The scan is path-existence validation only; it does not certify that the image is the correct model, high enough resolution, or visually acceptable.
 - Source file SHA at scan time: `b7c4f4edaceb02c219a89d00d208ff9d217d66bd`.
 No product data or image references changed.
+
+### Durr, Xline, FONA and enhanced media audit — 13 November 2026
+
+#### Enhanced Mocom dental chair files actually used by product records
+- `public/catalog/enhanced/mocom/dental chair/mocom f10.jpg`: higher-resolution full chair/delivery system; upper light/monitor and lower base visible. Accessory group on right is separated from the chair but appears part of the product composition.
+- `mocom m10.jpg`: full chair/delivery assembly, all major components visible, navy upholstery, white background.
+- `mocom v10.jpg`: full chair/delivery assembly and major upper accessories visible; white background.
+These are materially better than some original lower-resolution PNG versions and the current product records already point to these enhanced paths. They remain subject to exact configuration/model verification, but framing is broadly suitable.
+
+#### Enhanced Morita
+- `enhanced/morita/equipment/morita dentaport zx.jpg`: higher-resolution than original but still a tightly cropped layout; parts of equipment/accessories are cut at edges.
+- `enhanced/morita/equipment/morita lubrina 2.jpg`: full cabinet visible with useful whitespace; low-contrast/dark front but complete.
+- `enhanced/morita/equipment/morita tcs ts 2.jpg`: full unit visible with hoses; prominent Morita logo above the product.
+- `enhanced/morita/equipment/morita veraview x800.jpg`: still only a cropped upper imaging assembly and column; not a full-system photo.
+
+#### Durr
+- `vistascan-mini-easy-2.0.jpg`: scanner body is substantially visible in a close-up square product shot; edges are tight but not obviously missing the main body.
+- `vistaintra-dc.jpg`: close-up of wall-mounted X-ray arm/head and control panel; not a full installation view.
+- `vistavox-s-ceph.jpg`: large portion of imaging unit and operator panel visible, but close crop with installation/base context omitted.
+
+#### Xline
+- `xline-starx-pro.jpg`: shows two black X-shaped handheld control/trigger devices, not an obvious complete X-ray product/system. Exact record-to-image match needs checking; flag as possible mismatch.
+- `xline-xdi-150.jpg`: cropped wall-mounted X-ray system image with substantial white space and promotional “Made in Italy” footer; not a full installation view.
+
+#### FONA
+- `fona-x70.jpg`, `fona-xdc.jpg`, and `fona-xdg.jpg` are visibly taken from promotional/catalogue layouts: the equipment is cut at one or more edges and captions/graphics are embedded. They are not clean isolated full-product images.
+
+The above are visual inspections only. Exact model matching and source provenance must be checked before any changes. No product references or binary files were changed.
