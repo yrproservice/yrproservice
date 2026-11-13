@@ -200,3 +200,14 @@ The PDF's first page includes a manufacturer product photograph of the Veraview 
 - https://www.morita.com/jmmc/en/products/diagnostic-and-imaging-equipment/2d-/-3d-imaging/veraview-x800/?tab=media
 
 The official PDF is readable through the web document viewer, but its binary download failed in the working environment. The product photo is therefore a verified manufacturer visual reference, not an extracted repository asset. The existing local X800 file remains uninspected. Do not replace the current path until the original image binary can be lawfully extracted or the manufacturer supplies a direct image file and its resolution/quality can be checked.
+
+### Morita Veraview iX — official full-system photo and configuration match — 13 November 2026
+
+A fresh search located Morita's official Veraview iX brochure:
+https://www.morita.com/cms/files/Brochure_Veraview_IX-1.pdf?download=1
+
+The brochure's visual description includes both a close-up of the intraoral X-ray head and a full-system photograph showing the vertical support, adjustable arm, imaging head, patient chair/backrest and floor base. Morita's official configuration page confirms two configurations: wall-mounted Type WA550/WA800 and Type R with patient chair. This is important because the product record may represent a particular configuration; the full chair-mounted image must not be assigned if the record intends a wall-mounted version. Sources:
+- https://www.morita.com/cms/files/Brochure_Veraview_IX-1.pdf?download=1
+- https://www.morita.com/group/en/products/diagnostic-and-imaging-equipment/intraoral-imaging/veraview-ix/?tab=configuration
+
+The brochure PDF binary could not be downloaded into the working environment. This is a manufacturer visual reference, not an extracted production asset. The existing local Veraview iX images remain uninspected. Before replacement, confirm the intended wall-mounted or patient-chair configuration for the exact product record.
