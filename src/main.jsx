@@ -263,7 +263,11 @@ function ProductRoute({ product: fallbackProduct, navigate }) {
   useEffect(() => {
     let active = true;
     fetch("/api/cms/public/products?slug=" + encodeURIComponent(fallbackProduct.slug), { cache: "no-store" })
-      .then((r) => r.ok ? r.json() : null)
+      .then(async (response) => {
+        const data = await response.json().catch(() => null);
+        if (response.status === 410 || data?.archived) return { ...data, archived: true };
+        return response.ok ? data : null;
+      })
       .then((data) => {
         if (!active) return;
         if (data?.ok && data.product) setProduct(data.product);
