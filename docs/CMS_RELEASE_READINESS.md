@@ -122,3 +122,12 @@ Further inspection established exact image-link details, but still did not produ
 - **Mocom Silent Power:** No exact legacy-variant source was established in this pass.
 
 No media files were added and no product image references were changed. This was a source-inspection/documentation-only update.
+
+### Morita official image-library investigation — 13 November 2026
+
+- Morita North America's official Download Center states that authorized dealers can download high-resolution JPEG product images intended for catalog listings and advertising. Its product-image link opens a J. Morita USA Dealer Images Google Drive folder. This is a genuine manufacturer-controlled image source, but the folder contents could not be enumerated through the available web retrieval view. Source: https://www.morita.com/america/en/support/download-center/69152/?page=3
+- The JMMC official Download Center exposes an Images category, but the current accessible page's Images filter returned only factory/location-map documents, not product photographs. The North American dealer image folder is therefore the stronger lead for product assets.
+- Official Morita Download Center pages list Veraview X800 documents and the official South East Asia portal lists Veraview iX documentation. This confirms current manufacturer documentation for both model families, but does not itself verify a matching product photo binary.
+- The dealer image folder may require dealer permissions or interactive Google Drive access. No file was downloaded or installed. Do not infer access to the images from the existence of the folder link.
+
+No Morita product image references were changed. The actual repository media remains pending visual inspection and exact-model matching.
