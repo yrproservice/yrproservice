@@ -64,3 +64,19 @@ test("Morita TCS-TS2 classification links to the manufacturer's Signo Z300 broch
   assert.equal(product.manufacturerSource, "https://www.morita.com/cms/files/Brochure_Signo_Z300_2023_EN.pdf?download=1");
   assert.deepEqual(product.specifications, []);
 });
+
+
+test("Mocom M7 M8 and M9 stool records link to the matching manufacturer catalogue", () => {
+  const m7 = products.find((item) => item.slug === "mocom-m7-stool");
+  const m8 = products.find((item) => item.slug === "mocom-m8-stool");
+  const m9 = products.find((item) => item.slug === "mocom-m9-stool");
+  const source = "https://pdf.medicalexpo.com/pdf/mocom/stools-mocom/73324-292879.html";
+
+  for (const product of [m7, m8, m9]) {
+    assert.ok(product);
+    assert.equal(product.manufacturerSource, source);
+  }
+  assert.match(m7.description, /lumbar support/i);
+  assert.match(m8.description, /360-degree rotating armrest/i);
+  assert.match(m9.description, /saddle-shaped/i);
+});
