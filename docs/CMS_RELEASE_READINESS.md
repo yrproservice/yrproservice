@@ -251,3 +251,15 @@ The page's indexed image set is primarily diagnostic X-ray examples, imaging pla
 - Official page lines 138–192 identify feature and operation images; lines 194–205 list model F200 and specifications.
 - A distributor PDF result has a visually described full F200 product image, but it is not a manufacturer source and includes promotional composition. It is not adopted: https://belmonthm.com/wp-content/uploads/2022/01/haifa-medical-catalog_2022-01.pdf
 - The local image remains unchanged and no product record was modified.
+
+### Cattani existing compressor image visual inspection — 13 November 2026
+
+Inspected repository assets:
+- `public/catalog/cattani/images/ac-300-q.jpg` (SHA `97ffe6c97c0852a90c7050b286c7ef0708d46ac3`): full product view of a single compressor in a large acoustic enclosure on a tank. This is a distinct Q-style enclosed design.
+- `public/catalog/cattani/images/ac-300.jpg` (SHA `41e3fd2cde0634dc3d77a82c8ef8c9042e7bedf6`): full exposed compressor assembly, no matching acoustic enclosure.
+- `public/catalog/cattani/images/ac-400.jpg` (SHA `ebd9376ee568b1a6a7df5684af5f58e7731be674`): full exposed dual-pump compressor assembly on tank; not visually the AC400Q twin acoustic-hood design shown in the Asia Region 1 catalogue.
+- `public/catalog/cattani/images/ac-600.jpg` (SHA `728e4b60298ccde1fd4b4f4d522fce098f69a223`): full exposed dual-pump compressor assembly on tank; not visually the AC600Q twin/tandem Q design shown in the Asia Region 1 catalogue.
+- `public/catalog/cattani/images/ac-1800.jpg` (SHA `42aaa108f724c02d03c266a1b9d0324dc005c25f`): full multi-pump compressor assembly, but small source dimensions and not relevant to the Q-model records.
+- `public/catalog/cattani/images/turbo-jet-1.jpg` (SHA `ab36cf6214a5b863b58158c5704d9fe9c7561d59`): full standalone suction motor assembly, not a compressor substitute.
+
+The existing AC400/AC600 assets are clean enough as general full-product photographs for their respective non-Q models, but must not be assigned to AC400Q/AC600Q. The Q-model product records remain unillustrated until the correct exact assets are retrieved. The AC300-Q asset visually demonstrates the acoustic-enclosure product family but is not evidence for AC400Q/AC600Q. No image references changed.
