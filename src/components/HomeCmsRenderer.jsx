@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
 
@@ -45,7 +45,7 @@ function HomeCmsSection({ section, navigate, design }) {
         <div className="bp-editorial-feature"><img src={c.imageUrl} alt={c.imageAlt || ""} style={{ objectPosition: c.imagePosition || "center", height: c.imageHeight ? `${c.imageHeight}px` : undefined }} /><div><span>{c.imageNumber || "01"}</span><strong>{c.imageTitle}</strong><p>{c.imageDescription}</p></div></div>
       </div></section>;
     case "product-grid": {
-      const featured = products.filter((p) => (c.productSlugs || []).includes(p.slug));
+      const featured = catalogueProducts.filter((p) => (c.productSlugs || []).includes(p.slug));
       return <section className="bp-featured home-cms-section" key={section.id} style={sectionStyle}><div className="container">
         <div className="bp-section-head bp-head-light"><div><p className="bp-eyebrow bp-eyebrow-light">{c.eyebrow}</p><h2>{c.heading}</h2></div><CmsLink to={c.buttonUrl || "/products"} navigate={navigate} className="bp-outline-light">{c.buttonText || "View All Products"} →</CmsLink></div>
         <div className="bp-product-grid">{featured.map((p) => <article className="bp-product-card" key={p.slug}><Link to={`/products/${p.slug}`} navigate={navigate}><div className="bp-product-img"><img src={p.img} alt={p.name} /></div><div className="bp-product-body"><small>{p.brand || "YR Proservice"}</small><h3>{p.name}</h3><p>{p.summary}</p><span>View Details →</span></div></Link></article>)}</div>
@@ -76,6 +76,25 @@ function HomeCmsSection({ section, navigate, design }) {
 }
 
 export default function HomeCmsRenderer({ content, navigate }) {
+  const [catalogueProducts, setCatalogueProducts] = useState(products);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/public/products", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (!active || !data?.ok || !Array.isArray(data.products)) return;
+        const overrides = new Map(data.products.map((item) => [item.slug, item]));
+        const known = new Set(products.map((item) => item.slug));
+        setCatalogueProducts([
+          ...products.map((item) => overrides.get(item.slug) || item),
+          ...data.products.filter((item) => !known.has(item.slug)),
+        ]);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
   const sections = Array.isArray(content?.sections) ? [...content.sections].sort((a, b) => (a.order || 0) - (b.order || 0)) : [];
   const design = content?.design || {};
   const pageStyle = {
