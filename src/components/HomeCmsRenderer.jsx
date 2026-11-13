@@ -85,9 +85,10 @@ export default function HomeCmsRenderer({ content, navigate }) {
       .then((data) => {
         if (!active || !data?.ok || !Array.isArray(data.products)) return;
         const overrides = new Map(data.products.map((item) => [item.slug, item]));
+        const archived = new Set(Array.isArray(data.archivedSlugs) ? data.archivedSlugs : []);
         const known = new Set(products.map((item) => item.slug));
         setCatalogueProducts([
-          ...products.map((item) => overrides.get(item.slug) || item),
+          ...products.filter((item) => !archived.has(item.slug)).map((item) => overrides.get(item.slug) || item),
           ...data.products.filter((item) => !known.has(item.slug)),
         ]);
       })
