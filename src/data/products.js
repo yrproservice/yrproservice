@@ -1764,13 +1764,14 @@ const rawProducts = [
     img: "/catalog/mocom/stool/mocom m7.PNG",
     summary: "Mocom M7 Stool operator stool for dental-clinic workspaces.",
     description:
-      "Mocom M7 Stool is an operator stool intended to support seated clinical work around the dental operatory. Adjustment range, upholstery and included options can vary by model and configuration.",
+      "Mocom's Stools catalogue describes the M7 as a dental operator stool with adjustable tilt, independent seat and backrest adjustment, and lumbar support to help the operator maintain posture.",
     highlights: [],
     specifications: [],
     docs: [],
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
+    manufacturerSource: "https://pdf.medicalexpo.com/pdf/mocom/stools-mocom/73324-292879.html",
   },
   {
     slug: "mocom-m8-stool",
@@ -1782,13 +1783,14 @@ const rawProducts = [
     img: "/catalog/mocom/stool/mocom m8.PNG",
     summary: "Mocom M8 Stool operator stool for dental-clinic workspaces.",
     description:
-      "Mocom M8 Stool is an operator stool intended to support seated clinical work around the dental operatory. Adjustment range, upholstery and included options can vary by model and configuration.",
+      "Mocom's Stools catalogue describes the M8 as a dental operator stool with a 360-degree rotating armrest, circular seat, and adjustable armrest positioning for operator support.",
     highlights: [],
     specifications: [],
     docs: [],
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
+    manufacturerSource: "https://pdf.medicalexpo.com/pdf/mocom/stools-mocom/73324-292879.html",
   },
   {
     slug: "mocom-m9-stool",
@@ -1800,13 +1802,14 @@ const rawProducts = [
     img: "/catalog/mocom/stool/mocom m9.PNG",
     summary: "Mocom M9 Stool operator stool for dental-clinic workspaces.",
     description:
-      "Mocom M9 Stool is an operator stool intended to support seated clinical work around the dental operatory. Adjustment range, upholstery and included options can vary by model and configuration.",
+      "Mocom's Stools catalogue describes the M9 as a saddle-shaped dental operator stool designed to support an active working posture. The catalogue also lists a balance system and memory-foam upholstery option.",
     highlights: [],
     specifications: [],
     docs: [],
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
+    manufacturerSource: "https://pdf.medicalexpo.com/pdf/mocom/stools-mocom/73324-292879.html",
   },
   {
     slug: "morita-kavo-multiflex-lux-coupling",
