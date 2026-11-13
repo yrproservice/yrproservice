@@ -114,6 +114,13 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
           Selected product image
           <input value={String(product?.img ?? "")} readOnly aria-readonly="true" />
         </label>
+        {product?.img && <div className="cms-editor-field-wide cms-product-selected-image-preview">
+          <strong>Image preview</strong>
+          <div>
+            <img src={product.img} alt={(product.name || "Selected product") + " image preview"} onError={(event) => { event.currentTarget.style.display = "none"; }} />
+            <span>Image shown at full aspect ratio · contain fit</span>
+          </div>
+        </div>}
         <section className="cms-editor-field-wide cms-product-image-library">
           <h3>Choose an existing catalogue image</h3>
           <p>These are the original static website images. Selecting one changes only this product's image path; it does not copy, move, or delete the file.</p>
