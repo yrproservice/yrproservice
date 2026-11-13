@@ -142,3 +142,12 @@ The current product data was inspected on `cms-development` to avoid treating th
 - Morita's South East Asia Download Center confirms current Veraview iX documentation; Morita's other official download pages list Veraview X800 documentation. These are model documentation sources, not verified image binaries.
 
 No image file was downloaded or inspected locally. No product image path was changed. In the next image pass, inspect the actual contents of the official dealer folder (if authorized access is available), then compare the image's model and configuration against the exact record before replacing either path.
+
+### Cattani Asia Region 1 catalogue — exact AC400Q and AC600Q image/model match — 13 November 2026
+
+A fresh direct inspection of the official 2026 Cattani Asia Region 1 catalogue confirmed that it explicitly applies to Malaysia (catalogue front matter, printed page 3). It contains exact model-labelled product visuals and regional item codes:
+- AC400Q, printed page 20: two white acoustic hoods on a black horizontal tank; item code 013449.
+- AC600Q, printed page 23: two white upper units on a black horizontal tank; item code 013549.
+The catalogue text also confirms the exact product names and specifications. These are stronger regional model/image matches than the previously considered Australasia catalogue. Source: https://cattaniasia.com/wp-content/uploads/2026/01/2026-Catalogue-Asia_Region-1_web.pdf
+
+Important distinction: this verifies that the official regional catalogue depicts the exact products, but the catalogue PDF is not yet extracted into repository image binaries. No image binary has been installed and neither product image reference has been changed. Continue attempting to retrieve the PDF itself or a manufacturer-supplied original image file; do not crop a web screenshot or use a page screenshot as a production product image without checking image quality and rights.
