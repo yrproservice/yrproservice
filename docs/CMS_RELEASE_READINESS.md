@@ -473,3 +473,17 @@ All are visually complete. Confirm each product record's exact name/variant befo
 - Tri Auto ZX2 image shows the complete handheld endodontic motor on white.
 - Three TwinPower assets show complete horizontal contra-angle/turbine handpieces; their model codes and optic suffixes must match the corresponding product record. The source renders are wide/short and will require contain-style presentation rather than crop.
 No product data or image paths changed.
+
+### MELAG Vacuclave 118 image-source recheck — 13 November 2026
+
+A fresh binary-level comparison was performed against the current `cms-development` branch.
+
+- Repository file `public/catalog/melag/images/vacuclave-118-123.png` (blob SHA `b6806bd969ee6de4f7591cf8b5de6b594e3feb90`) visibly depicts a Vacuclave 118, but the image itself carries a prominent **Class S** badge. The product record `melag-vacuclave-118` is the standard Vacuclave 118, order number ME10118, documented as the Class B Pro Line model. This is therefore not an acceptable clean image for that record.
+- Repository file `public/catalog/melag/images/vacuclave-123.jpg` (blob SHA `a53b80547ef51c4880f8986992bf2e1ac946ca45`) visibly reads Vacuclave 123. It must not be assigned to the 118 record.
+- The product record currently has an empty `img` field and cites the official MELAG user manual: https://global.melag.com/sites/default/files/ba_vc_118_123_en.pdf
+- MELAG's official Pro Line Class B page confirms the Vacuclave 118/123 family and the 118's 17-litre configuration: https://www.melag.com/en/products/autoclaves/pro-line-b
+- The official MELAG user manual also identifies Vacuclave 118 and 123 and contains manufacturer product imagery. The PDF has been located, but a clean standalone image binary has not yet been extracted and saved into the repository.
+- A clean, model-labelled Vacuclave 118 Pro Line image was found at a distributor page as a possible fallback candidate: https://www.fusspflege.com/vacuclave-118-pro-line-me10118-inkl.-3-tabletts-art.-22099/27360 . It is not approved for repository use until the actual image binary, provenance, and quality are inspected and saved.
+- Another exact-model candidate appears on the UK RUCK product page: https://hellmut-ruck.uk/vacuclave-118/2611601UK/ . It is a three-quarter product view and visibly marked Vacuclave 118, but remains a distributor asset, not a manufacturer asset.
+
+**Decision:** keep `melag-vacuclave-118.img` empty. Do not reuse the Class S repository image or the Vacuclave 123 image. No product data, image references, or image binaries were changed during this recheck.
