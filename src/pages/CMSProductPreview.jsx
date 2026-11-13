@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ProductDetails from "./ProductDetails";
+import { products as catalogue } from "../data/products";
+import { mergePublishedProduct } from "../data/productImages";
 
 export default function CMSProductPreview() {
   const [product, setProduct] = useState(null);
@@ -27,7 +29,8 @@ export default function CMSProductPreview() {
       })
       .then((result) => {
         if (!active) return;
-        setProduct(result.product);
+        const base = catalogue.find((item) => item.slug === result.product?.slug);
+        setProduct(mergePublishedProduct(base, result.product));
         setVersion(result.version);
         setIsDraft(result.isDraft);
       })
