@@ -430,3 +430,24 @@ The enhanced mapping therefore does not fix the legacy Silent Power model/qualit
 - Enhanced ZA15L shows two views of the instrument and its model/brand markings. This is useful for model identification, but a paired image rather than a single isolated view.
 - The two JA20 enhanced paths do not exist at the attempted enhanced paths; the product records should continue using their original existing paths unless a verified asset is created. Do not leave the mapping pointing to nonexistent files.
 These checks apply to the enhanced assets used by the runtime mapping, not just the original files. No image paths or binaries were changed during this audit.
+
+### Additional enhanced Mocom and Morita assets — 13 November 2026
+
+#### Mocom Goldspeed EVO
+The runtime-mapped enhanced images were inspected:
+- D1-L and D1: complete handpiece bodies, isolated on white; markings visibly identify Goldspeed EVO D1 variants.
+- E16 and E4: complete angled heads/attachments shown upright; the rendered asset is a close, simple isolated product view. The two files currently render the same visual.
+- M5-L: complete contra-angle head/body isolated on white; Goldspeed EVO marking visible.
+- R20-L: complete angled handpiece isolated on white.
+- S1-L and S1: complete angled handpiece views isolated on white; the L and non-L versions have different colour-ring details.
+These images are materially cleaner than the legacy Silent Power assets and visually support the EVO product family. Keep the model suffixes distinct; do not swap light and non-light variants. Manufacturer model verification should remain attached to the corresponding product record.
+
+#### Morita connectors
+- Enhanced `morita kavo multiflex lux.jpg` shows a full KaVo Multiflex-style coupling, but the asset is stored in the Morita folder. This is a connector interface/compatibility item, not a Morita-manufactured product by default.
+- Enhanced `morita w&h roto quick.jpg` clearly displays W&H and RQ-34 markings.
+- Enhanced `nsk coupling.jpg` clearly displays NSK branding and model marking FM-CL-M4.
+The W&H and NSK images are definitely cross-brand products. The product record brand attribution and catalogue grouping should be reviewed; folder placement alone is not proof of brand. Do not change brand records as part of this image-only audit without checking the product source/record.
+
+#### Morita stool
+- Enhanced `morita os-n.jpg` shows the complete stool, including backrest, seat, support column, base and casters. The framing is clean and suitable for a stool card, subject to OS-N model provenance.
+No product data or image paths changed.
