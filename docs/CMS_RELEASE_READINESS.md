@@ -26,10 +26,10 @@ This audit was performed against the current `cms-development` source. Changes i
 
 ## Automated verification
 
-- GitHub Actions automated checks: **23/23 tests passed** on the latest checked commit.
-- Vite production build: **passed** on the latest checked commit.
-- Cloudflare Workers build: **passed** on the latest checked commit.
-- Cloudflare Pages Preview deployment: **completed successfully** for the latest checked commit; authenticated browser verification remains pending.
+- GitHub Actions run **#534** on commit `8cbbe9d31cd43778d64525c3d25a1227e7e096b3`: **26/26 automated tests passed**; locked dependency installation and Vite production build also passed.
+- The Vite build still reports a main JavaScript chunk of **609.61 kB minified (143.70 kB gzip)**, above the 500 kB warning threshold. Performance sign-off and route/component code-splitting review remain outstanding.
+- Cloudflare Workers build success was reported by the earlier audit, but was not rerun in GitHub Actions run #534.
+- Cloudflare Pages Preview deployment of the latest source commit and authenticated browser verification remain unconfirmed.
 - The earlier 43/43 browser tests were user-reported against the previous Preview build. They have not been independently repeated against the current audit changes.
 
 ## Follow-up source verification — 13 November 2026
