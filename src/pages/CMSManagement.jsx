@@ -5,6 +5,7 @@ import TeamManager from "./TeamManager";
 import PageVisualDesignManager from "./PageVisualDesignManager";
 import ProductFormEditor from "../components/ProductFormEditor";
 import { catalogMedia } from "../data/catalogMedia";
+import { mergePublishedProduct } from "../data/productImages";
 
 async function api(url, options = {}) {
   const response = await fetch(url, { ...options, headers: { Accept: "application/json", ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }), ...(options.headers || {}) }, cache: "no-store" });
@@ -22,7 +23,9 @@ export default function CMSManagement() {
   const refreshSettings=useCallback(async()=>{const d=await api("/api/cms/admin/settings");setSettings(d.settings||[]);},[]);
   useEffect(()=>{refreshProducts().catch(e=>setError(e.message));refreshMedia().catch(e=>setError(e.message));refreshSettings().catch(e=>setError(e.message));},[refreshProducts,refreshMedia,refreshSettings]);
   function chooseProduct(row) {
-    const data=row ? JSON.parse(row.draft_product||row.published_product||"{}") : blankProduct();
+    const raw=row ? JSON.parse(row.draft_product||row.published_product||"{}") : blankProduct();
+    const base=catalogue.find((product)=>product.slug===raw.slug);
+    const data=row&&base?mergePublishedProduct(base,raw):raw;
     setSelected({slug:data.slug||"", draftId:row?.draft_id||"", version:row?.draft_version||null, isNew:!row});setJson(JSON.stringify(data,null,2));setHistory([]);setError("");setNotice("");setEditorSelection((value)=>value+1);
   }
   async function saveProduct() {
