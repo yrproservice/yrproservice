@@ -7,20 +7,21 @@ import { Link } from "../components/Layout";
 export default function Products({ navigate }) {
   const [search, setSearch] = useState("");
   const [cmsProducts, setCmsProducts] = useState([]);
+  const [archivedSlugs, setArchivedSlugs] = useState([]);
   useEffect(() => {
     let active = true;
     fetch("/api/cms/public/products", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
-      .then((data) => { if (active && data?.ok && Array.isArray(data.products)) setCmsProducts(data.products); })
+      .then((data) => { if (active && data?.ok && Array.isArray(data.products)) { setCmsProducts(data.products); setArchivedSlugs(Array.isArray(data.archivedSlugs) ? data.archivedSlugs : []); } })
       .catch(() => {});
     return () => { active = false; };
   }, []);
   const catalogueProducts = useMemo(() => {
     const overrides = new Map(cmsProducts.map((item) => [item.slug, item]));
-    const merged = products.map((item) => overrides.get(item.slug) || item);
+    const merged = products.filter((item) => !archivedSlugs.includes(item.slug)).map((item) => overrides.get(item.slug) || item);
     const known = new Set(products.map((item) => item.slug));
     return [...merged, ...cmsProducts.filter((item) => !known.has(item.slug))];
-  }, [cmsProducts]);
+  }, [cmsProducts, archivedSlugs]);
 
   const [category, setCategory] = useState("All");
   const [brand, setBrand] = useState("All");
