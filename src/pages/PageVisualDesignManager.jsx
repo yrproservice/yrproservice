@@ -110,6 +110,25 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
     }
   }
 
+  async function deleteDraft() {
+    if (!draftId) return;
+    if (!window.confirm("Delete this saved design draft? The published design and archived revision history will remain unchanged. This draft cannot be recovered.")) return;
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const result = await api("/api/cms/admin/draft", {
+        method: "DELETE",
+        body: JSON.stringify({ entityType: "setting", entityKey: `page-design.${pageKey}`, versionId: draftId })
+      });
+      const rows = await loadSettings();
+      loadPage(pageKey, rows);
+      setNotice(`Design draft V${result.deletedVersion} deleted. The published design and archived history were preserved.`);
+    } catch (err) {
+      setError(err.message || "Unable to delete the design draft.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function publishToPreview() {
     if (!draftId) return;
     setBusy(true); setError(""); setNotice("");
@@ -172,6 +191,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
           <button type="button" className="admin-secondary-button" disabled={busy} onClick={resetControls}>Reset controls</button>
           <button type="button" className="admin-primary-button" disabled={busy} onClick={saveDraft}>Save design draft</button>
           <button type="button" className="admin-secondary-button" disabled={busy || !draftId} onClick={publishToPreview}>Publish to Preview</button>
+          <button type="button" className="admin-secondary-button" disabled={busy || !draftId} onClick={deleteDraft}>Delete Draft</button>
           <button type="button" className="admin-secondary-button" disabled={busy || (!draftId && !publishedVersion)} onClick={openPreview}>Preview page</button>
         </div>
       </div>
