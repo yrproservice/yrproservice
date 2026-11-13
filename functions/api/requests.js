@@ -124,7 +124,7 @@ export async function onRequest({ request, env }) {
   const randomPart = crypto
     .randomUUID()
     .replaceAll("-", "")
-    .slice(0, 6)
+    .slice(0, 16)
     .toUpperCase();
   const referencePrefix =
     requestType === "service"
