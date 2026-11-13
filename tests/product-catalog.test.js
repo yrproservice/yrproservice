@@ -43,6 +43,10 @@ test("Cattani AC 400 Q and AC 600 Q use exact manufacturer technical data", () =
   assert.equal(ac600q.manufacturerSource, "https://www.cattani.it/en/prodotto/ac-600-q-three-cylinder-twin-head-compressor-with-noise-reducing-plastic-covers-and-2-air-driers/");
   assert.ok(ac400q.specifications.includes("Air delivery at 5 bar: 320 N l/min"));
   assert.ok(ac400q.specifications.includes("Sound pressure level: 63.8 dB(A)"));
+  assert.ok(ac400q.specifications.includes("Electrical configuration: 400 V, 50 Hz, three-phase; two motors, total 3.0 kW and 7.4 A."));
+  assert.ok(ac400q.specifications.includes("Dimensions: W 1200 × D 650 × H 890 mm"));
+  assert.ok(ac400q.specifications.includes("Suggested for 5–6 dental chairs"));
+  assert.equal(ac400q.manufacturerSource, "https://cattaniasia.com/wp-content/uploads/2026/01/2026-Catalogue-Asia_Region-1_web.pdf");
   assert.ok(ac600q.specifications.includes("Air delivery at 5 bar: 476 N l/min"));
   assert.ok(ac600q.specifications.includes("Sound pressure level: 70.4 dB(A)"));
   assert.equal(ac400q.img, "");
