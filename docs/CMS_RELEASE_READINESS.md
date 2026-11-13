@@ -326,3 +326,23 @@ These are visually complete product shots, pending exact record matching.
 - `westcode za15.webp` shows a complete contra-angle handpiece in portrait orientation; `westcode za15l.jpg` was not reached in this inspection batch and remains unchecked.
 
 These findings describe framing/visual quality only. The asset filenames and visual resemblance do not independently prove exact catalogue variant matching. Product records and manufacturer source documentation must be cross-checked before any reference change. No Westcode product image reference was changed.
+
+### Additional Morita and Westcode media audit — 13 November 2026
+
+#### Morita equipment and handpieces
+- `morita dentaport zx.jpg`: controller, cables and handpieces are visible together, but the image is small and tightly cropped.
+- `morita lubrina 2.jpg`: full Lubrina 2 cabinet is visible front-on; source is small and white-background.
+- `morita tcs ts 2.jfif`: complete dark equipment unit shown front-on, with Morita logo above it; some attached hoses extend to the lower edge.
+- `morita tri auto zx2+.jfif`: shows the Tri Auto ZX2+ handpiece seated in its charging stand; full set is visible but small.
+- `morita tri auto zx2.jfif`: shows a single complete Tri Auto ZX2 handpiece on white; full instrument visible.
+- `morita twinpower PAR-4HEX-O-45.jpg`, `morita twinpower PAR-4HEX-O.jpg`, and `morita twinpower PAR-4HX-O.jpg`: all show full horizontal turbine handpieces on a white reflective surface; clean but wide/short framing. The exact model suffix and optic/non-optic variant must match the record.
+- `morita kavo multiflex lux.png`: close-up coupling on a dark reflective background; fully visible, but dark styling differs from most white product assets.
+- `morita twinpower 4 hole coupling.webp`: complete coupling on white, with visible Morita CP-4WO marking.
+- `morita w&h roto quick.jfif`: connector visibly marked W&H RO-34; do not describe it as a Morita-manufactured connector just because it is stored under the Morita folder.
+- `nsk coupling.jpg`: connector visibly marked NSK; same warning about brand attribution.
+- `morita os-n.jfif` and `morita t2.jpg`: both show complete stools including bases/casters. Clean full-product framing; exact model mapping remains to be checked.
+
+#### Westcode final handpiece image
+- `westcode za15l.jpg` shows two complete handpieces from different angles, similar to `westcode za15.webp`; ensure record expects the L variant and the paired presentation before use.
+
+This audit identifies several visually complete images that may be suitable after exact model verification, as well as two cross-brand connector assets currently stored under the Morita folder. No product data or image references were changed.
