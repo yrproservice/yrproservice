@@ -72,4 +72,4 @@ Do not merge PR #2 or deploy to Production until:
 ## Additional regional catalogue correction — 13 November 2026
 
 - The AC 600 Q record now uses the Cattani Asia 2026 Region 1 catalogue, which is the relevant regional source for the Malaysia-facing catalogue. It lists item code 013549 and recommends 7–8 chairs. This replaces the broader 6–9 dental-unit recommendation from Cattani's global product page. The AC 600 Q image remains unassigned; no image binary was saved or image reference changed.
-- Regression coverage now checks the regional source and 7–8 chair recommendation. This latest code/test change still requires a fresh GitHub Actions run before it can be marked passed.
+- Regression coverage now checks the regional source and 7–8 chair recommendation. GitHub Actions run **#571** (run ID `43366098800`) on test commit `c36571920f1cd6fd5b86c5f79a0e4e4497ea4c56` passed **28/28 automated tests**, locked dependency installation and the Vite build. The build still warns that the main JS chunk is 610.04 kB minified (143.97 kB gzip), above the 500 kB warning threshold.
