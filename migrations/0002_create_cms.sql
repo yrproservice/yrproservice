@@ -1,3 +1,4 @@
+-- Trigger Preview-only CMS migration workflow after adding CLOUDFLARE_D1_API_TOKEN.
 -- YR Proservice CMS foundation.
 -- This migration adds isolated CMS tables. It does not alter the existing
 -- customer requests table or any request-related indexes.
