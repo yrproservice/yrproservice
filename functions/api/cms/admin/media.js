@@ -1,17 +1,10 @@
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
+import { detectImageMime } from "../../../_utils/image-validation.js";
 
 function safeName(value) {
   return String(value || "upload").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(-100) || "upload";
 }
 
-function detectImageMime(bytes) {
-  if (bytes.length >= 8 && [137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => bytes[index] === value)) return "image/png";
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
-  const header = new TextDecoder().decode(bytes.slice(0, 12));
-  if (header.startsWith("GIF87a") || header.startsWith("GIF89a")) return "image/gif";
-  if (header.slice(0, 4) === "RIFF" && header.slice(8, 12) === "WEBP") return "image/webp";
-  return "";
-}
 export async function onRequestGet(context) {
   const auth = await requireAdmin(context);
   if (!auth.ok) return auth.response;
