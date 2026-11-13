@@ -14,6 +14,7 @@ import DentalChairRequest from "./pages/DentalChairRequest";
 import ServiceDetails from "./pages/ServiceDetails";
 import ServiceRequest from "./pages/ServiceRequest";
 import TrackRequest from "./pages/TrackRequest";
+import Contact from "./pages/Contact";
 import AdminDashboard from "./pages/AdminDashboard";
 import CMSDashboard from "./pages/CMSDashboard";
 import CMSPagePreview from "./pages/CMSPagePreview";
@@ -38,6 +39,7 @@ const pageTitles = {
   "/dental-chair-request": "Dental Chair Request | YR Proservice",
   "/service-request": "Request a Service | YR Proservice",
   "/track-request": "Track a Request | YR Proservice",
+  "/contact": "HR Enquiries | YR Proservice",
   "/admin": "Request Dashboard | YR Proservice",
   "/admin/cms": "Visual CMS | YR Proservice",
   "/admin/cms/preview": "CMS Draft Preview | YR Proservice",
@@ -175,6 +177,7 @@ function Router() {
     "/dental-chair-request": <DentalChairRequest navigate={navigate} />,
     "/service-request": <ServiceRequest navigate={navigate} />,
     "/track-request": <TrackRequest navigate={navigate} />,
+    "/contact": <Contact navigate={navigate} />,
     "/admin": adminEntry
       ? <AdminEntry onAuthenticated={handleAdminAuthenticated} onCancel={() => { window.history.replaceState({}, "", "/"); setPath("/"); }} />
       : <AdminDashboard />,
@@ -206,7 +209,8 @@ function Router() {
     : path === "/dental-chair-request" ? "dental-chair-request"
     : path === "/quote" ? "quote"
     : path === "/service-request" ? "service-request"
-    : path === "/track-request" ? "track-request" : "";
+    : path === "/track-request" ? "track-request"
+    : path === "/contact" ? "contact" : "";
   const routeContent = routes[path] ||
     (servicePage ? (
       <ServiceDetails service={servicePage} navigate={navigate} />
