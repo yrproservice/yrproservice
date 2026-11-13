@@ -2226,7 +2226,7 @@ const rawProducts = [
       "Functions include OGP, OTR, OAS, automatic start/stop, torque reverse and apical slow-down",
     ],
     docs: [],
-    manufacturerSource: "https://www.morita.com/group/en/products/endodontic-systems/apex-location-and-canal-preparation-systems/tri-auto-zx2/?tab=technical_details",
+    manufacturerSource: "https://www.morita.com/cms/files/TriAutoZX2%252B_IFU_K352-80002-506_20241121_en_W.pdf?download=1",
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
