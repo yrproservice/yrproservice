@@ -26,8 +26,8 @@ This audit was performed against the current `cms-development` source. Changes i
 
 ## Automated verification
 
-- GitHub Actions run **#534** on commit `8cbbe9d31cd43778d64525c3d25a1227e7e096b3`: **26/26 automated tests passed**; locked dependency installation and Vite production build also passed.
-- The Vite build still reports a main JavaScript chunk of **609.61 kB minified (143.70 kB gzip)**, above the 500 kB warning threshold. Performance sign-off and route/component code-splitting review remain outstanding.
+- GitHub Actions run **#542** on commit `f54212e15900c2a00258b9de0fcab110272499ba`: **27/27 automated tests passed**; locked dependency installation and Vite production build also passed.
+- The Vite build still reports a main JavaScript chunk of **609.88 kB minified (143.91 kB gzip)**, above the 500 kB warning threshold. Performance sign-off and route/component code-splitting review remain outstanding.
 - Cloudflare Workers build success was reported by the earlier audit, but was not rerun in GitHub Actions run #534.
 - Cloudflare Pages Preview deployment of the latest source commit and authenticated browser verification remain unconfirmed.
 - The earlier 43/43 browser tests were user-reported against the previous Preview build. They have not been independently repeated against the current audit changes.
@@ -57,6 +57,7 @@ These content edits have regression tests in `tests/product-catalog.test.js`. Th
 ## Production release gates
 
 Do not merge PR #2 or deploy to Production until:
+- Review the PR merge base and full commit history before any merge. At the time of this audit, `cms-development` is 313 commits ahead of `main`; the PR must not be merged without confirming that this full history and its diff are intended.
 
 - The outstanding product-image/source/specification gaps are resolved or explicitly accepted.
 - The HR contact destination is confirmed.
