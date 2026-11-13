@@ -16,7 +16,8 @@ import ServiceRequest from "./pages/ServiceRequest";
 import TrackRequest from "./pages/TrackRequest";
 import AdminDashboard from "./pages/AdminDashboard";
 import CMSDashboard from "./pages/CMSDashboard";
-import CMSPagePreview from "./pages/CMSPagePreview";\nimport CMSProductPreview from "./pages/CMSProductPreview";
+import CMSPagePreview from "./pages/CMSPagePreview";
+import CMSProductPreview from "./pages/CMSProductPreview";
 import CMSManagement from "./pages/CMSManagement";
 import CMSDesignPreview from "./pages/CMSDesignPreview";
 import CMSDesignReview from "./pages/CMSDesignReview";
@@ -40,7 +41,7 @@ const pageTitles = {
   "/admin": "Request Dashboard | YR Proservice",
   "/admin/cms": "Visual CMS | YR Proservice",
   "/admin/cms/preview": "CMS Draft Preview | YR Proservice",
-  "/admin/cms/product-preview": "CMS Product Preview | YR Proservice",\n  "/admin/cms/product-preview": "CMS Product Preview | YR Proservice",
+  "/admin/cms/product-preview": "CMS Product Preview | YR Proservice",
   "/admin/cms/manage": "CMS Management Centre | YR Proservice",
   "/admin/cms/design-preview": "CMS Visual Design Preview | YR Proservice",
   "/admin/cms/design-review": "All Page Design Review | YR Proservice",
@@ -179,7 +180,7 @@ function Router() {
       : <AdminDashboard />,
     "/admin/cms": <CMSDashboard />,
     "/admin/cms/preview": <CMSPagePreview />,
-    "/admin/cms/product-preview": <CMSProductPreview />,\n    "/admin/cms/product-preview": <CMSProductPreview />,
+    "/admin/cms/product-preview": <CMSProductPreview />,
     "/admin/cms/manage": <CMSManagement />,
     "/admin/cms/design-preview": <CMSDesignPreview />,
     "/admin/cms/design-review": <CMSDesignReview />,
