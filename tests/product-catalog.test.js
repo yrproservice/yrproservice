@@ -49,6 +49,17 @@ test("Cattani AC 400 Q and AC 600 Q use exact manufacturer technical data", () =
   assert.equal(ac600q.img, "");
 });
 
+test("Fussen imaging plate scanner is matched to the official F200 model and specifications", () => {
+  const product = products.find((item) => item.slug === "fussen-imaging-plate-scanner");
+  assert.ok(product);
+  assert.equal(product.name, "Fussen F200 Imaging Plate Scanner");
+  assert.equal(product.manufacturerSource, "https://en.fussengroup.com/f200");
+  assert.ok(product.specifications.includes("Theoretical resolution: 12 lp/mm"));
+  assert.ok(product.specifications.includes("Grayscale: 14 bit"));
+  assert.ok(product.specifications.includes("Pixel size: 35 μm"));
+  assert.ok(product.specifications.includes("Scan time: Under 20 seconds"));
+});
+
 test("MELAG Vacuclave 118 uses the manufacturer manual's 71 dB(A) noise value", () => {
   const product = products.find((item) => item.slug === "melag-vacuclave-118");
   assert.ok(product);
