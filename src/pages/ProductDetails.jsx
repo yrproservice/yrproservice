@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
+import { mergePublishedProduct } from "../data/productImages";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
 
@@ -57,8 +58,8 @@ export default function ProductDetails({ product, navigate, previewMode = false 
         const archived = new Set(Array.isArray(data.archivedSlugs) ? data.archivedSlugs : []);
         const known = new Set(products.map((item) => item.slug));
         setCatalogueProducts([
-          ...products.filter((item) => !archived.has(item.slug)).map((item) => overrides.get(item.slug) || item),
-          ...data.products.filter((item) => !known.has(item.slug)),
+          ...products.filter((item) => !archived.has(item.slug)).map((item) => overrides.has(item.slug) ? mergePublishedProduct(item, overrides.get(item.slug)) : item),
+          ...data.products.filter((item) => !known.has(item.slug)).map((item) => mergePublishedProduct(null, item)),
         ]);
       })
       .catch(() => {});
