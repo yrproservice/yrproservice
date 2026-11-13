@@ -1816,6 +1816,7 @@ const rawProducts = [
     highlights: [],
     specifications: [],
     docs: [],
+    manufacturerSource: "https://www.nsk-dental.com/products/turbines/turbines-couplings/",
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
