@@ -271,3 +271,32 @@ The existing AC400/AC600 assets are clean enough as general full-product photogr
 - `turbo-jet-1-modular.jpg` and `turbo-jet-2-modular.jpg` are technical line drawings, not photographic product assets.
 - `turbo-jet-1-no-amalgam-separation.jpg` is a small full product photo; `turbo-jet-compact.jpg` is a larger close-up/full-unit view but fills the frame tightly. Neither is an AC compressor asset.
 - This confirms the Cattani asset folder has mixed quality: some Q-series images are exact-family but too small; larger non-Q photos cannot be substituted for Q models. No product image reference changed.
+
+### Dental chair and stool image visual audit — 13 November 2026
+
+The following local images were opened from the repository (no changes made):
+
+#### Cingol dental chairs
+- `cingol x1.jpg`: complete chair and delivery unit visible on white background; Cingol logo and CE/ISO marks are part of the image.
+- `cingol x3.jpg`: complete chair and delivery unit visible on white background; pale-blue upholstery.
+- `cingol x5.jpg`: complete chair and delivery unit visible, but uses a decorative landscape background and Cingol/CE/ISO overlays.
+These are substantially closer to full-product framing than the Morita chair assets. Exact model-to-record mapping still needs confirmation before assigning.
+
+#### Mocom dental chairs
+- `mocom f10.png`: full chair/delivery assembly visible, with some accessory/monitor elements arranged around the chair; transparent/white background.
+- `mocom m10.png`: full chair/delivery assembly visible, navy upholstery, transparent background.
+- `mocom v10.png`: full chair/delivery assembly visible, navy upholstery, white background.
+These are visually suitable full-system candidates, subject to exact record/model mapping and image transparency rendering checks.
+
+#### Mocom stools
+- `mocom m7.PNG`, `mocom m8.PNG`, and `mocom m9.PNG` each show the complete stool, including base and casters, on a white background. These appear to be clean full-product assets; exact product-record matching still needs checking.
+
+#### Morita dental chairs
+- `morita signo g10 II.jpg`: nearly complete chair/delivery system shown, but top of lamp pole and parts of upper equipment extend beyond/cut at the frame edge.
+- `morita signo g20.jpg`: close-up/cropped view of chair and tray; not a complete chair system.
+- `morita signo t100.jpg`: chair base and seat shown with part of support/delivery equipment; upper pole/lamp and surrounding assembly are cropped.
+- `morita signo t500.jpg`: close-up of chair/seat and support column; upper assembly and delivery equipment are not shown.
+- `morita signo z300.jpg`: cropped chair/body view; support pole and upper equipment extend beyond frame.
+Morita chair assets therefore need better full-system versions if the product cards are expected to show the entire configured chair system. Exact model matching remains essential (especially Signo T100 vs T500); do not interchange these assets based on visual similarity alone.
+
+This is a visual framing audit, not a manufacturer-source validation. The repository's file names are not sufficient evidence that each chair photo is the exact current model/configuration. No product image references changed.
