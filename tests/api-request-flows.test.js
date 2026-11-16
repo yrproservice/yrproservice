@@ -157,7 +157,7 @@ test("a valid service request is rate-limited, stored and returns a reference", 
   assert.ok(insert);
   assert.equal(insert.values[2], "service");
   assert.equal(insert.values[3], "Clinic Manager");
-  assert.equal(insert.values[7], "clinic@example.com");
+  assert.equal(insert.values[6], "clinic@example.com");
 });
 
 test("request submission returns 429 when the email submission limit is reached", async () => {
