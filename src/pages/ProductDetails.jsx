@@ -4,6 +4,8 @@ import { products } from "../data/products";
 import { mergePublishedProduct } from "../data/productImages";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
+import ProductMediaFrame from "../components/ProductMediaFrame";
+import { getProductRequestFlow, PRODUCT_REQUEST_FLOWS } from "../data/productWorkflow";
 
 function safeHttpsUrl(value) {
   if (typeof value !== "string") return "";
@@ -65,7 +67,8 @@ export default function ProductDetails({ product, navigate, previewMode = false 
       .catch(() => {});
     return () => { active = false; };
   }, []);
-  const chair = product.purchaseType === "quote";
+  const requestFlow = getProductRequestFlow(product);
+  const chair = requestFlow === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR;
   const related = catalogueProducts
     .filter((p) => p.slug !== product.slug && p.category === product.category)
     .slice(0, 4);
@@ -77,6 +80,10 @@ export default function ProductDetails({ product, navigate, previewMode = false 
       return;
     }
     addToCart(product, quantity);
+    if (requestFlow === PRODUCT_REQUEST_FLOWS.QUOTATION) {
+      navigate("/quote");
+      return;
+    }
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1500);
   }
@@ -99,26 +106,15 @@ export default function ProductDetails({ product, navigate, previewMode = false 
       <section className="container bp-detail-main">
         <div className="bp-detail-photo">
           <div className="bp-detail-photo-frame">
-            <img
-              src={product.img || "/favicon.png"}
+            <ProductMediaFrame
+              src={product.img}
+              alt={product.img ? product.name : `${product.name} image unavailable`}
+              variant="detail"
               onError={(event) => {
                 event.currentTarget.src = "/favicon.png";
                 event.currentTarget.onerror = null;
               }}
-              alt={product.img ? product.name : `${product.name} image unavailable`}
             />
-          </div>
-          <div className="bp-thumb-row">
-            <span className="active">
-              <img
-                src={product.img || "/favicon.png"}
-                onError={(event) => {
-                  event.currentTarget.src = "/favicon.png";
-                  event.currentTarget.onerror = null;
-                }}
-                alt="Product view"
-              />
-            </span>
           </div>
         </div>
         <div className="bp-detail-info">
@@ -160,11 +156,15 @@ export default function ProductDetails({ product, navigate, previewMode = false 
             onClick={submitSelection}
             disabled={previewMode}
           >
-            {previewMode ? "Preview only — ordering disabled" : chair
-              ? "Request a Quote →"
-              : added
-                ? "Added to Cart ✓"
-                : "Add to Cart →"}
+            {previewMode
+              ? "Preview only — ordering disabled"
+              : chair
+                ? "Request Chair Consultation →"
+                : requestFlow === PRODUCT_REQUEST_FLOWS.QUOTATION
+                  ? "Request a Quote →"
+                  : added
+                    ? "Added to Cart ✓"
+                    : "Add to Cart →"}
           </button>
           {previewMode ? <p className="bp-admin-note">This is an administrator preview. No cart or quotation action will be submitted.</p> : <p className="bp-admin-note">
             Price and availability are catalogue fields reserved for future
