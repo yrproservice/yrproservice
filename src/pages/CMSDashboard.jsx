@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { homeCmsTemplate } from "../data/homeCmsTemplate";
+import { products as catalogueProducts } from "../data/products";
 
 const SECTION_TYPES = [
   { value: "hero", label: "Hero section" },
@@ -40,14 +41,24 @@ function SectionPreview({ section, selected, onClick }) {
       </div> : section.type === "image-text" ? <div className="cms-preview-image-text">
         {content.imageUrl && <img src={content.imageUrl} alt={content.imageAlt || ""} />}
         <div><h2>{content.heading || "Section heading"}</h2><p>{content.description || "Section description"}</p></div>
-      </div> : section.type === "product-grid" ? <div><h2>{content.heading || "Featured Products"}</h2><p>Product cards will be connected to the published product catalogue.</p></div>
-        : <div><h2>{content.heading || "Section heading"}</h2><p>{content.description || "Section description"}</p>
+      </div> : section.type === "product-grid" ? <div className="cms-preview-content-grid">
+        <h2>{content.heading || "Featured Products"}</h2>
+        <div className="cms-preview-product-grid">{(content.productSlugs?.length ? catalogueProducts.filter((product) => content.productSlugs.includes(product.slug)) : catalogueProducts.slice(0, 3)).slice(0, 3).map((product) => <article className="cms-preview-product-card" key={product.slug}>
+          <div>{product.img ? <img src={product.img} alt="" /> : <span>Product image</span>}</div><small>{product.brand || "YR Proservice"}</small><strong>{product.name}</strong><span>View details →</span>
+        </article>)}</div>
+      </div> : section.type === "feature-grid" ? <div className="cms-preview-content-grid">
+        <h2>{content.heading || "What We Provide"}</h2><p>{content.description || "Feature cards"}</p>
+        <div className="cms-preview-feature-grid">{(content.items || []).slice(0, 3).map((item, index) => <article key={item.number || item.heading || index}><span>{item.number || String(index + 1).padStart(2, "0")}</span><strong>{item.heading || "Feature title"}</strong><p>{item.description || "Feature description"}</p></article>)}</div>
+      </div> : section.type === "brand-grid" ? <div className="cms-preview-content-grid">
+        <h2>{content.heading || "Trusted Brands We Carry"}</h2><p>{content.description || "Brand partners"}</p>
+        <div className="cms-preview-brand-grid">{(content.items || []).slice(0, 5).map((file) => <div key={file}><img src={`/brand logo/fitted/${String(file).replace(/\\.[^.]+$/, ".png")}`} alt={String(file).replace(/\\.[^.]+$/, "")} /></div>)}</div>
+      </div> : <div><h2>{content.heading || "Section heading"}</h2><p>{content.description || "Section description"}</p>
           {content.buttonText && <span className="cms-preview-button">{content.buttonText}</span>}</div>}
     </button>
   );
 }
 
-export default function CMSDashboard() {
+export default function CMSDashboard({ onAdminLogout }) {
   const [pages, setPages] = useState([]);
   const [pageKey, setPageKey] = useState("");
   const [pageTitle, setPageTitle] = useState("");
@@ -243,6 +254,7 @@ export default function CMSDashboard() {
             <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save draft</button>
             <button type="button" className="admin-secondary-button" onClick={() => window.open(`/admin/cms/preview?key=${encodeURIComponent(pageKey)}`, "_blank", "noopener,noreferrer")} disabled={busy || !draftId}>Preview saved draft</button>
             <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish</button>
+            <div className="cms-admin-session" role="status"><span>Admin access active</span><button type="button" onClick={onAdminLogout}>Log out</button></div>
           </div>
         </div>
         <div className="cms-editor-grid">
@@ -277,6 +289,9 @@ export default function CMSDashboard() {
                 <label>Body font<select value={homeDesign.global?.bodyFont || "Inter"} onChange={(e) => updateHomeGlobalDesign("bodyFont", e.target.value)}><option>Inter</option><option>Montserrat</option><option>Arial</option></select></label>
                 <label>Heading size · {Math.round(Number(homeDesign.global?.headingScale || 1) * 100)}%<input type="range" min="0.8" max="1.25" step="0.05" value={homeDesign.global?.headingScale || 1} onChange={(e) => updateHomeGlobalDesign("headingScale", Number(e.target.value))} /></label>
                 <label>Body text size · {homeDesign.global?.bodySize || 16}px<input type="range" min="13" max="20" step="1" value={homeDesign.global?.bodySize || 16} onChange={(e) => updateHomeGlobalDesign("bodySize", Number(e.target.value))} /></label>
+                <label>Heading weight<select value={homeDesign.global?.headingWeight || 700} onChange={(e) => updateHomeGlobalDesign("headingWeight", Number(e.target.value))}><option value="500">Medium</option><option value="600">Semi-bold</option><option value="700">Bold</option><option value="800">Extra-bold</option><option value="900">Black</option></select></label>
+                <label>Heading letter spacing · {Number(homeDesign.global?.headingLetterSpacing ?? -0.025).toFixed(3)}em<input type="range" min="-0.06" max="0.08" step="0.005" value={homeDesign.global?.headingLetterSpacing ?? -0.025} onChange={(e) => updateHomeGlobalDesign("headingLetterSpacing", Number(e.target.value))} /></label>
+                <label>Content width<select value={homeDesign.global?.contentWidth || "standard"} onChange={(e) => updateHomeGlobalDesign("contentWidth", e.target.value)}><option value="compact">Compact · 1040px</option><option value="standard">Standard · 1180px</option><option value="wide">Wide · 1380px</option></select></label>
               </div>
               <div className="cms-home-design-subpanel">
                 <h3>Section order</h3>
@@ -308,6 +323,7 @@ export default function CMSDashboard() {
                 </select></label>}
                 {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <label>Image position<select value={selectedSection.content?.imagePosition||"center"} onChange={(e)=>updateSection("imagePosition",e.target.value)}><option value="center">Centre</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="50% 35%">50% · 35%</option></select></label>}
                 {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <label>Image height · {selectedSection.content?.imageHeight||420}px<input type="range" min="220" max="720" step="10" value={selectedSection.content?.imageHeight||420} onChange={(e)=>updateSection("imageHeight",Number(e.target.value))}/></label>}
+                {["feature-grid","product-grid","brand-grid","benefits-grid"].includes(selectedSection.type) && <label>Grid columns<select value={homeDesign.sections?.[selectedSection.id]?.cardColumns || "auto"} onChange={(e)=>updateHomeSectionDesign(selectedSection.id,"cardColumns",e.target.value)}><option value="auto">Use responsive default</option><option value="2">2 columns</option><option value="3">3 columns</option><option value="4">4 columns</option></select></label>}
               </div>}
             </details>}
             {!selectedSection ? <p className="admin-empty">Select a section in the preview to edit its content.</p> : <>
