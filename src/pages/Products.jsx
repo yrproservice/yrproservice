@@ -4,6 +4,8 @@ import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
 import { mergePublishedProduct } from "../data/productImages";
+import ProductMediaFrame from "../components/ProductMediaFrame";
+import { getProductRequestFlow, isDentalChairProduct, PRODUCT_REQUEST_FLOWS } from "../data/productWorkflow";
 
 export default function Products({ navigate }) {
   const [search, setSearch] = useState("");
@@ -50,7 +52,7 @@ export default function Products({ navigate }) {
       ),
     [search, category, brand, catalogueProducts],
   );
-  const chairs = catalogueProducts.filter((p) => p.purchaseType === "quote");
+  const chairs = catalogueProducts.filter(isDentalChairProduct);
   const showcaseChair =
     chairs.find((p) => p.slug === "signo-t100") || chairs[0];
   const spotlight = catalogueProducts.filter((p) =>
@@ -58,12 +60,17 @@ export default function Products({ navigate }) {
   );
 
   function handleAction(product) {
-    if (product.purchaseType === "quote") {
+    const flow = getProductRequestFlow(product);
+    if (flow === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR) {
       addChair(product);
       navigate("/dental-chair-request");
       return;
     }
     addToCart(product);
+    if (flow === PRODUCT_REQUEST_FLOWS.QUOTATION) {
+      navigate("/quote");
+      return;
+    }
     setAddedSlug(product.slug);
     window.setTimeout(
       () =>
@@ -185,18 +192,21 @@ export default function Products({ navigate }) {
                   className="bp-catalog-main-link"
                 >
                   <div className="bp-catalog-image">
-                    <img
-                      src={product.img || "/favicon.png"}
+                    <ProductMediaFrame
+                      src={product.img}
+                      alt={product.img ? product.name : `${product.name} image unavailable`}
+                      variant="catalog"
                       onError={(event) => {
                         event.currentTarget.src = "/favicon.png";
                         event.currentTarget.onerror = null;
                       }}
-                      alt={product.img ? product.name : `${product.name} image unavailable`}
                     />
                     <span className="bp-image-badge">
-                      {product.purchaseType === "quote"
-                        ? "Request"
-                        : "Catalogue"}
+                      {getProductRequestFlow(product) === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR
+                        ? "Chair consultation"
+                        : getProductRequestFlow(product) === PRODUCT_REQUEST_FLOWS.QUOTATION
+                          ? "Quotation"
+                          : "Catalogue"}
                     </span>
                   </div>
                   <div className="bp-catalog-body">
@@ -221,11 +231,13 @@ export default function Products({ navigate }) {
                     className="bp-card-action-primary"
                     onClick={() => handleAction(product)}
                   >
-                    {product.purchaseType === "quote"
+                    {getProductRequestFlow(product) === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR
                       ? "Request Chair"
-                      : addedSlug === product.slug
-                        ? "Added ✓"
-                        : "Add to Cart"}
+                      : getProductRequestFlow(product) === PRODUCT_REQUEST_FLOWS.QUOTATION
+                        ? "Request Quote"
+                        : addedSlug === product.slug
+                          ? "Added ✓"
+                          : "Add to Cart"}
                   </button>
                 </div>
               </article>
