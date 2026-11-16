@@ -4,7 +4,7 @@ import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
 import { mergePublishedProduct } from "../data/productImages";
-import ProductMediaFrame from "../components/ProductMediaFrame";
+import ShowroomProductCard from "../components/ShowroomProductCard";
 import { getProductRequestFlow, isDentalChairProduct, PRODUCT_REQUEST_FLOWS } from "../data/productWorkflow";
 
 export default function Products({ navigate }) {
@@ -185,62 +185,13 @@ export default function Products({ navigate }) {
 
           <div className="bp-catalog-grid">
             {filtered.map((product) => (
-              <article className="bp-catalog-card" key={product.slug}>
-                <Link
-                  to={`/products/${product.slug}`}
-                  navigate={navigate}
-                  className="bp-catalog-main-link"
-                >
-                  <div className="bp-catalog-image">
-                    <ProductMediaFrame
-                      src={product.img}
-                      alt={product.img ? product.name : `${product.name} image unavailable`}
-                      variant="catalog"
-                      onError={(event) => {
-                        event.currentTarget.src = "/favicon.png";
-                        event.currentTarget.onerror = null;
-                      }}
-                    />
-                    <span className="bp-image-badge">
-                      {getProductRequestFlow(product) === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR
-                        ? "Chair consultation"
-                        : getProductRequestFlow(product) === PRODUCT_REQUEST_FLOWS.QUOTATION
-                          ? "Quotation"
-                          : "Catalogue"}
-                    </span>
-                  </div>
-                  <div className="bp-catalog-body">
-                    <small>{product.brand || "YR Proservice"}</small>
-                    <h3>{product.name}</h3>
-                    <span className="bp-product-type">
-                      {product.brandLine || product.category}
-                    </span>
-                    <p>{product.summary}</p>
-                  </div>
-                </Link>
-                <div className="bp-card-actions">
-                  <Link
-                    to={`/products/${product.slug}`}
-                    navigate={navigate}
-                    className="bp-card-detail"
-                  >
-                    View Details <span>→</span>
-                  </Link>
-                  <button
-                    type="button"
-                    className="bp-card-action-primary"
-                    onClick={() => handleAction(product)}
-                  >
-                    {getProductRequestFlow(product) === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR
-                      ? "Request Chair"
-                      : getProductRequestFlow(product) === PRODUCT_REQUEST_FLOWS.QUOTATION
-                        ? "Request Quote"
-                        : addedSlug === product.slug
-                          ? "Added ✓"
-                          : "Add to Cart"}
-                  </button>
-                </div>
-              </article>
+              <ShowroomProductCard
+                key={product.slug}
+                product={product}
+                navigate={navigate}
+                onPrimaryAction={handleAction}
+                added={addedSlug === product.slug}
+              />
             ))}
           </div>
 
