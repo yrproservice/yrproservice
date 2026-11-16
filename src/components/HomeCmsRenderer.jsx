@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
 import { mergePublishedProduct } from "../data/productImages";
+import ProductMediaFrame from "./ProductMediaFrame";
 
 function CmsLink({ to, navigate, className, children }) {
   return to ? <Link to={to} navigate={navigate} className={className}>{children}</Link> : null;
@@ -48,13 +49,13 @@ function HomeCmsSection({ section, navigate, design }) {
       const featured = catalogueProducts.filter((p) => (c.productSlugs || []).includes(p.slug));
       return <section className="bp-featured home-cms-section" key={section.id} style={sectionStyle}><div className="container">
         <div className="bp-section-head bp-head-light"><div><p className="bp-eyebrow bp-eyebrow-light">{c.eyebrow}</p><h2>{c.heading}</h2></div><CmsLink to={c.buttonUrl || "/products"} navigate={navigate} className="bp-outline-light">{c.buttonText || "View All Products"} →</CmsLink></div>
-        <div className="bp-product-grid">{featured.map((p) => <article className="bp-product-card" key={p.slug}><Link to={`/products/${p.slug}`} navigate={navigate}><div className="bp-product-img"><img src={p.img || "/favicon.png"} alt={p.img ? p.name : `${p.name} image unavailable`} /></div><div className="bp-product-body"><small>{p.brand || "YR Proservice"}</small><h3>{p.name}</h3><p>{p.summary}</p><span>View Details →</span></div></Link></article>)}</div>
+        <div className="bp-product-grid">{featured.map((p) => <article className="bp-product-card" key={p.slug}><Link to={`/products/${p.slug}`} navigate={navigate}><div className="bp-product-img"><ProductMediaFrame src={p.img} alt={p.img ? p.name : `${p.name} image unavailable`} variant="featured" /></div><div className="bp-product-body"><small>{p.brand || "YR Proservice"}</small><h3>{p.name}</h3><p>{p.summary}</p><span>View Details →</span></div></Link></article>)}</div>
       </div></section>;
     }
     case "brand-grid":
       return <section className="bp-brands home-cms-section" key={section.id} style={sectionStyle}><div className="container">
         <div className="bp-section-head"><div><p className="bp-eyebrow">{c.eyebrow}</p><h2>{c.heading}</h2></div><p>{c.description}</p></div>
-        <div className="bp-brand-grid">{items.map((file) => <div className="bp-brand-card" key={file}><img src={`/brand logo/fitted/${String(file).replace(/\.[^.]+$/, ".png")}`} alt={String(file).replace(/\.[^.]+$/, "") + " dental equipment brand"} /></div>)}</div>
+        <div className="yr-brand-grid">{items.map((file) => <div className="bp-brand-card" key={file}><img src={`/brand logo/fitted/${String(file).replace(/\.[^.]+$/, ".png")}`} alt={String(file).replace(/\.[^.]+$/, "") + " dental equipment brand"} /></div>)}</div>
       </div></section>;
     case "services-banner":
       return <section className="bp-services-strip home-cms-section home-cms-services" key={section.id} style={sectionStyle} data-layout={c.layout || "split-right"}><div className="container"><div className="bp-services-banner">
