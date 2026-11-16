@@ -1032,8 +1032,9 @@ h6 {
 }
 .spotlight-card {
   position: relative;
-  min-height: 240px;
-  padding: 24px;
+  display: block;
+  min-height: 270px;
+  padding: 24px 24px 46px;
   background: var(--yr-soft);
   overflow: hidden;
   border: 1px solid #d6eaf5;
@@ -1046,18 +1047,25 @@ h6 {
 .spotlight-card > div {
   position: relative;
   z-index: 2;
+  min-height: 88px;
 }
-.spotlight-card > span {
+.spotlight-card > div > span {
+  display: block;
+  position: relative;
+  z-index: 2;
   font-size: 12px;
+  line-height: 1.4;
   color: var(--yr-muted);
 }
 .spotlight-card img {
   position: absolute;
-  right: -10px;
-  bottom: -10px;
-  width: 65%;
-  height: 78%;
+  top: 112px;
+  right: 12px;
+  bottom: 38px;
+  width: 68%;
+  height: calc(100% - 150px);
   object-fit: contain;
+  object-position: right bottom;
 }
 .spotlight-1 {
   background: var(--yr-navy);
@@ -1069,6 +1077,9 @@ h6 {
 .spotlight-1 .bp-eyebrow {
   color: #9debff;
 }
+.spotlight-1 > div > span {
+  color: #dceaf5;
+}
 .spotlight-card > b {
   position: absolute;
   left: 24px;
@@ -1078,7 +1089,7 @@ h6 {
   z-index: 3;
 }
 .spotlight-1 > b {
-  color: #9debff;
+  color: #fff;
 }
 .bp-catalog-grid {
   display: grid;
@@ -3346,8 +3357,8 @@ h6 {
 }
 
 .spotlight-card img {
-  width: 75%;
-  height: 86%;
+  width: 68%;
+  height: calc(100% - 150px);
   max-width: 100%;
   max-height: 100%;
 }
