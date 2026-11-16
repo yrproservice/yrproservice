@@ -3,6 +3,7 @@ import DocumentManager from "./DocumentManager";
 import { catalogMedia } from "../data/catalogMedia";
 import SpecBuilder from "./SpecBuilder";
 import { createProductSnapshot, mergeProductData, parseProductJson, protectProductImage } from "./productEditorData";
+import { getProductRequestFlow, PRODUCT_REQUEST_FLOWS } from "../data/productWorkflow";
 
 const PRODUCT_FIELDS = [
   ["slug", "Slug"],
@@ -99,6 +100,19 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
     <div className="cms-product-form">
       {!product && <p className="admin-alert admin-alert-error" role="alert">Product JSON must be a valid object before structured fields can be edited.</p>}
       <div className="cms-editor-fields">
+        <label>
+          Request flow
+          <select
+            value={product ? getProductRequestFlow(product) : PRODUCT_REQUEST_FLOWS.CART}
+            disabled={!product}
+            onChange={(event) => updateField("requestFlow", event.target.value)}
+          >
+            <option value={PRODUCT_REQUEST_FLOWS.CART}>Product Cart</option>
+            <option value={PRODUCT_REQUEST_FLOWS.QUOTATION}>General Quotation</option>
+            <option value={PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR}>Dental Chair Request</option>
+          </select>
+          <small>Controls where this product is sent when a customer requests it. This is separate from the legacy purchase type below.</small>
+        </label>
         {PRODUCT_FIELDS.map(([key, label]) => (
           <label key={key} className={key === "summary" || key === "description" ? "cms-editor-field-wide" : ""}>
             {label}
