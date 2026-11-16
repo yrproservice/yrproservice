@@ -8,25 +8,27 @@ function makeDb({ ipCount = 0, emailCount = 0, requestRow = null } = {}) {
   return {
     statements,
     prepare(sql) {
+      const execute = (values) => ({
+        async run() {
+          statements.push({ sql, values });
+          return { meta: { changes: 1 } };
+        },
+        async first() {
+          if (sql.includes("COUNT(*)")) {
+            return {
+              count: sql.includes("email_hash = ?") ? emailCount : ipCount,
+            };
+          }
+          if (sql.includes("SELECT reference, request_type, status, created_at")) {
+            return requestRow;
+          }
+          return null;
+        },
+      });
       return {
+        ...execute([]),
         bind(...values) {
-          return {
-            async run() {
-              statements.push({ sql, values });
-              return { meta: { changes: 1 } };
-            },
-            async first() {
-              if (sql.includes("COUNT(*)")) {
-                return {
-                  count: sql.includes("email_hash = ?") ? emailCount : ipCount,
-                };
-              }
-              if (sql.includes("SELECT reference, request_type, status, created_at")) {
-                return requestRow;
-              }
-              return null;
-            },
-          };
+          return execute(values);
         },
       };
     },
@@ -34,13 +36,16 @@ function makeDb({ ipCount = 0, emailCount = 0, requestRow = null } = {}) {
 }
 
 function postRequest(body, options = {}) {
+  const method = options.method || "POST";
   return new Request("https://yrproservice.test/api/requests", {
-    method: options.method || "POST",
+    method,
     headers: {
       "Content-Type": options.contentType || "application/json",
       "CF-Connecting-IP": "203.0.113.10",
     },
-    body: options.rawBody ?? JSON.stringify(body),
+    body: method === "GET" || method === "HEAD"
+      ? undefined
+      : options.rawBody ?? JSON.stringify(body),
   });
 }
 
