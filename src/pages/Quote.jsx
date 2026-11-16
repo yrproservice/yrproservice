@@ -1,12 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { useCart } from "../components/CartContext";
-import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
 import { downloadRequestConfirmationPdf } from "../utils/requestConfirmationPdf";
 
 export default function Quote({ navigate }) {
   const { items } = useCart();
-  const { items: chairItems } = useChairRequests();
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -16,14 +14,9 @@ export default function Quote({ navigate }) {
     new URLSearchParams(window.location.search).get("product") || "";
   const [product, setProduct] = useState(initial);
   const selected = useMemo(() => {
-    const lines = [
-      ...items.map((i) => `${i.name} (Qty: ${i.quantity})`),
-      ...chairItems.map(
-        (i) => `${i.name} (Chair request · Qty: ${i.quantity})`,
-      ),
-    ];
+    const lines = items.map((item) => `${item.name} (Qty: ${item.quantity})`);
     return product || lines.join("\n");
-  }, [items, chairItems, product]);
+  }, [items, product]);
   async function submit(e) {
     e.preventDefault();
     if (submitting) return;
@@ -43,7 +36,7 @@ export default function Quote({ navigate }) {
     };
     if (!payload.product && !payload.message) {
       setError(
-        "Please select a product or chair, or describe your quotation requirements.",
+        "Please select a catalogue product or describe your quotation requirements.",
       );
       setSubmitting(false);
       return;
@@ -120,8 +113,7 @@ export default function Quote({ navigate }) {
           <p className="bp-eyebrow bp-eyebrow-light">REQUEST A QUOTATION</p>
           <h1>Tell Us What Your Clinic Needs</h1>
           <p>
-            This is the final quotation step after selecting products or dental
-            chairs.
+            This is the final quotation step for products selected from the catalogue.
           </p>
         </div>
       </section>
