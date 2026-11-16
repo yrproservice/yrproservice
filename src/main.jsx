@@ -160,7 +160,7 @@ function Router() {
     "/track-request": <TrackRequest navigate={navigate} />,
     "/contact": <Contact navigate={navigate} />,
     "/admin": adminEntry
-      ? <AdminEntry onAuthenticated={handleAdminAuthenticated} onCancel={() => { window.history.replaceState({}, "", "/"); setPath("/"); }} />
+      ? <AdminEntry onAuthenticated={handleAdminAuthenticated} onCancel={() => { sessionStorage.setItem("yrproservice-access-mode", "client"); setAccessMode("client"); window.history.replaceState({}, "", "/"); setPath("/"); }} />
       : <AdminDashboard />,
     "/admin/cms": <CMSDashboard />,
     "/admin/cms/preview": <CMSPagePreview />,

@@ -37,7 +37,7 @@ function HomeCmsSection({ section, navigate, design }) {
     case "feature-grid":
       return <section className="bp-section bp-provide home-cms-section" key={section.id} style={sectionStyle}><div className="container">
         <div className="bp-section-head"><div><p className="bp-eyebrow">{c.eyebrow}</p><h2>{c.heading}</h2></div><p>{c.description}</p></div>
-        <div className="bp-provide-grid">{items.map((item, i) => <article key={item.number || i} className="bp-provide-card"><div className="bp-icon">{item.icon}</div><span>{item.number || String(i + 1).padStart(2, "0")}</span><h3>{item.heading}</h3><p>{item.description}</p><CmsLink to={item.url} navigate={navigate}>Explore <b>→</b></CmsLink></article>)}</div>
+        <div className="bp-provide-grid">{items.map((item, i) => <article key={item.number || i} className="bp-provide-card"><div className="bp-icon">{item.heading === "Installation" ? "↗" : item.icon}</div><span>{item.number || String(i + 1).padStart(2, "0")}</span><h3>{item.heading}</h3><p>{item.description}</p><CmsLink to={item.url} navigate={navigate}>Explore <b>→</b></CmsLink></article>)}</div>
       </div></section>;
     case "editorial":
       return <section className="bp-home-editorial home-cms-section home-cms-editorial" key={section.id} style={sectionStyle} data-layout={c.layout || "split-right"}><div className="container bp-editorial-grid">
