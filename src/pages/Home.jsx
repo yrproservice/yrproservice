@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import HomeCmsRenderer from "../components/HomeCmsRenderer";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
+import ProductMediaFrame from "../components/ProductMediaFrame";
 
 const brands = [
   "morita.png",
@@ -189,7 +190,7 @@ function StaticHome({ navigate }) {
               <article className="bp-product-card" key={p.slug}>
                 <Link to={`/products/${p.slug}`} navigate={navigate}>
                   <div className="bp-product-img">
-                    <img src={p.img} alt={p.name} />
+                    <ProductMediaFrame src={p.img} alt={p.name} variant="featured" />
                   </div>
                   <div className="bp-product-body">
                     <small>{p.brand || "YR Proservice"}</small>
@@ -216,7 +217,7 @@ function StaticHome({ navigate }) {
               the dental field.
             </p>
           </div>
-          <div className="bp-brand-grid">
+          <div className="yr-brand-grid">
             {brands.map((file) => (
               <div className="bp-brand-card" key={file}>
                 <img
