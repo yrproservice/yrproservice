@@ -13,9 +13,9 @@ test("legacy non-chair quote products use general quotation rather than chair re
   const legacyQuoteProducts = products.filter((product) => product.purchaseType === "quote");
   const chairs = legacyQuoteProducts.filter(isDentalChairProduct);
   const otherQuotedProducts = legacyQuoteProducts.filter((product) => !isDentalChairProduct(product));
-  assert.equal(legacyQuoteProducts.length, 33);
+  assert.equal(legacyQuoteProducts.length, 37);
   assert.equal(chairs.length, 11);
-  assert.equal(otherQuotedProducts.length, 22);
+  assert.equal(otherQuotedProducts.length, 26);
   assert.ok(otherQuotedProducts.every((product) => getProductRequestFlow(product) === PRODUCT_REQUEST_FLOWS.QUOTATION));
 });
 
