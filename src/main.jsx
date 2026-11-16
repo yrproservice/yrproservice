@@ -1,30 +1,32 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { CartProvider, useCart } from "./components/CartContext";
 import { ChairRequestProvider } from "./components/ChairRequestContext";
 import { SiteHeader, SiteFooter, Link } from "./components/Layout";
-import Home from "./pages/Home";
-import Products from "./pages/Products";
-import Services from "./pages/Services";
-import Team from "./pages/Team";
-import Cart from "./pages/Cart";
-import ProductDetails from "./pages/ProductDetails";
-import Quote from "./pages/Quote";
-import DentalChairRequest from "./pages/DentalChairRequest";
-import ServiceDetails from "./pages/ServiceDetails";
-import ServiceRequest from "./pages/ServiceRequest";
-import TrackRequest from "./pages/TrackRequest";
-import Contact from "./pages/Contact";
-import AdminDashboard from "./pages/AdminDashboard";
-import CMSDashboard from "./pages/CMSDashboard";
-import CMSPagePreview from "./pages/CMSPagePreview";
-import CMSProductPreview from "./pages/CMSProductPreview";
-import CMSManagement from "./pages/CMSManagement";
-import CMSDesignPreview from "./pages/CMSDesignPreview";
-import CMSDesignReview from "./pages/CMSDesignReview";
+// Load route modules on demand so the public entry bundle does not include
+// every customer page and the private Admin/CMS workspace.
+const Home = lazy(() => import("./pages/Home"));
+const Products = lazy(() => import("./pages/Products"));
+const Services = lazy(() => import("./pages/Services"));
+const Team = lazy(() => import("./pages/Team"));
+const Cart = lazy(() => import("./pages/Cart"));
+const ProductDetails = lazy(() => import("./pages/ProductDetails"));
+const Quote = lazy(() => import("./pages/Quote"));
+const DentalChairRequest = lazy(() => import("./pages/DentalChairRequest"));
+const ServiceDetails = lazy(() => import("./pages/ServiceDetails"));
+const ServiceRequest = lazy(() => import("./pages/ServiceRequest"));
+const TrackRequest = lazy(() => import("./pages/TrackRequest"));
+const Contact = lazy(() => import("./pages/Contact"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const CMSDashboard = lazy(() => import("./pages/CMSDashboard"));
+const CMSPagePreview = lazy(() => import("./pages/CMSPagePreview"));
+const CMSProductPreview = lazy(() => import("./pages/CMSProductPreview"));
+const CMSManagement = lazy(() => import("./pages/CMSManagement"));
+const CMSDesignPreview = lazy(() => import("./pages/CMSDesignPreview"));
+const CMSDesignReview = lazy(() => import("./pages/CMSDesignReview"));
 import PageDesignScope from "./components/PageDesignScope";
 import AccessChoice from "./pages/AccessChoice";
-import AdminEntry from "./pages/AdminEntry";
+const AdminEntry = lazy(() => import("./pages/AdminEntry"));
 import { services } from "./data/services";
 import { products } from "./data/products";
 import { mergePublishedProduct } from "./data/productImages";
@@ -240,20 +242,22 @@ function Router() {
       )}
       <main>
         <div key={path} className={isAdminRoute ? "" : "page-transition"}>
-          {isAdminRoute
-            ? adminEntry
-              ? routeContent
-              : accessMode === "admin"
+          <Suspense fallback={<section className="page-section container center" role="status" aria-live="polite"><p>Loading page…</p></section>}>
+            {isAdminRoute
+              ? adminEntry
                 ? routeContent
-                : <AccessChoice
-                    onClient={chooseClient}
-                    onAdmin={() => window.location.assign("/admin?entry=1")}
-                    checking={accessMode === "verifying"}
-                    message={accessMessage}
-                  />
-            : accessMode === "client" || accessMode === "admin"
-              ? (!pageDesignKey ? routeContent : <PageDesignScope pageKey={pageDesignKey}>{routeContent}</PageDesignScope>)
-              : publicContent}
+                : accessMode === "admin"
+                  ? routeContent
+                  : <AccessChoice
+                      onClient={chooseClient}
+                      onAdmin={() => window.location.assign("/admin?entry=1")}
+                      checking={accessMode === "verifying"}
+                      message={accessMessage}
+                    />
+              : accessMode === "client" || accessMode === "admin"
+                ? (!pageDesignKey ? routeContent : <PageDesignScope pageKey={pageDesignKey}>{routeContent}</PageDesignScope>)
+                : publicContent}
+          </Suspense>
         </div>
       </main>
       {!isAdminRoute && (accessMode === "client" || accessMode === "admin") && <PageDesignScope pageKey="site-chrome"><SiteFooter navigate={navigate} /></PageDesignScope>}
