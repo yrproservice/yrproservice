@@ -152,7 +152,7 @@ test("a valid service request is rate-limited, stored and returns a reference", 
   const result = await response.json();
   assert.equal(response.status, 201);
   assert.equal(result.ok, true);
-  assert.match(result.reference, /^YRS-\\d{8}-[A-F0-9]{16}$/);
+  assert.match(result.reference, /^YRS-\d{8}-[A-F0-9]{16}$/);
   const insert = db.statements.find((item) => item.sql.includes("INSERT INTO requests"));
   assert.ok(insert);
   assert.equal(insert.values[2], "service");
