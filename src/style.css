@@ -4764,3 +4764,63 @@ h6 {
 .bp-contact-card>p:not(.bp-eyebrow){margin:0 0 24px;color:#536273;line-height:1.7}
 .bp-contact-card .bp-btn{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
 @media(max-width:760px){.bp-contact-grid{grid-template-columns:minmax(0,1fr)}.bp-contact-hero{padding:48px 0 64px}.bp-contact-card{padding:24px}}
+
+
+/* Shared adaptive product media: preserve the complete silhouette at every size. */
+.yr-product-media {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent;
+}
+.yr-product-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.bp-catalog-image .yr-product-media--catalog {
+  width: 100%;
+  height: 100%;
+  padding: 14px;
+  box-sizing: border-box;
+}
+.bp-product-img .yr-product-media--featured {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+}
+.bp-detail-photo-frame .yr-product-media--detail {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: clamp(18px, 4vw, 44px);
+  box-sizing: border-box;
+}
+.yr-brand-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 12px;
+}
+.yr-brand-grid .bp-brand-card {
+  flex: 0 1 calc(20% - 12px);
+  min-width: 145px;
+}
+@media (max-width: 900px) {
+  .yr-brand-grid .bp-brand-card { flex-basis: calc(33.333% - 12px); }
+}
+@media (max-width: 560px) {
+  .yr-brand-grid .bp-brand-card { flex-basis: calc(50% - 12px); min-width: 0; }
+}
