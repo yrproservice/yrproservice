@@ -4878,7 +4878,7 @@ h6 {
 }
 
 /* Home Visual Design Studio: global type and container controls plus per-section grid settings. */
-.home-cms-page .container { width:min(var(--home-container-width,1180px),calc(100% - 40px)); }
+.home-cms-page .container { width:min(var(--home-container-width,1180px),calc(100% - var(--home-container-gutter,40px))); }
 .home-cms-page :is(h1,h2,h3,h4,h5,h6) {
   font-weight:var(--home-heading-weight,700);
   letter-spacing:var(--home-heading-letter-spacing,-.025em);
@@ -4889,3 +4889,12 @@ h6 {
 .home-cms-section[data-card-columns="2"] .yr-brand-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
 .home-cms-section[data-card-columns="3"] .yr-brand-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
 .home-cms-section[data-card-columns="4"] .yr-brand-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); }
+
+@media (max-width:760px) {
+  .home-cms-section[data-card-columns="2"] :is(.bp-provide-grid,.bp-product-grid,.bp-why-grid),
+  .home-cms-section[data-card-columns="3"] :is(.bp-provide-grid,.bp-product-grid,.bp-why-grid),
+  .home-cms-section[data-card-columns="4"] :is(.bp-provide-grid,.bp-product-grid,.bp-why-grid) { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .home-cms-section[data-card-columns="2"] .yr-brand-grid,
+  .home-cms-section[data-card-columns="3"] .yr-brand-grid,
+  .home-cms-section[data-card-columns="4"] .yr-brand-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
