@@ -548,7 +548,13 @@ h6 {
   border-bottom: 1px solid var(--yr-border);
 }
 .bp-provide-card .bp-icon {
-  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 36px;
+  height: 34px;
+  font-size: 27px;
+  line-height: 1;
   color: var(--yr-blue);
   margin-bottom: 24px;
 }
@@ -718,6 +724,9 @@ h6 {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 12px;
+}
+.bp-brand-card:nth-child(11) {
+  grid-column: 2;
 }
 .bp-brand-card {
   height: 105px;
@@ -3280,7 +3289,7 @@ h6 {
 .site-footer .footer-contact-phone {
   display: inline-block;
   font-weight: 700;
-  color: var(--yr-cyan, #00a8ee);
+  color: #d2e6f0;
   margin-bottom: 8px;
 }
 .site-footer .footer-contact-phone:focus-visible,
@@ -3291,7 +3300,16 @@ h6 {
 
 .bp-catalog-image,
 .bp-product-img {
-  padding: 8px;
+  padding: 18px;
+  background: #f6f9fb;
+}
+.bp-product-img {
+  height: 210px;
+}
+.bp-product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .bp-catalog-image img,

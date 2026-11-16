@@ -33,7 +33,6 @@ function HomeCmsSection({ section, navigate, design }) {
           </div>
           <div className="bp-hero-proof">{(c.proofItems || []).map((item, i) => <React.Fragment key={item}>{i > 0 && <i>•</i>}<span>{item}</span></React.Fragment>)}</div>
         </div></div>
-        {Array.isArray(c.trustCards) && <div className="bp-hero-cards container">{c.trustCards.map((item) => <div key={item.number}><strong>{item.number}</strong><h3>{item.heading}</h3><p>{item.description}</p></div>)}</div>}
       </section>;
     case "feature-grid":
       return <section className="bp-section bp-provide home-cms-section" key={section.id} style={sectionStyle}><div className="container">

@@ -62,7 +62,8 @@ function Router() {
     // sessionStorage is not shared. Re-verify the Cloudflare Access identity
     // instead of assuming that a missing tab flag means the user is signed out.
     if (window.location.pathname.startsWith("/admin") && !isAdminEntryRoute) return "verifying";
-    return savedMode === "client" ? "client" : savedMode === "admin" ? "verifying" : "choose";
+    if (!window.location.pathname.startsWith("/admin")) return "client";
+    return savedMode === "admin" ? "verifying" : "choose";
   });
   const [accessMessage, setAccessMessage] = useState("");
 

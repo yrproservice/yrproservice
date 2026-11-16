@@ -18,11 +18,6 @@ export const homeCmsTemplate = {
         secondaryButtonText: "Our Services",
         secondaryButtonUrl: "/services",
         proofItems: ["Dental equipment", "Installation", "Technical support"],
-        trustCards: [
-          { number: "01", heading: "Trusted Products", description: "Established dental equipment brands selected for clinic use." },
-          { number: "02", heading: "Technical Know-how", description: "Practical knowledge for installation, maintenance and support." },
-          { number: "03", heading: "One Reliable Partner", description: "Equipment supply and technical support through one team." }
-        ]
       }
     },
     {
@@ -37,7 +32,7 @@ export const homeCmsTemplate = {
         description: "From essential equipment to technical support, we help clinics plan, equip and maintain their dental environment.",
         items: [
           { number: "01", heading: "Dental Equipment", description: "Dental chairs, handpieces, machines and essential equipment for modern clinics.", icon: "▣", url: "/products" },
-          { number: "02", heading: "Installation", description: "Professional setup and installation support for dental equipment and clinic systems.", icon: "⌁", url: "/services/dental-chair-installation" },
+          { number: "02", heading: "Installation", description: "Professional setup and installation support for dental equipment and clinic systems.", icon: "↗", url: "/services/dental-chair-installation" },
           { number: "03", heading: "Technical Service", description: "Repair, preventive maintenance and practical troubleshooting support.", icon: "⚙", url: "/services/repair-technical-support" },
           { number: "04", heading: "Clinic Support", description: "Guidance from equipment selection through ongoing technical support.", icon: "✦", url: "/quote" }
         ]

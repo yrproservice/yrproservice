@@ -38,7 +38,7 @@ const provide = [
     "02",
     "Installation",
     "Professional setup and installation support for dental equipment and clinic systems.",
-    "⌁",
+    "↗",
     "/services/dental-chair-installation",
   ],
   [
@@ -102,25 +102,6 @@ function StaticHome({ navigate }) {
               <i>•</i>
               <span>Technical support</span>
             </div>
-          </div>
-        </div>
-        <div className="bp-hero-cards container">
-          <div>
-            <strong>01</strong>
-            <h3>Trusted Products</h3>
-            <p>Established dental equipment brands selected for clinic use.</p>
-          </div>
-          <div>
-            <strong>02</strong>
-            <h3>Technical Know-how</h3>
-            <p>
-              Practical knowledge for installation, maintenance and support.
-            </p>
-          </div>
-          <div>
-            <strong>03</strong>
-            <h3>One Reliable Partner</h3>
-            <p>Equipment supply and technical support through one team.</p>
           </div>
         </div>
       </section>

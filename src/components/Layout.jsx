@@ -181,7 +181,9 @@ export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
         </Link>
         <nav className="desktop-nav" aria-label="Primary navigation">
           {navigationItems.map(renderDesktopNavigationItem)}
-          {isAdmin && <AdminMenu navigate={navigate} onLogout={onAdminLogout} />}
+          {isAdmin
+            ? <AdminMenu navigate={navigate} onLogout={onAdminLogout} />
+            : <a href="/admin?entry=1" className="nav-dropdown-trigger">Admin</a>}
         </nav>
         <div className="header-actions">
           <Link
@@ -209,6 +211,7 @@ export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
         <div className="mobile-nav">
           <div className="container">
             {navigationItems.map(renderMobileNavigationItem)}
+            {!isAdmin && <a href="/admin?entry=1" onClick={closeMobile}>Admin</a>}
             {isAdmin && (
               <div className="mobile-nav-group">
                 <span>Admin</span>
