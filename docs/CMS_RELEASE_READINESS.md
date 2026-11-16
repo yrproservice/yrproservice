@@ -1,5 +1,34 @@
 # YR Proservice CMS — Release Readiness Audit
 
+**Current status update: 16 November 2026**  
+**Verified branch:** `cms-development`  
+**Latest verified commit:** `41cb8c4996f145c14e840b204d04e64b6e52d42f`  
+**Production status:** unchanged; release not approved
+
+## Latest Preview verification
+
+The following work was completed on `cms-development` after the historical 13 November audit entries below:
+
+- Added automated Admin request-status update and CMS publishing tests, including page, product and settings publication, invalid/foreign revision handling, and repeat-publish behavior.
+- Fixed the Preview Admin sign-in return flow. When Cloudflare Access requires an interactive login during an Admin API request, the browser now completes that authentication through a top-level navigation and returns to Admin.
+- GitHub Actions passed for code commit `d182e0ac9ff3b8856304690e31009e24b63f3cc7` and final verification-notes commit `41cb8c4996f145c14e840b204d04e64b6e52d42f`. The reported automated suite has **47 passing tests**, and the Vite production build succeeds. The initial entry bundle is **373.48 kB minified (101.00 kB gzip)** with no large-chunk warning.
+- Preview browser verification confirmed the Cloudflare Access gate, Admin sign-in/session acquisition, request dashboard and Visual CMS loading, successful logout, and release of the active-device session lock.
+- No live request status was changed and no CMS content was published during that browser verification.
+- The latest working tree was reported clean.
+
+### Scope and remaining verification
+
+The Preview sign-in and logout checks close the earlier Admin access verification gap for those tested paths. They do not establish that every CMS mutation path has been exercised in a live browser, nor do they verify Production resources.
+
+The current `wrangler.toml` deliberately defines:
+- Production D1 binding `DB` → `yr-proservice-db`, with no Production `CMS_MEDIA` R2 binding or `CMS_MEDIA_PUBLIC_BASE` variable.
+- Preview D1 binding `DB` → `yr-proservice-test-db`, plus Preview R2 binding `CMS_MEDIA` → `yrproservice-cms-preview` and its public media base.
+
+Migration `0002_create_cms.sql` explicitly directs application to Preview first and requires a separate approved Production release step. Do not add Production CMS bindings, apply the CMS migration to Production, merge the draft PR, or deploy Production without explicit user approval.
+
+The historical audit details below remain useful as product-content and media provenance records. Their old references to pending Preview browser verification are superseded only for the specific Admin sign-in/dashboard/logout paths listed above; the other listed Preview content, accessibility, performance, abuse-control and recovery checks remain open unless separately verified.
+
+
 **Audit date:** 13 November 2026  
 **Working branch:** `cms-development`  
 **Pull request:** #2 — remains open and draft  
