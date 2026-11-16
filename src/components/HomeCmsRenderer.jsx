@@ -107,7 +107,8 @@ export default function HomeCmsRenderer({ content, navigate }) {
     "--home-body-size": `${Number(design.global?.bodySize || 16)}px`,
     "--home-heading-weight": Number(design.global?.headingWeight || 700),
     "--home-heading-letter-spacing": `${Number(design.global?.headingLetterSpacing ?? -0.025)}em`,
-    "--home-container-width": ({ compact: "1040px", standard: "1180px", wide: "1380px" }[design.global?.contentWidth] || "1180px")
+    "--home-container-width": ({ compact: "1040px", standard: "1180px", wide: "1380px" }[design.global?.contentWidth] || "1180px"),
+    "--home-container-gutter": ({ compact: "28px", standard: "40px", wide: "48px" }[design.global?.contentWidth] || "40px")
   };
   return <main className="bp-home home-cms-page" style={pageStyle}>{sections.filter((section) => section.visible !== false).map((section) => <HomeCmsSection key={section.id} section={section} navigate={navigate} design={design} />)}</main>;
 }
