@@ -241,7 +241,12 @@ test("multiple authorised devices can use Admin APIs concurrently without a sess
   const db = makeRequestDb();
   const firstDevice = adminContext("/api/admin/requests", { reference: "YRS-20261116-ABC123", status: "in_review" }, { ...adminConfig, DB: db });
   const secondDevice = adminContext("/api/admin/requests", { reference: "YRS-20261116-ABC123", status: "completed" }, { ...adminConfig, DB: db });
-  const responses = await Promise.atest("Admin entry, refresh, heartbeat and logout require only the authorised Access identity", async () => {
+  const responses = await Promise.all([updateRequest(firstDevice), updateRequest(secondDevice)]);
+  assert.deepEqual(responses.map((response) => response.status), [200, 200]);
+  assert.equal(db.calls.some((call) => call.sql.includes("admin_session_lock")), false);
+});
+
+test("Admin entry, refresh, heartbeat and logout require only the authorised Access identity", async () => {
   const context = (path, method = "GET") => ({
     request: new Request("https://yrproservice.test" + path, { method, headers: { "Cf-Access-Jwt-Assertion": accessToken } }),
     env: adminConfig,
@@ -258,7 +263,10 @@ test("multiple authorised devices can use Admin APIs concurrently without a sess
   const loggedOut = await logoutAdminSession(context("/api/admin/session", "DELETE"));
   assert.deepEqual(await loggedOut.json(), { ok: true, loggedOut: true });
   assert.match(loggedOut.headers.get("Set-Cookie"), /Max-Age=0/);
-  const unauthorized = await startAdminSession({ request: new Request("https://yrproservice.test/api/admin/session", { method: "POST" }), env: adminConfig });
+  const unauthorized = await startAdminSession({
+    request: new Request("https://yrproservice.test/api/admin/session", { method: "POST" }),
+    env: adminConfig,
+  });
   assert.equal(unauthorized.status, 401);
 });
 
