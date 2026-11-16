@@ -606,3 +606,20 @@ A new route was found through Cattani Australasia's own product pages. Unlike th
 - The available container download route failed for the AC400Q full-size URL. Therefore, neither binary is installed.
 
 **Disposition:** new official full-size AC400Q image URL and visual verification recorded. No image binary, product data, image reference or website code changed. No claim of installation or Preview verification.
+
+### Official image asset recheck — 16 November 2026
+
+This pass verified the available manufacturer-hosted image endpoints and their visible model identity. It did not download or install any image binary.
+
+- **MELAG Vacuclave 118:** The official Pro Line page's `MicrosoftTeams-image (819)-min` asset resolves to a 756 × 617 image. The visible product marking reads “Vacuclave 118”; the image has no Class S badge and is a clean exact-model candidate. Source page: https://www.melag.com/en/products/autoclaves/pro-line-b . The product record remains unassigned until image reuse permission is established.
+- **Cattani AC400Q and AC600Q:** The official Australasia product pages expose full-size 1200 × 1200 PNGs:
+  - AC400Q, item 013450: https://www.cattani.com.au/wp-content/uploads/2025/05/013450-main.png
+  - AC600Q, item 013557: https://www.cattani.com.au/wp-content/uploads/2025/06/013557-main.png
+  Both images show a complete tandem Q compressor configuration and appear visually identical. The item codes differ from the Malaysia-facing Cattani Asia Region 1 catalogue codes (013449 and 013549), so these assets do not establish regional SKU equivalence or provide a visually distinct AC400Q/AC600Q match. Keep both records unassigned unless the Malaysia distributor confirms these are appropriate images for its regional variants.
+- **Fussen F200:** The official F200 page exposes a model-labeled image at https://en.fussengroup.com/file/upload/2024-07/26/202407261200377527.png, but the file is only 124 × 126 pixels. It is not suitable as a product-card image; a high-resolution full-product asset is still needed.
+- **Cattani Asia catalogue:** The previously recorded Region 1 catalogue PDF URL currently returns a “page not found” page in the browser. The official Australia images therefore remain regional cross-checks, not replacements for the Malaysia-specific catalogue images.
+
+**Disposition:** No image binary or product image reference was changed. Rights to reproduce the manufacturer images have not been confirmed. Production remains untouched.
+
+**Authorization and model-fit policy:** The user has not authorized reproduction of these manufacturer images. Before any image is copied into the repository, document written permission or a manufacturer media-use licence, its permitted uses and attribution requirements. For Cattani, also obtain confirmation that the exact model, configuration, voltage, regional variant and appearance match the Malaysia-facing listing; different item codes and visual similarity alone are not sufficient. The Fussen listing requires a high-resolution licensed original. Do not use similar-looking substitutes or generated product photographs. Keep all image references unchanged until these checks are complete.
+
