@@ -3920,7 +3920,7 @@ h6 {
 .cms-editor-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .cms-editor-fields label,.cms-editor-row-fields label,.cms-editor-row-raw{display:grid;gap:5px;color:#344456;font-size:12px;font-weight:700}
 .cms-editor-field-wide{grid-column:1/-1}
-.cms-editor-fields input,.cms-editor-fields textarea,.cms-editor-row input{width:100%;box-sizing:border-box;border:1px solid #cad6e1;border-radius:6px;padding:9px 10px;color:#1f2937;font:inherit;font-weight:400}
+.cms-editor-fields input,.cms-editor-fields textarea,.cms-editor-fields select,.cms-editor-row input{width:100%;box-sizing:border-box;border:1px solid #cad6e1;border-radius:6px;padding:9px 10px;color:#1f2937;font:inherit;font-weight:400}
 .cms-editor-fields textarea{resize:vertical}
 .cms-editor-fields input[readonly]{background:#f5f7fa;color:#687280}
 .cms-editor-section{display:grid;gap:10px}
