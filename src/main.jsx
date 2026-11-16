@@ -162,7 +162,7 @@ function Router() {
     "/admin": adminEntry
       ? <AdminEntry onAuthenticated={handleAdminAuthenticated} onCancel={() => { sessionStorage.setItem("yrproservice-access-mode", "client"); setAccessMode("client"); window.history.replaceState({}, "", "/"); setPath("/"); }} />
       : <AdminDashboard />,
-    "/admin/cms": <CMSDashboard onAdminLogout={handleAdminLogout} />
+    "/admin/cms": <CMSDashboard onAdminLogout={handleAdminLogout} />,
     "/admin/cms/preview": <CMSPagePreview />,
     "/admin/cms/product-preview": <CMSProductPreview />,
     "/admin/cms/manage": <CMSManagement />,
