@@ -550,10 +550,15 @@ h6 {
 .bp-provide-card .bp-icon {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  width: 36px;
-  height: 34px;
-  font-size: 27px;
+  justify-content: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  box-sizing: border-box;
+  border: 1px solid #d8edf8;
+  border-radius: 10px;
+  background: #eaf6fd;
+  font-size: 22px;
   line-height: 1;
   color: var(--yr-blue);
   margin-bottom: 24px;
