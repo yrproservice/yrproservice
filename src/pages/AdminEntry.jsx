@@ -25,6 +25,10 @@ export default function AdminEntry({ onAuthenticated, onCancel }) {
       })
       .catch((error) => {
         if (!active) return;
+        if (!Number.isInteger(error.status)) {
+          window.location.assign("/api/admin/session?access_return=1");
+          return;
+        }
         setMessage(error.message || "Unable to start your Admin session.");
         setStatus(error.status === 409 ? "in-use" : "error");
       });

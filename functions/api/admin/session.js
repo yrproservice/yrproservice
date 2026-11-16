@@ -15,8 +15,20 @@ function makeSessionToken() {
 }
 
 export async function onRequestGet(context) {
-  const auth = await requireAdmin(context);
+  const accessReturn = new URL(context.request.url).searchParams.get("access_return") === "1";
+  const auth = await requireAdmin(context, { skipSessionLock: accessReturn });
   if (!auth.ok) return auth.response;
+  if (accessReturn) {
+    return new Response(null, {
+      status: 303,
+      headers: {
+        "Location": "/admin?entry=1",
+        "Cache-Control": "no-store, max-age=0",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer",
+      },
+    });
+  }
   const row = await context.env.DB.prepare(
     "SELECT expires_at FROM admin_session_lock WHERE id = 1 LIMIT 1",
   ).first();

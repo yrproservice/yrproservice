@@ -56,9 +56,11 @@ Do not use `VITE_` prefixes or put these values in frontend code. Keep the exist
 
 ## Client / Admin entry mode
 
-The public application now presents a first-entry choice. Client mode opens the public site and remembers the choice for the current browser tab. Admin mode navigates to the existing protected `/admin` route; after the existing request-dashboard API returns a successful, server-verified response, the application returns the administrator to the public homepage and displays the Admin navigation menu. The menu is a convenience only: all dashboard and CMS endpoints continue to enforce Cloudflare Access JWT validation and the single-account allowlist on the server.
+The public application now presents a first-entry choice. Client mode opens the public site and remembers the choice for the current browser tab. Admin mode navigates to the protected `/admin` entry route and acquires the single-device session through `POST /api/admin/session`. After that succeeds, the application returns the administrator to the public homepage and displays the Admin navigation menu. The menu is a convenience only: all dashboard and CMS endpoints continue to enforce Cloudflare Access JWT validation and the single-account allowlist on the server.
 
-On page refresh, Admin mode is revalidated through the existing `GET /api/admin/requests` endpoint. No new API, Access application, database, or Production binding is introduced by this feature.
+When the browser's fetch to the separate Admin API Access application is redirected to its login page, the Admin entry performs a top-level navigation to `GET /api/admin/session?access_return=1`. After Access verifies the identity, that endpoint returns the browser to `/admin?entry=1`, where the session can be acquired without a cross-origin fetch redirect. The return route validates the Access identity and uses a fixed local destination; it does not accept a user-supplied redirect URL.
+
+On page refresh, Admin mode is revalidated through `GET /api/admin/session`. No new Access application, database, or Production binding is introduced by this feature.
 
 For Preview, ensure the existing **YR Proservice Admin** Access application covers `/admin*` and the existing **YR Proservice Admin API** application covers both `/api/admin*` and `/api/cms/admin*` on the current Preview hostname. The API application's AUD must match the Preview `ACCESS_AUD` value. Access hostname/path configuration is managed in Cloudflare Zero Trust, not in this repository.
 
