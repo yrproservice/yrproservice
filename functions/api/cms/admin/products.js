@@ -43,6 +43,9 @@ export async function onRequestPost(context) {
   if (!SLUG.test(slug)) return adminJson({ error: "Product slug must use lowercase letters, numbers and hyphens." }, 400);
   if (typeof product.name !== "string" || !product.name.trim()) return adminJson({ error: "Product name is required." }, 400);
   if (!["cart", "quote"].includes(product.purchaseType)) return adminJson({ error: "Purchase type must be cart or quote." }, 400);
+  if (product.requestFlow !== undefined && !["cart", "quotation", "dental_chair", "chair-consultation", "cart-quotation", "quote"].includes(product.requestFlow)) {
+    return adminJson({ error: "Request flow must be cart, quotation or dental_chair." }, 400);
+  }
   if (product.stockStatus !== undefined && !["pending", "in-stock", "out-of-stock"].includes(product.stockStatus)) return adminJson({ error: "Invalid stock status." }, 400);
   if (product.price !== undefined && product.price !== null && !["string", "number"].includes(typeof product.price)) return adminJson({ error: "Price must be a number, text value or null." }, 400);
 
