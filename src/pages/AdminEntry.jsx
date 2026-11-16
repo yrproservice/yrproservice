@@ -14,7 +14,7 @@ export default function AdminEntry({ onAuthenticated, onCancel }) {
       .then(async (response) => {
         const result = await response.json().catch(() => ({}));
         if (!response.ok || !result.ok) {
-          const error = new Error(result.error || "Unable to start your Admin session.");
+          const error = new Error(result.error || "Unable to verify your Admin access.");
           error.status = response.status;
           throw error;
         }
@@ -29,8 +29,8 @@ export default function AdminEntry({ onAuthenticated, onCancel }) {
           window.location.assign("/api/admin/session?access_return=1");
           return;
         }
-        setMessage(error.message || "Unable to start your Admin session.");
-        setStatus(error.status === 409 ? "in-use" : "error");
+        setMessage(error.message || "Unable to verify your Admin access.");
+        setStatus("error");
       });
     return () => { active = false; };
   }, [onAuthenticated]);
@@ -42,26 +42,18 @@ export default function AdminEntry({ onAuthenticated, onCancel }) {
         {status === "checking" && (
           <>
             <span className="access-choice-spinner" aria-hidden="true" />
-            <h1>Verifying your Admin session</h1>
-            <p>Checking that no other device is currently using the Admin area.</p>
-          </>
-        )}
-        {status === "in-use" && (
-          <>
-            <h1>Admin is already in use</h1>
-            <p>{message}</p>
-            <p>Only one device can access the Admin area at a time. Ask the active user to log out, or wait up to 90 seconds after their session stops responding.</p>
-            <button type="button" className="admin-primary-button" onClick={onCancel}>Return to website entry</button>
+            <h1>Verifying your Admin access</h1>
+            <p>Checking your authorised account with Cloudflare Access.</p>
           </>
         )}
         {status === "error" && (
           <>
-            <h1>Unable to start Admin access</h1>
+            <h1>Unable to verify Admin access</h1>
             <p>{message}</p>
             <button type="button" className="admin-primary-button" onClick={onCancel}>Return to website entry</button>
           </>
         )}
-        {status === "active" && <p>Admin session secured. Returning to the website…</p>}
+        {status === "active" && <p>Admin access verified. Opening the dashboard…</p>}
       </div>
     </section>
   );

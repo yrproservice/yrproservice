@@ -59,7 +59,7 @@ function Router() {
     const isAdminEntryRoute = window.location.pathname === "/admin"
       && new URLSearchParams(window.location.search).get("entry") === "1";
     // Admin workspaces and preview tabs may open in a new tab where
-    // sessionStorage is not shared. Re-verify the HttpOnly server session
+    // sessionStorage is not shared. Re-verify the Cloudflare Access identity
     // instead of assuming that a missing tab flag means the user is signed out.
     if (window.location.pathname.startsWith("/admin") && !isAdminEntryRoute) return "verifying";
     return savedMode === "client" ? "client" : savedMode === "admin" ? "verifying" : "choose";
@@ -87,29 +87,6 @@ function Router() {
         setAccessMode("choose");
       });
     return () => { active = false; };
-  }, [accessMode]);
-
-  useEffect(() => {
-    if (accessMode !== "admin") return undefined;
-    const heartbeat = async () => {
-      try {
-        const response = await fetch("/api/admin/session", {
-          method: "PATCH",
-          headers: { Accept: "application/json" },
-          cache: "no-store",
-        });
-        if (response.status === 401 || response.status === 409) {
-          sessionStorage.removeItem("yrproservice-access-mode");
-          setAccessMessage("Your Admin session ended or was taken over. Choose Admin to sign in again.");
-          setAccessMode("choose");
-        }
-      } catch {
-        // A transient network failure does not immediately discard the UI.
-        // The server-side lock expires automatically if heartbeats stop.
-      }
-    };
-    const interval = window.setInterval(heartbeat, 30000);
-    return () => window.clearInterval(interval);
   }, [accessMode]);
 
   useEffect(() => {
@@ -162,7 +139,7 @@ function Router() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok) logoutError = result.error || "The server could not confirm logout.";
     } catch {
-      logoutError = "The server could not be reached. The Admin lock will expire automatically within 90 seconds.";
+      logoutError = "The server could not be reached to confirm logout. Please try again.";
     }
     sessionStorage.removeItem("yrproservice-access-mode");
     setAccessMessage(logoutError || "You have logged out of Admin.");
@@ -236,7 +213,7 @@ function Router() {
       {!isAdminRoute && (accessMode === "client" || accessMode === "admin") && <PageDesignScope pageKey="site-chrome"><SiteHeader path={path} navigate={navigate} isAdmin={accessMode === "admin"} onAdminLogout={handleAdminLogout} /></PageDesignScope>}
       {isAdminRoute && accessMode === "admin" && (
         <div className="admin-session-utility">
-          <span>Admin session active</span>
+          <span>Admin access active</span>
           <button type="button" onClick={handleAdminLogout}>Log out</button>
         </div>
       )}

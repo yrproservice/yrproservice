@@ -1,9 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
-import { getAdminSessionHash } from "../functions/_utils/admin-auth.js";
 import { onRequestPatch as updateRequest } from "../functions/api/admin/requests.js";
-import { onRequestGet as getAdminSession } from "../functions/api/admin/session.js";
+import { onRequestGet as getAdminSession, onRequestPost as startAdminSession, onRequestPatch as heartbeatAdminSession, onRequestDelete as logoutAdminSession } from "../functions/api/admin/session.js";
 import { onRequestPost as publishCms } from "../functions/api/cms/admin/publish.js";
 
 const cryptoApi = globalThis.crypto || webcrypto;
@@ -43,12 +42,6 @@ async function createAccessToken() {
 }
 
 const accessToken = await createAccessToken();
-const sessionCookie = "yr_admin_session=test-admin-session";
-const sessionHash = await getAdminSessionHash(
-  new Request("https://yrproservice.test/admin", {
-    headers: { Cookie: sessionCookie },
-  }),
-);
 
 globalThis.fetch = async (input, init) => {
   if (String(input) === "https://team.example.test/cdn-cgi/access/certs") {
@@ -69,7 +62,6 @@ function adminContext(path, body, env) {
       method: path.includes("/api/admin/requests") ? "PATCH" : "POST",
       headers: {
         "Cf-Access-Jwt-Assertion": accessToken,
-        Cookie: sessionCookie,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
@@ -106,9 +98,6 @@ function makeRequestDb({ exists = true } = {}) {
         },
         async first() {
           calls.push(this);
-          if (sql.includes("SELECT session_hash, expires_at")) {
-            return { session_hash: sessionHash, expires_at: Math.floor(Date.now() / 1000) + 60 };
-          }
           if (sql.includes("SELECT reference FROM requests")) {
             return exists ? { reference: this.values[0] } : null;
           }
@@ -182,9 +171,6 @@ function makeCmsDb({
         },
         async first() {
           calls.push(this);
-          if (sql.includes("SELECT session_hash, expires_at")) {
-            return { session_hash: sessionHash, expires_at: Math.floor(Date.now() / 1000) + 60 };
-          }
           if (sql.includes(`FROM ${entityTable} WHERE ${entityKeyColumn} = ?`)) {
             if (!entityExists) return null;
             return { id: entityId, published_version_id: publishedVersionId };
@@ -251,37 +237,28 @@ test("Admin status update rejects invalid statuses and unknown references", asyn
   assert.equal(missingRequest.status, 404);
 });
 
-test("Admin status update requires the active single-device session", async () => {
-  const context = adminContext(
-    "/api/admin/requests",
-    { reference: "YRS-20261116-ABC123", status: "completed" },
-    { ...adminConfig, DB: makeRequestDb() },
-  );
-  context.request = new Request(context.request, {
-    headers: { "Cf-Access-Jwt-Assertion": accessToken },
-  });
-
-  const response = await updateRequest(context);
-  assert.equal(response.status, 401);
-});
-
-test("Admin Access return validates identity and resumes the browser entry flow", async () => {
-  const response = await getAdminSession({
-    request: new Request(
-      "https://yrproservice.test/api/admin/session?access_return=1",
-      { headers: { "Cf-Access-Jwt-Assertion": accessToken } },
-    ),
+test("multiple authorised devices can use Admin APIs concurrently without a session lock", async () => {
+  const db = makeRequestDb();
+  const firstDevice = adminContext("/api/admin/requests", { reference: "YRS-20261116-ABC123", status: "in_review" }, { ...adminConfig, DB: db });
+  const secondDevice = adminContext("/api/admin/requests", { reference: "YRS-20261116-ABC123", status: "completed" }, { ...adminConfig, DB: db });
+  const responses = await Promise.atest("Admin entry, refresh, heartbeat and logout require only the authorised Access identity", async () => {
+  const context = (path, method = "GET") => ({
+    request: new Request("https://yrproservice.test" + path, { method, headers: { "Cf-Access-Jwt-Assertion": accessToken } }),
     env: adminConfig,
   });
-
-  assert.equal(response.status, 303);
-  assert.equal(response.headers.get("Location"), "/admin?entry=1");
-  assert.equal(response.headers.get("Cache-Control"), "no-store, max-age=0");
-
-  const unauthorized = await getAdminSession({
-    request: new Request("https://yrproservice.test/api/admin/session?access_return=1"),
-    env: adminConfig,
-  });
+  const accessReturn = await getAdminSession(context("/api/admin/session?access_return=1"));
+  assert.equal(accessReturn.status, 303);
+  assert.equal(accessReturn.headers.get("Location"), "/admin?entry=1");
+  const refreshed = await getAdminSession(context("/api/admin/session"));
+  assert.deepEqual(await refreshed.json(), { ok: true, authorized: true });
+  const started = await startAdminSession(context("/api/admin/session", "POST"));
+  assert.deepEqual(await started.json(), { ok: true, authorized: true });
+  const heartbeat = await heartbeatAdminSession(context("/api/admin/session", "PATCH"));
+  assert.deepEqual(await heartbeat.json(), { ok: true, authorized: true });
+  const loggedOut = await logoutAdminSession(context("/api/admin/session", "DELETE"));
+  assert.deepEqual(await loggedOut.json(), { ok: true, loggedOut: true });
+  assert.match(loggedOut.headers.get("Set-Cookie"), /Max-Age=0/);
+  const unauthorized = await startAdminSession({ request: new Request("https://yrproservice.test/api/admin/session", { method: "POST" }), env: adminConfig });
   assert.equal(unauthorized.status, 401);
 });
 
