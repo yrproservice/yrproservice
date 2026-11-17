@@ -149,6 +149,7 @@ export default function ServicesManager() {
       });
       setDraftId(result.draftId);
       setDraftVersion(result.version);
+      setSavedContentJson(JSON.stringify(content));
       setNotice(`Services draft V${result.version} saved. The public page has not changed.`);
     } catch (err) { setError(err.message || "Unable to save Services draft."); }
     finally { setBusy(false); }
@@ -164,8 +165,8 @@ export default function ServicesManager() {
         body: JSON.stringify({ entityType: "page", entityKey: "services", versionId: draftId })
       });
       const refreshed = await request("/api/cms/admin/preview?key=services").catch(() => null);
-      if (refreshed?.page?.content) setContent(refreshed.page.content);
-      else setContent(cloneTemplate());
+      if (refreshed?.page?.content) { setContent(refreshed.page.content); setSavedContentJson(JSON.stringify(refreshed.page.content)); }
+      else { const baseline = cloneTemplate(); setContent(baseline); setSavedContentJson(JSON.stringify(baseline)); }
       setDraftId("");
       setDraftVersion(null);
       setPublishedVersion(refreshed?.page?.publishedVersion || publishedVersion);
