@@ -103,6 +103,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       setPageKey(result.page.pageKey); setPageTitle(result.page.title); setRoute(result.page.route);
       setContent(result.page.content); setDraftId(result.page.draftId || "");
       setSavedSnapshot(JSON.stringify({ pageKey: result.page.pageKey, pageTitle: result.page.title, route: result.page.route, content: result.page.content }));
+      setSavedSnapshot(JSON.stringify({ pageKey: result.page.pageKey, pageTitle: result.page.title, route: result.page.route, content: result.page.content }));
       setDraftVersion(result.page.draftVersion || null); setPublishedVersion(result.page.publishedVersion || null);
       setSelectedSectionId(result.page.content.sections?.[0]?.id || "");
       setStructuredJson(JSON.stringify(result.page.content.sections?.[0]?.content || {}, null, 2));
@@ -113,7 +114,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   function loadHomeTemplate() {
     const initial = JSON.parse(JSON.stringify(homeCmsTemplate));
     setPageKey("home"); setPageTitle("Home"); setRoute("/"); setContent(initial);
-    setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null); setPublishedVersion(null); setSavedSnapshot("");
+    setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null); setPublishedVersion(null); setSavedSnapshot(""); setSavedSnapshot("");
     setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2));
     setNotice("Existing homepage template loaded into a new Home draft. Save it before publishing.");
     setError("");
@@ -215,6 +216,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok) throw new Error(result.error || "Unable to save draft.");
       setDraftId(result.draftId); setDraftVersion(result.version);
+      setSavedSnapshot(JSON.stringify({ pageKey, pageTitle, route, content }));
       setSavedSnapshot(JSON.stringify({ pageKey, pageTitle, route, content }));
       setNotice(`Draft V${result.version} saved. The public website has not changed.`);
       await loadPages();
