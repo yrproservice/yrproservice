@@ -649,6 +649,6 @@ Commit `5a9add5` changes only `src/style.css`. It connects the existing `--yr-in
 ### Remaining verification and branch caution
 
 - The Preview site has **not** been visually signed off against this commit in this audit. A direct browser inspection was unavailable; obtain desktop homepage, desktop showroom and mobile screenshots before making further visual adjustments.
-- The open PR #2 remains Draft. The current GitHub compare view reports `cms-development` **413 commits ahead and 0 behind** `main`, with **84 changed files** in the returned file comparison; the PR description's older 315-commit figure is stale. Review the full history and intended merge scope before any merge. Do not treat CI success as merge approval.
+- The open PR #2 remains Draft. At the start of this audit, the GitHub compare view reported `cms-development` **413 commits ahead and 0 behind** `main`, with **84 changed files** in the returned file comparison; the PR description's older 315-commit figure is stale. Review the full history and intended merge scope before any merge. Do not treat CI success as merge approval.
 - No Production deployment, Production D1 migration, Production binding change, Preview content publication, or PR merge was performed as part of this checkpoint.
 
