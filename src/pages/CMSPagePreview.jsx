@@ -11,6 +11,7 @@ export default function CMSPagePreview() {
   const [content, setContent] = useState(null);
   const [title, setTitle] = useState("CMS Draft Preview");
   const [pageKey, setPageKey] = useState("");
+  const [versionStatus, setVersionStatus] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const params = new URLSearchParams(window.location.search);
@@ -32,14 +33,18 @@ export default function CMSPagePreview() {
     })
       .then(async (response) => {
         const result = await response.json().catch(() => ({}));
-        if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load the saved draft.");
+        if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load the page preview.");
         return result.page;
       })
       .then((page) => {
         if (!active) return;
         setPageKey(page.pageKey || key);
         setContent(page.content);
-        setTitle(page.title || "CMS Draft Preview");
+        setTitle(page.title || "CMS Preview");
+        const version = page.isDraft ? page.draftVersion : page.publishedVersion;
+        setVersionStatus(version
+          ? page.isDraft ? `Saved draft V${version} · Not published` : `Published Preview V${version} · Read-only`
+          : "No saved revision status available");
       })
       .catch((err) => {
         if (active) setError(err.message || "Unable to load the saved draft.");
@@ -58,12 +63,12 @@ export default function CMSPagePreview() {
   return (
     <div className="cms-full-preview">
       <div className="cms-full-preview-bar">
-        <div><strong>{title}</strong><span>Saved draft preview · Not published</span></div>
+        <div><strong>{title}</strong><span>{versionStatus} · Public website unchanged</span></div>
         <button type="button" className="admin-secondary-button" onClick={() => window.close()}>
           Close preview
         </button>
       </div>
-      {loading ? <div className="cms-full-preview-message">Loading saved draft…</div>
+      {loading ? <div className="cms-full-preview-message">Loading saved page preview…</div>
         : error ? <div className="cms-full-preview-message">{error}</div>
         : content ? pageKey === "home" ? <HomeCmsRenderer content={content} navigate={navigatePreview} />
           : pageKey === "team" ? <TeamCmsRenderer content={getTeamCmsContent(content)} navigate={navigatePreview} />
