@@ -384,7 +384,7 @@ export default function TeamManager() {
       </details>
 
       <div className="cms-services-toolbar bottom">
-        <button type="button" className="admin-secondary-button" onClick={openPreview} disabled={busy || !draftId}>Preview saved draft</button>
+        <button type="button" className="admin-secondary-button" onClick={openPreview} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
         <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish to Preview</button>
         <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Team draft"}</button>
       </div>
