@@ -64,6 +64,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [pageTitle, setPageTitle] = useState("");
   const [route, setRoute] = useState("/");
   const [content, setContent] = useState({ sections: [] });
+  const [savedSnapshot, setSavedSnapshot] = useState("");
   const [selectedSectionId, setSelectedSectionId] = useState("");
   const [draftId, setDraftId] = useState("");
   const [draftVersion, setDraftVersion] = useState(null);
@@ -74,6 +75,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [structuredJson, setStructuredJson] = useState("{}");
   const dragSectionId = React.useRef(null);
   const homeDesign = content.design || {};
+  const hasUnsavedChanges = Boolean(draftId) && savedSnapshot !== JSON.stringify({ pageKey, pageTitle, route, content });
 
   const selectedSection = useMemo(
     () => content.sections.find((section) => section.id === selectedSectionId) || null,
@@ -100,6 +102,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load this page.");
       setPageKey(result.page.pageKey); setPageTitle(result.page.title); setRoute(result.page.route);
       setContent(result.page.content); setDraftId(result.page.draftId || "");
+      setSavedSnapshot(JSON.stringify({ pageKey: result.page.pageKey, pageTitle: result.page.title, route: result.page.route, content: result.page.content }));
       setDraftVersion(result.page.draftVersion || null); setPublishedVersion(result.page.publishedVersion || null);
       setSelectedSectionId(result.page.content.sections?.[0]?.id || "");
       setStructuredJson(JSON.stringify(result.page.content.sections?.[0]?.content || {}, null, 2));
@@ -110,7 +113,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   function loadHomeTemplate() {
     const initial = JSON.parse(JSON.stringify(homeCmsTemplate));
     setPageKey("home"); setPageTitle("Home"); setRoute("/"); setContent(initial);
-    setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null); setPublishedVersion(null);
+    setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null); setPublishedVersion(null); setSavedSnapshot("");
     setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2));
     setNotice("Existing homepage template loaded into a new Home draft. Save it before publishing.");
     setError("");
@@ -125,7 +128,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     const initial = starterContent(title.trim());
     setPageKey(key); setPageTitle(title.trim()); setRoute(pageRoute); setContent(initial);
     setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null);
-    setPublishedVersion(null); setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2)); setNotice("New page started. Save it as a draft when ready.");
+    setPublishedVersion(null); setSavedSnapshot(""); setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2)); setNotice("New page started. Save it as a draft when ready.");
   }
 
   function updateSection(field, value) {
@@ -212,6 +215,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok) throw new Error(result.error || "Unable to save draft.");
       setDraftId(result.draftId); setDraftVersion(result.version);
+      setSavedSnapshot(JSON.stringify({ pageKey, pageTitle, route, content }));
       setNotice(`Draft V${result.version} saved. The public website has not changed.`);
       await loadPages();
     } catch (err) { setError(err.message || "Unable to save draft."); }
@@ -252,7 +256,8 @@ export default function CMSDashboard({ onAdminLogout }) {
             <button type="button" className="admin-secondary-button" onClick={loadHomeTemplate} disabled={busy || pages.some((page) => page.page_key === "home")}>Load Home template</button>
             <button type="button" className="admin-secondary-button" onClick={createPage}>New page</button>
             <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save draft</button>
-            <button type="button" className="admin-secondary-button" onClick={() => window.open(`/admin/cms/preview?key=${encodeURIComponent(pageKey)}`, "_blank", "noopener,noreferrer")} disabled={busy || !draftId}>Preview saved draft</button>
+            <button type="button" className="admin-secondary-button" onClick={() => window.open(`/admin/cms/preview?key=${encodeURIComponent(pageKey)}`, "_blank", "noopener,noreferrer")} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
+            {hasUnsavedChanges && <small role="status">Unsaved edits · save before previewing</small>}
             <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish</button>
             <div className="cms-admin-session" role="status"><span>Admin access active</span><button type="button" onClick={onAdminLogout}>Log out</button></div>
           </div>
