@@ -159,6 +159,7 @@ export default function TeamManager() {
       });
       setDraftId(result.draftId);
       setDraftVersion(result.version);
+      setSavedContentJson(JSON.stringify(content));
       setNotice(`Team draft V${result.version} saved. The public page has not changed.`);
     } catch (err) { setError(err.message || "Unable to save Team draft."); }
     finally { setBusy(false); }
@@ -174,8 +175,8 @@ export default function TeamManager() {
         body: JSON.stringify({ entityType: "page", entityKey: "team", versionId: draftId })
       });
       const refreshed = await request("/api/cms/admin/preview?key=team").catch(() => null);
-      if (refreshed?.page?.content) setContent(refreshed.page.content);
-      else setContent(cloneTemplate());
+      if (refreshed?.page?.content) { setContent(refreshed.page.content); setSavedContentJson(JSON.stringify(refreshed.page.content)); }
+      else { const baseline = cloneTemplate(); setContent(baseline); setSavedContentJson(JSON.stringify(baseline)); }
       setDraftId("");
       setDraftVersion(null);
       setPublishedVersion(refreshed?.page?.publishedVersion || publishedVersion);
