@@ -1785,7 +1785,9 @@ h6 {
 .hr-form-card textarea,
 .hr-form-card select {
   width: 100%;
+  min-height: var(--yr-input-min-height);
   border: 1px solid #c9dce7;
+  border-radius: var(--yr-radius-input);
   background: #fff;
   color: var(--yr-text);
   padding: 11px 12px;
