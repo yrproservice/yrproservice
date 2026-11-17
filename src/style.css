@@ -62,6 +62,27 @@
   --yr-focus-ring: 0 0 0 3px rgba(0, 194, 255, 0.28);
   --yr-motion-fast: 160ms ease;
   --yr-motion-standard: 220ms ease;
+
+  /* Page environments share the palette but choose different surface roles. */
+  --yr-corporate-surface: var(--yr-color-brand-deep);
+  --yr-corporate-surface-strong: var(--yr-color-deep-contrast);
+  --yr-corporate-text: #ffffff;
+  --yr-corporate-text-muted: #d2e6f0;
+  --yr-showroom-surface: var(--yr-color-surface);
+  --yr-showroom-surface-muted: var(--yr-color-surface-muted);
+  --yr-showroom-text: var(--yr-color-text);
+
+  /* Reusable component geometry; values preserve current public UI dimensions. */
+  --yr-radius-button: 6px;
+  --yr-radius-input: 6px;
+  --yr-radius-showroom-card: 13px;
+  --yr-control-height: 42px;
+  --yr-input-min-height: 42px;
+  --yr-grid-gap-showroom: 20px;
+  --yr-shadow-showroom-card: 0 5px 18px rgba(7, 56, 103, 0.035);
+
+  /* Breakpoint reference for component authors (media queries use literals):
+     navigation/tablet: 1000px; compact layouts: 700px; narrow CMS: 560px. */
 }
 * {
   box-sizing: border-box;
@@ -373,7 +394,8 @@ h6 {
   justify-content: center;
   gap: 8px;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--yr-radius-button);
+  min-height: var(--yr-control-height);
   padding: 12px 18px;
   font: 800 12px/1.2 Montserrat;
   transition: 0.18s;
@@ -1034,17 +1056,17 @@ h6 {
 .bp-catalog-grid {
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:20px;
+  gap:var(--yr-grid-gap-showroom);
 }
 .bp-catalog-card {
   background:#fff;
   border:1px solid #e2eaf0;
-  border-radius:13px;
+  border-radius:var(--yr-radius-showroom-card);
   overflow:hidden;
   display:flex;
   flex-direction:column;
   min-width:0;
-  box-shadow:0 5px 18px rgba(7,56,103,.035);
+  box-shadow:var(--yr-shadow-showroom-card);
   transition:box-shadow .2s ease,transform .2s ease,border-color .2s ease;
 }
 .bp-catalog-card:hover {
