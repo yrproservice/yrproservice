@@ -50,6 +50,7 @@ function MediaPicker({ media, value, onSelect, label }) {
 
 export default function TeamManager() {
   const [content, setContent] = useState(() => cloneTemplate());
+  const [savedContentJson, setSavedContentJson] = useState("");
   const [media, setMedia] = useState([]);
   const [draftId, setDraftId] = useState("");
   const [draftVersion, setDraftVersion] = useState(null);
@@ -62,6 +63,7 @@ export default function TeamManager() {
   const data = teamSection.content;
   const design = teamSection.design || {};
   const sectionOrder = content.sectionOrder || ["hero", "story", "process", "capabilities", "people", "cta"];
+  const hasUnsavedChanges = Boolean(draftId) && JSON.stringify(content) !== savedContentJson;
 
   useEffect(() => {
     let active = true;
@@ -73,6 +75,7 @@ export default function TeamManager() {
       setMedia(mediaResult.media || []);
       if (page?.page?.content) {
         setContent(page.page.content);
+        setSavedContentJson(JSON.stringify(page.page.content));
         setDraftId(page.page.draftId || "");
         setDraftVersion(page.page.draftVersion || null);
         setPublishedVersion(page.page.publishedVersion || null);
@@ -224,7 +227,7 @@ export default function TeamManager() {
 
       <div className="cms-services-toolbar">
         <button type="button" className="admin-secondary-button" onClick={resetToTemplate} disabled={busy}>Restore original content in editor</button>
-        <button type="button" className="admin-secondary-button" onClick={openPreview} disabled={busy || !draftId}>Preview saved draft</button>
+        <button type="button" className="admin-secondary-button" onClick={openPreview} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
         <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish to Preview</button>\n        <button type="button" className="admin-secondary-button" onClick={deleteDraft} disabled={busy || !draftId}>Delete Draft</button>
         <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Team draft"}</button>
       </div>
@@ -384,7 +387,7 @@ export default function TeamManager() {
         <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish to Preview</button>
         <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Team draft"}</button>
       </div>
-      <p className="cms-services-note">Saving creates a draft in the Preview CMS database. It does not publish this page or change the Production website.</p>
+      {hasUnsavedChanges && <p className="cms-services-note" role="status">Unsaved edits · save the Team draft before previewing it.</p>}\n      <p className="cms-services-note">Saving creates a draft in the Preview CMS database. It does not publish this page or change the Production website.</p>
     </section>
   );
 }
