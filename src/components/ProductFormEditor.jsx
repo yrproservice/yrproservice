@@ -30,6 +30,9 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
 
   function protectProduct(edited) {
     const protectedProduct = protectProductImage(originalProduct, edited, imageChanged.current);
+    if (getProductRequestFlow({ slug: protectedProduct.slug }) === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR) {
+      protectedProduct.requestFlow = PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR;
+    }
     if (slugLocked && Object.prototype.hasOwnProperty.call(originalProduct, "slug")) {
       Object.defineProperty(protectedProduct, "slug", {
         value: originalProduct.slug,
@@ -104,14 +107,14 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
           Request flow
           <select
             value={product ? getProductRequestFlow(product) : PRODUCT_REQUEST_FLOWS.CART}
-            disabled={!product}
+            disabled={!product || getProductRequestFlow({ slug: product.slug }) === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR}
             onChange={(event) => updateField("requestFlow", event.target.value)}
           >
             <option value={PRODUCT_REQUEST_FLOWS.CART}>Product Cart</option>
             <option value={PRODUCT_REQUEST_FLOWS.QUOTATION}>General Quotation</option>
             <option value={PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR}>Dental Chair Request</option>
           </select>
-          <small>Controls where this product is sent when a customer requests it. This is separate from the legacy purchase type below.</small>
+          <small>{getProductRequestFlow({ slug: product?.slug }) === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR ? "Confirmed dental chair model — requests are locked to Dental Chair Request." : "Controls where this product is sent when a customer requests it. This is separate from the legacy purchase type below."}</small>
         </label>
         {PRODUCT_FIELDS.map(([key, label]) => (
           <label key={key} className={key === "summary" || key === "description" ? "cms-editor-field-wide" : ""}>
