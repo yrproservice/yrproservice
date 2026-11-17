@@ -11,8 +11,8 @@ function validInternalRoute(value) {
     value.length <= MAX_ROUTE &&
     value.startsWith("/") &&
     !value.startsWith("//") &&
-    !/[\\\\?#]/.test(value) &&
-    !/[\\u0000-\\u001f]/.test(value);
+    !/[\\?#]/.test(value) &&
+    !/[\u0000-\u001f]/.test(value);
 }
 
 function validLinks(items, { allowServicesType = false } = {}) {
@@ -44,7 +44,7 @@ export function validateSiteSetting(key, value) {
     for (const field of ["companyName", "description", "contactPhone", "contactEmail", "copyright"]) {
       if (value[field] !== undefined &&
           (typeof value[field] !== "string" || value[field].length > 500)) {
-        return `Footer field "${field}" must be text no longer than 500 characters.`;
+        return \`Footer field "\${field}" must be text no longer than 500 characters.\`;
       }
     }
     if (value.links !== undefined && !validLinks(value.links)) {
@@ -57,7 +57,7 @@ export function validateSiteSetting(key, value) {
     }
     if (value.contactEmail !== undefined &&
         value.contactEmail !== "" &&
-        !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value.contactEmail)) {
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.contactEmail)) {
       return "Enter a valid footer contact email address.";
     }
     return null;
