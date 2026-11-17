@@ -75,6 +75,10 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [structuredJson, setStructuredJson] = useState("{}");
   const dragSectionId = React.useRef(null);
   const homeDesign = content.design || {};
+  const selectedSection = useMemo(
+    () => content.sections.find((section) => section.id === selectedSectionId) || null,
+    [content.sections, selectedSectionId]
+  );
   const hasInvalidStructuredJson = Boolean(selectedSection) && (() => {
     try {
       const parsed = JSON.parse(structuredJson);
@@ -84,11 +88,6 @@ export default function CMSDashboard({ onAdminLogout }) {
     }
   })();
   const hasUnsavedChanges = hasInvalidStructuredJson || (Boolean(draftId) && savedSnapshot !== JSON.stringify({ pageKey, pageTitle, route, content }));
-
-  const selectedSection = useMemo(
-    () => content.sections.find((section) => section.id === selectedSectionId) || null,
-    [content.sections, selectedSectionId]
-  );
 
   const loadPages = useCallback(async () => {
     setError("");
