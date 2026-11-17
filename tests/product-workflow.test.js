@@ -19,7 +19,15 @@ test("legacy non-chair quote products use general quotation rather than chair re
   assert.ok(otherQuotedProducts.every((product) => getProductRequestFlow(product) === PRODUCT_REQUEST_FLOWS.QUOTATION));
 });
 
-test("explicit CMS requestFlow takes precedence over legacy purchaseType", () => {
+test("confirmed chair slugs cannot be overridden by CMS cart or quotation metadata", () => {
+  for (const slug of ["cingol-x1", "cingol-x3", "cingol-x5", "mocom-f10", "mocom-m10", "mocom-v10", "signo-g10ii", "signo-g20", "signo-t100", "signo-t500", "signo-z300"]) {
+    assert.equal(getProductRequestFlow({ slug, requestFlow: "cart", purchaseType: "cart" }), PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR);
+    assert.equal(getProductRequestFlow({ slug, requestFlow: "quotation", purchaseType: "quote" }), PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR);
+    assert.equal(isDentalChairProduct({ slug, requestFlow: "cart" }), true);
+  }
+});
+
+test("explicit CMS requestFlow takes precedence for products without a confirmed chair slug", () => {
   assert.equal(getProductRequestFlow({ slug: "new-equipment", purchaseType: "quote", requestFlow: "dental_chair" }), PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR);
   assert.equal(getProductRequestFlow({ slug: "existing-chair", purchaseType: "quote", requestFlow: "quotation" }), PRODUCT_REQUEST_FLOWS.QUOTATION);
   assert.equal(getProductRequestFlow({ slug: "new-standard-product", purchaseType: "cart", requestFlow: "cart" }), PRODUCT_REQUEST_FLOWS.CART);
