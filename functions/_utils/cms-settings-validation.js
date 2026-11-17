@@ -44,7 +44,7 @@ export function validateSiteSetting(key, value) {
     for (const field of ["companyName", "description", "contactPhone", "contactEmail", "copyright"]) {
       if (value[field] !== undefined &&
           (typeof value[field] !== "string" || value[field].length > 500)) {
-        return \`Footer field "\${field}" must be text no longer than 500 characters.\`;
+        return "Footer field \"" + field + "\" must be text no longer than 500 characters.";
       }
     }
     if (value.links !== undefined && !validLinks(value.links)) {
