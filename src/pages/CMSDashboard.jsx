@@ -79,15 +79,16 @@ export default function CMSDashboard({ onAdminLogout }) {
     () => content.sections.find((section) => section.id === selectedSectionId) || null,
     [content.sections, selectedSectionId]
   );
-  const hasInvalidStructuredJson = Boolean(selectedSection) && (() => {
+  const hasUnappliedStructuredJson = Boolean(selectedSection) && (() => {
     try {
       const parsed = JSON.parse(structuredJson);
-      return !parsed || typeof parsed !== "object" || Array.isArray(parsed);
+      return !parsed || typeof parsed !== "object" || Array.isArray(parsed)
+        || JSON.stringify(parsed) !== JSON.stringify(selectedSection.content || {});
     } catch {
       return true;
     }
   })();
-  const hasUnsavedChanges = hasInvalidStructuredJson || (Boolean(draftId) && savedSnapshot !== JSON.stringify({ pageKey, pageTitle, route, content }));
+  const hasUnsavedChanges = hasUnappliedStructuredJson || (Boolean(draftId) && savedSnapshot !== JSON.stringify({ pageKey, pageTitle, route, content }));
 
   const loadPages = useCallback(async () => {
     setError("");
