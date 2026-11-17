@@ -12,14 +12,14 @@ export async function onRequestGet(context) {
     const row = await env.DB.prepare(`
       SELECT p.page_key, p.title, p.route, d.id AS draft_id,
         d.version_number AS draft_version, d.content_json AS draft_content,
-        pv.version_number AS published_version
+        pv.version_number AS published_version, pv.content_json AS published_content
       FROM cms_pages p
       LEFT JOIN cms_page_versions d ON d.page_id = p.id AND d.state = 'draft'
-      LEFT JOIN cms_page_versions pv ON pv.id = p.published_version_id
+      LEFT JOIN cms_page_versions pv ON pv.id = p.published_version_id AND pv.state = 'published'
       WHERE p.page_key = ? LIMIT 1
     `).bind(pageKey).first();
     if (!row) return adminJson({ error: "Page not found." }, 404);
-    const contentJson = row.draft_content || (row.published_version ? await env.DB.prepare("SELECT content_json FROM cms_page_versions WHERE id = (SELECT published_version_id FROM cms_pages WHERE page_key = ?)").bind(pageKey).first().then((v) => v?.content_json) : null);
+    const contentJson = row.draft_content || row.published_content;
     if (!contentJson) return adminJson({ error: "This page has no saved content yet." }, 404);
     return adminJson({ ok: true, page: {
       pageKey: row.page_key, title: row.title, route: row.route,
