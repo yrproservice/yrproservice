@@ -75,7 +75,15 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [structuredJson, setStructuredJson] = useState("{}");
   const dragSectionId = React.useRef(null);
   const homeDesign = content.design || {};
-  const hasUnsavedChanges = Boolean(draftId) && savedSnapshot !== JSON.stringify({ pageKey, pageTitle, route, content });
+  const hasInvalidStructuredJson = Boolean(selectedSection) && (() => {
+    try {
+      const parsed = JSON.parse(structuredJson);
+      return !parsed || typeof parsed !== "object" || Array.isArray(parsed);
+    } catch {
+      return true;
+    }
+  })();
+  const hasUnsavedChanges = hasInvalidStructuredJson || (Boolean(draftId) && savedSnapshot !== JSON.stringify({ pageKey, pageTitle, route, content }));
 
   const selectedSection = useMemo(
     () => content.sections.find((section) => section.id === selectedSectionId) || null,
@@ -257,7 +265,7 @@ export default function CMSDashboard({ onAdminLogout }) {
             <button type="button" className="admin-secondary-button" onClick={createPage}>New page</button>
             <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save draft</button>
             <button type="button" className="admin-secondary-button" onClick={() => window.open(`/admin/cms/preview?key=${encodeURIComponent(pageKey)}`, "_blank", "noopener,noreferrer")} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
-            {hasUnsavedChanges && <small role="status">Unsaved edits · save before previewing</small>}
+            {hasUnsavedChanges && <small role="status">Unsaved or invalid edits · correct the JSON and save before previewing</small>}
             <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish</button>
             <div className="cms-admin-session" role="status"><span>Admin access active</span><button type="button" onClick={onAdminLogout}>Log out</button></div>
           </div>
