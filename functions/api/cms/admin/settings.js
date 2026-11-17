@@ -1,3 +1,4 @@
+import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
 
 const KEY = /^[a-z0-9][a-z0-9._-]{1,79}$/;
@@ -28,6 +29,8 @@ export async function onRequestPost(context) {
   try { body = await context.request.json(); } catch { return adminJson({ error: "Submit valid JSON." }, 400); }
   const key = typeof body?.key === "string" ? body.key.trim() : "";
   if (!KEY.test(key) || !Object.prototype.hasOwnProperty.call(body || {}, "value")) return adminJson({ error: "A valid setting key and value are required." }, 400);
+  const validationError = validateSiteSetting(key, body.value);
+  if (validationError) return adminJson({ error: validationError }, 400);
   const json = JSON.stringify(body.value);
   if (json.length > 50000) return adminJson({ error: "Setting value is too large." }, 413);
   try {
