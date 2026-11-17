@@ -232,6 +232,7 @@ export default function CMSDashboard({ onAdminLogout }) {
 
   async function publishDraft() {
     if (!draftId || !pageKey) { setError("Save a draft before publishing."); return; }
+    if (hasUnsavedChanges) { setError("Save or correct all page edits before publishing."); return; }
     if (!window.confirm("Publish this page revision to the public website?")) return;
     setBusy(true); setError(""); setNotice("");
     try {
@@ -266,7 +267,7 @@ export default function CMSDashboard({ onAdminLogout }) {
             <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save draft</button>
             <button type="button" className="admin-secondary-button" onClick={() => window.open(`/admin/cms/preview?key=${encodeURIComponent(pageKey)}`, "_blank", "noopener,noreferrer")} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
             {hasUnsavedChanges && <small role="status">Unsaved or invalid edits · correct the JSON and save before previewing</small>}
-            <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish</button>
+            <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !draftId || hasUnsavedChanges}>Publish</button>
             <div className="cms-admin-session" role="status"><span>Admin access active</span><button type="button" onClick={onAdminLogout}>Log out</button></div>
           </div>
         </div>
