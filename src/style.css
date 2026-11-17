@@ -2995,6 +2995,7 @@ h6 {
     font-size: 9px;
     line-height: 1.7;
   }
+  .bp-home .bp-section { padding-block: 44px; }
   .bp-home .bp-section-head {
     display: flex;
     flex-direction: column;
