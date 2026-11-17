@@ -51,6 +51,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   async function loadSettings() {
     const result = await api("/api/cms/admin/settings");
@@ -66,6 +67,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
     setDraftId(row?.draft_id || "");
     setDraftVersion(row?.draft_version || null);
     setPublishedVersion(row?.published_version || null);
+    setHasUnsavedChanges(false);
     setError("");
     setNotice(row?.draft_id
       ? `Loaded saved ${PAGE_OPTIONS.find(([id]) => id === key)?.[1] || key} design draft V${row.draft_version}.`
@@ -89,6 +91,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
 
   function update(field, value) {
     setDesign((current) => ({ ...current, [field]: value }));
+    setHasUnsavedChanges(true);
     setNotice("Unsaved design changes.");
   }
 
@@ -102,6 +105,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
       });
       setDraftId(result.draftId);
       setDraftVersion(result.version);
+      setHasUnsavedChanges(false);
       setNotice(`Design draft V${result.version} saved. The public website has not changed.`);
       await loadSettings();
     } catch (err) {
@@ -141,6 +145,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
       setPublishedVersion(result.version || draftVersion);
       setDraftId("");
       setDraftVersion(null);
+      setHasUnsavedChanges(false);
       setNotice(`Design V${result.version || draftVersion} published to the isolated Preview website only.`);
       await loadSettings();
     } catch (err) {
@@ -151,6 +156,10 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }
 
   function openPreview() {
+    if (hasUnsavedChanges) {
+      setError("Save your unsaved design changes before opening the preview. The preview shows the latest saved draft or published version.");
+      return;
+    }
     if (!draftId && !publishedVersion) {
       setError("Save a design draft before opening its preview.");
       return;
@@ -161,6 +170,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   function resetControls() {
     if (!window.confirm("Reset these design controls to their defaults? This changes the editor only until you save a new draft.")) return;
     setDesign(DEFAULTS);
+    setHasUnsavedChanges(true);
     setNotice("Default design values loaded in the editor. Save to keep them as a draft.");
   }
 
@@ -183,6 +193,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
           <p>Adjust the appearance of this page independently. Its design draft is stored separately from every other page, without changing content, product data or form behaviour.</p>
         </div>
       </header>
+      <p className="admin-alert" role="status">Design status: {hasUnsavedChanges ? "Unsaved changes" : draftId ? `Saved draft V${draftVersion}` : publishedVersion ? `Published Preview V${publishedVersion}` : "No saved design"}{hasUnsavedChanges ? " · Save before previewing." : ""}</p>
 
       {error && <p className="admin-alert admin-alert-error" role="alert">{error}</p>}
       {notice && <p className="admin-alert admin-alert-success" role="status">{notice}</p>}
@@ -193,7 +204,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
           <button type="button" className="admin-primary-button" disabled={busy} onClick={saveDraft}>Save design draft</button>
           <button type="button" className="admin-secondary-button" disabled={busy || !draftId} onClick={publishToPreview}>Publish to Preview</button>
           <button type="button" className="admin-secondary-button" disabled={busy || !draftId} onClick={deleteDraft}>Delete Draft</button>
-          <button type="button" className="admin-secondary-button" disabled={busy || (!draftId && !publishedVersion)} onClick={openPreview}>Preview page</button>
+          <button type="button" className="admin-secondary-button" disabled={busy || hasUnsavedChanges || (!draftId && !publishedVersion)} onClick={openPreview}>Preview page</button>
         </div>
       </div>
 
