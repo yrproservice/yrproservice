@@ -76,7 +76,7 @@ export default function CMSManagement() {
         const row=(refreshed.settings||[]).find(item=>item.setting_key===key);
         if(row){setSettingKey(key);setSettingJson(row.draft_value||row.published_value||"{}");}
       }
-      if(type==="page")await loadHistory(type,key);
+      await loadHistory(type,key);
     }catch(e){setError(e.message);}finally{setBusy(false);}
   }
   async function uploadMedia(event) {
