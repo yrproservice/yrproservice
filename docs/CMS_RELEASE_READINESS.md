@@ -623,3 +623,32 @@ This pass verified the available manufacturer-hosted image endpoints and their v
 
 **Authorization and model-fit policy:** The user has not authorized reproduction of these manufacturer images. Before any image is copied into the repository, document written permission or a manufacturer media-use licence, its permitted uses and attribution requirements. For Cattani, also obtain confirmation that the exact model, configuration, voltage, regional variant and appearance match the Malaysia-facing listing; different item codes and visual similarity alone are not sufficient. The Fussen listing requires a high-resolution licensed original. Do not use similar-looking substitutes or generated product photographs. Keep all image references unchanged until these checks are complete.
 
+
+
+## Latest design-foundation checkpoint — 17 November 2026
+
+**Verified source commit:** `5a9add5d8ba5724f71b7babffbd0906fe9431165`  
+**Branch:** `cms-development`  
+**Production release:** Not approved
+
+### Verified CI result
+
+GitHub Actions run [44006686878](https://github.com/yrproservice/yrproservice/actions/runs/44006686878) checked out the exact source commit above and completed all workflow steps successfully:
+
+- `npm ci`: passed.
+- `npm test`: **51 tests passed, 0 failed**.
+- `npm run build`: passed; Vite reported `built in 335ms`.
+- Main JavaScript entry bundle: **373.47 kB minified (100.95 kB gzip)**. No Vite chunk-size warning was emitted for this build.
+
+The run emitted non-blocking dependency/runtime deprecation warnings, including Node 20 action-runtime deprecation and Node's `punycode` / legacy `url.parse()` warnings. These did not fail the workflow.
+
+### Scope of the latest source change
+
+Commit `5a9add5` changes only `src/style.css`. It connects the existing `--yr-input-min-height` (42px) and `--yr-radius-input` (6px) tokens to the shared form-control selector. The selector covers `.form`, `.bp-form`, and `.hr-form-card` input, textarea and select controls. The `.form` class is used by the Service Request and Track Request pages; `.bp-form` is used by the Quotation page. This is a shared visual geometry adjustment, not an HR-only change. No form submission logic, validation, API, database, or media behaviour was changed in this commit.
+
+### Remaining verification and branch caution
+
+- The Preview site has **not** been visually signed off against this commit in this audit. A direct browser inspection was unavailable; obtain desktop homepage, desktop showroom and mobile screenshots before making further visual adjustments.
+- The open PR #2 remains Draft. The current GitHub compare view reports `cms-development` **412 commits ahead and 0 behind** `main`; the PR description's older 315-commit figure is stale. Review the full history and intended merge scope before any merge. Do not treat CI success as merge approval.
+- No Production deployment, Production D1 migration, Production binding change, Preview content publication, or PR merge was performed as part of this checkpoint.
+
