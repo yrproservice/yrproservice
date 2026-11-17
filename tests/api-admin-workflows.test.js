@@ -4,6 +4,9 @@ import { webcrypto } from "node:crypto";
 import { onRequestPatch as updateRequest } from "../functions/api/admin/requests.js";
 import { onRequestGet as getAdminSession, onRequestPost as startAdminSession, onRequestPatch as heartbeatAdminSession, onRequestDelete as logoutAdminSession } from "../functions/api/admin/session.js";
 import { onRequestPost as publishCms } from "../functions/api/cms/admin/publish.js";
+import { onRequestGet as previewCmsPage } from "../functions/api/cms/admin/preview.js";
+import { onRequestGet as getPublicCmsPages } from "../functions/api/cms/public/pages.js";
+import { onRequest as getPublicCmsProducts } from "../functions/api/cms/public/products.js";
 
 const cryptoApi = globalThis.crypto || webcrypto;
 const originalFetch = globalThis.fetch;
@@ -340,4 +343,113 @@ test("CMS publishing does not duplicate work for the already-published revision"
     version: 4,
   });
   assert.equal(db.batches.length, 0);
+});
+
+
+function makePagePreviewDb({ draft = true, published = true } = {}) {
+  const calls = [];
+  return {
+    calls,
+    prepare(sql) {
+      const statement = {
+        sql,
+        values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          calls.push(this);
+          if (!sql.includes("FROM cms_pages p")) return null;
+          return {
+            page_key: "home",
+            title: "Home",
+            route: "/",
+            draft_id: draft ? "draft-id" : null,
+            draft_version: draft ? 7 : null,
+            draft_content: draft ? JSON.stringify({ sections: [{ id: "draft" }] }) : null,
+            published_version: published ? 5 : null,
+            published_content: published ? JSON.stringify({ sections: [{ id: "published" }] }) : null,
+          };
+        },
+      };
+      return statement;
+    },
+  };
+}
+
+function adminGetContext(path, env) {
+  return {
+    request: new Request("https://yrproservice.test" + path, {
+      method: "GET",
+      headers: { "Cf-Access-Jwt-Assertion": accessToken },
+    }),
+    env: { ...adminConfig, DB: env },
+  };
+}
+
+test("CMS page preview selects the latest saved draft ahead of the published revision", async () => {
+  const db = makePagePreviewDb({ draft: true, published: true });
+  const response = await previewCmsPage(adminGetContext("/api/cms/admin/preview?key=home", db));
+  const result = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(result.page.isDraft, true);
+  assert.equal(result.page.draftVersion, 7);
+  assert.equal(result.page.publishedVersion, 5);
+  assert.deepEqual(result.page.content, { sections: [{ id: "draft" }] });
+  assert.match(db.calls[0].sql, /pv\.state = 'published'/);
+});
+
+test("CMS page preview falls back to the published revision when no draft exists", async () => {
+  const db = makePagePreviewDb({ draft: false, published: true });
+  const response = await previewCmsPage(adminGetContext("/api/cms/admin/preview?key=home", db));
+  const result = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(result.page.isDraft, false);
+  assert.equal(result.page.draftVersion, null);
+  assert.equal(result.page.publishedVersion, 5);
+  assert.deepEqual(result.page.content, { sections: [{ id: "published" }] });
+});
+
+test("CMS page preview does not fall back to an archived or invalid published pointer", async () => {
+  const db = makePagePreviewDb({ draft: false, published: false });
+  const response = await previewCmsPage(adminGetContext("/api/cms/admin/preview?key=home", db));
+  assert.equal(response.status, 404);
+});
+
+test("public CMS page endpoint explicitly selects published revisions only", async () => {
+  let sqlSeen = "";
+  const db = {
+    prepare(sql) {
+      sqlSeen = sql;
+      return {
+        bind() { return this; },
+        async first() { return null; },
+      };
+    },
+  };
+  const response = await getPublicCmsPages({
+    request: new Request("https://yrproservice.test/api/cms/public/pages?key=home"),
+    env: { DB: db },
+  });
+  assert.equal(response.status, 404);
+  assert.match(sqlSeen, /v\.state = 'published'/);
+});
+
+test("public CMS product endpoint explicitly selects published revisions only", async () => {
+  let sqlSeen = "";
+  const db = {
+    prepare(sql) {
+      sqlSeen = sql;
+      return {
+        bind() { return this; },
+        async first() { return null; },
+      };
+    },
+  };
+  const response = await getPublicCmsProducts({
+    request: new Request("https://yrproservice.test/api/cms/public/products?slug=chair-model"),
+    env: { DB: db },
+  });
+  assert.equal(response.status, 404);
+  assert.match(sqlSeen, /v\.state = 'published'/);
 });
