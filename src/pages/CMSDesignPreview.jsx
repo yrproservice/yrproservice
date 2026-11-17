@@ -33,6 +33,7 @@ const PAGE_LABELS = {
 export default function CMSDesignPreview() {
   const [pageKey, setPageKey] = useState("");
   const [design, setDesign] = useState(null);
+  const [versionStatus, setVersionStatus] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const navigatePreview = (to) => { window.location.href = to; };
@@ -52,14 +53,23 @@ export default function CMSDesignPreview() {
         const result = await response.json().catch(() => ({}));
         if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load the saved design.");
         const row = (result.settings || []).find((item) => item.setting_key === key);
+        const isDraft = Boolean(row?.draft_id);
+        const version = isDraft ? row.draft_version : row?.published_version;
         const value = row?.draft_value || row?.published_value || "{}";
-        return { selectedPage, value: typeof value === "string" ? JSON.parse(value) : value };
+        return {
+          selectedPage,
+          value: typeof value === "string" ? JSON.parse(value) : value,
+          versionStatus: version
+            ? isDraft ? `Saved draft V${version} · Not published` : `Published Preview V${version} · Read-only`
+            : "No saved design version"
+        };
       })
       .then((result) => {
         if (!active) return;
         if (!PAGE_LABELS[result.selectedPage]) throw new Error("This page template is not supported by the design preview.");
         setPageKey(result.selectedPage);
         setDesign(result.value || {});
+        setVersionStatus(result.versionStatus);
       })
       .catch((err) => { if (active) setError(err.message || "Unable to load the design preview."); })
       .finally(() => { if (active) setLoading(false); });
@@ -88,7 +98,7 @@ export default function CMSDesignPreview() {
       <div className="cms-full-preview-bar">
         <div>
           <strong>{PAGE_LABELS[pageKey] || "Page design preview"}</strong>
-          <span>Visual draft preview · Not published to the public website</span>
+          <span>{versionStatus} · Public website unchanged</span>
         </div>
         <button type="button" className="admin-secondary-button" onClick={() => window.close()}>Close preview</button>
       </div>
