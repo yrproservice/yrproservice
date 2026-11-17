@@ -351,7 +351,8 @@ export default function ServicesManager() {
         <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish to Preview</button>
         <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Services draft"}</button>
       </div>
-      {hasUnsavedChanges && <p className="cms-services-note" role="status">Unsaved edits · save the Services draft before previewing it.</p>}\n      <p className="cms-services-note">Saving creates a draft in the Preview CMS database. It does not publish this page or change the Production website.</p>
+      {hasUnsavedChanges && <p className="cms-services-note" role="status">Unsaved edits · save the Services draft before previewing it.</p>}
+      <p className="cms-services-note">Saving creates a draft in the Preview CMS database. It does not publish this page or change the Production website.</p>
     </section>
   );
 }
