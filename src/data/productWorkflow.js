@@ -23,6 +23,11 @@ const DENTAL_CHAIR_SLUGS = new Set([
 export function getProductRequestFlow(product) {
   if (!product || typeof product !== "object") return PRODUCT_REQUEST_FLOWS.CART;
 
+  const slug = typeof product.slug === "string" ? product.slug.trim().toLowerCase() : "";
+  // Confirmed chair models are a fixed business rule: CMS metadata cannot
+  // reroute them into the standard cart or general quotation flow.
+  if (DENTAL_CHAIR_SLUGS.has(slug)) return PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR;
+
   const explicit = product.requestFlow || product.workflowType;
   if (explicit === "chair-consultation" || explicit === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR) {
     return PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR;
@@ -33,9 +38,6 @@ export function getProductRequestFlow(product) {
   if (explicit === "cart" || explicit === "cart-quotation") {
     return PRODUCT_REQUEST_FLOWS.CART;
   }
-
-  const slug = typeof product.slug === "string" ? product.slug.trim().toLowerCase() : "";
-  if (DENTAL_CHAIR_SLUGS.has(slug)) return PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR;
 
   // Legacy quote products that are not confirmed dental chairs use the
   // general quotation route. This prevents imaging/lab/autoclave products
