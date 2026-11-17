@@ -124,7 +124,7 @@ export default function CMSManagement() {
     try{await api("/api/cms/admin/publish",{method:"POST",body:JSON.stringify({entityType:"setting",entityKey:row.setting_key,versionId:row.draft_id})});setNotice(`Setting "${row.setting_key}" published to Preview.`);await refreshSettings();}catch(e){setError(e.message);}
   }
   const historyOptions = historyType==="page"
-    ? pages.map(row=>({key:row.page_key,label:`${row.title} · /${row.route.replace(/^\\//,"")}`}))
+    ? pages.map(row=>({key:row.page_key,label:`${row.title} · ${row.route}`}))
     : historyType==="product"
       ? items.map(row=>({key:row.product_slug,label:row.product_slug}))
       : settings.map(row=>({key:row.setting_key,label:row.setting_key}));
