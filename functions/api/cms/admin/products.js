@@ -46,6 +46,16 @@ export async function onRequestPost(context) {
   if (product.requestFlow !== undefined && !["cart", "quotation", "dental_chair", "chair-consultation", "cart-quotation", "quote"].includes(product.requestFlow)) {
     return adminJson({ error: "Request flow must be cart, quotation or dental_chair." }, 400);
   }
+  const confirmedChairSlugs = new Set([
+    "cingol-x1", "cingol-x3", "cingol-x5",
+    "mocom-f10", "mocom-m10", "mocom-v10",
+    "signo-g10ii", "signo-g20", "signo-t100", "signo-t500", "signo-z300",
+  ]);
+  if (confirmedChairSlugs.has(slug.toLowerCase()) && product.requestFlow !== undefined &&
+      !["dental_chair", "chair-consultation"].includes(product.requestFlow)) {
+    return adminJson({ error: "Confirmed dental chair models must use the Dental Chair Request flow." }, 400);
+  }
+  if (confirmedChairSlugs.has(slug.toLowerCase())) product.requestFlow = "dental_chair";
   if (product.stockStatus !== undefined && !["pending", "in-stock", "out-of-stock"].includes(product.stockStatus)) return adminJson({ error: "Invalid stock status." }, 400);
   if (product.price !== undefined && product.price !== null && !["string", "number"].includes(typeof product.price)) return adminJson({ error: "Price must be a number, text value or null." }, 400);
 
