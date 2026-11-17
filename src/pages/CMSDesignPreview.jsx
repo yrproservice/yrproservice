@@ -11,6 +11,7 @@ import DentalChairRequest from "./DentalChairRequest";
 import Quote from "./Quote";
 import ServiceRequest from "./ServiceRequest";
 import TrackRequest from "./TrackRequest";
+import Contact from "./Contact";
 import { SiteHeader, SiteFooter } from "../components/Layout";
 import { products } from "../data/products";
 import { services } from "../data/services";
@@ -27,7 +28,8 @@ const PAGE_LABELS = {
   "dental-chair-request": "Dental chair request",
   quote: "Quotation request",
   "service-request": "Service request",
-  "track-request": "Track a request"
+  "track-request": "Track a request",
+  contact: "HR Contact"
 };
 
 export default function CMSDesignPreview() {
@@ -90,6 +92,7 @@ export default function CMSDesignPreview() {
     case "quote": page = <Quote navigate={navigatePreview} />; break;
     case "service-request": page = <ServiceRequest navigate={navigatePreview} />; break;
     case "track-request": page = <TrackRequest />; break;
+    case "contact": page = <Contact navigate={navigatePreview} />; break;
     default: page = null;
   }
 
