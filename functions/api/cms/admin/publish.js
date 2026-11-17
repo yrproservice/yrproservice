@@ -1,3 +1,4 @@
+import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
 
 function clean(value, max = 100) {
@@ -36,7 +37,7 @@ export async function onRequestPost(context) {
       ? await env.DB.prepare(`SELECT setting_key AS id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first()
       : await env.DB.prepare(`SELECT id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first();
     if (!entity) return adminJson({ error: `CMS ${config.label} not found.` }, 404);
-    const target = await env.DB.prepare(`SELECT id, version_number, state FROM ${config.versions} WHERE id = ? AND ${config.foreignKey} = ? LIMIT 1`)
+    const target = await env.DB.prepare(`SELECT id, version_number, state, ${entityType === "setting" ? "value_json" : "NULL AS value_json"} FROM ${config.versions} WHERE id = ? AND ${config.foreignKey} = ? LIMIT 1`)
       .bind(versionId, entity.id).first();
     if (!target) return adminJson({ error: "The selected revision does not belong to this item." }, 404);
     if (target.state === "published" && entity.published_version_id === versionId) {
@@ -48,6 +49,14 @@ export async function onRequestPost(context) {
     // older archived revision directly over the current public version.
     if (target.state !== "draft") {
       return adminJson({ error: "Only a saved draft can be published. Restore an archived revision as a draft first." }, 409);
+    }
+    if (entityType === "setting" && ["site.navigation", "site.footer"].includes(entityKey)) {
+      let value;
+      try { value = JSON.parse(target.value_json); } catch {
+        return adminJson({ error: "The selected site setting contains invalid JSON and cannot be published." }, 400);
+      }
+      const validationError = validateSiteSetting(entityKey, value);
+      if (validationError) return adminJson({ error: validationError }, 400);
     }
 
     const now = new Date().toISOString();
