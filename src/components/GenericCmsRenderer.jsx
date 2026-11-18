@@ -1,7 +1,17 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { products } from "../data/products";
+import { loadPublishedCatalogue } from "../data/publishedCatalogue";
 
 export default function GenericCmsRenderer({ content, navigate }) {
+  const [catalogueProducts, setCatalogueProducts] = useState(products);
+  useEffect(() => {
+    let active = true;
+    loadPublishedCatalogue().then((catalogue) => {
+      if (active) setCatalogueProducts(catalogue);
+    });
+    return () => { active = false; };
+  }, []);
+
   const supportedTypes = new Set([
     "hero", "text", "image-text", "product-grid", "feature-grid",
     "editorial", "brand-grid", "services-banner", "benefits-grid", "cta",
@@ -53,7 +63,7 @@ export default function GenericCmsRenderer({ content, navigate }) {
         if (section.type === "product-grid") {
           const selectedProducts = (Array.isArray(sectionContent.productSlugs) ? sectionContent.productSlugs : [])
             .filter((slug) => typeof slug === "string")
-            .map((slug) => products.find((product) => product.slug === slug))
+            .map((slug) => catalogueProducts.find((product) => product.slug === slug))
             .filter(Boolean);
 
           return (
