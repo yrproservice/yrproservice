@@ -941,7 +941,7 @@ h6 {
   color:#5c6b79;
   padding:10px 15px;
   border-radius:999px;
-  font:700 10px Montserrat,sans-serif;
+  font:700 11px Montserrat,sans-serif;
   transition:background .18s ease,color .18s ease,border-color .18s ease;
 }
 .bp-filter-tabs button.active,.bp-filter-tabs button:hover {
@@ -993,8 +993,8 @@ h6 {
 .bp-toolbar > span {
   justify-self:end;
   white-space:nowrap;
-  font:800 10px Montserrat,sans-serif;
-  color:#627487;
+  font:800 11px Montserrat,sans-serif;
+  color:#526477;
   padding:0 7px;
 }
 .spotlight-row {
@@ -1049,7 +1049,7 @@ h6 {
   position:absolute;
   left:25px;
   bottom:20px;
-  font:800 10px Montserrat,sans-serif;
+  font:800 11px Montserrat,sans-serif;
   color:var(--yr-blue);
   z-index:3;
 }
@@ -1115,7 +1115,7 @@ h6 {
 .bp-product-type {
   display:block;
   color:#728292;
-  font:700 9px/1.5 Montserrat,sans-serif;
+  font:700 11px/1.5 Montserrat,sans-serif;
   text-transform:uppercase;
   letter-spacing:.08em;
 }
@@ -1140,7 +1140,7 @@ h6 {
   min-height:42px;
   padding:10px 11px;
   border-radius:6px;
-  font:800 10px Montserrat,sans-serif;
+  font:800 11px Montserrat,sans-serif;
   text-align:center;
   transition:background .18s ease,border-color .18s ease,color .18s ease;
 }
