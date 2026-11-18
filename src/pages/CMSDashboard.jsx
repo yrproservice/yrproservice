@@ -28,6 +28,37 @@ function starterContent(title) {
   };
 }
 
+const HERO_LAYOUT_PRESETS = [
+  { value: "overlay-left", label: "Text left", kind: "hero-left" },
+  { value: "overlay-center", label: "Centred text", kind: "hero-center" },
+  { value: "overlay-right", label: "Text right", kind: "hero-right" },
+  { value: "overlay-bottom", label: "Text bottom-left", kind: "hero-bottom" }
+];
+const SPLIT_LAYOUT_PRESETS = [
+  { value: "split-right", label: "Text left · image right", kind: "split-right" },
+  { value: "split-left", label: "Image left · text right", kind: "split-left" },
+  { value: "balanced", label: "Equal columns", kind: "split-balanced" },
+  { value: "stacked", label: "Text above · image below", kind: "split-stacked" }
+];
+
+function LayoutPresetPicker({ value, options, onChange }) {
+  return <div className="cms-layout-preset-picker" role="group" aria-label="Layout preset">
+    {options.map((option) => <button
+      type="button"
+      key={option.value}
+      className={`cms-layout-preset-option ${value === option.value ? "is-selected" : ""}`}
+      aria-pressed={value === option.value}
+      onClick={() => onChange(option.value)}
+    >
+      <span className={`cms-layout-preset-thumb ${option.kind}`} aria-hidden="true">
+        <span className="cms-layout-thumb-copy"><i /><i /><i /></span>
+        <span className="cms-layout-thumb-image" />
+      </span>
+      <span className="cms-layout-preset-label">{option.label}</span>
+    </button>)}
+  </div>;
+}
+
 function SectionPreview({ section, selected, onClick, design }) {
   const content = section.content || {};
   const sectionDesign = design?.sections?.[section.id] || {};
@@ -457,9 +488,14 @@ export default function CMSDashboard({ onAdminLogout }) {
               </div>
               {selectedSection && <div className="cms-home-design-subpanel">
                 <h3>Selected section layout</h3>
-                {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <label>Layout preset<select value={selectedSection.content?.layout || (selectedSection.type==="hero"?"overlay-left":"split-right")} onChange={(e)=>updateSection("layout",e.target.value)}>
-                  {selectedSection.type==="hero" ? <><option value="overlay-left">Full image · text left</option><option value="overlay-center">Full image · centred text</option><option value="overlay-right">Full image · text right</option><option value="overlay-bottom">Full image · text bottom-left</option></> : <><option value="split-right">Text left · image right</option><option value="split-left">Image left · text right</option><option value="balanced">Equal columns</option><option value="stacked">Text above · image below</option></>}
-                </select></label>}
+                {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <div className="cms-layout-preset-field">
+                  <strong>Layout preset</strong>
+                  <LayoutPresetPicker
+                    value={selectedSection.content?.layout || (selectedSection.type==="hero"?"overlay-left":"split-right")}
+                    options={selectedSection.type==="hero" ? HERO_LAYOUT_PRESETS : SPLIT_LAYOUT_PRESETS}
+                    onChange={(value)=>updateSection("layout",value)}
+                  />
+                </div>}
                 {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <label>Image position<select value={selectedSection.content?.imagePosition||"center"} onChange={(e)=>updateSection("imagePosition",e.target.value)}><option value="center">Centre</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="50% 35%">50% · 35%</option></select></label>}
                 {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <>
                   <label>Image height · {selectedSection.content?.imageHeight||420}px<input type="range" min="220" max="720" step="10" value={selectedSection.content?.imageHeight||420} onChange={(e)=>updateSection("imageHeight",Number(e.target.value))}/></label>
