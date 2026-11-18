@@ -20,7 +20,7 @@ function safeHttpsUrl(value) {
 function safeDocumentUrl(value) {
   if (typeof value !== "string" || value.length > 1000) return "";
   const trimmed = value.trim();
-  if (trimmed.startsWith("/") && !trimmed.startsWith("//") && !/[\\?#\\u0000-\\u001f]/.test(trimmed)) return trimmed;
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//") && !/[\\?#\u0000-\u001f]/.test(trimmed)) return trimmed;
   return safeHttpsUrl(trimmed);
 }
 
