@@ -3966,6 +3966,8 @@ h6 {
 .cms-editor-row-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;flex:1;min-width:0}
 .cms-editor-row-actions{display:flex;gap:5px}
 .cms-editor-row-actions button{min-height:36px;border:1px solid #cad6e1;border-radius:5px;background:#fff;color:#344456;cursor:pointer}
+.cms-editor-row-actions button:hover:not(:disabled){border-color:#9bc9e7;background:#edf7fd;color:#0b4a88}
+.cms-editor-row-actions button:focus-visible{outline:0;border-color:#1e7ed8;box-shadow:0 0 0 3px rgba(0,194,255,.2)}
 .cms-editor-row-actions button:disabled{opacity:.45;cursor:default}
 .cms-editor-row-raw{flex:1;min-width:0}
 .cms-advanced-json{border-top:1px solid #e1e8ef;padding-top:12px}
