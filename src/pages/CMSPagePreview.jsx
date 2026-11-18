@@ -77,7 +77,17 @@ export default function CMSPagePreview() {
               <nav className="cms-service-preview-nav" aria-label="Draft service preview navigation">
                 <a href="/admin/cms/preview?key=services" aria-current={!serviceSlug && !requestMode ? "page" : undefined}>Services overview</a>
                 {previewServices.map((item) => (
-                  <a key={item.slug} href={`/admin/cms/preview?key=services&service=${encodeURIComponent(item.slug)}`} aria-current={!requestMode && serviceSlug === item.slug ? "page" : undefined}>{item.title}</a>
+                  <a
+                    key={item.slug}
+                    href={`/admin/cms/preview?key=services&service=${encodeURIComponent(item.slug)}`}
+                    aria-current={
+                      !requestMode && serviceSlug === item.slug
+                        ? "page"
+                        : undefined
+                    }
+                  >
+                    {item.title}
+                  </a>
                 ))}
                 <a href="/admin/cms/preview?key=services&request=" aria-current={requestMode && !requestSlug ? "page" : undefined}>Service Request</a>
               </nav>
