@@ -76,33 +76,61 @@ export default function CMSManagement() {
   const [historyType, setHistoryType] = useState("page");
   const [historyKey, setHistoryKey] = useState("");
 
-  async function refreshProducts() {
+  async function refreshProducts(isActive = () => true) {
     const data = await api("/api/cms/admin/products");
-    setItems(data.products || []);
+    if (isActive()) {
+      setItems(data.products || []);
+    }
   }
 
-  async function refreshMedia() {
+  async function refreshMedia(isActive = () => true) {
     const data = await api("/api/cms/admin/media");
+    if (!isActive()) return;
+
     setMedia(data.media || []);
     setStorageReady(Boolean(data.storageReady));
   }
 
-  async function refreshSettings() {
+  async function refreshSettings(isActive = () => true) {
     const data = await api("/api/cms/admin/settings");
-    setSettings(data.settings || []);
+    if (isActive()) {
+      setSettings(data.settings || []);
+    }
   }
 
   useEffect(() => {
-    refreshProducts().catch((loadError) => setError(loadError.message));
-    refreshMedia().catch((loadError) => setError(loadError.message));
-    refreshSettings().catch((loadError) => setError(loadError.message));
+    let active = true;
+
+    refreshProducts(() => active).catch((loadError) => {
+      if (active) setError(loadError.message);
+    });
+    refreshMedia(() => active).catch((loadError) => {
+      if (active) setError(loadError.message);
+    });
+    refreshSettings(() => active).catch((loadError) => {
+      if (active) setError(loadError.message);
+    });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
     if (tab !== "history") return;
+
+    let active = true;
     api("/api/cms/admin/pages")
-      .then((data) => setPages(data.pages || []))
-      .catch((loadError) => setError(loadError.message));
+      .then((data) => {
+        if (active) setPages(data.pages || []);
+      })
+      .catch((loadError) => {
+        if (active) setError(loadError.message);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [tab]);
   function chooseProduct(row) {
     const rawProduct = row
