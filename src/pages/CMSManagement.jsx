@@ -54,6 +54,7 @@ export default function CMSManagement() {
   const [selected, setSelected] = useState(null);
   const [json, setJson] = useState("{}");
   const [history, setHistory] = useState([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const [media, setMedia] = useState([]);
   const [storageReady, setStorageReady] = useState(false);
   const [settings, setSettings] = useState([]);
@@ -306,11 +307,14 @@ export default function CMSManagement() {
     }
   }
   async function loadHistory(type, key) {
+    setHistory([]);
+    setHistoryLoaded(false);
     try {
       const data = await api(
         `/api/cms/admin/history?entityType=${type}&entityKey=${encodeURIComponent(key)}`
       );
       setHistory(data.history || []);
+      setHistoryLoaded(true);
     } catch (loadError) {
       setError(loadError.message);
     }
@@ -1086,6 +1090,7 @@ export default function CMSManagement() {
                 setHistoryType(event.target.value);
                 setHistoryKey("");
                 setHistory([]);
+                setHistoryLoaded(false);
               }}
             >
               <option value="page">Page</option>
@@ -1100,6 +1105,7 @@ export default function CMSManagement() {
               onChange={(event) => {
                 setHistoryKey(event.target.value);
                 setHistory([]);
+                setHistoryLoaded(false);
               }}
             >
               <option value="">Select an item</option>
@@ -1121,6 +1127,12 @@ export default function CMSManagement() {
           onRestore={(id) => restoreRevision(historyType, historyKey, id)}
           onDeleteDraft={(id) => deleteDraft(historyType, historyKey, id)}
         />
+        {historyLoaded && history.length === 0 && (
+          <p className="cms-history-empty" role="status">No revisions found for this item.</p>
+        )}
+        {!historyLoaded && (
+          <p className="cms-history-empty" role="status">Select a CMS item and load its history to see saved revisions.</p>
+        )}
       </section>
     )}
     {tab === "cart" && (
