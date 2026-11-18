@@ -1,4 +1,5 @@
 import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
+import { validatePageDestinations, validateSettingDestinations } from "../../../_utils/cms-route-validation.js";
 import { validatePageContent, validatePageRoute, validateProductContent } from "../../../_utils/cms-content-validation.js";
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
 
@@ -76,6 +77,8 @@ export async function onRequestPost(context) {
       }
       const validationError = validatePageContent(content);
       if (validationError) return adminJson({ error: validationError }, 400);
+      const destinationError = await validatePageDestinations(env.DB, content, target.route);
+      if (destinationError) return adminJson({ error: destinationError }, 400);
       if (typeof target.title !== "string" || !target.title.trim() || target.title.length > 120) {
         return adminJson({ error: "The page revision must have a valid title before publishing." }, 400);
       }
@@ -98,6 +101,8 @@ export async function onRequestPost(context) {
       }
       const validationError = validateSiteSetting(entityKey, value);
       if (validationError) return adminJson({ error: validationError }, 400);
+      const destinationError = await validateSettingDestinations(env.DB, entityKey, value);
+      if (destinationError) return adminJson({ error: destinationError }, 400);
     }
 
     const now = new Date().toISOString();

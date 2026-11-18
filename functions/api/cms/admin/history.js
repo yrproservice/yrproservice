@@ -1,6 +1,7 @@
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
 import { validatePageContent, validatePageRoute, validateProductContent } from "../../../_utils/cms-content-validation.js";
 import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
+import { validatePageDestinations, validateSettingDestinations } from "../../../_utils/cms-route-validation.js";
 
 const CONFIG = {
   page: { table: "cms_pages", key: "page_key", versions: "cms_page_versions", fk: "page_id", json: "content_json" },
@@ -69,6 +70,14 @@ export async function onRequestPost(context) {
         ? validateSiteSetting(key, restoredValue)
         : null;
     if (restoreError) return adminJson({ error: restoreError }, 400);
+    if (type === "page") {
+      const destinationError = await validatePageDestinations(env.DB, restoredValue, source.route);
+      if (destinationError) return adminJson({ error: destinationError }, 400);
+    }
+    if (type === "setting") {
+      const destinationError = await validateSettingDestinations(env.DB, key, restoredValue);
+      if (destinationError) return adminJson({ error: destinationError }, 400);
+    }
     if (type === "page") {
       if (typeof source.title !== "string" || !source.title.trim() || source.title.length > 120) {
         return adminJson({ error: "This archived page revision has invalid title metadata and cannot be restored." }, 400);
