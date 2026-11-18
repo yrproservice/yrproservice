@@ -88,7 +88,8 @@ export default function CMSDashboard({ onAdminLogout }) {
       return true;
     }
   })();
-  const hasUnsavedChanges = hasUnappliedStructuredJson || (Boolean(draftId) && savedSnapshot !== JSON.stringify({ pageKey, pageTitle, route, content }));
+  const currentSnapshot = JSON.stringify({ pageKey, pageTitle, route, content });
+  const hasUnsavedChanges = Boolean(pageKey) && (hasUnappliedStructuredJson || savedSnapshot !== currentSnapshot);
 
   const loadPages = useCallback(async () => {
     setError("");
@@ -187,6 +188,11 @@ export default function CMSDashboard({ onAdminLogout }) {
     }));
   }
 
+  function updateHomeSectionColor(sectionId, field, value) {
+    if (!/^#[0-9a-fA-F]{6}$/.test(value)) return;
+    updateHomeSectionDesign(sectionId, field, value.toLowerCase());
+  }
+
   function resetHomeSectionDesign(sectionId) {
     setContent((current) => ({
       ...current,
@@ -209,6 +215,24 @@ export default function CMSDashboard({ onAdminLogout }) {
       return { ...current, sections: items.map((item, i) => ({ ...item, order: i + 1 })) };
     });
     dragSectionId.current = null;
+  }
+
+  function restoreSavedDraft() {
+    if (!savedSnapshot) return;
+    try {
+      const snapshot = JSON.parse(savedSnapshot);
+      setPageKey(snapshot.pageKey);
+      setPageTitle(snapshot.pageTitle);
+      setRoute(snapshot.route);
+      setContent(snapshot.content);
+      const selected = snapshot.content.sections?.find((section) => section.id === selectedSectionId) || snapshot.content.sections?.[0];
+      setSelectedSectionId(selected?.id || "");
+      setStructuredJson(JSON.stringify(selected?.content || {}, null, 2));
+      setError("");
+      setNotice("Restored the last saved page revision in the editor. No content was published.");
+    } catch {
+      setError("The saved snapshot could not be restored. Reload the page and try again.");
+    }
   }
 
   async function saveDraft() {
@@ -264,7 +288,8 @@ export default function CMSDashboard({ onAdminLogout }) {
           <div className="cms-toolbar-actions">
             <button type="button" className="admin-secondary-button" onClick={loadHomeTemplate} disabled={busy || pages.some((page) => page.page_key === "home")}>Load Home template</button>
             <button type="button" className="admin-secondary-button" onClick={createPage}>New page</button>
-            <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save draft</button>
+            <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save Preview draft</button>
+            <button type="button" className="admin-secondary-button" onClick={restoreSavedDraft} disabled={busy || !savedSnapshot || !hasUnsavedChanges}>Restore last saved draft</button>
             <button type="button" className="admin-secondary-button" onClick={() => window.open(`/admin/cms/preview?key=${encodeURIComponent(pageKey)}`, "_blank", "noopener,noreferrer")} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
             {hasUnsavedChanges && <small role="status">Unsaved or invalid edits · correct the JSON and save before previewing</small>}
             <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !draftId || hasUnsavedChanges}>Publish</button>
@@ -311,8 +336,10 @@ export default function CMSDashboard({ onAdminLogout }) {
                 <h3>Section order</h3>
                 <p>Drag sections in the page preview to reorder them, or use the move buttons below.</p>
                 <ol className="cms-home-order-list">{[...content.sections].sort((a,b)=>(a.order||0)-(b.order||0)).map((section,index)=><li key={section.id} draggable onDragStart={()=>{dragSectionId.current=section.id;}} onDragOver={(e)=>e.preventDefault()} onDrop={()=>reorderSections(dragSectionId.current,section.id)} onDragEnd={()=>{dragSectionId.current=null;}}>
-                  <span>⠿</span><strong>{index+1}. {section.content?.heading || section.type}</strong><small>{section.visible===false?"Hidden":"Visible"}</small>
-                  <button type="button" disabled={index===0} onClick={()=>moveSection(section.id,-1)}>↑</button><button type="button" disabled={index===content.sections.length-1} onClick={()=>moveSection(section.id,1)}>↓</button>
+                  <span aria-hidden="true">⠿</span><button type="button" className="cms-home-section-select" aria-pressed={section.id===selectedSectionId} onClick={()=>{setSelectedSectionId(section.id);setStructuredJson(JSON.stringify(section.content||{},null,2));}}>{index+1}. {section.content?.heading || section.type}</button>
+                  <small>{section.visible===false?"Hidden":"Visible"}</small>
+                  <button type="button" aria-label={`${section.visible===false?"Show":"Hide"} ${section.content?.heading||section.type}`} onClick={()=>setContent((current)=>({...current,sections:current.sections.map((item)=>item.id===section.id?{...item,visible:item.visible===false}:item)}))}>{section.visible===false?"Show":"Hide"}</button>
+                  <button type="button" aria-label={`Move ${section.content?.heading||section.type} up`} disabled={index===0} onClick={()=>moveSection(section.id,-1)}>↑</button><button type="button" aria-label={`Move ${section.content?.heading||section.type} down`} disabled={index===content.sections.length-1} onClick={()=>moveSection(section.id,1)}>↓</button>
                 </li>)}</ol>
               </div>
               <div className="cms-home-design-subpanel">
@@ -320,14 +347,14 @@ export default function CMSDashboard({ onAdminLogout }) {
                 <div className="cms-home-style-grid">{content.sections.map((section)=>{
                   const style=homeDesign.sections?.[section.id]||{};
                   const label=section.content?.heading || section.type;
-                  return <div className="cms-home-style-card" key={section.id}>
-                    <strong>{label}</strong>
-                    <label><span>Background</span><input aria-label={label+" background colour"} type="color" value={style.backgroundColor||"#ffffff"} onChange={(e)=>updateHomeSectionDesign(section.id,"backgroundColor",e.target.value)} /></label>
-                    <label><span>Text</span><input aria-label={label+" text colour"} type="color" value={style.textColor||"#1f2937"} onChange={(e)=>updateHomeSectionDesign(section.id,"textColor",e.target.value)} /></label>
-                    <label><span>Accent</span><input aria-label={label+" accent colour"} type="color" value={style.accentColor||"#1e7ed8"} onChange={(e)=>updateHomeSectionDesign(section.id,"accentColor",e.target.value)} /></label>
-                    <label><span>Text alignment</span><select value={style.textAlign||"left"} onChange={(e)=>updateHomeSectionDesign(section.id,"textAlign",e.target.value)}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></label>
-                    <button type="button" className="admin-secondary-button" onClick={()=>resetHomeSectionDesign(section.id)}>Reset styling</button>
-                  </div>;
+                  return <details className="cms-home-style-card" key={section.id}>
+                    <summary><strong>{label}</strong><small>{section.visible===false?"Hidden section":"Section styling"}</small></summary>
+                    <div className="cms-home-style-controls">
+                      {[["backgroundColor","Background","#ffffff"],["textColor","Text","#1f2937"],["accentColor","Accent","#1e7ed8"]].map(([field,name,fallback])=><label key={field}><span>{name}</span><input aria-label={`${label} ${name.toLowerCase()} colour`} type="color" value={style[field]||fallback} onChange={(e)=>updateHomeSectionColor(section.id,field,e.target.value)} /><input aria-label={`${label} ${name.toLowerCase()} HEX`} className="cms-home-hex-input" type="text" value={style[field]||fallback} maxLength={7} pattern="^#[0-9a-fA-F]{6}$" onChange={(e)=>updateHomeSectionColor(section.id,field,e.target.value)} /></label>)}
+                      <label><span>Text alignment</span><select value={style.textAlign||"left"} onChange={(e)=>updateHomeSectionDesign(section.id,"textAlign",e.target.value)}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></label>
+                      <button type="button" className="admin-secondary-button" onClick={()=>resetHomeSectionDesign(section.id)}>Reset styling</button>
+                    </div>
+                  </details>;
                 })}</div>
               </div>
               {selectedSection && <div className="cms-home-design-subpanel">
@@ -336,7 +363,8 @@ export default function CMSDashboard({ onAdminLogout }) {
                   {selectedSection.type==="hero" ? <><option value="overlay-left">Full image · text left</option><option value="overlay-center">Full image · centred text</option><option value="overlay-right">Full image · text right</option><option value="overlay-bottom">Full image · text bottom-left</option></> : <><option value="split-right">Text left · image right</option><option value="split-left">Image left · text right</option><option value="balanced">Equal columns</option><option value="stacked">Text above · image below</option></>}
                 </select></label>}
                 {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <label>Image position<select value={selectedSection.content?.imagePosition||"center"} onChange={(e)=>updateSection("imagePosition",e.target.value)}><option value="center">Centre</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="50% 35%">50% · 35%</option></select></label>}
-                {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <label>Image height · {selectedSection.content?.imageHeight||420}px<input type="range" min="220" max="720" step="10" value={selectedSection.content?.imageHeight||420} onChange={(e)=>updateSection("imageHeight",Number(e.target.value))}/></label>}
+                {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <label>Image height · {selectedSection.content?.imageHeight||420}px<input type="range" min="220" max="720" step="10" value={selectedSection.content?.imageHeight||420} onChange={(e)=>updateSection("imageHeight",Number(e.target.value))}/></label>
+                <label>Image fit<select value={selectedSection.content?.imageFit||"cover"} onChange={(e)=>updateSection("imageFit",e.target.value)}><option value="contain">Contain · show full image</option><option value="cover">Cover · fill frame</option><option value="original">Original ratio</option></select></label>}
                 {["feature-grid","product-grid","brand-grid","benefits-grid"].includes(selectedSection.type) && <label>Grid columns<select value={homeDesign.sections?.[selectedSection.id]?.cardColumns || "auto"} onChange={(e)=>updateHomeSectionDesign(selectedSection.id,"cardColumns",e.target.value)}><option value="auto">Use responsive default</option><option value="2">2 columns</option><option value="3">3 columns</option><option value="4">4 columns</option></select></label>}
               </div>}
             </details>}
@@ -351,8 +379,8 @@ export default function CMSDashboard({ onAdminLogout }) {
               <label>Image alt text<input value={selectedSection.content?.imageAlt || ""} onChange={(event) => updateSection("imageAlt", event.target.value)} /></label>
               <label>Button text<input value={selectedSection.content?.buttonText || ""} onChange={(event) => updateSection("buttonText", event.target.value)} /></label>
               <label>Button destination<input value={selectedSection.content?.buttonUrl || ""} onChange={(event) => updateSection("buttonUrl", event.target.value)} placeholder="/products" /></label>
-              <label>Advanced section content (JSON)<textarea rows="12" spellCheck="false" value={structuredJson} onChange={(event) => setStructuredJson(event.target.value)} onBlur={() => { try { const parsed = JSON.parse(structuredJson); if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error(); setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, content: parsed } : item) })); setError(""); } catch { setError("Advanced section content must be valid JSON object data."); } }} /></label>
-              <div className="cms-section-actions"><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, -1)}>Move up</button><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, 1)}>Move down</button><button type="button" className="admin-secondary-button" onClick={() => { setContent((current) => ({...current, sections: current.sections.filter((item) => item.id !== selectedSection.id).map((item, i) => ({...item, order:i+1}))})); setSelectedSectionId(""); }}>Remove</button></div>
+              <details className="cms-advanced-section-json"><summary>Advanced section content (JSON)</summary><label>JSON content<textarea rows="12" spellCheck="false" value={structuredJson} onChange={(event) => setStructuredJson(event.target.value)} onBlur={() => { try { const parsed = JSON.parse(structuredJson); if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error(); setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, content: parsed } : item) })); setError(""); } catch { setError("Advanced section content must be valid JSON object data."); } }} /></label></details>
+              <div className="cms-section-actions"><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, -1)}>Move up</button><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, 1)}>Move down</button><button type="button" className="admin-secondary-button" onClick={() => { if (!window.confirm(`Remove “${selectedSection.content?.heading || selectedSection.type}” from this draft? Its content will be removed from the current draft. This cannot be undone unless you restore the last saved draft.`)) return; setContent((current) => ({...current, sections: current.sections.filter((item) => item.id !== selectedSection.id).map((item, i) => ({...item, order:i+1}))})); setSelectedSectionId(""); setStructuredJson("{}"); }}>Remove</button></div>
             </>}
           </aside>
         </div>
