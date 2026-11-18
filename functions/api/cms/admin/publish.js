@@ -37,8 +37,16 @@ export async function onRequestPost(context) {
       ? await env.DB.prepare(`SELECT setting_key AS id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first()
       : await env.DB.prepare(`SELECT id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first();
     if (!entity) return adminJson({ error: `CMS ${config.label} not found.` }, 404);
-    const target = await env.DB.prepare(`SELECT id, version_number, state, ${entityType === "setting" ? "value_json" : "NULL AS value_json"} FROM ${config.versions} WHERE id = ? AND ${config.foreignKey} = ? LIMIT 1`)
-      .bind(versionId, entity.id).first();
+    const valueColumn =
+      entityType === "setting" ? "value_json" : "NULL AS value_json";
+    const target = await env.DB.prepare(`
+      SELECT id, version_number, state, ${valueColumn}
+      FROM ${config.versions}
+      WHERE id = ? AND ${config.foreignKey} = ?
+      LIMIT 1
+    `)
+      .bind(versionId, entity.id)
+      .first();
     if (!target) return adminJson({ error: "The selected revision does not belong to this item." }, 404);
     if (target.state === "published" && entity.published_version_id === versionId) {
       return adminJson({ ok: true, alreadyPublished: true, version: target.version_number });
