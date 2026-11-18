@@ -28,7 +28,6 @@ test("only exact-model image gaps remain unassigned", () => {
   assert.deepEqual(missing, [
     "cattani-ac-400-q",
     "cattani-ac-600-q",
-    "melag-vacuclave-118",
   ]);
 });
 
@@ -63,6 +62,12 @@ test("Fussen imaging plate scanner is matched to the official F200 model and spe
   assert.ok(product.specifications.includes("Grayscale: 14 bit"));
   assert.ok(product.specifications.includes("Pixel size: 35 μm"));
   assert.ok(product.specifications.includes("Scan time: Under 20 seconds"));
+});
+
+test("MELAG Vacuclave 118 uses its verified local catalogue image", () => {
+  const product = products.find((item) => item.slug === "melag-vacuclave-118");
+  assert.ok(product);
+  assert.equal(product.img, "/catalog/melag/images/vacuclave-118-123.png");
 });
 
 test("MELAG Vacuclave 118 uses the manufacturer manual's 71 dB(A) noise value", () => {
