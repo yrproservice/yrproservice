@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { homeCmsTemplate } from "../data/homeCmsTemplate";
 import { products as catalogueProducts } from "../data/products";
 import { removeSectionFromContent, restoreSectionToContent } from "../utils/sectionRecovery";
@@ -125,10 +125,8 @@ export default function CMSDashboard({ onAdminLogout }) {
   const historyRef = React.useRef({ past: [], future: [], previous: JSON.stringify({ sections: [] }), suppressNext: false });
   const [, setHistoryRevision] = useState(0);
   const homeDesign = content.design || {};
-  const selectedSection = useMemo(
-    () => content.sections.find((section) => section.id === selectedSectionId) || null,
-    [content.sections, selectedSectionId]
-  );
+  const selectedSection =
+    content.sections.find((section) => section.id === selectedSectionId) || null;
   const hasUnappliedStructuredJson = Boolean(selectedSection) && (() => {
     try {
       const parsed = JSON.parse(structuredJson);
@@ -204,7 +202,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     setHistoryRevision((revision) => revision + 1);
   }
 
-  const loadPages = useCallback(async () => {
+  async function loadPages() {
     setError("");
     try {
       const response = await fetch("/api/cms/admin/pages", { headers: { Accept: "application/json" }, cache: "no-store" });
@@ -212,9 +210,9 @@ export default function CMSDashboard({ onAdminLogout }) {
       if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load CMS pages.");
       setPages(result.pages || []);
     } catch (err) { setError(err.message || "Unable to load CMS pages."); }
-  }, []);
+  }
 
-  useEffect(() => { loadPages(); }, [loadPages]);
+  useEffect(() => { loadPages(); }, []);
 
   async function openPage(page) {
     setBusy(true); setError(""); setNotice("");

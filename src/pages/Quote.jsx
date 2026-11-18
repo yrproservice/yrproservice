@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useCart } from "../components/CartContext";
 import { Link } from "../components/Layout";
 import { downloadRequestConfirmationPdf } from "../utils/requestConfirmationPdf";
@@ -13,10 +13,10 @@ export default function Quote({ navigate }) {
   const initial =
     new URLSearchParams(window.location.search).get("product") || "";
   const [product, setProduct] = useState(initial);
-  const selected = useMemo(() => {
-    const lines = items.map((item) => `${item.name} (Qty: ${item.quantity})`);
-    return product || lines.join("\n");
-  }, [items, product]);
+  const selectedLines = items.map(
+    (item) => `${item.name} (Qty: ${item.quantity})`,
+  );
+  const selected = product || selectedLines.join("\n");
   async function submit(e) {
     e.preventDefault();
     if (submitting) return;

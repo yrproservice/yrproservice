@@ -2,13 +2,7 @@ import { products as catalogue } from "../data/products";
 import { mergePublishedProduct } from "../data/productImages";
 import { isDentalChairProduct } from "../data/productWorkflow";
 
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const CartContext = createContext(null);
 
@@ -78,17 +72,14 @@ export function CartProvider({ children }) {
     setItems([]);
   }
 
-  const value = useMemo(
-    () => ({
-      items,
-      cartCount: items.reduce((sum, item) => sum + item.quantity, 0),
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      clearCart,
-    }),
-    [items],
-  );
+  const value = {
+    items,
+    cartCount: items.reduce((sum, item) => sum + item.quantity, 0),
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+  };
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 export function useCart() {

@@ -1,13 +1,7 @@
 import { products as catalogue } from "../data/products";
 import { mergePublishedProduct } from "../data/productImages";
 
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const ChairRequestContext = createContext(null);
 
@@ -56,18 +50,15 @@ export function ChairRequestProvider({ children }) {
     setItems([]);
   }
 
-  const value = useMemo(
-    () => ({
-      items,
-      count: items.reduce((sum, item) => sum + (item.quantity || 1), 0),
-      modelCount: items.length,
-      addChair,
-      removeChair,
-      updateChairQuantity,
-      clearChairs,
-    }),
-    [items],
-  );
+  const value = {
+    items,
+    count: items.reduce((sum, item) => sum + (item.quantity || 1), 0),
+    modelCount: items.length,
+    addChair,
+    removeChair,
+    updateChairQuantity,
+    clearChairs,
+  };
   return (
     <ChairRequestContext.Provider value={value}>
       {children}

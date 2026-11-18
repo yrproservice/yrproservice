@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const DEFAULT_DESIGN = {
   backgroundColor: "#ffffff",
@@ -41,10 +41,7 @@ export default function PageDesignScope({ pageKey, designOverride, children }) {
     return () => { active = false; };
   }, [pageKey, designOverride]);
 
-  const design = useMemo(
-    () => mergePageDesign(designOverride || publishedDesign),
-    [designOverride, publishedDesign]
-  );
+  const design = mergePageDesign(designOverride || publishedDesign);
   if (!pageKey || (!designOverride && !publishedDesign)) return children;
 
   const style = {

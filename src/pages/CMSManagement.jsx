@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { products as catalogue } from "../data/products";
 import ServicesManager from "./ServicesManager";
 import TeamManager from "./TeamManager";
@@ -16,16 +16,52 @@ async function api(url, options = {}) {
 const blankProduct = () => ({ slug:"", name:"", brand:"", brandLine:"", category:"Equipment", purchaseType:"cart", img:"", summary:"", description:"", highlights:[], specifications:[], docs:[], price:null, stockStatus:"pending", reviewStatus:"No customer reviews published yet." });
 
 export default function CMSManagement() {
-  const [tab,setTab]=useState("products"), [items,setItems]=useState([]), [selected,setSelected]=useState(null), [json,setJson]=useState("{}"), [history,setHistory]=useState([]), [media,setMedia]=useState([]), [storageReady,setStorageReady]=useState(false), [settings,setSettings]=useState([]), [settingKey,setSettingKey]=useState("site.navigation"), [settingJson,setSettingJson]=useState('{"items":[{"label":"Products","url":"/products"},{"label":"Services","url":"/services","type":"services"},{"label":"Team","url":"/team"},{"label":"HR Contact","url":"/contact"}]}'), [busy,setBusy]=useState(false), [notice,setNotice]=useState(""), [error,setError]=useState("");
-  const [editorSelection,setEditorSelection]=useState(0);
-  const [pages,setPages]=useState([]);
-  const [historyType,setHistoryType]=useState("page");
-  const [historyKey,setHistoryKey]=useState("");
-  const refreshProducts=useCallback(async()=>{const d=await api("/api/cms/admin/products");setItems(d.products||[]);},[]);
-  const refreshMedia=useCallback(async()=>{const d=await api("/api/cms/admin/media");setMedia(d.media||[]);setStorageReady(Boolean(d.storageReady));},[]);
-  const refreshSettings=useCallback(async()=>{const d=await api("/api/cms/admin/settings");setSettings(d.settings||[]);},[]);
-  useEffect(()=>{refreshProducts().catch(e=>setError(e.message));refreshMedia().catch(e=>setError(e.message));refreshSettings().catch(e=>setError(e.message));},[refreshProducts,refreshMedia,refreshSettings]);
-  useEffect(()=>{if(tab==="history")api("/api/cms/admin/pages").then(d=>setPages(d.pages||[])).catch(e=>setError(e.message));},[tab]);
+  const [tab, setTab] = useState("products");
+  const [items, setItems] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [json, setJson] = useState("{}");
+  const [history, setHistory] = useState([]);
+  const [media, setMedia] = useState([]);
+  const [storageReady, setStorageReady] = useState(false);
+  const [settings, setSettings] = useState([]);
+  const [settingKey, setSettingKey] = useState("site.navigation");
+  const [settingJson, setSettingJson] = useState('{"items":[{"label":"Products","url":"/products"},{"label":"Services","url":"/services","type":"services"},{"label":"Team","url":"/team"},{"label":"HR Contact","url":"/contact"}]}');
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
+  const [editorSelection, setEditorSelection] = useState(0);
+  const [pages, setPages] = useState([]);
+  const [historyType, setHistoryType] = useState("page");
+  const [historyKey, setHistoryKey] = useState("");
+
+  async function refreshProducts() {
+    const data = await api("/api/cms/admin/products");
+    setItems(data.products || []);
+  }
+
+  async function refreshMedia() {
+    const data = await api("/api/cms/admin/media");
+    setMedia(data.media || []);
+    setStorageReady(Boolean(data.storageReady));
+  }
+
+  async function refreshSettings() {
+    const data = await api("/api/cms/admin/settings");
+    setSettings(data.settings || []);
+  }
+
+  useEffect(() => {
+    refreshProducts().catch((loadError) => setError(loadError.message));
+    refreshMedia().catch((loadError) => setError(loadError.message));
+    refreshSettings().catch((loadError) => setError(loadError.message));
+  }, []);
+
+  useEffect(() => {
+    if (tab !== "history") return;
+    api("/api/cms/admin/pages")
+      .then((data) => setPages(data.pages || []))
+      .catch((loadError) => setError(loadError.message));
+  }, [tab]);
   function chooseProduct(row) {
     const raw=row ? JSON.parse(row.draft_product||row.published_product||"{}") : blankProduct();
     const base=catalogue.find((product)=>product.slug===raw.slug);

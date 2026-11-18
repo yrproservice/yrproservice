@@ -331,24 +331,25 @@ export default function Home({ navigate }) {
   const [publishedContent, setPublishedContent] = useState(null);
 
   useEffect(() => {
-    let active = true;
-    fetch("/api/cms/public/pages?key=home", {
-      headers: { Accept: "application/json" },
-      cache: "no-store"
-    })
-      .then(async (response) => {
-        if (!response.ok) return null;
+    async function loadPublishedHome() {
+      try {
+        const response = await fetch("/api/cms/public/pages?key=home", {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+
         const result = await response.json();
-        if (!result?.ok || !Array.isArray(result.page?.content?.sections) || result.page.content.sections.length === 0) return null;
-        return result.page.content;
-      })
-      .then((content) => {
-        if (active && content) setPublishedContent(content);
-      })
-      .catch(() => {
-        // Keep the verified static homepage available if CMS content is not published or unavailable.
-      });
-    return () => { active = false; };
+        const sections = result?.page?.content?.sections;
+        if (result?.ok && Array.isArray(sections) && sections.length > 0) {
+          setPublishedContent(result.page.content);
+        }
+      } catch {
+        // Keep the static homepage if published CMS content cannot be loaded.
+      }
+    }
+
+    loadPublishedHome();
   }, []);
 
   return publishedContent

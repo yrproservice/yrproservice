@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const TYPE_LABELS = {
   service: "Service Request",
@@ -37,7 +37,7 @@ export default function AdminDashboard({ onAuthenticated }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  const loadRequests = useCallback(async () => {
+  async function loadRequests() {
     setLoading(true);
     setError("");
     try {
@@ -71,23 +71,16 @@ export default function AdminDashboard({ onAuthenticated }) {
     } finally {
       setLoading(false);
     }
-  }, [type, status, search, onAuthenticated]);
+  }
 
   useEffect(() => {
     loadRequests();
-  }, [loadRequests]);
+  }, [type, status, search, onAuthenticated]);
 
-  const counts = useMemo(
-    () =>
-      STATUSES.reduce(
-        (result, key) => ({
-          ...result,
-          [key]: requests.filter((item) => item.status === key).length,
-        }),
-        {},
-      ),
-    [requests],
-  );
+  const counts = STATUSES.reduce((result, key) => ({
+    ...result,
+    [key]: requests.filter((item) => item.status === key).length,
+  }), {});
 
   async function saveStatus() {
     if (!selected || !STATUSES.includes(draftStatus) || saving) return;

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { CartProvider, useCart } from "./components/CartContext";
 import { ChairRequestProvider } from "./components/ChairRequestContext";
@@ -108,12 +108,12 @@ function Router() {
         : (pageTitles[path] ?? "Page Not Found | YR Proservice");
   }, [path]);
 
-  const navigate = useCallback((to) => {
+  function navigate(to) {
     window.history.pushState({}, "", to);
     // Keep route matching separate from query parameters (e.g. /service-request?service=...).
     setPath(window.location.pathname);
     window.scrollTo(0, 0);
-  }, []);
+  }
 
   function chooseClient() {
     sessionStorage.setItem("yrproservice-access-mode", "client");
@@ -122,14 +122,14 @@ function Router() {
   }
 
   const adminEntry = path === "/admin" && new URLSearchParams(window.location.search).get("entry") === "1";
-  const handleAdminAuthenticated = useCallback(() => {
+  function handleAdminAuthenticated() {
     sessionStorage.setItem("yrproservice-access-mode", "admin");
     setAccessMessage("");
     setAccessMode("admin");
     navigate("/");
-  }, [navigate]);
+  }
 
-  const handleAdminLogout = useCallback(async () => {
+  async function handleAdminLogout() {
     let logoutError = "";
     try {
       const response = await fetch("/api/admin/session", {
@@ -146,7 +146,7 @@ function Router() {
     setAccessMessage(logoutError || "You have logged out of Admin.");
     setAccessMode("choose");
     if (window.location.pathname !== "/") navigate("/");
-  }, [navigate]);
+  }
 
   const routes = {
     "/": <Home navigate={navigate} />,

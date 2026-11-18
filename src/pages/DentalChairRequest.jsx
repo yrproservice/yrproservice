@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useChairRequests } from "../components/ChairRequestContext";
 import { useCart } from "../components/CartContext";
 import { Link } from "../components/Layout";
@@ -19,10 +19,9 @@ export default function DentalChairRequest({ navigate }) {
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
   const [confirmationData, setConfirmationData] = useState(null);
-  const selectedProducts = useMemo(
-    () => items.map((item) => `${item.name} x${item.quantity || 1}`).join(", "),
-    [items],
-  );
+  const selectedProducts = items
+    .map((item) => `${item.name} x${item.quantity || 1}`)
+    .join(", ");
 
   async function handleSubmit(event) {
     event.preventDefault();

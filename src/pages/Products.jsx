@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { products } from "../data/products";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
@@ -21,12 +21,19 @@ export default function Products({ navigate }) {
       .catch(() => {});
     return () => { active = false; };
   }, []);
-  const catalogueProducts = useMemo(() => {
-    const overrides = new Map(cmsProducts.map((item) => [item.slug, item]));
-    const merged = products.filter((item) => !archivedSlugs.includes(item.slug)).map((item) => overrides.has(item.slug) ? mergePublishedProduct(item, overrides.get(item.slug)) : item);
-    const known = new Set(products.map((item) => item.slug));
-    return [...merged, ...cmsProducts.filter((item) => !known.has(item.slug)).map((item) => mergePublishedProduct(null, item))];
-  }, [cmsProducts, archivedSlugs]);
+  const overrides = new Map(cmsProducts.map((item) => [item.slug, item]));
+  const merged = products
+    .filter((item) => !archivedSlugs.includes(item.slug))
+    .map((item) => overrides.has(item.slug)
+      ? mergePublishedProduct(item, overrides.get(item.slug))
+      : item);
+  const known = new Set(products.map((item) => item.slug));
+  const catalogueProducts = [
+    ...merged,
+    ...cmsProducts
+      .filter((item) => !known.has(item.slug))
+      .map((item) => mergePublishedProduct(null, item)),
+  ];
 
   const [category, setCategory] = useState("All");
   const [brand, setBrand] = useState("All");
@@ -34,24 +41,19 @@ export default function Products({ navigate }) {
   const { addToCart } = useCart();
   const { addChair } = useChairRequests();
 
-  const categories = useMemo(
-    () => ["All", ...new Set(catalogueProducts.map((p) => p.category).filter(Boolean))],
-    [catalogueProducts],
-  );
-  const brands = useMemo(
-    () => ["All", ...new Set(catalogueProducts.map((p) => p.brand || "Other"))],
-    [catalogueProducts],
-  );
-  const filtered = useMemo(
-    () =>
-      catalogueProducts.filter(
-        (p) =>
-          (category === "All" || p.category === category) &&
-          (brand === "All" || (p.brand || "Other") === brand) &&
-          matchesProductSearch(p, search),
-      ),
-    [search, category, brand, catalogueProducts],
-  );
+  const categories = [
+    "All",
+    ...new Set(catalogueProducts.map((product) => product.category).filter(Boolean)),
+  ];
+  const brands = [
+    "All",
+    ...new Set(catalogueProducts.map((product) => product.brand || "Other")),
+  ];
+  const filtered = catalogueProducts.filter((product) => {
+    const matchesCategory = category === "All" || product.category === category;
+    const matchesBrand = brand === "All" || (product.brand || "Other") === brand;
+    return matchesCategory && matchesBrand && matchesProductSearch(product, search);
+  });
   const chairs = catalogueProducts.filter(isDentalChairProduct);
   const showcaseChair =
     chairs.find((p) => p.slug === "signo-t100") || chairs[0];
