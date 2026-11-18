@@ -42,19 +42,24 @@ function isBuiltInRoute(route) {
 
 async function validateDestinations(db, routes, allowedRoutes = new Set()) {
   if (routes.size > 100) return "This content contains too many distinct internal destinations.";
-  for (const route of routes) {
-    if (isBuiltInRoute(route) || allowedRoutes.has(route)) continue;
-    const page = await db.prepare(`
-      SELECT p.id
+  const customRoutes = [...routes].filter((route) => !isBuiltInRoute(route) && !allowedRoutes.has(route));
+  const publishedRoutes = new Set();
+  for (let index = 0; index < customRoutes.length; index += 40) {
+    const chunk = customRoutes.slice(index, index + 40);
+    const placeholders = chunk.map(() => "?").join(", ");
+    const result = await db.prepare(`
+      SELECT DISTINCT v.route
       FROM cms_pages p
       JOIN cms_page_versions v ON v.id = p.published_version_id
-      WHERE v.route = ? AND v.state = 'published'
-      LIMIT 1
-    `).bind(route).first();
-    if (!page) return 'The internal destination "' + route + '" is not a built-in route or a published CMS page.';
+      WHERE v.state = 'published' AND v.route IN (${placeholders})
+    `).bind(...chunk).all();
+    for (const row of result.results || []) publishedRoutes.add(row.route);
   }
+  const missing = customRoutes.find((route) => !publishedRoutes.has(route));
+  if (missing) return 'The internal destination "' + missing + '" is not a built-in route or a published CMS page.';
   return null;
 }
+
 
 export async function validatePageDestinations(db, content, ownRoute = "") {
   const allowedRoutes = new Set(ownRoute ? [ownRoute] : []);
