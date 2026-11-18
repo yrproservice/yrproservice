@@ -3957,6 +3957,7 @@ h6 {
 .cms-editor-fields input,.cms-editor-fields textarea,.cms-editor-fields select,.cms-editor-row input{width:100%;box-sizing:border-box;border:1px solid #cad6e1;border-radius:6px;padding:9px 10px;color:#1f2937;font:inherit;font-weight:400}
 .cms-editor-fields textarea{resize:vertical}
 .cms-editor-fields input[readonly]{background:#f5f7fa;color:#687280}
+.cms-editor-fields input:focus-visible,.cms-editor-fields textarea:focus-visible,.cms-editor-fields select:focus-visible,.cms-editor-row input:focus-visible,.cms-json-editor:focus-visible{outline:0;border-color:#1e7ed8;box-shadow:0 0 0 3px rgba(0,194,255,.2)}
 .cms-editor-section{display:grid;gap:10px}
 .cms-editor-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .cms-editor-section-heading h3{margin:0 0 3px;color:#0b4a88;font-size:15px}
