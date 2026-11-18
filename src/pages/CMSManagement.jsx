@@ -528,14 +528,198 @@ export default function CMSManagement() {
     <header className="cms-admin-header"><div><p className="eyebrow">YR Proservice · Content Management</p><h1>CMS Management Centre</h1><p>Each customer-facing page has its own workspace. Open a page to manage its content or visual appearance. All publishing actions here target the isolated Preview database.</p></div><div className="cms-manager-header-actions"><a className="admin-secondary-button" href="/admin/cms/design-review">Review all pages together</a><a className="admin-public-link" href="/admin/cms">← Visual Editor</a></div></header>
     {error&&<p className="admin-alert admin-alert-error" role="alert">{error}</p>}{notice&&<p className="admin-alert admin-alert-success" role="status">{notice}</p>}
     <nav className="cms-manager-tabs" aria-label="Page workspaces">{[["products","Products"],["services","Services"],["team","Team"],["cart","Product Cart"],["dental-chair-request","Dental Chair Request"],["quote","Quotation Request"],["service-request","Service Request"],["track-request","Track My Request"],["media","Media library"],["settings","Site settings"],["history","Revision history"]].map(([id,label])=><button key={id} className={tab===id?"active":""} onClick={()=>{setTab(id);setError("");setNotice("");}}>{label}</button>)}</nav>
-    {tab==="products"&&<><div className="cms-manager-grid"><section className="cms-manager-panel"><div className="cms-manager-heading"><div><h2>Product catalogue</h2><p>{items.length} CMS products · {catalogue.length} products in existing code catalogue</p></div><button className="admin-secondary-button" disabled={busy} onClick={importCatalogue}>Import missing catalogue products</button></div><div className="cms-product-list">{items.map(row=>{const p=JSON.parse(row.draft_product||row.published_product||"{}");return <button key={row.id} className={selected?.slug===row.product_slug?"active":""} onClick={()=>chooseProduct(row)}><strong>{p.name||row.product_slug}</strong><small>{p.brand||"Unbranded"} · {p.category||"Uncategorised"}</small><span>{row.draft_id?`Draft V${row.draft_version}`:row.published_version?`Published V${row.published_version}`:"Not published"}</span></button>;})}</div><button className="admin-secondary-button" onClick={()=>chooseProduct(null)}>＋ Add product</button></section>
-    <section className="cms-manager-panel"><h2>{selected?.slug?"Edit product":"Product editor"}</h2><p>Structured product JSON preserves all current catalogue fields, including cart-versus-chair purchase type, specifications, docs, image path, price and stock status.</p>
-      <div className="cms-product-image-picker">
-        <div className="cms-product-image-picker-heading"><div><h3>Product image</h3><p>Select an image already uploaded to the Preview Media Library. Your selection updates the product <code>img</code> field; save the draft below to keep it.</p></div><button type="button" className="admin-secondary-button" disabled={!selected?.slug} onClick={()=>setTab("media")}>Open Media Library</button></div>
-        {currentProductImage&&<div className="cms-current-product-image"><img src={currentProductImage} alt="Current product image preview"/><div><strong>Current image</strong><small>{currentProductImage}</small></div><button type="button" className="admin-secondary-button" disabled={!selected?.slug} onClick={clearProductImage}>Clear image</button></div>}
-        {media.length>0?<div className="cms-product-media-picker-grid">{media.map(m=><article key={m.id} className={currentProductImage===m.public_url?"selected":""}><img src={m.public_url} alt={m.alt_text||m.original_file_name}/><strong>{m.original_file_name}</strong><small>{Math.round(m.byte_size/1024)} KB · {m.mime_type}</small><button type="button" className="admin-secondary-button" disabled={!selected?.slug} onClick={()=>applyMediaImage(m.public_url)}>{currentProductImage===m.public_url?"Selected":"Use this image"}</button></article>)}</div>:<p className="admin-empty">No uploaded images are available yet. Upload an image in the Media library tab first.</p>}
-      </div>
-      <textarea className="cms-json-editor" spellCheck="false" value={json} onChange={e=>setJson(e.target.value)} rows={28}/><div className="cms-manager-actions"><button className="admin-primary-button" disabled={busy||!selected} onClick={saveProduct}>Save product draft</button><button className="admin-secondary-button" disabled={busy||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button><button className="admin-secondary-button" disabled={busy||!selected?.slug} onClick={archiveProduct}>Archive product</button>{selected?.slug&&<button className="admin-secondary-button" onClick={()=>loadHistory("product",selected.slug)}>View revisions</button>}</div>{history.length>0&&<RevisionList history={history} onRestore={id=>restoreRevision("product",selected.slug,id)}/>}</section></div><section className="cms-manager-panel cms-page-editor-design"><h2>Products page appearance</h2><p>These design controls are part of the Products management area. Product listing and product detail templates keep separate visual settings.</p><details className="cms-page-design-accordion" open><summary>Products listing · Visual Design Studio</summary><PageVisualDesignManager key="products" pageKey="products"/></details><details className="cms-page-design-accordion"><summary>Product details · Visual Design Studio</summary><PageVisualDesignManager key="product-detail" pageKey="product-detail"/></details></section></>}
+    {tab === "products" && (
+      <>
+        <div className="cms-manager-grid">
+          <section className="cms-manager-panel">
+            <div className="cms-manager-heading">
+              <div>
+                <h2>Product catalogue</h2>
+                <p>
+                  {items.length} CMS products · {catalogue.length} products in existing code catalogue
+                </p>
+              </div>
+              <button
+                className="admin-secondary-button"
+                disabled={busy}
+                onClick={importCatalogue}
+              >
+                Import missing catalogue products
+              </button>
+            </div>
+            <div className="cms-product-list">
+              {items.map((row) => {
+                const product = JSON.parse(
+                  row.draft_product || row.published_product || "{}"
+                );
+
+                return (
+                  <button
+                    key={row.id}
+                    className={selected?.slug === row.product_slug ? "active" : ""}
+                    onClick={() => chooseProduct(row)}
+                  >
+                    <strong>{product.name || row.product_slug}</strong>
+                    <small>
+                      {product.brand || "Unbranded"} · {product.category || "Uncategorised"}
+                    </small>
+                    <span>
+                      {row.draft_id
+                        ? `Draft V${row.draft_version}`
+                        : row.published_version
+                          ? `Published V${row.published_version}`
+                          : "Not published"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <button className="admin-secondary-button" onClick={() => chooseProduct(null)}>
+              ＋ Add product
+            </button>
+          </section>
+
+          <section className="cms-manager-panel">
+            <h2>{selected?.slug ? "Edit product" : "Product editor"}</h2>
+            <p>
+              Structured product JSON preserves all current catalogue fields,
+              including cart-versus-chair purchase type, specifications, docs,
+              image path, price and stock status.
+            </p>
+            <div className="cms-product-image-picker">
+              <div className="cms-product-image-picker-heading">
+                <div>
+                  <h3>Product image</h3>
+                  <p>
+                    Select an image already uploaded to the Preview Media Library.
+                    Your selection updates the product <code>img</code> field; save
+                    the draft below to keep it.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  disabled={!selected?.slug}
+                  onClick={() => setTab("media")}
+                >
+                  Open Media Library
+                </button>
+              </div>
+              {currentProductImage && (
+                <div className="cms-current-product-image">
+                  <img src={currentProductImage} alt="Current product image preview" />
+                  <div>
+                    <strong>Current image</strong>
+                    <small>{currentProductImage}</small>
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-secondary-button"
+                    disabled={!selected?.slug}
+                    onClick={clearProductImage}
+                  >
+                    Clear image
+                  </button>
+                </div>
+              )}
+              {media.length > 0 ? (
+                <div className="cms-product-media-picker-grid">
+                  {media.map((item) => (
+                    <article
+                      key={item.id}
+                      className={currentProductImage === item.public_url ? "selected" : ""}
+                    >
+                      <img
+                        src={item.public_url}
+                        alt={item.alt_text || item.original_file_name}
+                      />
+                      <strong>{item.original_file_name}</strong>
+                      <small>
+                        {Math.round(item.byte_size / 1024)} KB · {item.mime_type}
+                      </small>
+                      <button
+                        type="button"
+                        className="admin-secondary-button"
+                        disabled={!selected?.slug}
+                        onClick={() => applyMediaImage(item.public_url)}
+                      >
+                        {currentProductImage === item.public_url
+                          ? "Selected"
+                          : "Use this image"}
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="admin-empty">
+                  No uploaded images are available yet. Upload an image in the Media
+                  library tab first.
+                </p>
+              )}
+            </div>
+            <textarea
+              className="cms-json-editor"
+              spellCheck="false"
+              value={json}
+              onChange={(event) => setJson(event.target.value)}
+              rows={28}
+            />
+            <div className="cms-manager-actions">
+              <button
+                className="admin-primary-button"
+                disabled={busy || !selected}
+                onClick={saveProduct}
+              >
+                Save product draft
+              </button>
+              <button
+                className="admin-secondary-button"
+                disabled={busy || !selected?.draftId}
+                onClick={publishProduct}
+              >
+                Publish to Preview
+              </button>
+              <button
+                className="admin-secondary-button"
+                disabled={busy || !selected?.slug}
+                onClick={archiveProduct}
+              >
+                Archive product
+              </button>
+              {selected?.slug && (
+                <button
+                  className="admin-secondary-button"
+                  onClick={() => loadHistory("product", selected.slug)}
+                >
+                  View revisions
+                </button>
+              )}
+            </div>
+            {history.length > 0 && (
+              <RevisionList
+                history={history}
+                onRestore={(id) => restoreRevision("product", selected.slug, id)}
+              />
+            )}
+          </section>
+        </div>
+        <section className="cms-manager-panel cms-page-editor-design">
+          <h2>Products page appearance</h2>
+          <p>
+            These design controls are part of the Products management area.
+            Product listing and product detail templates keep separate visual settings.
+          </p>
+          <details className="cms-page-design-accordion" open>
+            <summary>Products listing · Visual Design Studio</summary>
+            <PageVisualDesignManager key="products" pageKey="products" />
+          </details>
+          <details className="cms-page-design-accordion">
+            <summary>Product details · Visual Design Studio</summary>
+            <PageVisualDesignManager key="product-detail" pageKey="product-detail" />
+          </details>
+        </section>
+      </>
+    )}
     {tab==="services"&&<section className="cms-manager-panel"><ServicesManager/><details className="cms-page-design-accordion"><summary>Service details page · Visual Design Studio</summary><PageVisualDesignManager key="service-detail" pageKey="service-detail"/></details></section>}
     {tab==="team"&&<section className="cms-manager-panel"><TeamManager/></section>}
     {tab === "media" && (
