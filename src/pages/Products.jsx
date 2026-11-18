@@ -3,7 +3,7 @@ import { products } from "../data/products";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
-import { mergePublishedProduct } from "../data/productImages";
+import { loadPublishedCatalogue } from "../data/publishedCatalogue";
 import ShowroomProductCard from "../components/ShowroomProductCard";
 import ProductMediaFrame from "../components/ProductMediaFrame";
 import { getProductRequestFlow, isDentalChairProduct, PRODUCT_REQUEST_FLOWS } from "../data/productWorkflow";
@@ -11,29 +11,14 @@ import { matchesProductSearch } from "../data/productSearch";
 
 export default function Products({ navigate }) {
   const [search, setSearch] = useState("");
-  const [cmsProducts, setCmsProducts] = useState([]);
-  const [archivedSlugs, setArchivedSlugs] = useState([]);
+  const [catalogueProducts, setCatalogueProducts] = useState(products);
   useEffect(() => {
     let active = true;
-    fetch("/api/cms/public/products", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => { if (active && data?.ok && Array.isArray(data.products)) { setCmsProducts(data.products); setArchivedSlugs(Array.isArray(data.archivedSlugs) ? data.archivedSlugs : []); } })
-      .catch(() => {});
+    loadPublishedCatalogue().then((catalogue) => {
+      if (active) setCatalogueProducts(catalogue);
+    });
     return () => { active = false; };
   }, []);
-  const overrides = new Map(cmsProducts.map((item) => [item.slug, item]));
-  const merged = products
-    .filter((item) => !archivedSlugs.includes(item.slug))
-    .map((item) => overrides.has(item.slug)
-      ? mergePublishedProduct(item, overrides.get(item.slug))
-      : item);
-  const known = new Set(products.map((item) => item.slug));
-  const catalogueProducts = [
-    ...merged,
-    ...cmsProducts
-      .filter((item) => !known.has(item.slug))
-      .map((item) => mergePublishedProduct(null, item)),
-  ];
 
   const [category, setCategory] = useState("All");
   const [brand, setBrand] = useState("All");

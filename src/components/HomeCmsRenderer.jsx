@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
-import { mergePublishedProduct } from "../data/productImages";
+import { loadPublishedCatalogue } from "../data/publishedCatalogue";
 import ProductMediaFrame from "./ProductMediaFrame";
 
 function CmsLink({ to, navigate, className, children }) {
@@ -316,19 +316,9 @@ export default function HomeCmsRenderer({ content, navigate }) {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/cms/public/products", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => {
-        if (!active || !data?.ok || !Array.isArray(data.products)) return;
-        const overrides = new Map(data.products.map((item) => [item.slug, item]));
-        const archived = new Set(Array.isArray(data.archivedSlugs) ? data.archivedSlugs : []);
-        const known = new Set(products.map((item) => item.slug));
-        setCatalogueProducts([
-          ...products.filter((item) => !archived.has(item.slug)).map((item) => overrides.has(item.slug) ? mergePublishedProduct(item, overrides.get(item.slug)) : item),
-          ...data.products.filter((item) => !known.has(item.slug)).map((item) => mergePublishedProduct(null, item)),
-        ]);
-      })
-      .catch(() => {});
+    loadPublishedCatalogue().then((catalogue) => {
+      if (active) setCatalogueProducts(catalogue);
+    });
     return () => { active = false; };
   }, []);
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
-import { mergePublishedProduct } from "../data/productImages";
+import { loadPublishedCatalogue } from "../data/publishedCatalogue";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
 import ProductMediaFrame from "../components/ProductMediaFrame";
@@ -86,50 +86,10 @@ export default function ProductDetails({ product, navigate, previewMode = false 
   const [catalogueProducts, setCatalogueProducts] = useState(products);
   useEffect(() => {
     let active = true;
-
-    async function loadCatalogue() {
-      try {
-        const response = await fetch("/api/cms/public/products", {
-          cache: "no-store",
-        });
-        if (!response.ok) return;
-
-        const data = await response.json();
-        if (!active || !data?.ok || !Array.isArray(data.products)) return;
-
-        const overrides = new Map(
-          data.products.map((item) => [item.slug, item])
-        );
-        const archived = new Set(
-          Array.isArray(data.archivedSlugs) ? data.archivedSlugs : []
-        );
-        const known = new Set(products.map((item) => item.slug));
-
-        const mergedCatalogue = [
-          ...products
-            .filter((item) => !archived.has(item.slug))
-            .map((item) =>
-              overrides.has(item.slug)
-                ? mergePublishedProduct(item, overrides.get(item.slug))
-                : item
-            ),
-          ...data.products
-            .filter((item) => !known.has(item.slug))
-            .map((item) => mergePublishedProduct(null, item)),
-        ];
-
-        if (active) {
-          setCatalogueProducts(mergedCatalogue);
-        }
-      } catch {
-        // Keep the built-in catalogue if CMS products cannot be loaded.
-      }
-    }
-
-    loadCatalogue();
-    return () => {
-      active = false;
-    };
+    loadPublishedCatalogue().then((catalogue) => {
+      if (active) setCatalogueProducts(catalogue);
+    });
+    return () => { active = false; };
   }, []);
   const requestFlow = getProductRequestFlow(product);
   const chair = requestFlow === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR;
