@@ -246,7 +246,11 @@ export default function TeamManager() {
 
       <details className="cms-services-group cms-team-design-panel" open>
         <summary>Visual design studio · typography, colours and layout</summary>
-        <p className="cms-team-guidance">These settings are saved with the Team draft only. Leave the colour controls unchanged to retain the original page styling. You can reset any section's styling independently.</p>
+        <p className="cms-team-guidance">
+          These settings are saved with the Team draft only. Leave the colour
+          controls unchanged to retain the original page styling. You can reset
+          any section's styling independently.
+        </p>
         <div className="cms-team-design-subpanel">
           <h3>Typography</h3>
           <div className="cms-services-fields">
@@ -336,9 +340,39 @@ export default function TeamManager() {
               const style = design.sections?.[key] || {};
               return <div className="cms-team-style-card" key={key}>
                 <strong>{SECTION_LABELS[key] || key}</strong>
-                <label><span>Background</span><input aria-label={`${SECTION_LABELS[key]} background colour`} type="color" value={style.backgroundColor || "#ffffff"} onChange={(e) => updateSectionDesign(key, "backgroundColor", e.target.value)} /></label>
-                <label><span>Text</span><input aria-label={`${SECTION_LABELS[key]} text colour`} type="color" value={style.textColor || "#1f2937"} onChange={(e) => updateSectionDesign(key, "textColor", e.target.value)} /></label>
-                <label><span>Accent</span><input aria-label={`${SECTION_LABELS[key]} accent colour`} type="color" value={style.accentColor || "#1e7ed8"} onChange={(e) => updateSectionDesign(key, "accentColor", e.target.value)} /></label>
+                <label>
+                  <span>Background</span>
+                  <input
+                    aria-label={`${SECTION_LABELS[key]} background colour`}
+                    type="color"
+                    value={style.backgroundColor || "#ffffff"}
+                    onChange={(event) =>
+                      updateSectionDesign(key, "backgroundColor", event.target.value)
+                    }
+                  />
+                </label>
+                <label>
+                  <span>Text</span>
+                  <input
+                    aria-label={`${SECTION_LABELS[key]} text colour`}
+                    type="color"
+                    value={style.textColor || "#1f2937"}
+                    onChange={(event) =>
+                      updateSectionDesign(key, "textColor", event.target.value)
+                    }
+                  />
+                </label>
+                <label>
+                  <span>Accent</span>
+                  <input
+                    aria-label={`${SECTION_LABELS[key]} accent colour`}
+                    type="color"
+                    value={style.accentColor || "#1e7ed8"}
+                    onChange={(event) =>
+                      updateSectionDesign(key, "accentColor", event.target.value)
+                    }
+                  />
+                </label>
                 <label>
                   <span>Text alignment</span>
                   <select
@@ -352,7 +386,29 @@ export default function TeamManager() {
                     <option value="right">Right</option>
                   </select>
                 </label>
-                <button type="button" className="admin-secondary-button" onClick={() => setContent((current) => ({ ...current, sections: current.sections.map((section) => section.type !== "team-page" ? section : ({ ...section, design: { ...(section.design || {}), sections: { ...(section.design?.sections || {}), [key]: {} } } })) }))}>Reset section styling</button>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  onClick={() => setContent((current) => ({
+                    ...current,
+                    sections: current.sections.map((section) =>
+                      section.type !== "team-page"
+                        ? section
+                        : {
+                            ...section,
+                            design: {
+                              ...(section.design || {}),
+                              sections: {
+                                ...(section.design?.sections || {}),
+                                [key]: {},
+                              },
+                            },
+                          }
+                    ),
+                  }))}
+                >
+                  Reset section styling
+                </button>
               </div>;
             })}
           </div>
@@ -465,7 +521,11 @@ export default function TeamManager() {
 
       <details className="cms-services-group">
         <summary>5. People behind the service · {data.people.items.length} team functions</summary>
-        <p className="cms-team-guidance">These are the existing role/function cards, not named employee profiles. No staff names or identities have been added. Keep the current approved imagery unless you deliberately select another image.</p>
+        <p className="cms-team-guidance">
+          These are the existing role/function cards, not named employee profiles.
+          No staff names or identities have been added. Keep the current approved
+          imagery unless you deliberately select another image.
+        </p>
         <div className="cms-services-fields">
           <Field label="Eyebrow" value={data.people.eyebrow} onChange={(v) => update("people", "eyebrow", v)} />
           <Field label="Heading" value={data.people.title} onChange={(v) => update("people", "title", v)} />
