@@ -46,7 +46,26 @@ export async function onRequestGet(context) {
     bindings.push(pattern, pattern, pattern, pattern);
   }
 
-  const sql = `SELECT id, reference, request_type, status, customer_name, company, phone, email, service_slug, preferred_timing, message, details_json, created_at FROM requests ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY created_at DESC LIMIT 200`;
+  const sql = `
+    SELECT
+      id,
+      reference,
+      request_type,
+      status,
+      customer_name,
+      company,
+      phone,
+      email,
+      service_slug,
+      preferred_timing,
+      message,
+      details_json,
+      created_at
+    FROM requests
+    ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
+    ORDER BY created_at DESC
+    LIMIT 200
+  `;
   try {
     const result = await env.DB.prepare(sql)
       .bind(...bindings)
