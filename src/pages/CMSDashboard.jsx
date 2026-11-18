@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { homeCmsTemplate } from "../data/homeCmsTemplate";
 import { products as catalogueProducts } from "../data/products";
+import { removeSectionFromContent, restoreSectionToContent } from "../utils/sectionRecovery";
 
 const SECTION_TYPES = [
   { value: "hero", label: "Hero section" },
@@ -265,13 +266,11 @@ export default function CMSDashboard({ onAdminLogout }) {
 
   function removeSectionToRecoveryBin() {
     if (!selectedSection || !pageKey) return;
-    const originalIndex = content.sections.findIndex((section) => section.id === selectedSection.id);
-    if (originalIndex < 0) return;
-    const entry = { id: crypto.randomUUID(), pageKey, section: JSON.parse(JSON.stringify(selectedSection)), originalIndex };
-    setRemovedSections((current) => [...current.filter((item) => !(item.pageKey === pageKey && item.section.id === selectedSection.id)), entry]);
-    setContent((current) => ({ ...current, sections: current.sections.filter((item) => item.id !== selectedSection.id).map((item, index) => ({ ...item, order: index + 1 })) }));
-    const remaining = content.sections.filter((item) => item.id !== selectedSection.id);
-    const nextSelected = remaining[Math.min(originalIndex, remaining.length - 1)] || null;
+    const result = removeSectionFromContent(content, selectedSection.id, crypto.randomUUID(), pageKey);
+    if (!result.entry) return;
+    setRemovedSections((current) => [...current.filter((item) => !(item.pageKey === pageKey && item.section.id === selectedSection.id)), result.entry]);
+    setContent(result.content);
+    const nextSelected = result.content.sections.find((section) => section.id === result.nextSelectedId) || null;
     setSelectedSectionId(nextSelected?.id || "");
     setStructuredJson(JSON.stringify(nextSelected?.content || {}, null, 2));
     setNotice("Section moved to the recovery bin. You can restore it or use Undo.");
@@ -280,12 +279,7 @@ export default function CMSDashboard({ onAdminLogout }) {
 
   function restoreRemovedSection(entry) {
     if (!entry || entry.pageKey !== pageKey || content.sections.some((section) => section.id === entry.section.id)) return;
-    setContent((current) => {
-      if (current.sections.some((section) => section.id === entry.section.id)) return current;
-      const sections = [...current.sections];
-      sections.splice(Math.max(0, Math.min(entry.originalIndex, sections.length)), 0, JSON.parse(JSON.stringify(entry.section)));
-      return { ...current, sections: sections.map((section, index) => ({ ...section, order: index + 1 })) };
-    });
+    setContent((current) => restoreSectionToContent(current, entry, pageKey));
     setSelectedSectionId(entry.section.id);
     setStructuredJson(JSON.stringify(entry.section.content || {}, null, 2));
     setNotice("Section restored to its original position. Save the Preview draft to keep this change.");
