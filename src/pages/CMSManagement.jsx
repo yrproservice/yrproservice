@@ -8,12 +8,45 @@ import { catalogMedia } from "../data/catalogMedia";
 import { mergePublishedProduct } from "../data/productImages";
 
 async function api(url, options = {}) {
-  const response = await fetch(url, { ...options, headers: { Accept: "application/json", ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }), ...(options.headers || {}) }, cache: "no-store" });
+  const headers = {
+    Accept: "application/json",
+    ...(options.body instanceof FormData
+      ? {}
+      : { "Content-Type": "application/json" }),
+    ...(options.headers || {}),
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+    cache: "no-store",
+  });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok || data.ok === false) throw new Error(data.error || `Request failed (${response.status})`);
+
+  if (!response.ok || data.ok === false) {
+    throw new Error(data.error || `Request failed (${response.status})`);
+  }
+
   return data;
 }
-const blankProduct = () => ({ slug:"", name:"", brand:"", brandLine:"", category:"Equipment", purchaseType:"cart", img:"", summary:"", description:"", highlights:[], specifications:[], docs:[], price:null, stockStatus:"pending", reviewStatus:"No customer reviews published yet." });
+
+const blankProduct = () => ({
+  slug: "",
+  name: "",
+  brand: "",
+  brandLine: "",
+  category: "Equipment",
+  purchaseType: "cart",
+  img: "",
+  summary: "",
+  description: "",
+  highlights: [],
+  specifications: [],
+  docs: [],
+  price: null,
+  stockStatus: "pending",
+  reviewStatus: "No customer reviews published yet.",
+});
 
 export default function CMSManagement() {
   const [tab, setTab] = useState("products");
@@ -63,37 +96,187 @@ export default function CMSManagement() {
       .catch((loadError) => setError(loadError.message));
   }, [tab]);
   function chooseProduct(row) {
-    const raw=row ? JSON.parse(row.draft_product||row.published_product||"{}") : blankProduct();
-    const base=catalogue.find((product)=>product.slug===raw.slug);
-    const data=row&&base?mergePublishedProduct(base,raw):raw;
-    setSelected({slug:data.slug||"", draftId:row?.draft_id||"", version:row?.draft_version||null, isNew:!row});setJson(JSON.stringify(data,null,2));setHistory([]);setError("");setNotice("");setEditorSelection((value)=>value+1);
+    const rawProduct = row
+      ? JSON.parse(row.draft_product || row.published_product || "{}")
+      : blankProduct();
+    const catalogueProduct = catalogue.find(
+      (product) => product.slug === rawProduct.slug
+    );
+    const product =
+      row && catalogueProduct
+        ? mergePublishedProduct(catalogueProduct, rawProduct)
+        : rawProduct;
+
+    setSelected({
+      slug: product.slug || "",
+      draftId: row?.draft_id || "",
+      version: row?.draft_version || null,
+      isNew: !row,
+    });
+    setJson(JSON.stringify(product, null, 2));
+    setHistory([]);
+    setError("");
+    setNotice("");
+    setEditorSelection((value) => value + 1);
   }
   async function saveProduct() {
-    let product;try{product=JSON.parse(json);}catch{setError("Product data must be valid JSON.");return;}
-    if(!product.slug||!product.name){setError("Product slug and name are required.");return;}
-    setBusy(true);setError("");try{const d=await api("/api/cms/admin/products",{method:"POST",body:JSON.stringify(product)});if(selected?.isNew)setEditorSelection((value)=>value+1);setSelected({slug:product.slug,draftId:d.draftId,version:d.version,isNew:false});setNotice(`Product draft V${d.version} saved.`);await refreshProducts();}catch(e){setError(e.message);}finally{setBusy(false);}
+    let product;
+
+    try {
+      product = JSON.parse(json);
+    } catch {
+      setError("Product data must be valid JSON.");
+      return;
+    }
+
+    if (!product.slug || !product.name) {
+      setError("Product slug and name are required.");
+      return;
+    }
+
+    setBusy(true);
+    setError("");
+
+    try {
+      const data = await api("/api/cms/admin/products", {
+        method: "POST",
+        body: JSON.stringify(product),
+      });
+
+      if (selected?.isNew) {
+        setEditorSelection((value) => value + 1);
+      }
+
+      setSelected({
+        slug: product.slug,
+        draftId: data.draftId,
+        version: data.version,
+        isNew: false,
+      });
+      setNotice(`Product draft V${data.version} saved.`);
+      await refreshProducts();
+    } catch (saveError) {
+      setError(saveError.message);
+    } finally {
+      setBusy(false);
+    }
   }
   async function archiveProduct() {
-    if(!selected?.slug)return;
-    let product;try{product=JSON.parse(json);}catch{setError("Product data must be valid JSON.");return;}
-    if(!window.confirm("Archive this product? It will disappear from the public catalogue after its archive draft is published."))return;
-    product.isArchived=true;const next=JSON.stringify(product,null,2);setJson(next);setBusy(true);setError("");
-    try{const d=await api("/api/cms/admin/products",{method:"POST",body:JSON.stringify(product)});setSelected({slug:product.slug,draftId:d.draftId,version:d.version,isNew:false});setNotice("Archive draft saved. The public catalogue is unchanged until you publish to Preview.");await refreshProducts();}
-    catch(e){setError(e.message);}finally{setBusy(false);}
+    if (!selected?.slug) return;
+
+    let product;
+    try {
+      product = JSON.parse(json);
+    } catch {
+      setError("Product data must be valid JSON.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Archive this product? It will disappear from the public catalogue after its archive draft is published."
+    );
+    if (!confirmed) return;
+
+    product.isArchived = true;
+    setJson(JSON.stringify(product, null, 2));
+    setBusy(true);
+    setError("");
+
+    try {
+      const data = await api("/api/cms/admin/products", {
+        method: "POST",
+        body: JSON.stringify(product),
+      });
+
+      setSelected({
+        slug: product.slug,
+        draftId: data.draftId,
+        version: data.version,
+        isNew: false,
+      });
+      setNotice(
+        "Archive draft saved. The public catalogue is unchanged until you publish to Preview."
+      );
+      await refreshProducts();
+    } catch (saveError) {
+      setError(saveError.message);
+    } finally {
+      setBusy(false);
+    }
   }
   async function publishProduct() {
-    if(!selected?.draftId)return;setBusy(true);setError("");try{const d=await api("/api/cms/admin/publish",{method:"POST",body:JSON.stringify({entityType:"product",entityKey:selected.slug,versionId:selected.draftId})});setNotice(`Product revision V${d.version} published to this Preview environment.`);setSelected(null);await refreshProducts();}catch(e){setError(e.message);}finally{setBusy(false);}
+    if (!selected?.draftId) return;
+
+    setBusy(true);
+    setError("");
+
+    try {
+      const data = await api("/api/cms/admin/publish", {
+        method: "POST",
+        body: JSON.stringify({
+          entityType: "product",
+          entityKey: selected.slug,
+          versionId: selected.draftId,
+        }),
+      });
+
+      setNotice(
+        `Product revision V${data.version} published to this Preview environment.`
+      );
+      setSelected(null);
+      await refreshProducts();
+    } catch (publishError) {
+      setError(publishError.message);
+    } finally {
+      setBusy(false);
+    }
   }
   async function importCatalogue() {
-    const existing=new Set(items.map(x=>x.product_slug));const missing=catalogue.filter(p=>!existing.has(p.slug));
-    if(!missing.length){setNotice("All existing catalogue products are already represented in CMS.");return;}
-    setBusy(true);setError("");let count=0;
-    try{for(const p of missing){await api("/api/cms/admin/products",{method:"POST",body:JSON.stringify(p)});count++;}setNotice(`Imported ${count} catalogue products as unpublished drafts. Existing public catalogue remains unchanged.`);await refreshProducts();}
-    catch(e){setError(`Imported ${count} products before stopping: ${e.message}`);await refreshProducts();}
-    finally{setBusy(false);}
+    const existingSlugs = new Set(items.map((item) => item.product_slug));
+    const missingProducts = catalogue.filter(
+      (product) => !existingSlugs.has(product.slug)
+    );
+
+    if (missingProducts.length === 0) {
+      setNotice("All existing catalogue products are already represented in CMS.");
+      return;
+    }
+
+    setBusy(true);
+    setError("");
+    let importedCount = 0;
+
+    try {
+      for (const product of missingProducts) {
+        await api("/api/cms/admin/products", {
+          method: "POST",
+          body: JSON.stringify(product),
+        });
+        importedCount += 1;
+      }
+
+      setNotice(
+        `Imported ${importedCount} catalogue products as unpublished drafts. Existing public catalogue remains unchanged.`
+      );
+      await refreshProducts();
+    } catch (importError) {
+      setError(
+        `Imported ${importedCount} products before stopping: ${importError.message}`
+      );
+      await refreshProducts();
+    } finally {
+      setBusy(false);
+    }
   }
-  async function loadHistory(type,key) {
-    try{const d=await api(`/api/cms/admin/history?entityType=${type}&entityKey=${encodeURIComponent(key)}`);setHistory(d.history||[]);}catch(e){setError(e.message);}
+  async function loadHistory(type, key) {
+    try {
+      const data = await api(
+        `/api/cms/admin/history?entityType=${type}&entityKey=${encodeURIComponent(key)}`
+      );
+      setHistory(data.history || []);
+    } catch (loadError) {
+      setError(loadError.message);
+    }
   }
   async function restoreRevision(type,key,id) {
     if(!window.confirm("Restore this revision as a new draft? The current published version will remain live."))return;
