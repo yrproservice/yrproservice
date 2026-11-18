@@ -42,14 +42,14 @@ export async function onRequestGet(context) {
   if (!env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
   try {
     const result = await env.DB.prepare(`
-      SELECT p.id, p.page_key, COALESCE(d.title, p.title) AS title,
-        COALESCE(d.route, p.route) AS route, p.published_version_id, p.updated_at,
+      SELECT p.id, p.page_key, COALESCE(d.title, pv.title, p.title) AS title,
+        COALESCE(d.route, pv.route, p.route) AS route, p.published_version_id, p.updated_at,
         d.id AS draft_id, d.version_number AS draft_version, d.content_json AS draft_content,
         pv.version_number AS published_version
       FROM cms_pages p
       LEFT JOIN cms_page_versions d ON d.page_id = p.id AND d.state = 'draft'
       LEFT JOIN cms_page_versions pv ON pv.id = p.published_version_id
-      ORDER BY COALESCE(d.title, p.title) COLLATE NOCASE
+      ORDER BY COALESCE(d.title, pv.title, p.title) COLLATE NOCASE
     `).all();
     return adminJson({ ok: true, pages: result.results || [] });
   } catch (error) {

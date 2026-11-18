@@ -54,6 +54,17 @@ export async function onRequestDelete(context) {
         "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'delete_draft', ?, ?, ?)"
       ).bind(crypto.randomUUID(), actor, type, entity.id, JSON.stringify({ version: draft.version_number, versionId }))
     ];
+    if (type === "page" && entity.published_version_id) {
+      const publishedPage = await env.DB.prepare(
+        "SELECT title, route FROM cms_page_versions WHERE id = ? AND state = 'published'"
+      ).bind(entity.published_version_id).first();
+      if (publishedPage) {
+        statements.push(
+          env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ?")
+            .bind(publishedPage.title, publishedPage.route, new Date().toISOString(), entity.id)
+        );
+      }
+    }
     await env.DB.batch(statements);
 
     return adminJson({ ok: true, entityType: type, entityKey: key, deletedVersion: draft.version_number });
