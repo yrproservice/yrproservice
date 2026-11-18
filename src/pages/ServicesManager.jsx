@@ -301,10 +301,23 @@ export default function ServicesManager() {
           <h3>Section arrangement</h3>
           <p className="cms-team-guidance">Drag a section to reorder it, or use the arrows. The five existing sections are retained.</p>
           <ol className="cms-team-order-list">
-            {sectionOrder.map((key, index) => <li key={key} draggable onDragStart={() => { dragIndex.current = index; }} onDragOver={(e) => e.preventDefault()} onDrop={() => handleSectionDrop(index)} onDragEnd={() => { dragIndex.current = null; }}>
+            {sectionOrder.map((key, index) => (
+              <li
+                key={key}
+                draggable
+                onDragStart={() => {
+                  dragIndex.current = index;
+                }}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => handleSectionDrop(index)}
+                onDragEnd={() => {
+                  dragIndex.current = null;
+                }}
+              >
               <span className="cms-team-drag-handle" aria-hidden="true">⠿</span><strong>{index + 1}. {{ hero: "Hero banner", intro: "Introduction", listing: "Services list", process: "How we work", cta: "Call to action" }[key] || key}</strong>
               <span className="cms-team-order-actions"><button type="button" aria-label={`Move ${key} up`} disabled={index === 0} onClick={() => moveSection(index, index - 1)}>↑</button><button type="button" aria-label={`Move ${key} down`} disabled={index === sectionOrder.length - 1} onClick={() => moveSection(index, index + 1)}>↓</button></span>
-            </li>)}
+              </li>
+            ))}
           </ol>
         </div>
         <div className="cms-team-design-subpanel">
@@ -318,7 +331,19 @@ export default function ServicesManager() {
                 <label><span>Background</span><input aria-label={`${label} background colour`} type="color" value={style.backgroundColor || "#ffffff"} onChange={(e) => updateSectionDesign(key, "backgroundColor", e.target.value)} /></label>
                 <label><span>Text</span><input aria-label={`${label} text colour`} type="color" value={style.textColor || "#1f2937"} onChange={(e) => updateSectionDesign(key, "textColor", e.target.value)} /></label>
                 <label><span>Accent</span><input aria-label={`${label} accent colour`} type="color" value={style.accentColor || "#1e7ed8"} onChange={(e) => updateSectionDesign(key, "accentColor", e.target.value)} /></label>
-                <label><span>Text alignment</span><select value={style.textAlign || "left"} onChange={(e) => updateSectionDesign(key, "textAlign", e.target.value)}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></label>
+                <label>
+                  <span>Text alignment</span>
+                  <select
+                    value={style.textAlign || "left"}
+                    onChange={(event) =>
+                      updateSectionDesign(key, "textAlign", event.target.value)
+                    }
+                  >
+                    <option value="left">Left</option>
+                    <option value="center">Centre</option>
+                    <option value="right">Right</option>
+                  </select>
+                </label>
                 <button type="button" className="admin-secondary-button" onClick={() => setContent((current) => ({ ...current, design: { ...(current.design || {}), sections: { ...(current.design?.sections || {}), [key]: {} } } }))}>Reset section styling</button>
               </div>;
             })}
