@@ -214,7 +214,20 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
     case "brand-grid":
       return <section className="bp-brands home-cms-section" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"}><div className="container">
         <div className="bp-section-head"><div><p className="bp-eyebrow">{c.eyebrow}</p><h2>{c.heading}</h2></div><p>{c.description}</p></div>
-        <div className="yr-brand-grid">{items.map((file) => <div className="bp-brand-card" key={file}><img src={`/brand logo/fitted/${String(file).replace(/\.[^.]+$/, ".png")}`} alt={String(file).replace(/\.[^.]+$/, "") + " dental equipment brand"} /></div>)}</div>
+        <div className="yr-brand-grid">
+          {items.map((file) => {
+            const brandName = String(file).replace(/\\.[^.]+$/, "");
+
+            return (
+              <div className="bp-brand-card" key={file}>
+                <img
+                  src={`/brand logo/fitted/${brandName}.png`}
+                  alt={brandName + " dental equipment brand"}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div></section>;
     case "services-banner":
       return (
