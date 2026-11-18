@@ -109,34 +109,62 @@ export function SiteHeader({ path, navigate, isAdmin = false, onAdminLogout }) {
   const [serviceItems, setServiceItems] = useState(fallbackServices);
   const [navigationSettings, setNavigationSettings] = useState(null);
   useEffect(() => {
+    let active = true;
+
     async function loadNavigation() {
       try {
-        const response = await fetch("/api/cms/public/settings?key=site.navigation", { cache: "no-store" });
+        const response = await fetch(
+          "/api/cms/public/settings?key=site.navigation",
+          { cache: "no-store" }
+        );
         if (!response.ok) return;
+
         const result = await response.json();
-        if (result?.ok && result.setting?.value && typeof result.setting.value === "object") {
+        if (
+          active &&
+          result?.ok &&
+          result.setting?.value &&
+          typeof result.setting.value === "object"
+        ) {
           setNavigationSettings(result.setting.value);
         }
       } catch {
         // Keep the default navigation if CMS settings cannot be loaded.
       }
     }
+
     loadNavigation();
+    return () => {
+      active = false;
+    };
   }, []);
   useEffect(() => {
+    let active = true;
+
     async function loadServices() {
       try {
-        const response = await fetch("/api/cms/public/pages?key=services", { cache: "no-store" });
+        const response = await fetch(
+          "/api/cms/public/pages?key=services",
+          { cache: "no-store" }
+        );
         if (!response.ok) return;
+
         const result = await response.json();
-        if (!result?.ok) return;
+        if (!active || !result?.ok) return;
+
         const page = getServicesCmsContent(result.page?.content);
-        if (page?.listing?.items?.length) setServiceItems(page.listing.items);
+        if (page?.listing?.items?.length) {
+          setServiceItems(page.listing.items);
+        }
       } catch {
         // Keep the built-in service links if CMS content cannot be loaded.
       }
     }
+
     loadServices();
+    return () => {
+      active = false;
+    };
   }, []);
   const closeMobile = () => setMobileOpen(false);
   const defaultNavigation = [
