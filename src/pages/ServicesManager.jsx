@@ -237,7 +237,11 @@ export default function ServicesManager() {
 
       <details className="cms-services-group cms-services-design-panel" open>
         <summary>Visual design studio · typography, colours and layout</summary>
-        <p className="cms-team-guidance">These settings are saved with the Services draft only. The original Services content and five sections remain intact. Leave styling controls unchanged to preserve the current appearance.</p>
+        <p className="cms-team-guidance">
+          These settings are saved with the Services draft only. The original
+          Services content and five sections remain intact. Leave styling
+          controls unchanged to preserve the current appearance.
+        </p>
         <div className="cms-team-design-subpanel">
           <h3>Typography</h3>
           <div className="cms-services-fields">
@@ -314,7 +318,10 @@ export default function ServicesManager() {
                   dragIndex.current = null;
                 }}
               >
-              <span className="cms-team-drag-handle" aria-hidden="true">⠿</span><strong>{index + 1}. {{ hero: "Hero banner", intro: "Introduction", listing: "Services list", process: "How we work", cta: "Call to action" }[key] || key}</strong>
+                <span className="cms-team-drag-handle" aria-hidden="true">⠿</span>
+                <strong>
+                  {index + 1}. {{ hero: "Hero banner", intro: "Introduction", listing: "Services list", process: "How we work", cta: "Call to action" }[key] || key}
+                </strong>
               <span className="cms-team-order-actions"><button type="button" aria-label={`Move ${key} up`} disabled={index === 0} onClick={() => moveSection(index, index - 1)}>↑</button><button type="button" aria-label={`Move ${key} down`} disabled={index === sectionOrder.length - 1} onClick={() => moveSection(index, index + 1)}>↓</button></span>
               </li>
             ))}
@@ -328,9 +335,39 @@ export default function ServicesManager() {
               const label = ({ hero: "Hero banner", intro: "Introduction", listing: "Services list", process: "How we work", cta: "Call to action" })[key] || key;
               return <div className="cms-team-style-card" key={key}>
                 <strong>{label}</strong>
-                <label><span>Background</span><input aria-label={`${label} background colour`} type="color" value={style.backgroundColor || "#ffffff"} onChange={(e) => updateSectionDesign(key, "backgroundColor", e.target.value)} /></label>
-                <label><span>Text</span><input aria-label={`${label} text colour`} type="color" value={style.textColor || "#1f2937"} onChange={(e) => updateSectionDesign(key, "textColor", e.target.value)} /></label>
-                <label><span>Accent</span><input aria-label={`${label} accent colour`} type="color" value={style.accentColor || "#1e7ed8"} onChange={(e) => updateSectionDesign(key, "accentColor", e.target.value)} /></label>
+                <label>
+                  <span>Background</span>
+                  <input
+                    aria-label={`${label} background colour`}
+                    type="color"
+                    value={style.backgroundColor || "#ffffff"}
+                    onChange={(event) =>
+                      updateSectionDesign(key, "backgroundColor", event.target.value)
+                    }
+                  />
+                </label>
+                <label>
+                  <span>Text</span>
+                  <input
+                    aria-label={`${label} text colour`}
+                    type="color"
+                    value={style.textColor || "#1f2937"}
+                    onChange={(event) =>
+                      updateSectionDesign(key, "textColor", event.target.value)
+                    }
+                  />
+                </label>
+                <label>
+                  <span>Accent</span>
+                  <input
+                    aria-label={`${label} accent colour`}
+                    type="color"
+                    value={style.accentColor || "#1e7ed8"}
+                    onChange={(event) =>
+                      updateSectionDesign(key, "accentColor", event.target.value)
+                    }
+                  />
+                </label>
                 <label>
                   <span>Text alignment</span>
                   <select
@@ -344,7 +381,22 @@ export default function ServicesManager() {
                     <option value="right">Right</option>
                   </select>
                 </label>
-                <button type="button" className="admin-secondary-button" onClick={() => setContent((current) => ({ ...current, design: { ...(current.design || {}), sections: { ...(current.design?.sections || {}), [key]: {} } } }))}>Reset section styling</button>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  onClick={() => setContent((current) => ({
+                    ...current,
+                    design: {
+                      ...(current.design || {}),
+                      sections: {
+                        ...(current.design?.sections || {}),
+                        [key]: {},
+                      },
+                    },
+                  }))}
+                >
+                  Reset section styling
+                </button>
               </div>;
             })}
           </div>
@@ -406,7 +458,26 @@ export default function ServicesManager() {
           <Field label="Badge supporting text" value={data.hero.badgeText} onChange={(v) => update("hero", "badgeText", v)} />
           <div className="cms-services-media">
             <strong>Choose an image from Media Library</strong>
-            {media.length ? <div>{media.map((item) => <button type="button" key={item.id} className={data.hero.imageUrl === item.public_url ? "selected" : ""} onClick={() => update("hero", "imageUrl", item.public_url)}><img src={item.public_url} alt={item.alt_text || item.original_file_name} /><span>{item.original_file_name}</span></button>)}</div> : <p className="admin-empty">No Preview media uploaded yet.</p>}
+            {media.length ? (
+              <div>
+                {media.map((item) => (
+                  <button
+                    type="button"
+                    key={item.id}
+                    className={data.hero.imageUrl === item.public_url ? "selected" : ""}
+                    onClick={() => update("hero", "imageUrl", item.public_url)}
+                  >
+                    <img
+                      src={item.public_url}
+                      alt={item.alt_text || item.original_file_name}
+                    />
+                    <span>{item.original_file_name}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="admin-empty">No Preview media uploaded yet.</p>
+            )}
           </div>
         </div>
       </details>
