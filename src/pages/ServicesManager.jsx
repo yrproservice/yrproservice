@@ -211,7 +211,14 @@ export default function ServicesManager() {
     <section className="cms-services-manager">
       <div className="cms-manager-heading">
         <div><h2>Services page manager</h2><p>Edit the existing Services page content while keeping its current five-section layout and styling.</p></div>
-        <div className="cms-services-version">{draftVersion ? `Draft V${draftVersion}` : publishedVersion ? `Published V${publishedVersion}` : "Not saved"}{publishedVersion ? ` · Published V${publishedVersion}` : ""}</div>
+        <div className="cms-services-version">
+          {draftVersion
+            ? `Draft V${draftVersion}`
+            : publishedVersion
+              ? `Published V${publishedVersion}`
+              : "Not saved"}
+          {publishedVersion ? ` · Published V${publishedVersion}` : ""}
+        </div>
       </div>
       {error && <p className="admin-alert admin-alert-error" role="alert">{error}</p>}
       {notice && <p className="admin-alert admin-alert-success" role="status">{notice}</p>}
@@ -230,10 +237,60 @@ export default function ServicesManager() {
         <div className="cms-team-design-subpanel">
           <h3>Typography</h3>
           <div className="cms-services-fields">
-            <label className="cms-services-field"><span>Heading font</span><select value={design.global?.headingFont || "Montserrat"} onChange={(e) => updateGlobalDesign("headingFont", e.target.value)}><option>Montserrat</option><option>Inter</option><option>Arial</option></select></label>
-            <label className="cms-services-field"><span>Body font</span><select value={design.global?.bodyFont || "Inter"} onChange={(e) => updateGlobalDesign("bodyFont", e.target.value)}><option>Inter</option><option>Montserrat</option><option>Arial</option></select></label>
-            <label className="cms-services-field"><span>Heading size scale · {Math.round(Number(design.global?.headingScale || 1) * 100)}%</span><input type="range" min="0.8" max="1.25" step="0.05" value={design.global?.headingScale || 1} onChange={(e) => updateGlobalDesign("headingScale", Number(e.target.value))} /></label>
-            <label className="cms-services-field"><span>Body text size · {design.global?.bodySize || 16}px</span><input type="range" min="13" max="20" step="1" value={design.global?.bodySize || 16} onChange={(e) => updateGlobalDesign("bodySize", Number(e.target.value))} /></label>
+            <label className="cms-services-field">
+              <span>Heading font</span>
+              <select
+                value={design.global?.headingFont || "Montserrat"}
+                onChange={(event) =>
+                  updateGlobalDesign("headingFont", event.target.value)
+                }
+              >
+                <option>Montserrat</option>
+                <option>Inter</option>
+                <option>Arial</option>
+              </select>
+            </label>
+            <label className="cms-services-field">
+              <span>Body font</span>
+              <select
+                value={design.global?.bodyFont || "Inter"}
+                onChange={(event) =>
+                  updateGlobalDesign("bodyFont", event.target.value)
+                }
+              >
+                <option>Inter</option>
+                <option>Montserrat</option>
+                <option>Arial</option>
+              </select>
+            </label>
+            <label className="cms-services-field">
+              <span>
+                Heading size scale · {Math.round(Number(design.global?.headingScale || 1) * 100)}%
+              </span>
+              <input
+                type="range"
+                min="0.8"
+                max="1.25"
+                step="0.05"
+                value={design.global?.headingScale || 1}
+                onChange={(event) =>
+                  updateGlobalDesign("headingScale", Number(event.target.value))
+                }
+              />
+            </label>
+            <label className="cms-services-field">
+              <span>Body text size · {design.global?.bodySize || 16}px</span>
+              <input
+                type="range"
+                min="13"
+                max="20"
+                step="1"
+                value={design.global?.bodySize || 16}
+                onChange={(event) =>
+                  updateGlobalDesign("bodySize", Number(event.target.value))
+                }
+              />
+            </label>
           </div>
         </div>
         <div className="cms-team-design-subpanel">
@@ -273,9 +330,49 @@ export default function ServicesManager() {
           <Field label="Lead text" value={data.hero.lead} onChange={(v) => update("hero", "lead", v)} multiline rows={4} />
           <Field label="Image URL" value={data.hero.imageUrl} onChange={(v) => update("hero", "imageUrl", v)} hint="Uses an existing website asset or a URL from the Preview Media Library." />
           <Field label="Image alt text" value={data.hero.imageAlt} onChange={(v) => update("hero", "imageAlt", v)} />
-          <label className="cms-services-field"><span>Banner layout</span><select value={data.hero.layout || "split-right"} onChange={(e) => update("hero", "layout", e.target.value)}><option value="split-right">Text left · image right</option><option value="split-left">Image left · text right</option><option value="balanced">Equal columns</option><option value="stacked">Text above · image below</option></select></label>
-          <label className="cms-services-field"><span>Banner image position · {data.hero.imagePosition || "center"}</span><select value={data.hero.imagePosition || "center"} onChange={(e) => update("hero", "imagePosition", e.target.value)}><option value="center">Centre</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="50% 35%">50% · 35%</option></select></label>
-          <label className="cms-services-field"><span>Banner image height · {data.hero.imageHeight || 430}px</span><input type="range" min="280" max="620" step="10" value={data.hero.imageHeight || 430} onChange={(e) => update("hero", "imageHeight", Number(e.target.value))} /></label>
+          <label className="cms-services-field">
+            <span>Banner layout</span>
+            <select
+              value={data.hero.layout || "split-right"}
+              onChange={(event) =>
+                update("hero", "layout", event.target.value)
+              }
+            >
+              <option value="split-right">Text left · image right</option>
+              <option value="split-left">Image left · text right</option>
+              <option value="balanced">Equal columns</option>
+              <option value="stacked">Text above · image below</option>
+            </select>
+          </label>
+          <label className="cms-services-field">
+            <span>Banner image position · {data.hero.imagePosition || "center"}</span>
+            <select
+              value={data.hero.imagePosition || "center"}
+              onChange={(event) =>
+                update("hero", "imagePosition", event.target.value)
+              }
+            >
+              <option value="center">Centre</option>
+              <option value="top">Top</option>
+              <option value="bottom">Bottom</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+              <option value="50% 35%">50% · 35%</option>
+            </select>
+          </label>
+          <label className="cms-services-field">
+            <span>Banner image height · {data.hero.imageHeight || 430}px</span>
+            <input
+              type="range"
+              min="280"
+              max="620"
+              step="10"
+              value={data.hero.imageHeight || 430}
+              onChange={(event) =>
+                update("hero", "imageHeight", Number(event.target.value))
+              }
+            />
+          </label>
           <Field label="Badge heading" value={data.hero.badgeTitle} onChange={(v) => update("hero", "badgeTitle", v)} />
           <Field label="Badge supporting text" value={data.hero.badgeText} onChange={(v) => update("hero", "badgeText", v)} />
           <div className="cms-services-media">
