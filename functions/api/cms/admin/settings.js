@@ -47,9 +47,28 @@ export async function onRequestPost(context) {
       db.prepare("UPDATE cms_site_setting_versions SET state='archived' WHERE id=? AND state='draft'").bind(draft.id)
     );
     statements.push(
-      db.prepare("INSERT INTO cms_site_setting_versions (id,setting_key,version_number,state,value_json,created_by,change_note) VALUES (?, ?, ?, 'draft', ?, ?, ?)").bind(id,key,version,json,actor,body.changeNote || (draft ? "Updated settings draft" : "New settings draft")),
+      db.prepare(
+        "INSERT INTO cms_site_setting_versions (id,setting_key,version_number,state,value_json,created_by,change_note) VALUES (?, ?, ?, 'draft', ?, ?, ?)"
+      ).bind(
+        id,
+        key,
+        version,
+        json,
+        actor,
+        body.changeNote || (draft ? "Updated settings draft" : "New settings draft")
+      ),
       db.prepare("UPDATE cms_site_settings SET updated_at=? WHERE setting_key=?").bind(now,key),
-      db.prepare("INSERT INTO cms_audit_log (id,actor_email,action,entity_type,entity_id,metadata_json) VALUES (?,?,'save_draft','setting',?,?)").bind(crypto.randomUUID(),actor,key,JSON.stringify({version, previousDraftVersion:draft?.version_number ?? null}))
+      db.prepare(
+        "INSERT INTO cms_audit_log (id,actor_email,action,entity_type,entity_id,metadata_json) VALUES (?,?,'save_draft','setting',?,?)"
+      ).bind(
+        crypto.randomUUID(),
+        actor,
+        key,
+        JSON.stringify({
+          version,
+          previousDraftVersion: draft?.version_number ?? null,
+        })
+      )
     );
     await db.batch(statements);
     return adminJson({ ok: true, draftId: id, version }, 201);
