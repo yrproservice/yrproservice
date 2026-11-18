@@ -3319,11 +3319,7 @@ h6 {
   padding: 16px;
   background: #f6f9fb;
 }
-.bp-product-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
+
 
 .bp-catalog-image img,
 .bp-product-img img {
