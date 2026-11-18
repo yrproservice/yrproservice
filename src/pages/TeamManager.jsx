@@ -328,7 +328,24 @@ export default function TeamManager() {
                 }}
               >
               <span className="cms-team-drag-handle" aria-hidden="true">⠿</span><strong>{index + 1}. {SECTION_LABELS[key] || key}</strong>
-              <span className="cms-team-order-actions"><button type="button" aria-label={`Move ${SECTION_LABELS[key]} up`} disabled={index === 0} onClick={() => moveSection(index, index - 1)}>↑</button><button type="button" aria-label={`Move ${SECTION_LABELS[key]} down`} disabled={index === sectionOrder.length - 1} onClick={() => moveSection(index, index + 1)}>↓</button></span>
+                <span className="cms-team-order-actions">
+                  <button
+                    type="button"
+                    aria-label={`Move ${SECTION_LABELS[key]} up`}
+                    disabled={index === 0}
+                    onClick={() => moveSection(index, index - 1)}
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Move ${SECTION_LABELS[key]} down`}
+                    disabled={index === sectionOrder.length - 1}
+                    onClick={() => moveSection(index, index + 1)}
+                  >
+                    ↓
+                  </button>
+                </span>
               </li>
             ))}
           </ol>
@@ -453,7 +470,19 @@ export default function TeamManager() {
               <option value="50% 35%">50% · 35%</option>
             </select>
           </label>
-          <label className="cms-services-field"><span>Banner image height · {data.hero.imageHeight || 430}px</span><input type="range" min="300" max="600" step="10" value={data.hero.imageHeight || 430} onChange={(e) => update("hero", "imageHeight", Number(e.target.value))} /></label>
+          <label className="cms-services-field">
+            <span>Banner image height · {data.hero.imageHeight || 430}px</span>
+            <input
+              type="range"
+              min="300"
+              max="600"
+              step="10"
+              value={data.hero.imageHeight || 430}
+              onChange={(event) =>
+                update("hero", "imageHeight", Number(event.target.value))
+              }
+            />
+          </label>
           <Field label="Image overlay label" value={data.hero.imageLabel} onChange={(v) => update("hero", "imageLabel", v)} />
           <Field label="Image overlay sub-label" value={data.hero.imageSubLabel} onChange={(v) => update("hero", "imageSubLabel", v)} />
           <MediaPicker media={media} label="Hero image" value={data.hero.imageUrl} onSelect={(v) => update("hero", "imageUrl", v)} />
