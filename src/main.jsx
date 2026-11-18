@@ -160,7 +160,17 @@ function Router() {
     "/track-request": <TrackRequest navigate={navigate} />,
     "/contact": <Contact navigate={navigate} />,
     "/admin": adminEntry
-      ? <AdminEntry onAuthenticated={handleAdminAuthenticated} onCancel={() => { sessionStorage.setItem("yrproservice-access-mode", "client"); setAccessMode("client"); window.history.replaceState({}, "", "/"); setPath("/"); }} />
+      ? (
+          <AdminEntry
+            onAuthenticated={handleAdminAuthenticated}
+            onCancel={() => {
+              sessionStorage.setItem("yrproservice-access-mode", "client");
+              setAccessMode("client");
+              window.history.replaceState({}, "", "/");
+              setPath("/");
+            }}
+          />
+        )
       : <AdminDashboard />,
     "/admin/cms": <CMSDashboard onAdminLogout={handleAdminLogout} />,
     "/admin/cms/preview": <CMSPagePreview />,
@@ -211,7 +221,16 @@ function Router() {
 
   return (
     <>
-      {!isAdminRoute && (accessMode === "client" || accessMode === "admin") && <PageDesignScope pageKey="site-chrome"><SiteHeader path={path} navigate={navigate} isAdmin={accessMode === "admin"} onAdminLogout={handleAdminLogout} /></PageDesignScope>}
+      {!isAdminRoute && (accessMode === "client" || accessMode === "admin") && (
+        <PageDesignScope pageKey="site-chrome">
+          <SiteHeader
+            path={path}
+            navigate={navigate}
+            isAdmin={accessMode === "admin"}
+            onAdminLogout={handleAdminLogout}
+          />
+        </PageDesignScope>
+      )}
       {isAdminRoute && accessMode === "admin" && path !== "/admin/cms" && (
         <div className="admin-session-utility">
           <span>Admin access active</span>
