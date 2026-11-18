@@ -121,7 +121,15 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
         </div>
       </div></section>;
     case "editorial":
-      return <section className="bp-home-editorial home-cms-section home-cms-editorial" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"} data-layout={c.layout || "split-right"}><div className="container bp-editorial-grid">
+      return (
+        <section
+          className="bp-home-editorial home-cms-section home-cms-editorial"
+          key={section.id}
+          style={sectionStyle}
+          data-card-columns={sectionDesign.cardColumns || "auto"}
+          data-layout={c.layout || "split-right"}
+        >
+          <div className="container bp-editorial-grid">
         <div className="bp-editorial-copy">
           <p className="bp-eyebrow">{c.eyebrow}</p>
           <h2>{c.heading}</h2>
@@ -153,7 +161,19 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
     case "product-grid": {
       const featured = catalogueProducts.filter((p) => (c.productSlugs || []).includes(p.slug));
       return <section className="bp-featured home-cms-section" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"}><div className="container">
-        <div className="bp-section-head bp-head-light"><div><p className="bp-eyebrow bp-eyebrow-light">{c.eyebrow}</p><h2>{c.heading}</h2></div><CmsLink to={c.buttonUrl || "/products"} navigate={navigate} className="bp-outline-light">{c.buttonText || "View All Products"} →</CmsLink></div>
+        <div className="bp-section-head bp-head-light">
+          <div>
+            <p className="bp-eyebrow bp-eyebrow-light">{c.eyebrow}</p>
+            <h2>{c.heading}</h2>
+          </div>
+          <CmsLink
+            to={c.buttonUrl || "/products"}
+            navigate={navigate}
+            className="bp-outline-light"
+          >
+            {c.buttonText || "View All Products"} →
+          </CmsLink>
+        </div>
         <div className="bp-product-grid">
           {featured.map((product) => (
             <article className="bp-product-card" key={product.slug}>
@@ -190,7 +210,16 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
         <div className="yr-brand-grid">{items.map((file) => <div className="bp-brand-card" key={file}><img src={`/brand logo/fitted/${String(file).replace(/\.[^.]+$/, ".png")}`} alt={String(file).replace(/\.[^.]+$/, "") + " dental equipment brand"} /></div>)}</div>
       </div></section>;
     case "services-banner":
-      return <section className="bp-services-strip home-cms-section home-cms-services" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"} data-layout={c.layout || "split-right"}><div className="container"><div className="bp-services-banner">
+      return (
+        <section
+          className="bp-services-strip home-cms-section home-cms-services"
+          key={section.id}
+          style={sectionStyle}
+          data-card-columns={sectionDesign.cardColumns || "auto"}
+          data-layout={c.layout || "split-right"}
+        >
+          <div className="container">
+            <div className="bp-services-banner">
         <img
           src={c.imageUrl}
           alt={c.imageAlt || ""}
@@ -226,7 +255,20 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
         </div>
       </div></section>;
     case "cta":
-      return <section className="bp-final-cta home-cms-section" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"}><div className="container"><div><p className="bp-eyebrow bp-eyebrow-light">{c.eyebrow}</p><h2>{c.heading}</h2><p>{c.description}</p></div><div className="bp-actions">
+      return (
+        <section
+          className="bp-final-cta home-cms-section"
+          key={section.id}
+          style={sectionStyle}
+          data-card-columns={sectionDesign.cardColumns || "auto"}
+        >
+          <div className="container">
+            <div>
+              <p className="bp-eyebrow bp-eyebrow-light">{c.eyebrow}</p>
+              <h2>{c.heading}</h2>
+              <p>{c.description}</p>
+            </div>
+            <div className="bp-actions">
         <CmsLink
           to={c.buttonUrl || "/products"}
           navigate={navigate}
