@@ -239,7 +239,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     setHistoryRevision((revision) => revision + 1);
   }
 
-  async function loadPages() {
+  async function loadPages(isActive = () => true) {
     setError("");
 
     try {
@@ -253,13 +253,24 @@ export default function CMSDashboard({ onAdminLogout }) {
         throw new Error(result.error || "Unable to load CMS pages.");
       }
 
-      setPages(result.pages || []);
+      if (isActive()) {
+        setPages(result.pages || []);
+      }
     } catch (loadError) {
-      setError(loadError.message || "Unable to load CMS pages.");
+      if (isActive()) {
+        setError(loadError.message || "Unable to load CMS pages.");
+      }
     }
   }
 
-  useEffect(() => { loadPages(); }, []);
+  useEffect(() => {
+    let active = true;
+    loadPages(() => active);
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function openPage(page) {
     setBusy(true);
