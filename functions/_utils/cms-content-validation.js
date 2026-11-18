@@ -29,6 +29,18 @@ function validImageUrl(value) {
   }
 }
 
+function validApprovedProductImage(value) {
+  if (typeof value !== "string" || !value.trim()) return false;
+  const image = value.trim();
+  if (image.startsWith("/catalog/") && !image.includes("..") && !image.includes("\\")) return true;
+  try {
+    const url = new URL(image);
+    return url.protocol === "https:" && url.hostname.endsWith(".r2.dev");
+  } catch {
+    return false;
+  }
+}
+
 function validateSectionItem(item, index) {
   if (!isRecord(item)) return "Section item " + (index + 1) + " must be an object.";
   for (const field of ["id", "slug", "number", "title", "heading", "description", "text", "icon"]) {
@@ -189,8 +201,8 @@ export function validateProductContent(value) {
   if (value.stockStatus !== undefined && !["pending", "in-stock", "out-of-stock"].includes(value.stockStatus)) {
     return "Product stock status is not supported.";
   }
-  if (value.img !== undefined && value.img !== "" && !validImageUrl(value.img)) {
-    return "Product image must be a site path or HTTPS URL.";
+  if (value.img !== undefined && value.img !== "" && !validApprovedProductImage(value.img)) {
+    return "Product image must use an approved /catalog/ path or Preview R2 URL.";
   }
   if (value.manufacturerSource !== undefined && value.manufacturerSource !== "") {
     try {
