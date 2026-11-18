@@ -35,12 +35,12 @@ export async function onRequestPost(context) {
   if (json.length > 50000) return adminJson({ error: "Setting value is too large." }, 413);
   try {
     const db = context.env.DB, now = new Date().toISOString(), actor = auth.email || null;
-    let row = await db.prepare("SELECT setting_key FROM cms_site_settings WHERE setting_key=?").bind(key).first();
-    if (!row) await db.prepare("INSERT INTO cms_site_settings (setting_key, updated_at) VALUES (?, ?)").bind(key, now).run();
     const draft = await db.prepare("SELECT id, version_number FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'").bind(key).first();
     const latest = await db.prepare("SELECT COALESCE(MAX(version_number),0) AS version FROM cms_site_setting_versions WHERE setting_key=?").bind(key).first();
     const version = Number(latest?.version || 0) + 1, id = crypto.randomUUID();
-    const statements = [];
+    const statements = [
+      db.prepare("INSERT OR IGNORE INTO cms_site_settings (setting_key, updated_at) VALUES (?, ?)").bind(key, now)
+    ];
     // Keep revision history immutable: archive the current draft and create a new
     // numbered draft for every explicit Save action.
     if (draft) statements.push(
