@@ -1201,11 +1201,11 @@ h6 {
 .bp-detail-main {
   display: grid;
   grid-template-columns: 1.08fr 0.92fr;
-  gap: 48px;
-  padding-bottom: 65px;
+  gap: 32px;
+  padding-bottom: 48px;
 }
 .bp-detail-photo-frame {
-  height: 530px;
+  height: 420px;
   background: #fff;
   border: 1px solid var(--yr-border);
   display: grid;
@@ -1216,8 +1216,8 @@ h6 {
 .bp-detail-photo-frame:after {
   content: "";
   position: absolute;
-  width: 390px;
-  height: 390px;
+  width: 300px;
+  height: 300px;
   border: 1px solid #ddebf3;
   border-radius: 50%;
   box-shadow: 0 0 0 30px rgba(234, 246, 253, 0.7);
@@ -1251,10 +1251,10 @@ h6 {
   align-self: center;
   background: #fff;
   border: 1px solid var(--yr-border);
-  padding: 42px;
+  padding: 28px;
 }
 .bp-detail-info h1 {
-  font-size: 44px;
+  font-size: 34px;
   color: var(--yr-navy);
   margin: 8px 0;
 }
@@ -1269,7 +1269,7 @@ h6 {
   grid-template-columns: 1fr 1fr;
   border-top: 1px solid var(--yr-border);
   border-bottom: 1px solid var(--yr-border);
-  margin: 25px 0;
+  margin: 18px 0;
   padding: 16px 0;
 }
 .bp-detail-commercial div + div {
@@ -1347,8 +1347,8 @@ h6 {
 .bp-detail-lower {
   display: grid;
   grid-template-columns: 1fr 290px;
-  gap: 30px;
-  padding-bottom: 80px;
+  gap: 22px;
+  padding-bottom: 60px;
 }
 .bp-detail-content {
   background: #fff;
@@ -1373,7 +1373,7 @@ h6 {
   border-bottom-color: var(--yr-blue);
 }
 .bp-tab-panel {
-  padding: 34px;
+  padding: 26px;
 }
 .bp-tab-panel h2 {
   font-size: 27px;
@@ -1464,7 +1464,7 @@ h6 {
 }
 .bp-related {
   background: #fff;
-  padding: 80px 0;
+  padding: 56px 0;
 }
 .bp-related .bp-section-head {
   margin-bottom: 28px;
@@ -1477,7 +1477,7 @@ h6 {
 .bp-cart,
 .request-centre {
   background: var(--yr-ice);
-  padding: 65px 0 90px;
+  padding: 48px 0 64px;
   min-height: 70vh;
 }
 .bp-page-heading,
@@ -1486,7 +1486,7 @@ h6 {
 }
 .bp-page-heading h1,
 .request-heading h1 {
-  font-size: 44px;
+  font-size: 34px;
   color: var(--yr-navy);
   margin: 7px 0;
 }
@@ -1537,14 +1537,14 @@ h6 {
 .request-layout {
   display: grid;
   grid-template-columns: 1.5fr 0.7fr;
-  gap: 20px;
+  gap: 16px;
   align-items: start;
 }
 .bp-cart-layout > section,
 .request-list-card {
   background: #fff;
   border: 1px solid var(--yr-border);
-  padding: 24px;
+  padding: 18px;
 }
 .bp-cart-table-head,
 .bp-cart-row {
@@ -1627,7 +1627,7 @@ h6 {
 .request-form-card {
   background: var(--yr-navy);
   color: #fff;
-  padding: 28px;
+  padding: 22px;
   position: sticky;
   top: 100px;
 }
@@ -1842,10 +1842,10 @@ h6 {
 .bp-quote-top {
   background: var(--yr-deep);
   color: #fff;
-  padding: 58px 0;
+  padding: 42px 0;
 }
 .bp-quote-top h1 {
-  font-size: 44px;
+  font-size: 34px;
   margin: 8px 0;
 }
 .bp-quote-top p:not(.bp-eyebrow) {
@@ -1856,8 +1856,8 @@ h6 {
   display: grid;
   grid-template-columns: 1fr 0.68fr;
   gap: 20px;
-  padding-top: 40px;
-  padding-bottom: 80px;
+  padding-top: 30px;
+  padding-bottom: 60px;
 }
 .bp-form {
   background: #fff;
