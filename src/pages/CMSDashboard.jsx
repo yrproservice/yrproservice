@@ -204,115 +204,293 @@ export default function CMSDashboard({ onAdminLogout }) {
 
   async function loadPages() {
     setError("");
+
     try {
-      const response = await fetch("/api/cms/admin/pages", { headers: { Accept: "application/json" }, cache: "no-store" });
+      const response = await fetch("/api/cms/admin/pages", {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load CMS pages.");
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "Unable to load CMS pages.");
+      }
+
       setPages(result.pages || []);
-    } catch (err) { setError(err.message || "Unable to load CMS pages."); }
+    } catch (loadError) {
+      setError(loadError.message || "Unable to load CMS pages.");
+    }
   }
 
   useEffect(() => { loadPages(); }, []);
 
   async function openPage(page) {
-    setBusy(true); setError(""); setNotice("");
+    setBusy(true);
+    setError("");
+    setNotice("");
+
     try {
-      const response = await fetch(`/api/cms/admin/preview?key=${encodeURIComponent(page.page_key)}`, { cache: "no-store" });
+      const response = await fetch(
+        `/api/cms/admin/preview?key=${encodeURIComponent(page.page_key)}`,
+        { cache: "no-store" }
+      );
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load this page.");
-      setPageKey(result.page.pageKey); setPageTitle(result.page.title); setRoute(result.page.route);
-      resetEditorHistory(result.page.content); setContent(result.page.content); setDraftId(result.page.draftId || "");
-      setSavedSnapshot(JSON.stringify({ pageKey: result.page.pageKey, pageTitle: result.page.title, route: result.page.route, content: result.page.content }));
-      setDraftVersion(result.page.draftVersion || null); setPublishedVersion(result.page.publishedVersion || null);
-      setSelectedSectionId(result.page.content.sections?.[0]?.id || "");
-      setStructuredJson(JSON.stringify(result.page.content.sections?.[0]?.content || {}, null, 2));
-    } catch (err) { setError(err.message || "Unable to load this page."); }
-    finally { setBusy(false); }
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "Unable to load this page.");
+      }
+
+      const pageData = result.page;
+      const firstSection = pageData.content.sections?.[0];
+
+      setPageKey(pageData.pageKey);
+      setPageTitle(pageData.title);
+      setRoute(pageData.route);
+      resetEditorHistory(pageData.content);
+      setContent(pageData.content);
+      setDraftId(pageData.draftId || "");
+      setSavedSnapshot(
+        JSON.stringify({
+          pageKey: pageData.pageKey,
+          pageTitle: pageData.title,
+          route: pageData.route,
+          content: pageData.content,
+        })
+      );
+      setDraftVersion(pageData.draftVersion || null);
+      setPublishedVersion(pageData.publishedVersion || null);
+      setSelectedSectionId(firstSection?.id || "");
+      setStructuredJson(
+        JSON.stringify(firstSection?.content || {}, null, 2)
+      );
+    } catch (loadError) {
+      setError(loadError.message || "Unable to load this page.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   function loadHomeTemplate() {
     const initial = JSON.parse(JSON.stringify(homeCmsTemplate));
-    resetEditorHistory(initial); setPageKey("home"); setPageTitle("Home"); setRoute("/"); setContent(initial);
-    setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null); setPublishedVersion(null); setSavedSnapshot("");
-    setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2));
-    setNotice("Existing homepage template loaded into a new Home draft. Save it before publishing.");
+    const firstSection = initial.sections[0];
+
+    resetEditorHistory(initial);
+    setPageKey("home");
+    setPageTitle("Home");
+    setRoute("/");
+    setContent(initial);
+    setSelectedSectionId(firstSection.id);
+    setDraftId("");
+    setDraftVersion(null);
+    setPublishedVersion(null);
+    setSavedSnapshot("");
+    setStructuredJson(JSON.stringify(firstSection.content, null, 2));
+    setNotice(
+      "Existing homepage template loaded into a new Home draft. Save it before publishing."
+    );
     setError("");
   }
 
   function createPage() {
     const title = window.prompt("New page title");
     if (!title?.trim()) return;
-    const key = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    if (!key) { setError("Please use a title containing letters or numbers."); return; }
+
+    const trimmedTitle = title.trim();
+    const key = trimmedTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    if (!key) {
+      setError("Please use a title containing letters or numbers.");
+      return;
+    }
+
     const pageRoute = key === "home" ? "/" : `/${key}`;
-    const initial = starterContent(title.trim());
-    resetEditorHistory(initial); setPageKey(key); setPageTitle(title.trim()); setRoute(pageRoute); setContent(initial);
-    setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null);
-    setPublishedVersion(null); setSavedSnapshot(""); setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2)); setNotice("New page started. Save it as a draft when ready.");
+    const initial = starterContent(trimmedTitle);
+    const firstSection = initial.sections[0];
+
+    resetEditorHistory(initial);
+    setPageKey(key);
+    setPageTitle(trimmedTitle);
+    setRoute(pageRoute);
+    setContent(initial);
+    setSelectedSectionId(firstSection.id);
+    setDraftId("");
+    setDraftVersion(null);
+    setPublishedVersion(null);
+    setSavedSnapshot("");
+    setStructuredJson(JSON.stringify(firstSection.content, null, 2));
+    setNotice("New page started. Save it as a draft when ready.");
   }
 
   function updateSection(field, value) {
     if (!selectedSection) return;
+
     setContent((current) => ({
       ...current,
-      sections: current.sections.map((section) => section.id !== selectedSection.id
-        ? section : { ...section, content: { ...(section.content || {}), [field]: value } })
+      sections: current.sections.map((section) => {
+        if (section.id !== selectedSection.id) return section;
+
+        return {
+          ...section,
+          content: {
+            ...(section.content || {}),
+            [field]: value,
+          },
+        };
+      }),
     }));
-    setStructuredJson(JSON.stringify({ ...(selectedSection.content || {}), [field]: value }, null, 2));
+
+    setStructuredJson(
+      JSON.stringify(
+        { ...(selectedSection.content || {}), [field]: value },
+        null,
+        2
+      )
+    );
   }
 
 
   function removeSectionToRecoveryBin() {
     if (!selectedSection || !pageKey) return;
-    const result = removeSectionFromContent(content, selectedSection.id, crypto.randomUUID(), pageKey);
+
+    const result = removeSectionFromContent(
+      content,
+      selectedSection.id,
+      crypto.randomUUID(),
+      pageKey
+    );
     if (!result.entry) return;
-    setRemovedSections((current) => [...current.filter((item) => !(item.pageKey === pageKey && item.section.id === selectedSection.id)), result.entry]);
+
+    setRemovedSections((current) => [
+      ...current.filter(
+        (item) =>
+          !(
+            item.pageKey === pageKey &&
+            item.section.id === selectedSection.id
+          )
+      ),
+      result.entry,
+    ]);
     setContent(result.content);
-    const nextSelected = result.content.sections.find((section) => section.id === result.nextSelectedId) || null;
+
+    const nextSelected =
+      result.content.sections.find(
+        (section) => section.id === result.nextSelectedId
+      ) || null;
+
     setSelectedSectionId(nextSelected?.id || "");
-    setStructuredJson(JSON.stringify(nextSelected?.content || {}, null, 2));
-    setNotice("Section moved to the recovery bin. You can restore it or use Undo.");
+    setStructuredJson(
+      JSON.stringify(nextSelected?.content || {}, null, 2)
+    );
+    setNotice(
+      "Section moved to the recovery bin. You can restore it or use Undo."
+    );
     setError("");
   }
 
   function restoreRemovedSection(entry) {
-    if (!entry || entry.pageKey !== pageKey || content.sections.some((section) => section.id === entry.section.id)) return;
-    setContent((current) => restoreSectionToContent(current, entry, pageKey));
+    const alreadyExists = content.sections.some(
+      (section) => section.id === entry?.section?.id
+    );
+
+    if (!entry || entry.pageKey !== pageKey || alreadyExists) return;
+
+    setContent((current) =>
+      restoreSectionToContent(current, entry, pageKey)
+    );
     setSelectedSectionId(entry.section.id);
-    setStructuredJson(JSON.stringify(entry.section.content || {}, null, 2));
-    setNotice("Section restored to its original position. Save the Preview draft to keep this change.");
+    setStructuredJson(
+      JSON.stringify(entry.section.content || {}, null, 2)
+    );
+    setNotice(
+      "Section restored to its original position. Save the Preview draft to keep this change."
+    );
     setError("");
   }
 
   function permanentlyDiscardRemovedSection(entry) {
-    const label = entry.section.content?.heading || entry.section.type || "this section";
-    if (!window.confirm("Permanently discard “" + label + "” from the recovery bin? This cannot be undone.")) return;
-    setRemovedSections((current) => current.filter((item) => item.id !== entry.id));
+    const label =
+      entry.section.content?.heading || entry.section.type || "this section";
+    const confirmed = window.confirm(
+      `Permanently discard “${label}” from the recovery bin? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setRemovedSections((current) =>
+      current.filter((item) => item.id !== entry.id)
+    );
     setNotice("Removed section permanently discarded from this editor session.");
   }
 
   function addSection(type) {
-    const section = { id: crypto.randomUUID(), type, visible: true, order: content.sections.length + 1,
-      content: { heading: "", description: "", buttonText: "", buttonUrl: "", imageUrl: "", imageAlt: "" },
-      layout: { variant: type === "hero" ? "split" : "standard" } };
-    setContent((current) => ({ ...current, sections: [...current.sections, section] }));
+    const section = {
+      id: crypto.randomUUID(),
+      type,
+      visible: true,
+      order: content.sections.length + 1,
+      content: {
+        heading: "",
+        description: "",
+        buttonText: "",
+        buttonUrl: "",
+        imageUrl: "",
+        imageAlt: "",
+      },
+      layout: {
+        variant: type === "hero" ? "split" : "standard",
+      },
+    };
+
+    setContent((current) => ({
+      ...current,
+      sections: [...current.sections, section],
+    }));
     setSelectedSectionId(section.id);
     setStructuredJson(JSON.stringify(section.content, null, 2));
   }
 
   function moveSection(id, direction) {
     setContent((current) => {
-      const items = [...current.sections]; const index = items.findIndex((item) => item.id === id);
-      const next = index + direction; if (index < 0 || next < 0 || next >= items.length) return current;
-      [items[index], items[next]] = [items[next], items[index]];
-      return { ...current, sections: items.map((item, i) => ({ ...item, order: i + 1 })) };
+      const items = [...current.sections];
+      const index = items.findIndex((item) => item.id === id);
+      const nextIndex = index + direction;
+
+      if (
+        index < 0 ||
+        nextIndex < 0 ||
+        nextIndex >= items.length
+      ) {
+        return current;
+      }
+
+      [items[index], items[nextIndex]] = [
+        items[nextIndex],
+        items[index],
+      ];
+
+      return {
+        ...current,
+        sections: items.map((item, itemIndex) => ({
+          ...item,
+          order: itemIndex + 1,
+        })),
+      };
     });
   }
 
   function updateHomeGlobalDesign(field, value) {
     setContent((current) => ({
       ...current,
-      design: { ...(current.design || {}), global: { ...(current.design?.global || {}), [field]: value } }
+      design: {
+        ...(current.design || {}),
+        global: {
+          ...(current.design?.global || {}),
+          [field]: value,
+        },
+      },
     }));
   }
 
@@ -323,9 +501,12 @@ export default function CMSDashboard({ onAdminLogout }) {
         ...(current.design || {}),
         sections: {
           ...(current.design?.sections || {}),
-          [sectionId]: { ...(current.design?.sections?.[sectionId] || {}), [field]: value }
-        }
-      }
+          [sectionId]: {
+            ...(current.design?.sections?.[sectionId] || {}),
+            [field]: value,
+          },
+        },
+      },
     }));
   }
 
@@ -339,22 +520,36 @@ export default function CMSDashboard({ onAdminLogout }) {
       ...current,
       design: {
         ...(current.design || {}),
-        sections: { ...(current.design?.sections || {}), [sectionId]: {} }
-      }
+        sections: {
+          ...(current.design?.sections || {}),
+          [sectionId]: {},
+        },
+      },
     }));
   }
 
   function reorderSections(fromId, toId) {
     if (!fromId || !toId || fromId === toId) return;
+
     setContent((current) => {
       const items = [...current.sections];
-      const from = items.findIndex((item) => item.id === fromId);
-      const to = items.findIndex((item) => item.id === toId);
-      if (from < 0 || to < 0) return current;
-      const [moved] = items.splice(from, 1);
-      items.splice(to, 0, moved);
-      return { ...current, sections: items.map((item, i) => ({ ...item, order: i + 1 })) };
+      const fromIndex = items.findIndex((item) => item.id === fromId);
+      const toIndex = items.findIndex((item) => item.id === toId);
+
+      if (fromIndex < 0 || toIndex < 0) return current;
+
+      const [movedSection] = items.splice(fromIndex, 1);
+      items.splice(toIndex, 0, movedSection);
+
+      return {
+        ...current,
+        sections: items.map((item, index) => ({
+          ...item,
+          order: index + 1,
+        })),
+      };
     });
+
     dragSectionId.current = null;
   }
 
@@ -378,46 +573,113 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   async function saveDraft() {
-    if (!pageKey || !pageTitle.trim()) { setError("Choose a page title first."); return; }
-    const sectionIds = content.sections.map((section) => section?.id).filter(Boolean);
-    if (sectionIds.length !== content.sections.length || new Set(sectionIds).size !== sectionIds.length) {
-      setError("Every section must have a unique ID before this draft can be saved. Existing content has not been changed.");
+    if (!pageKey || !pageTitle.trim()) {
+      setError("Choose a page title first.");
       return;
     }
-    setBusy(true); setError(""); setNotice("");
+
+    const sectionIds = content.sections
+      .map((section) => section?.id)
+      .filter(Boolean);
+    const hasMissingOrDuplicateIds =
+      sectionIds.length !== content.sections.length ||
+      new Set(sectionIds).size !== sectionIds.length;
+
+    if (hasMissingOrDuplicateIds) {
+      setError(
+        "Every section must have a unique ID before this draft can be saved. Existing content has not been changed."
+      );
+      return;
+    }
+
+    setBusy(true);
+    setError("");
+    setNotice("");
+
     try {
       const response = await fetch("/api/cms/admin/pages", {
-        method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ pageKey, title: pageTitle, route, content, changeNote: "Visual editor update" }),
-        cache: "no-store"
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          pageKey,
+          title: pageTitle,
+          route,
+          content,
+          changeNote: "Visual editor update",
+        }),
+        cache: "no-store",
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to save draft.");
-      setDraftId(result.draftId); setDraftVersion(result.version);
-      setSavedSnapshot(JSON.stringify({ pageKey, pageTitle, route, content }));
-      setNotice(`Draft V${result.version} saved. The public website has not changed.`);
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "Unable to save draft.");
+      }
+
+      setDraftId(result.draftId);
+      setDraftVersion(result.version);
+      setSavedSnapshot(
+        JSON.stringify({ pageKey, pageTitle, route, content })
+      );
+      setNotice(
+        `Draft V${result.version} saved. The public website has not changed.`
+      );
       await loadPages();
-    } catch (err) { setError(err.message || "Unable to save draft."); }
-    finally { setBusy(false); }
+    } catch (saveError) {
+      setError(saveError.message || "Unable to save draft.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function publishDraft() {
-    if (!draftId || !pageKey) { setError("Save a draft before publishing."); return; }
-    if (hasUnsavedChanges) { setError("Save or correct all page edits before publishing."); return; }
-    if (!window.confirm("Publish this page revision to the public website?")) return;
-    setBusy(true); setError(""); setNotice("");
+    if (!draftId || !pageKey) {
+      setError("Save a draft before publishing.");
+      return;
+    }
+
+    if (hasUnsavedChanges) {
+      setError("Save or correct all page edits before publishing.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Publish this page revision to the public website?"
+    );
+    if (!confirmed) return;
+
+    setBusy(true);
+    setError("");
+    setNotice("");
+
     try {
       const response = await fetch("/api/cms/admin/publish", {
-        method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ pageKey, versionId: draftId }), cache: "no-store"
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ pageKey, versionId: draftId }),
+        cache: "no-store",
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to publish this page.");
-      setPublishedVersion(result.version); setDraftId(""); setDraftVersion(null);
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "Unable to publish this page.");
+      }
+
+      setPublishedVersion(result.version);
+      setDraftId("");
+      setDraftVersion(null);
       setNotice(`Page revision V${result.version} published.`);
       await loadPages();
-    } catch (err) { setError(err.message || "Unable to publish this page."); }
-    finally { setBusy(false); }
+    } catch (publishError) {
+      setError(publishError.message || "Unable to publish this page.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
