@@ -1038,6 +1038,9 @@ h6 {
   height:calc(100% - 150px);
   object-position:right bottom;
 }
+.spotlight-card .yr-product-media--spotlight img {
+  object-position: right bottom;
+}
 .spotlight-1 { background:linear-gradient(135deg,#082f55,#0b4a88);color:#fff;border-color:#0b4a88; }
 .spotlight-1 h3 { color:#fff; }
 .spotlight-1 .bp-eyebrow { color:#9debff; }
