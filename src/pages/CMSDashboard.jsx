@@ -86,6 +86,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [previewDevice, setPreviewDevice] = useState("desktop");
   const [structuredJson, setStructuredJson] = useState("{}");
   const dragSectionId = React.useRef(null);
   const historyRef = React.useRef({ past: [], future: [], previous: JSON.stringify({ sections: [] }), suppressNext: false });
@@ -392,13 +393,23 @@ export default function CMSDashboard({ onAdminLogout }) {
             </button>)}
           </aside>
           <section className="cms-canvas-panel">
-            <div className="cms-canvas-heading"><div><h2>Page preview</h2><small>Click a section to select it for editing</small></div><span className="cms-preview-label">Draft preview</span></div>
-            <div className="cms-canvas" style={{ "--cms-home-heading-font": homeDesign.global?.headingFont || "Montserrat", "--cms-home-body-font": homeDesign.global?.bodyFont || "Inter" }}>
+            <div className="cms-canvas-heading">
+              <div><h2>Page preview</h2><small>Click a section to select it for editing</small></div>
+              <div className="cms-canvas-heading-actions">
+                <div className="cms-device-switcher" role="group" aria-label="Preview device size">
+                  {["desktop", "tablet", "mobile"].map((device) => <button key={device} type="button" className={previewDevice === device ? "is-active" : ""} aria-pressed={previewDevice === device} disabled={!pageKey} onClick={() => setPreviewDevice(device)}>{device[0].toUpperCase() + device.slice(1)}</button>)}
+                </div>
+                <span className="cms-preview-label">Draft preview</span>
+              </div>
+            </div>
+            <div className={`cms-canvas-viewport cms-canvas-viewport-${previewDevice}`} data-device={previewDevice}>
+              <div className="cms-canvas" style={{ "--cms-home-heading-font": homeDesign.global?.headingFont || "Montserrat", "--cms-home-body-font": homeDesign.global?.bodyFont || "Inter" }}>
               {!pageKey ? <div className="cms-empty-canvas">Select a page or create a new page draft.</div> :
                 content.sections.filter((section) => section.visible !== false).sort((a,b) => a.order-b.order).map((section) =>
                   <div key={section.id} className="cms-home-draggable-section" draggable onDragStart={()=>{dragSectionId.current=section.id;}} onDragOver={(e)=>e.preventDefault()} onDrop={()=>reorderSections(dragSectionId.current,section.id)} onDragEnd={()=>{dragSectionId.current=null;}}>
                     <SectionPreview section={section} selected={section.id === selectedSectionId} design={homeDesign} onClick={() => { setSelectedSectionId(section.id); setStructuredJson(JSON.stringify(section.content || {}, null, 2)); }} />
                   </div>)} 
+              </div>
             </div>
             {pageKey && <div className="cms-add-section"><label htmlFor="cms-add-section">Add section</label><select id="cms-add-section" value="" onChange={(event) => event.target.value && addSection(event.target.value)}><option value="">Choose a section type…</option>{SECTION_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>}
           </section>

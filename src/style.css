@@ -4902,3 +4902,32 @@ h6 {
   .home-cms-section[data-card-columns="3"] .yr-brand-grid,
   .home-cms-section[data-card-columns="4"] .yr-brand-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
+
+
+/* CMS editor device preview: constrain the canvas to realistic viewport widths. */
+.cms-canvas-heading-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+.cms-device-switcher { display:inline-flex; align-items:center; gap:3px; padding:3px; border:1px solid #d5e1eb; border-radius:9px; background:#f5f8fb; }
+.cms-device-switcher button { min-height:32px; padding:6px 10px; border:0; border-radius:6px; background:transparent; color:#536273; font-size:12px; font-weight:700; cursor:pointer; }
+.cms-device-switcher button.is-active { background:#0b4a88; color:#fff; box-shadow:0 1px 3px rgba(11,49,87,.16); }
+.cms-device-switcher button:disabled { opacity:.45; cursor:not-allowed; }
+.cms-canvas-viewport { width:100%; min-width:0; overflow-x:auto; padding-bottom:6px; }
+.cms-canvas-viewport .cms-canvas { box-sizing:border-box; margin-inline:auto; transition:width .18s ease; }
+.cms-canvas-viewport-tablet .cms-canvas { width:768px; max-width:none; }
+.cms-canvas-viewport-mobile .cms-canvas { width:390px; max-width:none; }
+.cms-canvas-viewport-tablet .cms-preview-product-grid,
+.cms-canvas-viewport-tablet .cms-preview-feature-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.cms-canvas-viewport-tablet .cms-preview-brand-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.cms-canvas-viewport-mobile .cms-preview-hero,
+.cms-canvas-viewport-mobile .cms-preview-image-text { grid-template-columns:minmax(0,1fr); gap:14px; }
+.cms-canvas-viewport-mobile .cms-preview-product-grid,
+.cms-canvas-viewport-mobile .cms-preview-brand-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.cms-canvas-viewport-mobile .cms-preview-feature-grid { grid-template-columns:minmax(0,1fr); }
+.cms-canvas-viewport-mobile .cms-preview-section { padding:16px; }
+.cms-canvas-viewport-mobile .cms-preview-section:hover,
+.cms-canvas-viewport-mobile .cms-preview-section.is-selected { padding:15px; }
+.cms-canvas-viewport-mobile .cms-preview-section h1 { font-size:26px; }
+.cms-canvas-viewport-mobile .cms-preview-section h2 { font-size:20px; }
+@media (max-width:760px) {
+  .cms-canvas-heading { align-items:flex-start; flex-direction:column; }
+  .cms-canvas-heading-actions { width:100%; justify-content:space-between; }
+}
