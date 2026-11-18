@@ -1,5 +1,5 @@
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
-import { validatePageContent, validateProductContent } from "../../../_utils/cms-content-validation.js";
+import { validatePageContent, validatePageRoute, validateProductContent } from "../../../_utils/cms-content-validation.js";
 import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
 
 const CONFIG = {
@@ -54,7 +54,8 @@ export async function onRequestPost(context) {
       ? await env.DB.prepare(`SELECT setting_key AS id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first()
       : await env.DB.prepare(`SELECT id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first();
     if (!entity) return adminJson({ error: "CMS item not found." }, 404);
-    const source = await env.DB.prepare(`SELECT version_number, ${config.json} AS content FROM ${config.versions} WHERE id = ? AND ${config.fk} = ?`).bind(versionId, entity.id).first();
+    const metadataColumns = type === "page" ? ", title, route" : "";
+    const source = await env.DB.prepare(`SELECT version_number, ${config.json} AS content${metadataColumns} FROM ${config.versions} WHERE id = ? AND ${config.fk} = ?`).bind(versionId, entity.id).first();
     if (!source) return adminJson({ error: "Revision does not belong to this item." }, 404);
     let restoredValue;
     try { restoredValue = JSON.parse(source.content); } catch {
@@ -68,6 +69,22 @@ export async function onRequestPost(context) {
         ? validateSiteSetting(key, restoredValue)
         : null;
     if (restoreError) return adminJson({ error: restoreError }, 400);
+    if (type === "page") {
+      if (typeof source.title !== "string" || !source.title.trim() || source.title.length > 120) {
+        return adminJson({ error: "This archived page revision has invalid title metadata and cannot be restored." }, 400);
+      }
+      const routeError = key === "home" && source.route === "/" ? null : validatePageRoute(source.route);
+      if (routeError) return adminJson({ error: routeError }, 400);
+      const routeConflict = await env.DB.prepare(`
+        SELECT p.id
+        FROM cms_pages p
+        LEFT JOIN cms_page_versions published ON published.id = p.published_version_id
+        LEFT JOIN cms_page_versions draft ON draft.page_id = p.id AND draft.state = 'draft'
+        WHERE p.id <> ? AND (p.route = ? OR published.route = ? OR draft.route = ?)
+        LIMIT 1
+      `).bind(entity.id, source.route, source.route, source.route).first();
+      if (routeConflict) return adminJson({ error: "The archived page route is now assigned to another CMS page." }, 409);
+    }
     const draft = await env.DB.prepare(`SELECT id, version_number FROM ${config.versions} WHERE ${config.fk} = ? AND state = 'draft'`).bind(entity.id).first();
     const latest = await env.DB.prepare(`SELECT COALESCE(MAX(version_number), 0) AS version FROM ${config.versions} WHERE ${config.fk} = ?`).bind(entity.id).first();
     const nextVersion = Number(latest?.version || 0) + 1;
@@ -76,29 +93,37 @@ export async function onRequestPost(context) {
     const statements = [];
     if (draft) statements.push(env.DB.prepare(`UPDATE ${config.versions} SET state = 'archived' WHERE id = ? AND state = 'draft'`).bind(draft.id));
     const newId = crypto.randomUUID();
-    statements.push(
-      env.DB.prepare(`
-        INSERT INTO ${config.versions} (
-          id,
-          ${config.fk},
-          version_number,
-          state,
-          ${config.json},
-          created_by,
-          change_note,
-          created_at
+    if (type === "page") {
+      statements.push(
+        env.DB.prepare(`
+          INSERT INTO cms_page_versions (
+            id, page_id, version_number, state, title, route, content_json,
+            created_by, change_note, created_at
+          )
+          VALUES (?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?)
+        `).bind(
+          newId, entity.id, nextVersion, source.title, source.route,
+          source.content, actor, `Restored from V${source.version_number}`, now
         )
-        VALUES (?, ?, ?, 'draft', ?, ?, ?, ?)
-      `).bind(
-        newId,
-        entity.id,
-        nextVersion,
-        source.content,
-        actor,
-        `Restored from V${source.version_number}`,
-        now
-      )
-    );
+      );
+      statements.push(
+        env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ?")
+          .bind(source.title, source.route, now, entity.id)
+      );
+    } else {
+      statements.push(
+        env.DB.prepare(`
+          INSERT INTO ${config.versions} (
+            id, ${config.fk}, version_number, state, ${config.json},
+            created_by, change_note, created_at
+          )
+          VALUES (?, ?, ?, 'draft', ?, ?, ?, ?)
+        `).bind(
+          newId, entity.id, nextVersion, source.content, actor,
+          `Restored from V${source.version_number}`, now
+        )
+      );
+    }
     statements.push(
       env.DB.prepare(`
         INSERT INTO cms_audit_log (

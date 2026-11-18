@@ -14,7 +14,7 @@ function validPageInput(body) {
   const route = clean(body.route, 160);
   if (!KEY_PATTERN.test(pageKey)) return "Page key must use lowercase letters, numbers and hyphens.";
   if (!title) return "Page title is required.";
-  const routeError = validatePageRoute(route);
+  const routeError = pageKey === "home" && route === "/" ? null : validatePageRoute(route);
   if (routeError) return routeError;
   const contentError = validatePageContent(body.content);
   if (contentError) return contentError;
@@ -42,14 +42,14 @@ export async function onRequestGet(context) {
   if (!env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
   try {
     const result = await env.DB.prepare(`
-      SELECT p.id, p.page_key, p.title, p.route, p.published_version_id,
-        p.updated_at,
+      SELECT p.id, p.page_key, COALESCE(d.title, p.title) AS title,
+        COALESCE(d.route, p.route) AS route, p.published_version_id, p.updated_at,
         d.id AS draft_id, d.version_number AS draft_version, d.content_json AS draft_content,
         pv.version_number AS published_version
       FROM cms_pages p
       LEFT JOIN cms_page_versions d ON d.page_id = p.id AND d.state = 'draft'
       LEFT JOIN cms_page_versions pv ON pv.id = p.published_version_id
-      ORDER BY p.title COLLATE NOCASE
+      ORDER BY COALESCE(d.title, p.title) COLLATE NOCASE
     `).all();
     return adminJson({ ok: true, pages: result.results || [] });
   } catch (error) {
@@ -77,34 +77,39 @@ export async function onRequestPost(context) {
   const actor = auth.email || null;
 
   try {
-    let page = await env.DB.prepare("SELECT id FROM cms_pages WHERE page_key = ? OR route = ? LIMIT 1")
-      .bind(pageKey, route).first();
+    let page = await env.DB.prepare("SELECT id FROM cms_pages WHERE page_key = ? LIMIT 1")
+      .bind(pageKey).first();
+    const conflict = await env.DB.prepare(`
+      SELECT p.id
+      FROM cms_pages p
+      LEFT JOIN cms_page_versions published ON published.id = p.published_version_id
+      LEFT JOIN cms_page_versions draft ON draft.page_id = p.id AND draft.state = 'draft'
+      WHERE (p.page_key = ? OR p.route = ? OR published.route = ? OR draft.route = ?)
+        AND (? IS NULL OR p.id <> ?)
+      LIMIT 1
+    `).bind(pageKey, route, route, route, page?.id || null, page?.id || null).first();
+    if (conflict) return adminJson({ error: "That page key or route is already assigned to another page." }, 409);
+
     if (!page) {
       const id = crypto.randomUUID();
       const versionId = crypto.randomUUID();
       await env.DB.batch([
         env.DB.prepare("INSERT INTO cms_pages (id, page_key, title, route, updated_at) VALUES (?, ?, ?, ?, ?)")
           .bind(id, pageKey, title, route, now),
-        env.DB.prepare("INSERT INTO cms_page_versions (id, page_id, version_number, state, content_json, created_by, change_note) VALUES (?, ?, 1, 'draft', ?, ?, ?)")
-          .bind(versionId, id, content, actor, clean(body.changeNote, 240) || "Initial draft"),
+        env.DB.prepare("INSERT INTO cms_page_versions (id, page_id, version_number, state, title, route, content_json, created_by, change_note) VALUES (?, ?, 1, 'draft', ?, ?, ?, ?, ?)")
+          .bind(versionId, id, title, route, content, actor, clean(body.changeNote, 240) || "Initial draft"),
         env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'create_draft', 'page', ?, ?)")
           .bind(crypto.randomUUID(), actor, id, JSON.stringify({ pageKey, route }))
       ]);
       return adminJson({ ok: true, pageId: id, draftId: versionId, version: 1 }, 201);
     }
 
-    const existing = await env.DB.prepare("SELECT id, page_key, route FROM cms_pages WHERE id = ?").bind(page.id).first();
-    if (existing.page_key !== pageKey || existing.route !== route) {
-      const conflict = await env.DB.prepare("SELECT id FROM cms_pages WHERE (page_key = ? OR route = ?) AND id <> ? LIMIT 1")
-        .bind(pageKey, route, page.id).first();
-      if (conflict) return adminJson({ error: "That page key or route is already assigned to another page." }, 409);
-    }
     const draft = await env.DB.prepare("SELECT id, version_number FROM cms_page_versions WHERE page_id = ? AND state = 'draft' LIMIT 1")
       .bind(page.id).first();
     if (draft) {
       await env.DB.batch([
-        env.DB.prepare("UPDATE cms_page_versions SET content_json = ?, change_note = ?, created_by = ?, created_at = ? WHERE id = ? AND state = 'draft'")
-          .bind(content, clean(body.changeNote, 240) || "Updated draft", actor, now, draft.id),
+        env.DB.prepare("UPDATE cms_page_versions SET title = ?, route = ?, content_json = ?, change_note = ?, created_by = ?, created_at = ? WHERE id = ? AND state = 'draft'")
+          .bind(title, route, content, clean(body.changeNote, 240) || "Updated draft", actor, now, draft.id),
         env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ?")
           .bind(title, route, now, page.id),
         env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'update_draft', 'page', ?, ?)")
@@ -118,9 +123,9 @@ export async function onRequestPost(context) {
     const version = Number(latest?.version || 0) + 1;
     const versionId = crypto.randomUUID();
     await env.DB.batch([
-      env.DB.prepare("UPDATE cms_pages SET title = ?, updated_at = ? WHERE id = ?").bind(title, now, page.id),
-      env.DB.prepare("INSERT INTO cms_page_versions (id, page_id, version_number, state, content_json, created_by, change_note) VALUES (?, ?, ?, 'draft', ?, ?, ?)")
-        .bind(versionId, page.id, version, content, actor, clean(body.changeNote, 240) || "New draft"),
+      env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ?").bind(title, route, now, page.id),
+      env.DB.prepare("INSERT INTO cms_page_versions (id, page_id, version_number, state, title, route, content_json, created_by, change_note) VALUES (?, ?, ?, 'draft', ?, ?, ?, ?, ?)")
+        .bind(versionId, page.id, version, title, route, content, actor, clean(body.changeNote, 240) || "New draft"),
       env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'create_draft', 'page', ?, ?)")
         .bind(crypto.randomUUID(), actor, page.id, JSON.stringify({ version }))
     ]);

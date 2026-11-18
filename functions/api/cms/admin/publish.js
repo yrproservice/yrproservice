@@ -1,5 +1,5 @@
 import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
-import { validatePageContent, validateProductContent } from "../../../_utils/cms-content-validation.js";
+import { validatePageContent, validatePageRoute, validateProductContent } from "../../../_utils/cms-content-validation.js";
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
 
 function clean(value, max = 100) {
@@ -38,7 +38,7 @@ export async function onRequestPost(context) {
       ? await env.DB.prepare(`SELECT setting_key AS id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first()
       : await env.DB.prepare(`SELECT id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first();
     if (!entity) return adminJson({ error: `CMS ${config.label} not found.` }, 404);
-    const valueColumn = entityType === "setting" ? "value_json" : entityType === "page" ? "content_json AS value_json" : entityType === "product" ? "product_json AS value_json" : "NULL AS value_json";
+    const valueColumn = entityType === "setting" ? "value_json" : entityType === "page" ? "content_json AS value_json, title, route" : entityType === "product" ? "product_json AS value_json" : "NULL AS value_json";
     const target = await env.DB.prepare(`
       SELECT id, version_number, state, ${valueColumn}
       FROM ${config.versions}
@@ -76,6 +76,20 @@ export async function onRequestPost(context) {
       }
       const validationError = validatePageContent(content);
       if (validationError) return adminJson({ error: validationError }, 400);
+      if (typeof target.title !== "string" || !target.title.trim() || target.title.length > 120) {
+        return adminJson({ error: "The page revision must have a valid title before publishing." }, 400);
+      }
+      const routeError = entityKey === "home" && target.route === "/" ? null : validatePageRoute(target.route);
+      if (routeError) return adminJson({ error: routeError }, 400);
+      const routeConflict = await env.DB.prepare(`
+        SELECT p.id
+        FROM cms_pages p
+        LEFT JOIN cms_page_versions published ON published.id = p.published_version_id
+        LEFT JOIN cms_page_versions draft ON draft.page_id = p.id AND draft.state = 'draft'
+        WHERE p.id <> ? AND (p.route = ? OR published.route = ? OR draft.route = ?)
+        LIMIT 1
+      `).bind(entity.id, target.route, target.route, target.route).first();
+      if (routeConflict) return adminJson({ error: "This page route is already assigned to another CMS page." }, 409);
     }
     if (entityType === "setting") {
       let value;
@@ -93,9 +107,14 @@ export async function onRequestPost(context) {
     }
     batch.push(env.DB.prepare(`UPDATE ${config.versions} SET state = 'published', published_at = ? WHERE id = ? AND ${config.foreignKey} = ?`)
       .bind(now, versionId, entity.id));
-    batch.push(entityType === "setting"
-      ? env.DB.prepare(`UPDATE ${config.table} SET published_version_id = ?, updated_at = ? WHERE setting_key = ?`).bind(versionId, now, entity.id)
-      : env.DB.prepare(`UPDATE ${config.table} SET published_version_id = ?, updated_at = ? WHERE id = ?`).bind(versionId, now, entity.id));
+    if (entityType === "setting") {
+      batch.push(env.DB.prepare(`UPDATE ${config.table} SET published_version_id = ?, updated_at = ? WHERE setting_key = ?`).bind(versionId, now, entity.id));
+    } else if (entityType === "page") {
+      batch.push(env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, published_version_id = ?, updated_at = ? WHERE id = ?")
+        .bind(target.title, target.route, versionId, now, entity.id));
+    } else {
+      batch.push(env.DB.prepare(`UPDATE ${config.table} SET published_version_id = ?, updated_at = ? WHERE id = ?`).bind(versionId, now, entity.id));
+    }
     batch.push(env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'publish', ?, ?, ?)")
       .bind(crypto.randomUUID(), auth.email || null, entityType, entity.id, JSON.stringify({ version: target.version_number })));
     await env.DB.batch(batch);

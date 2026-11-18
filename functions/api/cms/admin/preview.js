@@ -10,7 +10,8 @@ export async function onRequestGet(context) {
   if (!pageKey) return adminJson({ error: "A page key is required." }, 400);
   try {
     const row = await env.DB.prepare(`
-      SELECT p.page_key, p.title, p.route, d.id AS draft_id,
+      SELECT p.page_key, COALESCE(d.title, pv.title, p.title) AS title,
+        COALESCE(d.route, pv.route, p.route) AS route, d.id AS draft_id,
         d.version_number AS draft_version, d.content_json AS draft_content,
         pv.version_number AS published_version, pv.content_json AS published_content
       FROM cms_pages p

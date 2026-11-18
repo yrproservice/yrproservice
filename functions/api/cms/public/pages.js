@@ -17,10 +17,10 @@ export async function onRequestGet({ request, env }) {
   try {
     if (pageRoute) {
       const row = await env.DB.prepare(`
-        SELECT p.page_key, p.title, p.route, v.version_number, v.content_json
+        SELECT p.page_key, v.title, v.route, v.version_number, v.content_json
         FROM cms_pages p
         JOIN cms_page_versions v ON v.id = p.published_version_id
-        WHERE p.route = ? AND v.state = 'published'
+        WHERE v.route = ? AND v.state = 'published'
         LIMIT 1
       `).bind(pageRoute).first();
       if (!row) return publicJson({ error: "Published page not found." }, 404);
@@ -42,7 +42,7 @@ export async function onRequestGet({ request, env }) {
       FROM cms_pages p
       JOIN cms_page_versions v ON v.id = p.published_version_id
       WHERE v.state = 'published'
-      ORDER BY p.title COLLATE NOCASE
+      ORDER BY v.title COLLATE NOCASE
     `).all();
     return publicJson({ ok: true, pages: (result.results || []).map((row) => ({
       pageKey: row.page_key, title: row.title, route: row.route,
