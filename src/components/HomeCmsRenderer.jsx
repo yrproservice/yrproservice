@@ -24,7 +24,7 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
   switch (section.type) {
     case "hero":
       return <section className="bp-home-hero home-cms-section home-cms-hero" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"} data-layout={c.layout || "overlay-left"}>
-        <img src={c.imageUrl || "/assets/hero-operatory.jpg"} alt={c.imageAlt || ""} className="bp-hero-image" style={{ objectPosition: c.imagePosition || "center", height: c.imageHeight ? `${c.imageHeight}px` : undefined }} />
+        <img src={c.imageUrl || "/assets/hero-operatory.jpg"} alt={c.imageAlt || ""} className="bp-hero-image" style={{ objectPosition: c.imagePosition || "center", height: c.imageFit === "original" ? "auto" : c.imageHeight ? `${c.imageHeight}px` : undefined, objectFit: c.imageFit === "contain" ? "contain" : c.imageFit === "original" ? "initial" : undefined }} />
         <div className="bp-hero-overlay" /><div className="bp-hero-lines" aria-hidden="true" />
         <div className="container bp-hero-content"><div className="bp-hero-copy">
           <p className="bp-eyebrow bp-eyebrow-light">{c.eyebrow}</p>
