@@ -278,33 +278,131 @@ export default function CMSManagement() {
       setError(loadError.message);
     }
   }
-  async function restoreRevision(type,key,id) {
-    if(!window.confirm("Restore this revision as a new draft? The current published version will remain live."))return;
-    setBusy(true);try{const d=await api("/api/cms/admin/history",{method:"POST",body:JSON.stringify({entityType:type,entityKey:key,versionId:id})});setNotice(`Restored as draft V${d.version}. It has not been published.`);await loadHistory(type,key);if(type==="product")await refreshProducts();if(type==="setting")await refreshSettings();}catch(e){setError(e.message);}finally{setBusy(false);}
+  async function restoreRevision(type, key, id) {
+    const confirmed = window.confirm(
+      "Restore this revision as a new draft? The current published version will remain live."
+    );
+    if (!confirmed) return;
+
+    setBusy(true);
+
+    try {
+      const data = await api("/api/cms/admin/history", {
+        method: "POST",
+        body: JSON.stringify({
+          entityType: type,
+          entityKey: key,
+          versionId: id,
+        }),
+      });
+
+      setNotice(
+        `Restored as draft V${data.version}. It has not been published.`
+      );
+      await loadHistory(type, key);
+
+      if (type === "product") {
+        await refreshProducts();
+      }
+
+      if (type === "setting") {
+        await refreshSettings();
+      }
+    } catch (restoreError) {
+      setError(restoreError.message);
+    } finally {
+      setBusy(false);
+    }
   }
-  async function deleteDraft(type,key,id) {
-    if(!id)return;
-    if(!window.confirm("Delete this unpublished draft? Published content and archived revision history will remain unchanged. This draft cannot be recovered."))return;
-    setBusy(true);setError("");setNotice("");
-    try{
-      const d=await api("/api/cms/admin/draft",{method:"DELETE",body:JSON.stringify({entityType:type,entityKey:key,versionId:id})});
-      setNotice(`Draft V${d.deletedVersion} deleted. Published content and archived history were preserved.`);
-      if(type==="product"){
-        const refreshed=await api("/api/cms/admin/products");setItems(refreshed.products||[]);
-        const row=(refreshed.products||[]).find(item=>item.product_slug===key);
-        if(row)chooseProduct(row);else setSelected(null);
+  async function deleteDraft(type, key, id) {
+    if (!id) return;
+
+    const confirmed = window.confirm(
+      "Delete this unpublished draft? Published content and archived revision history will remain unchanged. This draft cannot be recovered."
+    );
+    if (!confirmed) return;
+
+    setBusy(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const data = await api("/api/cms/admin/draft", {
+        method: "DELETE",
+        body: JSON.stringify({
+          entityType: type,
+          entityKey: key,
+          versionId: id,
+        }),
+      });
+
+      setNotice(
+        `Draft V${data.deletedVersion} deleted. Published content and archived history were preserved.`
+      );
+
+      if (type === "product") {
+        const refreshed = await api("/api/cms/admin/products");
+        const products = refreshed.products || [];
+        setItems(products);
+
+        const productRow = products.find(
+          (item) => item.product_slug === key
+        );
+
+        if (productRow) {
+          chooseProduct(productRow);
+        } else {
+          setSelected(null);
+        }
       }
-      if(type==="setting"){
-        const refreshed=await api("/api/cms/admin/settings");setSettings(refreshed.settings||[]);
-        const row=(refreshed.settings||[]).find(item=>item.setting_key===key);
-        if(row){setSettingKey(key);setSettingJson(row.draft_value||row.published_value||"{}");}
+
+      if (type === "setting") {
+        const refreshed = await api("/api/cms/admin/settings");
+        const savedSettings = refreshed.settings || [];
+        setSettings(savedSettings);
+
+        const settingRow = savedSettings.find(
+          (item) => item.setting_key === key
+        );
+
+        if (settingRow) {
+          setSettingKey(key);
+          setSettingJson(
+            settingRow.draft_value || settingRow.published_value || "{}"
+          );
+        }
       }
-      await loadHistory(type,key);
-    }catch(e){setError(e.message);}finally{setBusy(false);}
+
+      await loadHistory(type, key);
+    } catch (deleteError) {
+      setError(deleteError.message);
+    } finally {
+      setBusy(false);
+    }
   }
   async function uploadMedia(event) {
-    const file=event.target.files?.[0];if(!file)return;const form=new FormData();form.append("file",file);
-    setBusy(true);setError("");try{await api("/api/cms/admin/media",{method:"POST",body:form});setNotice("Media uploaded to Preview storage.");await refreshMedia();}catch(e){setError(e.message);}finally{setBusy(false);event.target.value="";}
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const form = new FormData();
+    form.append("file", file);
+
+    setBusy(true);
+    setError("");
+
+    try {
+      await api("/api/cms/admin/media", {
+        method: "POST",
+        body: form,
+      });
+      setNotice("Media uploaded to Preview storage.");
+      await refreshMedia();
+    } catch (uploadError) {
+      setError(uploadError.message);
+    } finally {
+      setBusy(false);
+      event.target.value = "";
+    }
   }
   function applyMediaImage(url) {
     let product;
@@ -332,15 +430,67 @@ export default function CMSManagement() {
     try { return JSON.parse(json).img || ""; } catch { return ""; }
   })();
   async function removeMedia(id) {
-    if(!window.confirm("Remove this media file? Any pages using its URL may show a broken image."))return;
-    try{await api(`/api/cms/admin/media?id=${encodeURIComponent(id)}`,{method:"DELETE"});await refreshMedia();setNotice("Media removed.");}catch(e){setError(e.message);}
+    const confirmed = window.confirm(
+      "Remove this media file? Any pages using its URL may show a broken image."
+    );
+    if (!confirmed) return;
+
+    try {
+      await api(
+        `/api/cms/admin/media?id=${encodeURIComponent(id)}`,
+        { method: "DELETE" }
+      );
+      await refreshMedia();
+      setNotice("Media removed.");
+    } catch (removeError) {
+      setError(removeError.message);
+    }
   }
   async function saveSetting() {
-    let value;try{value=JSON.parse(settingJson);}catch{setError("Setting value must be valid JSON.");return;}
-    setBusy(true);try{const d=await api("/api/cms/admin/settings",{method:"POST",body:JSON.stringify({key:settingKey,value})});setNotice(`Settings draft V${d.version} saved.`);await refreshSettings();}catch(e){setError(e.message);}finally{setBusy(false);}
+    let value;
+
+    try {
+      value = JSON.parse(settingJson);
+    } catch {
+      setError("Setting value must be valid JSON.");
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const data = await api("/api/cms/admin/settings", {
+        method: "POST",
+        body: JSON.stringify({
+          key: settingKey,
+          value,
+        }),
+      });
+
+      setNotice(`Settings draft V${data.version} saved.`);
+      await refreshSettings();
+    } catch (saveError) {
+      setError(saveError.message);
+    } finally {
+      setBusy(false);
+    }
   }
   async function publishSetting(row) {
-    try{await api("/api/cms/admin/publish",{method:"POST",body:JSON.stringify({entityType:"setting",entityKey:row.setting_key,versionId:row.draft_id})});setNotice(`Setting "${row.setting_key}" published to Preview.`);await refreshSettings();}catch(e){setError(e.message);}
+    try {
+      await api("/api/cms/admin/publish", {
+        method: "POST",
+        body: JSON.stringify({
+          entityType: "setting",
+          entityKey: row.setting_key,
+          versionId: row.draft_id,
+        }),
+      });
+
+      setNotice(`Setting "${row.setting_key}" published to Preview.`);
+      await refreshSettings();
+    } catch (publishError) {
+      setError(publishError.message);
+    }
   }
   const historyOptions = historyType==="page"
     ? pages.map(row=>({key:row.page_key,label:`${row.title} · ${row.route}`}))
@@ -398,4 +548,39 @@ export default function CMSManagement() {
     {tab==="track-request"&&<section className="cms-manager-panel"><header className="cms-manager-heading"><div><h2>Track My Request page workspace</h2><p>Manage the Track My Request page appearance here. Request lookup and status retrieval behaviour remain unchanged.</p></div></header><PageVisualDesignManager key="track-request" pageKey="track-request"/></section>}
   </div></section>;
 }
-function RevisionList({history,onRestore,onDeleteDraft}){return <div className="cms-revision-list">{history.map(v=><article key={v.id}><div><strong>V{v.version_number} · {v.state}</strong><small>{v.change_note||"No change note"} · {v.created_at}</small></div>{v.state!=="draft"&&<button className="admin-secondary-button" onClick={()=>onRestore(v.id)}>Restore as draft</button>}{v.state==="draft"&&onDeleteDraft&&<button className="admin-secondary-button" onClick={()=>onDeleteDraft(v.id)}>Delete Draft</button>}</article>)}</div>;}
+function RevisionList({ history, onRestore, onDeleteDraft }) {
+  return (
+    <div className="cms-revision-list">
+      {history.map((revision) => (
+        <article key={revision.id}>
+          <div>
+            <strong>
+              V{revision.version_number} · {revision.state}
+            </strong>
+            <small>
+              {revision.change_note || "No change note"} · {revision.created_at}
+            </small>
+          </div>
+
+          {revision.state !== "draft" && (
+            <button
+              className="admin-secondary-button"
+              onClick={() => onRestore(revision.id)}
+            >
+              Restore as draft
+            </button>
+          )}
+
+          {revision.state === "draft" && onDeleteDraft && (
+            <button
+              className="admin-secondary-button"
+              onClick={() => onDeleteDraft(revision.id)}
+            >
+              Delete Draft
+            </button>
+          )}
+        </article>
+      ))}
+    </div>
+  );
+}
