@@ -4431,14 +4431,12 @@ h6 {
   background-color: var(--page-design-surface);
   box-shadow: var(--page-design-card-shadow);
 }
-.page-design-scope :is(.bp-catalog-image img,.bp-detail-photo-frame img,.bp-thumb-row img,.spotlight-card img,.services-cms-page img,.service-detail-page img) {
+.page-design-scope :is(.services-cms-page img,.service-detail-page img) {
   object-fit: var(--page-design-image-fit, contain);
 }
-.page-design-scope[data-image-fit="contain"] :is(.bp-catalog-image img,.bp-detail-photo-frame img,.bp-thumb-row img) {
-  object-fit: contain;
-}
-.page-design-scope[data-image-fit="cover"] :is(.bp-catalog-image img,.bp-detail-photo-frame img,.bp-thumb-row img) {
-  object-fit: cover;
+/* Product photography always shows the complete model; editorial image-fit controls never crop it. */
+.page-design-scope :is(.bp-catalog-image img,.bp-detail-photo-frame img,.bp-thumb-row img,.spotlight-card img) {
+  object-fit: contain !important;
 }
 .page-design-scope[data-heading-align="center"] :is(.bp-page-heading,.request-heading,.track-request-intro,.products-showroom-hero .products-hero-copy,.service-detail-grid > div:first-child) {
   text-align: center;
@@ -4489,6 +4487,15 @@ h6 {
 .page-visual-control-grid input[type="range"] { width: 100%; accent-color: #1e7ed8; }
 .page-visual-control-grid select { width: 100%; }
 .page-visual-manager-footnote { padding: 12px 14px; border-left: 3px solid #1e7ed8; background: #f3f8fc; color: #536273; font-size: 13px; }
+
+.cms-design-preview-tools { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.cms-design-preview-product-select { display: grid; gap: 4px; color: #526477; font-size: 12px; font-weight: 700; }
+.cms-design-preview-product-select select { min-width: 190px; max-width: min(280px, 48vw); min-height: 36px; padding: 6px 9px; border: 1px solid #cbd8e3; border-radius: 7px; background: #fff; color: #1f2937; }
+.bp-product-documents { margin-top: 22px; padding-top: 16px; border-top: 1px solid #dbe5ee; }
+.bp-product-documents h3 { margin: 0 0 10px; color: #0b3158; font-size: 16px; }
+.bp-product-documents ul { display: grid; gap: 8px; padding-left: 20px; }
+.bp-product-documents a { color: #1e7ed8; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
+
 .cms-design-preview-content { min-height: 70vh; }
 .cms-design-preview-content :is(a,button,input,select,textarea) { pointer-events: none !important; }
 @media (max-width: 760px) {
