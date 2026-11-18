@@ -37,44 +37,65 @@ export default function AdminDashboard({ onAuthenticated }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  async function loadRequests() {
+  async function loadRequests(signal) {
     setLoading(true);
     setError("");
+
     try {
       const params = new URLSearchParams();
       if (type) params.set("type", type);
       if (status) params.set("status", status);
       if (search.trim()) params.set("search", search.trim());
-      const response = await fetch(`/api/admin/requests?${params.toString()}`, {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
+
+      const response = await fetch(
+        `/api/admin/requests?${params.toString()}`,
+        {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          signal,
+        }
+      );
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok)
+
+      if (signal?.aborted) return;
+
+      if (!response.ok || !result.ok) {
         throw new Error(
-          result.error || `Unable to load requests (HTTP ${response.status}).`,
+          result.error || `Unable to load requests (HTTP ${response.status}).`
         );
+      }
+
       const loadedRequests = Array.isArray(result.requests)
         ? result.requests
         : [];
+
       setRequests(loadedRequests);
       onAuthenticated?.();
       setSelected((current) =>
         current
           ? loadedRequests.find(
-              (item) => item.reference === current.reference,
+              (item) => item.reference === current.reference
             ) || null
-          : null,
+          : null
       );
     } catch (loadError) {
-      setError(loadError.message || "Unable to load requests.");
+      if (!signal?.aborted) {
+        setError(loadError.message || "Unable to load requests.");
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }
 
   useEffect(() => {
-    loadRequests();
+    const controller = new AbortController();
+    loadRequests(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [type, status, search, onAuthenticated]);
 
   const counts = STATUSES.reduce((result, key) => ({
