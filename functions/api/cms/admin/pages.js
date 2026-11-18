@@ -1,4 +1,5 @@
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
+import { validatePageContent, validatePageRoute } from "../../../_utils/cms-content-validation.js";
 
 const KEY_PATTERN = /^[a-z0-9][a-z0-9-]{1,59}$/;
 const MAX_CONTENT_BYTES = 100_000;
@@ -13,10 +14,10 @@ function validPageInput(body) {
   const route = clean(body.route, 160);
   if (!KEY_PATTERN.test(pageKey)) return "Page key must use lowercase letters, numbers and hyphens.";
   if (!title) return "Page title is required.";
-  if (!route.startsWith("/") || route.startsWith("//") || /[?#\\\\]/.test(route)) return "Enter a valid site route.";
-  if (!body.content || typeof body.content !== "object" || Array.isArray(body.content)) return "Page content must be a JSON object.";
-  if (!Array.isArray(body.content.sections)) return "Page content must contain a sections array.";
-  if (body.content.sections.length > 80) return "A page cannot contain more than 80 sections.";
+  const routeError = validatePageRoute(route);
+  if (routeError) return routeError;
+  const contentError = validatePageContent(body.content);
+  if (contentError) return contentError;
   return null;
 }
 

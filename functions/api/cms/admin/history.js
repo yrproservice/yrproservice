@@ -1,4 +1,6 @@
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
+import { validatePageContent } from "../../../_utils/cms-content-validation.js";
+import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
 
 const CONFIG = {
   page: { table: "cms_pages", key: "page_key", versions: "cms_page_versions", fk: "page_id", json: "content_json" },
@@ -54,6 +56,16 @@ export async function onRequestPost(context) {
     if (!entity) return adminJson({ error: "CMS item not found." }, 404);
     const source = await env.DB.prepare(`SELECT version_number, ${config.json} AS content FROM ${config.versions} WHERE id = ? AND ${config.fk} = ?`).bind(versionId, entity.id).first();
     if (!source) return adminJson({ error: "Revision does not belong to this item." }, 404);
+    let restoredValue;
+    try { restoredValue = JSON.parse(source.content); } catch {
+      return adminJson({ error: "This archived revision contains invalid JSON and cannot be restored." }, 400);
+    }
+    const restoreError = type === "page"
+      ? validatePageContent(restoredValue)
+      : type === "setting"
+        ? validateSiteSetting(key, restoredValue)
+        : null;
+    if (restoreError) return adminJson({ error: restoreError }, 400);
     const draft = await env.DB.prepare(`SELECT id, version_number FROM ${config.versions} WHERE ${config.fk} = ? AND state = 'draft'`).bind(entity.id).first();
     const latest = await env.DB.prepare(`SELECT COALESCE(MAX(version_number), 0) AS version FROM ${config.versions} WHERE ${config.fk} = ?`).bind(entity.id).first();
     const nextVersion = Number(latest?.version || 0) + 1;

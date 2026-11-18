@@ -2,14 +2,21 @@ import React from "react";
 import { products } from "../data/products";
 
 export default function GenericCmsRenderer({ content, navigate }) {
-  const sections = [...(content?.sections || [])]
-    .filter((section) => section.visible !== false)
-    .sort((first, second) => (first.order || 0) - (second.order || 0));
+  const supportedTypes = new Set([
+    "hero", "text", "image-text", "product-grid", "feature-grid",
+    "editorial", "brand-grid", "services-banner", "benefits-grid", "cta",
+  ]);
+  const sections = (Array.isArray(content?.sections) ? content.sections : [])
+    .filter((section) => section && typeof section === "object" && !Array.isArray(section))
+    .filter((section) => supportedTypes.has(section.type) && section.visible !== false)
+    .sort((first, second) => (Number(first.order) || 0) - (Number(second.order) || 0));
 
   return (
     <main className="cms-generic-page">
       {sections.map((section) => {
-        const sectionContent = section.content || {};
+        const sectionContent = section.content && typeof section.content === "object" && !Array.isArray(section.content)
+          ? section.content
+          : {};
         const sectionKey = section.id || section.type;
 
         function goToButtonPage() {
@@ -44,7 +51,8 @@ export default function GenericCmsRenderer({ content, navigate }) {
         }
 
         if (section.type === "product-grid") {
-          const selectedProducts = (sectionContent.productSlugs || [])
+          const selectedProducts = (Array.isArray(sectionContent.productSlugs) ? sectionContent.productSlugs : [])
+            .filter((slug) => typeof slug === "string")
             .map((slug) => products.find((product) => product.slug === slug))
             .filter(Boolean);
 
@@ -75,7 +83,7 @@ export default function GenericCmsRenderer({ content, navigate }) {
               <h2>{sectionContent.heading}</h2>
               <p>{sectionContent.description}</p>
               <div className="cms-generic-brands">
-                {(sectionContent.items || []).map((item) => (
+                {(Array.isArray(sectionContent.items) ? sectionContent.items : []).filter((item) => typeof item === "string").map((item) => (
                   <span key={item}>
                     {String(item).replace(/\.[^.]+$/, "")}
                   </span>
@@ -86,7 +94,7 @@ export default function GenericCmsRenderer({ content, navigate }) {
         }
 
         const items = Array.isArray(sectionContent.items)
-          ? sectionContent.items
+          ? sectionContent.items.filter((item) => item && typeof item === "object" && !Array.isArray(item))
           : [];
 
         return (
