@@ -3943,6 +3943,8 @@ h6 {
 .cms-manager-heading h2{margin-bottom:4px}
 .cms-product-list{max-height:650px;overflow:auto;margin:12px 0}
 .cms-product-list button{display:block;width:100%;text-align:left;background:#fff;border:1px solid #e1e8ef;border-radius:7px;padding:10px;margin:6px 0;color:#1f2937;cursor:pointer}
+.cms-product-list button:hover{border-color:#9bc8e8;background:#f7fbfe}
+.cms-product-list button:focus-visible{outline:2px solid #1e7ed8;outline-offset:2px}
 .cms-product-list button.active{border-color:#1e7ed8;background:#eaf6fd}
 .cms-product-list strong,.cms-product-list small,.cms-product-list span{display:block}
 .cms-product-list small,.cms-product-list span,.cms-setting-row small{font-size:11px;color:#687280;margin-top:3px}
