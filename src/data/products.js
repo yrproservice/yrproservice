@@ -396,7 +396,7 @@ const melagProducts = [
     brandLine: "Steam Sterilizer",
     category: "Equipment",
     purchaseType: "quote",
-    img: "",
+    img: "/catalog/melag/images/vacuclave-118-123.png",
     summary:
       "MELAG Vacuclave 118 steam sterilizer for dental instrument reprocessing and clinic hygiene workflows.",
     description:
