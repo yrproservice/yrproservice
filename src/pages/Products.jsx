@@ -7,6 +7,7 @@ import { mergePublishedProduct } from "../data/productImages";
 import ShowroomProductCard from "../components/ShowroomProductCard";
 import ProductMediaFrame from "../components/ProductMediaFrame";
 import { getProductRequestFlow, isDentalChairProduct, PRODUCT_REQUEST_FLOWS } from "../data/productWorkflow";
+import { matchesProductSearch } from "../data/productSearch";
 
 export default function Products({ navigate }) {
   const [search, setSearch] = useState("");
@@ -47,9 +48,7 @@ export default function Products({ navigate }) {
         (p) =>
           (category === "All" || p.category === category) &&
           (brand === "All" || (p.brand || "Other") === brand) &&
-          `${p.name} ${p.brand || ""} ${p.summary || ""}`
-            .toLowerCase()
-            .includes(search.toLowerCase()),
+          matchesProductSearch(p, search),
       ),
     [search, category, brand, catalogueProducts],
   );
