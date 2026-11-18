@@ -88,6 +88,8 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [notice, setNotice] = useState("");
   const [structuredJson, setStructuredJson] = useState("{}");
   const dragSectionId = React.useRef(null);
+  const historyRef = React.useRef({ past: [], future: [], previous: JSON.stringify({ sections: [] }), suppressNext: false });
+  const [historyRevision, setHistoryRevision] = useState(0);
   const homeDesign = content.design || {};
   const selectedSection = useMemo(
     () => content.sections.find((section) => section.id === selectedSectionId) || null,
@@ -104,6 +106,69 @@ export default function CMSDashboard({ onAdminLogout }) {
   })();
   const currentSnapshot = JSON.stringify({ pageKey, pageTitle, route, content });
   const hasUnsavedChanges = Boolean(pageKey) && (hasUnappliedStructuredJson || savedSnapshot !== currentSnapshot);
+  const canUndo = historyRef.current.past.length > 0;
+  const canRedo = historyRef.current.future.length > 0;
+
+  useEffect(() => {
+    const snapshot = JSON.stringify(content);
+    const history = historyRef.current;
+    if (history.suppressNext) {
+      history.suppressNext = false;
+      history.previous = snapshot;
+      setHistoryRevision((revision) => revision + 1);
+      return;
+    }
+    if (history.previous !== snapshot) {
+      if (history.previous) {
+        history.past.push(history.previous);
+        if (history.past.length > 50) history.past.shift();
+      }
+      history.future = [];
+      history.previous = snapshot;
+      setHistoryRevision((revision) => revision + 1);
+    }
+  }, [content]);
+
+  function resetEditorHistory(nextContent) {
+    historyRef.current = {
+      past: [],
+      future: [],
+      previous: JSON.stringify(nextContent),
+      suppressNext: false
+    };
+    setHistoryRevision((revision) => revision + 1);
+  }
+
+  function applyHistorySnapshot(snapshot, direction) {
+    const history = historyRef.current;
+    const current = JSON.stringify(content);
+    if (direction === "undo") {
+      if (!history.past.length) return;
+      const previous = history.past.pop();
+      history.future.push(current);
+      history.suppressNext = true;
+      history.previous = previous;
+      const restored = JSON.parse(previous);
+      setContent(restored);
+      const selected = restored.sections?.find((section) => section.id === selectedSectionId) || restored.sections?.[0];
+      setSelectedSectionId(selected?.id || "");
+      setStructuredJson(JSON.stringify(selected?.content || {}, null, 2));
+    } else {
+      if (!history.future.length) return;
+      const next = history.future.pop();
+      history.past.push(current);
+      history.suppressNext = true;
+      history.previous = next;
+      const restored = JSON.parse(next);
+      setContent(restored);
+      const selected = restored.sections?.find((section) => section.id === selectedSectionId) || restored.sections?.[0];
+      setSelectedSectionId(selected?.id || "");
+      setStructuredJson(JSON.stringify(selected?.content || {}, null, 2));
+    }
+    setError("");
+    setNotice(direction === "undo" ? "Last editor change undone." : "Editor change restored.");
+    setHistoryRevision((revision) => revision + 1);
+  }
 
   const loadPages = useCallback(async () => {
     setError("");
@@ -124,7 +189,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load this page.");
       setPageKey(result.page.pageKey); setPageTitle(result.page.title); setRoute(result.page.route);
-      setContent(result.page.content); setDraftId(result.page.draftId || "");
+      resetEditorHistory(result.page.content); setContent(result.page.content); setDraftId(result.page.draftId || "");
       setSavedSnapshot(JSON.stringify({ pageKey: result.page.pageKey, pageTitle: result.page.title, route: result.page.route, content: result.page.content }));
       setDraftVersion(result.page.draftVersion || null); setPublishedVersion(result.page.publishedVersion || null);
       setSelectedSectionId(result.page.content.sections?.[0]?.id || "");
@@ -135,7 +200,7 @@ export default function CMSDashboard({ onAdminLogout }) {
 
   function loadHomeTemplate() {
     const initial = JSON.parse(JSON.stringify(homeCmsTemplate));
-    setPageKey("home"); setPageTitle("Home"); setRoute("/"); setContent(initial);
+    resetEditorHistory(initial); setPageKey("home"); setPageTitle("Home"); setRoute("/"); setContent(initial);
     setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null); setPublishedVersion(null); setSavedSnapshot("");
     setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2));
     setNotice("Existing homepage template loaded into a new Home draft. Save it before publishing.");
@@ -149,7 +214,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     if (!key) { setError("Please use a title containing letters or numbers."); return; }
     const pageRoute = key === "home" ? "/" : `/${key}`;
     const initial = starterContent(title.trim());
-    setPageKey(key); setPageTitle(title.trim()); setRoute(pageRoute); setContent(initial);
+    resetEditorHistory(initial); setPageKey(key); setPageTitle(title.trim()); setRoute(pageRoute); setContent(initial);
     setSelectedSectionId(initial.sections[0].id); setDraftId(""); setDraftVersion(null);
     setPublishedVersion(null); setSavedSnapshot(""); setStructuredJson(JSON.stringify(initial.sections[0].content, null, 2)); setNotice("New page started. Save it as a draft when ready.");
   }
@@ -238,6 +303,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       setPageKey(snapshot.pageKey);
       setPageTitle(snapshot.pageTitle);
       setRoute(snapshot.route);
+      resetEditorHistory(snapshot.content);
       setContent(snapshot.content);
       const selected = snapshot.content.sections?.find((section) => section.id === selectedSectionId) || snapshot.content.sections?.[0];
       setSelectedSectionId(selected?.id || "");
@@ -307,6 +373,8 @@ export default function CMSDashboard({ onAdminLogout }) {
           <div className="cms-toolbar-actions">
             <button type="button" className="admin-secondary-button" onClick={loadHomeTemplate} disabled={busy || pages.some((page) => page.page_key === "home")}>Load Home template</button>
             <button type="button" className="admin-secondary-button" onClick={createPage}>New page</button>
+            <button type="button" className="admin-secondary-button" onClick={() => applyHistorySnapshot(null, "undo")} disabled={busy || !canUndo} title="Undo the last editor change">Undo</button>
+            <button type="button" className="admin-secondary-button" onClick={() => applyHistorySnapshot(null, "redo")} disabled={busy || !canRedo} title="Redo the last undone editor change">Redo</button>
             <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save Preview draft</button>
             <button type="button" className="admin-secondary-button" onClick={restoreSavedDraft} disabled={busy || !savedSnapshot || !hasUnsavedChanges}>Restore last saved draft</button>
             <button type="button" className="admin-secondary-button" onClick={() => window.open(`/admin/cms/preview?key=${encodeURIComponent(pageKey)}`, "_blank", "noopener,noreferrer")} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
