@@ -10,7 +10,24 @@ export async function onRequestGet(context) {
   if (!auth.ok) return auth.response;
   if (!context.env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
   try {
-    const rows = await context.env.DB.prepare("SELECT id, storage_provider, object_key, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at FROM cms_media WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 300").all();
+    const rows = await context.env.DB.prepare(`
+      SELECT
+        id,
+        storage_provider,
+        object_key,
+        public_url,
+        original_file_name,
+        mime_type,
+        byte_size,
+        width,
+        height,
+        alt_text,
+        created_at
+      FROM cms_media
+      WHERE deleted_at IS NULL
+      ORDER BY created_at DESC
+      LIMIT 300
+    `).all();
     return adminJson({ ok: true, media: rows.results || [], storageReady: Boolean(context.env.CMS_MEDIA) });
   } catch (error) {
     console.error("CMS media list failed", error);
