@@ -1,4 +1,5 @@
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
+import { validateProductContent } from "../../../_utils/cms-content-validation.js";
 
 const SLUG = /^[a-z0-9][a-z0-9-]{1,99}$/;
 const MAX_BYTES = 100_000;
@@ -56,6 +57,8 @@ export async function onRequestPost(context) {
     return adminJson({ error: "Confirmed dental chair models must use the Dental Chair Request flow." }, 400);
   }
   if (confirmedChairSlugs.has(slug.toLowerCase())) product.requestFlow = "dental_chair";
+  const contentError = validateProductContent(product);
+  if (contentError) return adminJson({ error: contentError }, 400);
   if (product.stockStatus !== undefined && !["pending", "in-stock", "out-of-stock"].includes(product.stockStatus)) return adminJson({ error: "Invalid stock status." }, 400);
   if (
     product.price !== undefined &&

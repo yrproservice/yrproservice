@@ -1,5 +1,5 @@
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
-import { validatePageContent } from "../../../_utils/cms-content-validation.js";
+import { validatePageContent, validateProductContent } from "../../../_utils/cms-content-validation.js";
 import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
 
 const CONFIG = {
@@ -62,7 +62,9 @@ export async function onRequestPost(context) {
     }
     const restoreError = type === "page"
       ? validatePageContent(restoredValue)
-      : type === "setting"
+      : type === "product"
+        ? validateProductContent(restoredValue)
+        : type === "setting"
         ? validateSiteSetting(key, restoredValue)
         : null;
     if (restoreError) return adminJson({ error: restoreError }, 400);

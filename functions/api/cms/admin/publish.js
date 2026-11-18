@@ -1,5 +1,5 @@
 import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
-import { validatePageContent } from "../../../_utils/cms-content-validation.js";
+import { validatePageContent, validateProductContent } from "../../../_utils/cms-content-validation.js";
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
 
 function clean(value, max = 100) {
@@ -38,7 +38,7 @@ export async function onRequestPost(context) {
       ? await env.DB.prepare(`SELECT setting_key AS id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first()
       : await env.DB.prepare(`SELECT id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first();
     if (!entity) return adminJson({ error: `CMS ${config.label} not found.` }, 404);
-    const valueColumn = entityType === "setting" ? "value_json" : entityType === "page" ? "content_json AS value_json" : "NULL AS value_json";
+    const valueColumn = entityType === "setting" ? "value_json" : entityType === "page" ? "content_json AS value_json" : entityType === "product" ? "product_json AS value_json" : "NULL AS value_json";
     const target = await env.DB.prepare(`
       SELECT id, version_number, state, ${valueColumn}
       FROM ${config.versions}
@@ -57,6 +57,17 @@ export async function onRequestPost(context) {
     // older archived revision directly over the current public version.
     if (target.state !== "draft") {
       return adminJson({ error: "Only a saved draft can be published. Restore an archived revision as a draft first." }, 409);
+    }
+    if (entityType === "product") {
+      let product;
+      try { product = JSON.parse(target.value_json); } catch {
+        return adminJson({ error: "The selected product revision contains invalid JSON and cannot be published." }, 400);
+      }
+      const validationError = validateProductContent(product);
+      if (validationError) return adminJson({ error: validationError }, 400);
+      if (product.slug !== entityKey) {
+        return adminJson({ error: "Product slug does not match the CMS product record." }, 400);
+      }
     }
     if (entityType === "page") {
       let content;
