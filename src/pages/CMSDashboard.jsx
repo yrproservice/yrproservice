@@ -36,6 +36,7 @@ function SectionPreview({ section, selected, onClick, design }) {
     color: sectionDesign.textColor || "#1f2937",
     textAlign: sectionDesign.textAlign || "left",
     "--cms-home-heading-color": sectionDesign.textColor || "#0b4a88",
+    "--cms-home-accent-color": sectionDesign.accentColor || "#1e7ed8",
     "--cms-home-heading-font": design?.global?.headingFont || "Montserrat",
     "--cms-home-body-font": design?.global?.bodyFont || "Inter",
     "--cms-home-heading-scale": Number(design?.global?.headingScale || 1),
@@ -250,6 +251,11 @@ export default function CMSDashboard({ onAdminLogout }) {
 
   async function saveDraft() {
     if (!pageKey || !pageTitle.trim()) { setError("Choose a page title first."); return; }
+    const sectionIds = content.sections.map((section) => section?.id).filter(Boolean);
+    if (sectionIds.length !== content.sections.length || new Set(sectionIds).size !== sectionIds.length) {
+      setError("Every section must have a unique ID before this draft can be saved. Existing content has not been changed.");
+      return;
+    }
     setBusy(true); setError(""); setNotice("");
     try {
       const response = await fetch("/api/cms/admin/pages", {
