@@ -538,14 +538,271 @@ export default function CMSManagement() {
       <textarea className="cms-json-editor" spellCheck="false" value={json} onChange={e=>setJson(e.target.value)} rows={28}/><div className="cms-manager-actions"><button className="admin-primary-button" disabled={busy||!selected} onClick={saveProduct}>Save product draft</button><button className="admin-secondary-button" disabled={busy||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button><button className="admin-secondary-button" disabled={busy||!selected?.slug} onClick={archiveProduct}>Archive product</button>{selected?.slug&&<button className="admin-secondary-button" onClick={()=>loadHistory("product",selected.slug)}>View revisions</button>}</div>{history.length>0&&<RevisionList history={history} onRestore={id=>restoreRevision("product",selected.slug,id)}/>}</section></div><section className="cms-manager-panel cms-page-editor-design"><h2>Products page appearance</h2><p>These design controls are part of the Products management area. Product listing and product detail templates keep separate visual settings.</p><details className="cms-page-design-accordion" open><summary>Products listing · Visual Design Studio</summary><PageVisualDesignManager key="products" pageKey="products"/></details><details className="cms-page-design-accordion"><summary>Product details · Visual Design Studio</summary><PageVisualDesignManager key="product-detail" pageKey="product-detail"/></details></section></>}
     {tab==="services"&&<section className="cms-manager-panel"><ServicesManager/><details className="cms-page-design-accordion"><summary>Service details page · Visual Design Studio</summary><PageVisualDesignManager key="service-detail" pageKey="service-detail"/></details></section>}
     {tab==="team"&&<section className="cms-manager-panel"><TeamManager/></section>}
-    {tab==="media"&&<section className="cms-manager-panel"><div className="cms-manager-heading"><div><h2>Media library</h2><p>Preview-only uploads are stored in the CMS R2 bucket.</p></div><label className="admin-primary-button cms-upload-label">Upload image<input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp" disabled={busy||!storageReady} onChange={uploadMedia}/></label></div>{!storageReady&&<p className="admin-alert admin-alert-error">Preview R2 storage is not configured yet. The upload endpoint is ready, but requires a Preview-only R2 bucket binding named CMS_MEDIA and CMS_MEDIA_PUBLIC_BASE before uploads can work.</p>}<h3>Uploaded Preview media</h3><div className="cms-media-grid">{media.map(m=><article key={m.id}><img src={m.public_url} alt={m.alt_text||m.original_file_name}/><strong>{m.original_file_name}</strong><small>{Math.round(m.byte_size/1024)} KB · {m.mime_type}</small><button className="admin-secondary-button" onClick={()=>navigator.clipboard?.writeText(m.public_url)}>Copy URL</button><button className="admin-secondary-button" onClick={()=>removeMedia(m.id)}>Remove</button></article>)}</div>{!media.length&&<p className="admin-empty">No uploaded CMS media yet.</p>}<h3>Original catalogue images</h3><p>These static assets are part of the website catalogue and are not removable from this library.</p>{Object.entries(catalogMedia.reduce((groups,item)=>{(groups[item.folder]??=[]).push(item);return groups;},{})).map(([folder,items])=><details className="cms-page-design-accordion" key={folder}><summary>{folder} · {items.length} images</summary><div className="cms-media-grid">{items.map(item=><article key={item.src}><img src={item.src} alt={item.file} loading="lazy"/><strong>{item.file}</strong><small>{item.brand} · {item.category}</small><button className="admin-secondary-button" onClick={()=>navigator.clipboard?.writeText(item.src)}>Copy path</button></article>)}</div></details>)}</section>}
-    {tab==="settings"&&<><div className="cms-manager-grid"><section className="cms-manager-panel"><h2>Saved settings</h2>{settings.map(row=><article className="cms-setting-row" key={row.setting_key}><strong>{row.setting_key}</strong><small>{row.draft_id?`Draft V${row.draft_version}`:row.published_version?`Published V${row.published_version}`:"No published version"}</small>{row.draft_id&&<><button className="admin-secondary-button" disabled={busy} onClick={()=>publishSetting(row)}>Publish to Preview</button><button className="admin-secondary-button" disabled={busy} onClick={()=>deleteDraft("setting",row.setting_key,row.draft_id)}>Delete Draft</button></>}<button className="admin-secondary-button" onClick={()=>{setSettingKey(row.setting_key);setSettingJson(row.draft_value||row.published_value||"{}");}}>Edit</button></article>)}</section><section className="cms-manager-panel"><h2>Settings editor</h2><p>Published <code>site.navigation</code> controls the header links using an items array of label and internal url values; mark the Services item with type "services" to retain its service dropdown. Published <code>site.footer</code> supports companyName, description, links (label and url), contactPhone, contactPhoneHref (tel: only), contactEmail and copyright. Other page-design settings remain separate.</p><label>Setting key<input value={settingKey} onChange={e=>setSettingKey(e.target.value)}/></label><textarea className="cms-json-editor" rows={18} value={settingJson} onChange={e=>setSettingJson(e.target.value)}/><button className="admin-primary-button" disabled={busy} onClick={saveSetting}>Save settings draft</button></section></div><section className="cms-manager-panel cms-page-editor-design"><h2>Shared website header & footer</h2><p>This is the shared site-wide design area, separate from individual page appearance.</p><details className="cms-page-design-accordion"><summary>Header & footer · Visual Design Studio</summary><PageVisualDesignManager key="site-chrome" pageKey="site-chrome"/></details></section></>}
-    {tab==="history"&&<section className="cms-manager-panel"><h2>Revision history</h2><p>Select an existing page, product or site setting to inspect its latest 100 revisions.</p><div className="cms-history-picker"><label>Content type<select value={historyType} onChange={event=>{setHistoryType(event.target.value);setHistoryKey("");setHistory([]);}}><option value="page">Page</option><option value="product">Product</option><option value="setting">Site setting</option></select></label><label>CMS item<select value={historyKey} onChange={event=>{setHistoryKey(event.target.value);setHistory([]);}}><option value="">Select an item</option>{historyOptions.map(option=><option key={option.key} value={option.key}>{option.label}</option>)}</select></label><button className="admin-secondary-button" disabled={!historyKey} onClick={()=>loadHistory(historyType,historyKey)}>Load history</button></div><RevisionList history={history} onRestore={id=>restoreRevision(historyType,historyKey,id)} onDeleteDraft={id=>deleteDraft(historyType,historyKey,id)}/></section>}
-    {tab==="cart"&&<section className="cms-manager-panel"><header className="cms-manager-heading"><div><h2>Product Cart page workspace</h2><p>Manage the Cart page appearance here. Cart items, quantities, totals and navigation behaviour remain unchanged.</p></div></header><PageVisualDesignManager key="cart" pageKey="cart"/></section>}
-    {tab==="dental-chair-request"&&<section className="cms-manager-panel"><header className="cms-manager-heading"><div><h2>Dental Chair Request page workspace</h2><p>Manage the Dental Chair Request page appearance here. Chair selection, request data, validation and submission behaviour remain unchanged.</p></div></header><PageVisualDesignManager key="dental-chair-request" pageKey="dental-chair-request"/></section>}
-    {tab==="quote"&&<section className="cms-manager-panel"><header className="cms-manager-heading"><div><h2>Quotation Request page workspace</h2><p>Manage the Quotation Request page appearance here. Cart contents, request validation and submission behaviour remain unchanged.</p></div></header><PageVisualDesignManager key="quote" pageKey="quote"/></section>}
-    {tab==="service-request"&&<section className="cms-manager-panel"><header className="cms-manager-heading"><div><h2>Service Request page workspace</h2><p>Manage the Service Request page appearance here. Service selection, required fields, validation and submission behaviour remain unchanged.</p></div></header><PageVisualDesignManager key="service-request" pageKey="service-request"/></section>}
-    {tab==="track-request"&&<section className="cms-manager-panel"><header className="cms-manager-heading"><div><h2>Track My Request page workspace</h2><p>Manage the Track My Request page appearance here. Request lookup and status retrieval behaviour remain unchanged.</p></div></header><PageVisualDesignManager key="track-request" pageKey="track-request"/></section>}
+    {tab === "media" && (
+      <section className="cms-manager-panel">
+        <div className="cms-manager-heading">
+          <div>
+            <h2>Media library</h2>
+            <p>Preview-only uploads are stored in the CMS R2 bucket.</p>
+          </div>
+          <label className="admin-primary-button cms-upload-label">
+            Upload image
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+              disabled={busy || !storageReady}
+              onChange={uploadMedia}
+            />
+          </label>
+        </div>
+        {!storageReady && (
+          <p className="admin-alert admin-alert-error">
+            Preview R2 storage is not configured yet. The upload endpoint is ready,
+            but requires a Preview-only R2 bucket binding named CMS_MEDIA and
+            CMS_MEDIA_PUBLIC_BASE before uploads can work.
+          </p>
+        )}
+        <h3>Uploaded Preview media</h3>
+        <div className="cms-media-grid">
+          {media.map((item) => (
+            <article key={item.id}>
+              <img src={item.public_url} alt={item.alt_text || item.original_file_name} />
+              <strong>{item.original_file_name}</strong>
+              <small>{Math.round(item.byte_size / 1024)} KB · {item.mime_type}</small>
+              <button
+                className="admin-secondary-button"
+                onClick={() => navigator.clipboard?.writeText(item.public_url)}
+              >
+                Copy URL
+              </button>
+              <button
+                className="admin-secondary-button"
+                onClick={() => removeMedia(item.id)}
+              >
+                Remove
+              </button>
+            </article>
+          ))}
+        </div>
+        {!media.length && <p className="admin-empty">No uploaded CMS media yet.</p>}
+        <h3>Original catalogue images</h3>
+        <p>These static assets are part of the website catalogue and are not removable from this library.</p>
+        {Object.entries(
+          catalogMedia.reduce((groups, item) => {
+            (groups[item.folder] ??= []).push(item);
+            return groups;
+          }, {})
+        ).map(([folder, folderItems]) => (
+          <details className="cms-page-design-accordion" key={folder}>
+            <summary>{folder} · {folderItems.length} images</summary>
+            <div className="cms-media-grid">
+              {folderItems.map((item) => (
+                <article key={item.src}>
+                  <img src={item.src} alt={item.file} loading="lazy" />
+                  <strong>{item.file}</strong>
+                  <small>{item.brand} · {item.category}</small>
+                  <button
+                    className="admin-secondary-button"
+                    onClick={() => navigator.clipboard?.writeText(item.src)}
+                  >
+                    Copy path
+                  </button>
+                </article>
+              ))}
+            </div>
+          </details>
+        ))}
+      </section>
+    )}
+    {tab === "settings" && (
+      <>
+        <div className="cms-manager-grid">
+          <section className="cms-manager-panel">
+            <h2>Saved settings</h2>
+            {settings.map((row) => (
+              <article className="cms-setting-row" key={row.setting_key}>
+                <strong>{row.setting_key}</strong>
+                <small>
+                  {row.draft_id
+                    ? `Draft V${row.draft_version}`
+                    : row.published_version
+                      ? `Published V${row.published_version}`
+                      : "No published version"}
+                </small>
+                {row.draft_id && (
+                  <>
+                    <button
+                      className="admin-secondary-button"
+                      disabled={busy}
+                      onClick={() => publishSetting(row)}
+                    >
+                      Publish to Preview
+                    </button>
+                    <button
+                      className="admin-secondary-button"
+                      disabled={busy}
+                      onClick={() => deleteDraft("setting", row.setting_key, row.draft_id)}
+                    >
+                      Delete Draft
+                    </button>
+                  </>
+                )}
+                <button
+                  className="admin-secondary-button"
+                  onClick={() => {
+                    setSettingKey(row.setting_key);
+                    setSettingJson(row.draft_value || row.published_value || "{}");
+                  }}
+                >
+                  Edit
+                </button>
+              </article>
+            ))}
+          </section>
+          <section className="cms-manager-panel">
+            <h2>Settings editor</h2>
+            <p>
+              Published <code>site.navigation</code> controls the header links using
+              an items array of label and internal url values; mark the Services item
+              with type "services" to retain its service dropdown. Published
+              <code> site.footer</code> supports companyName, description, links
+              (label and url), contactPhone, contactPhoneHref (tel: only),
+              contactEmail and copyright. Other page-design settings remain separate.
+            </p>
+            <label>
+              Setting key
+              <input value={settingKey} onChange={(event) => setSettingKey(event.target.value)} />
+            </label>
+            <textarea
+              className="cms-json-editor"
+              rows={18}
+              value={settingJson}
+              onChange={(event) => setSettingJson(event.target.value)}
+            />
+            <button
+              className="admin-primary-button"
+              disabled={busy}
+              onClick={saveSetting}
+            >
+              Save settings draft
+            </button>
+          </section>
+        </div>
+        <section className="cms-manager-panel cms-page-editor-design">
+          <h2>Shared website header & footer</h2>
+          <p>This is the shared site-wide design area, separate from individual page appearance.</p>
+          <details className="cms-page-design-accordion">
+            <summary>Header & footer · Visual Design Studio</summary>
+            <PageVisualDesignManager key="site-chrome" pageKey="site-chrome" />
+          </details>
+        </section>
+      </>
+    )}
+    {tab === "history" && (
+      <section className="cms-manager-panel">
+        <h2>Revision history</h2>
+        <p>Select an existing page, product or site setting to inspect its latest 100 revisions.</p>
+        <div className="cms-history-picker">
+          <label>
+            Content type
+            <select
+              value={historyType}
+              onChange={(event) => {
+                setHistoryType(event.target.value);
+                setHistoryKey("");
+                setHistory([]);
+              }}
+            >
+              <option value="page">Page</option>
+              <option value="product">Product</option>
+              <option value="setting">Site setting</option>
+            </select>
+          </label>
+          <label>
+            CMS item
+            <select
+              value={historyKey}
+              onChange={(event) => {
+                setHistoryKey(event.target.value);
+                setHistory([]);
+              }}
+            >
+              <option value="">Select an item</option>
+              {historyOptions.map((option) => (
+                <option key={option.key} value={option.key}>{option.label}</option>
+              ))}
+            </select>
+          </label>
+          <button
+            className="admin-secondary-button"
+            disabled={!historyKey}
+            onClick={() => loadHistory(historyType, historyKey)}
+          >
+            Load history
+          </button>
+        </div>
+        <RevisionList
+          history={history}
+          onRestore={(id) => restoreRevision(historyType, historyKey, id)}
+          onDeleteDraft={(id) => deleteDraft(historyType, historyKey, id)}
+        />
+      </section>
+    )}
+    {tab === "cart" && (
+      <section className="cms-manager-panel">
+        <header className="cms-manager-heading">
+          <div>
+            <h2>Product Cart page workspace</h2>
+            <p>Manage the Cart page appearance here. Cart items, quantities, totals and navigation behaviour remain unchanged.</p>
+          </div>
+        </header>
+        <PageVisualDesignManager key="cart" pageKey="cart" />
+      </section>
+    )}
+    {tab === "dental-chair-request" && (
+      <section className="cms-manager-panel">
+        <header className="cms-manager-heading">
+          <div>
+            <h2>Dental Chair Request page workspace</h2>
+            <p>Manage the Dental Chair Request page appearance here. Chair selection, request data, validation and submission behaviour remain unchanged.</p>
+          </div>
+        </header>
+        <PageVisualDesignManager key="dental-chair-request" pageKey="dental-chair-request" />
+      </section>
+    )}
+    {tab === "quote" && (
+      <section className="cms-manager-panel">
+        <header className="cms-manager-heading">
+          <div>
+            <h2>Quotation Request page workspace</h2>
+            <p>Manage the Quotation Request page appearance here. Cart contents, request validation and submission behaviour remain unchanged.</p>
+          </div>
+        </header>
+        <PageVisualDesignManager key="quote" pageKey="quote" />
+      </section>
+    )}
+    {tab === "service-request" && (
+      <section className="cms-manager-panel">
+        <header className="cms-manager-heading">
+          <div>
+            <h2>Service Request page workspace</h2>
+            <p>Manage the Service Request page appearance here. Service selection, required fields, validation and submission behaviour remain unchanged.</p>
+          </div>
+        </header>
+        <PageVisualDesignManager key="service-request" pageKey="service-request" />
+      </section>
+    )}
+    {tab === "track-request" && (
+      <section className="cms-manager-panel">
+        <header className="cms-manager-heading">
+          <div>
+            <h2>Track My Request page workspace</h2>
+            <p>Manage the Track My Request page appearance here. Request lookup and status retrieval behaviour remain unchanged.</p>
+          </div>
+        </header>
+        <PageVisualDesignManager key="track-request" pageKey="track-request" />
+      </section>
+    )}
   </div></section>;
 }
 function RevisionList({ history, onRestore, onDeleteDraft }) {
