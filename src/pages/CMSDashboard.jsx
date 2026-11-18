@@ -391,11 +391,13 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function restoreRemovedSection(entry) {
+    if (!entry) return;
+
     const alreadyExists = content.sections.some(
-      (section) => section.id === entry?.section?.id
+      (section) => section.id === entry.section.id
     );
 
-    if (!entry || entry.pageKey !== pageKey || alreadyExists) return;
+    if (entry.pageKey !== pageKey || alreadyExists) return;
 
     setContent((current) =>
       restoreSectionToContent(current, entry, pageKey)
