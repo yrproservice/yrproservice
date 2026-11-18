@@ -14,6 +14,7 @@ import TrackRequest from "./TrackRequest";
 import Contact from "./Contact";
 import { SiteHeader, SiteFooter } from "../components/Layout";
 import { products } from "../data/products";
+import { mergePublishedProduct } from "../data/productImages";
 import { services } from "../data/services";
 
 const PAGE_LABELS = {
@@ -111,7 +112,7 @@ export default function CMSDesignPreview() {
             const productResponse = await fetch("/api/cms/admin/product-preview?slug=" + encodeURIComponent(slug), { headers: { Accept: "application/json" }, cache: "no-store" });
             const productData = await productResponse.json().catch(() => ({}));
             if (productResponse.ok && productData.ok && productData.product) {
-              if (active) setSelectedProduct(productData.product);
+              if (active) setSelectedProduct(mergePublishedProduct(products.find((item) => item.slug === slug), productData.product));
             } else {
               const staticProduct = products.find((item) => item.slug === slug);
               if (active) setSelectedProduct(staticProduct || null);
@@ -136,7 +137,7 @@ export default function CMSDesignPreview() {
         if (!staticProduct) throw new Error(result.error || "Unable to load this product preview.");
         setSelectedProduct(staticProduct);
       } else {
-        setSelectedProduct(result.product);
+        setSelectedProduct(mergePublishedProduct(products.find((item) => item.slug === slug), result.product));
       }
     } catch (err) {
       setError(err.message || "Unable to load this product preview.");
