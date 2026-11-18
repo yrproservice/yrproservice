@@ -331,6 +331,8 @@ export default function Home({ navigate }) {
   const [publishedContent, setPublishedContent] = useState(null);
 
   useEffect(() => {
+    let active = true;
+
     async function loadPublishedHome() {
       try {
         const response = await fetch("/api/cms/public/pages?key=home", {
@@ -341,7 +343,13 @@ export default function Home({ navigate }) {
 
         const result = await response.json();
         const sections = result?.page?.content?.sections;
-        if (result?.ok && Array.isArray(sections) && sections.length > 0) {
+
+        if (
+          active &&
+          result?.ok &&
+          Array.isArray(sections) &&
+          sections.length > 0
+        ) {
           setPublishedContent(result.page.content);
         }
       } catch {
@@ -350,6 +358,9 @@ export default function Home({ navigate }) {
     }
 
     loadPublishedHome();
+    return () => {
+      active = false;
+    };
   }, []);
 
   return publishedContent
