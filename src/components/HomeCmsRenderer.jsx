@@ -216,7 +216,7 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
         <div className="bp-section-head"><div><p className="bp-eyebrow">{c.eyebrow}</p><h2>{c.heading}</h2></div><p>{c.description}</p></div>
         <div className="yr-brand-grid">
           {items.map((file) => {
-            const brandName = String(file).replace(/\\.[^.]+$/, "");
+            const brandName = String(file).replace(/\.[^.]+$/, "");
 
             return (
               <div className="bp-brand-card" key={file}>
