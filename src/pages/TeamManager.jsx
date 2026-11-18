@@ -327,7 +327,12 @@ export default function TeamManager() {
                   dragIndex.current = null;
                 }}
               >
-              <span className="cms-team-drag-handle" aria-hidden="true">⠿</span><strong>{index + 1}. {SECTION_LABELS[key] || key}</strong>
+                <span className="cms-team-drag-handle" aria-hidden="true">
+                  ⠿
+                </span>
+                <strong>
+                  {index + 1}. {SECTION_LABELS[key] || key}
+                </strong>
                 <span className="cms-team-order-actions">
                   <button
                     type="button"
