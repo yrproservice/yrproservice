@@ -38,7 +38,18 @@ export default function ServicesCmsRenderer({ content, navigate, previewMode = f
             <p className="services-hero-lead">{hero.lead}</p>
           </div>
           <div className="services-hero-visual">
-            {hero.imageUrl && <img src={hero.imageUrl} alt={hero.imageAlt || ""} style={{ height: hero.imageHeight ? `${hero.imageHeight}px` : undefined, objectPosition: hero.imagePosition || "center" }} />}
+            {hero.imageUrl && (
+              <img
+                src={hero.imageUrl}
+                alt={hero.imageAlt || ""}
+                style={{
+                  height: hero.imageHeight
+                    ? `${hero.imageHeight}px`
+                    : undefined,
+                  objectPosition: hero.imagePosition || "center",
+                }}
+              />
+            )}
             <div className="services-hero-badge">
               <strong>{hero.badgeTitle}</strong>
               <span>{hero.badgeText}</span>
@@ -78,7 +89,15 @@ export default function ServicesCmsRenderer({ content, navigate, previewMode = f
                 <h3>{service.title}</h3>
                 <p>{service.text}</p>
                 <ul>{(service.points || []).map((point, index) => <li key={index}>{point}</li>)}</ul>
-                <Link to={previewMode ? `/admin/cms/preview?key=services&service=${encodeURIComponent(service.slug)}` : `/services/${service.slug}`} navigate={navigate} className="service-view-button">
+                <Link
+                  to={
+                    previewMode
+                      ? `/admin/cms/preview?key=services&service=${encodeURIComponent(service.slug)}`
+                      : `/services/${service.slug}`
+                  }
+                  navigate={navigate}
+                  className="service-view-button"
+                >
                   View Service <span>↗</span>
                 </Link>
               </article>
