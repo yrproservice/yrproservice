@@ -14,8 +14,16 @@ function CmsLink({ to, navigate, className, children }) {
 }
 
 function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
-  const c = section.content || {};
-  const items = Array.isArray(c.items) ? c.items : [];
+  const c = section.content && typeof section.content === "object" && !Array.isArray(section.content)
+    ? section.content
+    : {};
+  const items = Array.isArray(c.items)
+    ? c.items.filter((item) => section.type === "brand-grid"
+      ? typeof item === "string"
+      : item && typeof item === "object" && !Array.isArray(item))
+    : [];
+  const proofItems = Array.isArray(c.proofItems) ? c.proofItems.filter((item) => typeof item === "string") : [];
+  const productSlugs = Array.isArray(c.productSlugs) ? c.productSlugs.filter((slug) => typeof slug === "string") : [];
   const sectionDesign = design?.sections?.[section.id] || {};
   const sectionStyle = {
     backgroundColor: sectionDesign.backgroundColor || undefined,
@@ -89,7 +97,7 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
             )}
           </div>
           <div className="bp-hero-proof">
-            {(c.proofItems || []).map((item, index) => (
+            {proofItems.map((item, index) => (
               <React.Fragment key={item}>
                 {index > 0 && <i>•</i>}
                 <span>{item}</span>
@@ -166,7 +174,7 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
         </div>
       </div></section>;
     case "product-grid": {
-      const featured = catalogueProducts.filter((p) => (c.productSlugs || []).includes(p.slug));
+      const featured = catalogueProducts.filter((p) => productSlugs.includes(p.slug));
       return <section className="bp-featured home-cms-section" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"}><div className="container">
         <div className="bp-section-head bp-head-light">
           <div>
@@ -322,7 +330,11 @@ export default function HomeCmsRenderer({ content, navigate }) {
     return () => { active = false; };
   }, []);
 
-  const sections = Array.isArray(content?.sections) ? [...content.sections].sort((a, b) => (a.order || 0) - (b.order || 0)) : [];
+  const sections = Array.isArray(content?.sections)
+    ? content.sections
+        .filter((section) => section && typeof section === "object" && !Array.isArray(section))
+        .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0))
+    : [];
   const design = content?.design || {};
   const pageStyle = {
     "--home-heading-font": design.global?.headingFont || "Montserrat",
