@@ -23,7 +23,12 @@ export default function CMSDesignReview() {
         <div>
           <p className="eyebrow">YR Proservice · Preview review</p>
           <h1>All Page Design Review</h1>
-          <p>Review every customer-facing page template in one place. Each panel shows its latest saved design draft when one exists; otherwise it shows the currently published Preview design. Unsaved editor changes are not included.</p>
+          <p>
+            Review every customer-facing page template in one place. Each panel
+            shows its latest saved design draft when one exists; otherwise it
+            shows the currently published Preview design. Unsaved editor
+            changes are not included.
+          </p>
         </div>
         <a className="admin-secondary-button" href="/admin/cms/manage">Back to CMS Management</a>
       </header>
