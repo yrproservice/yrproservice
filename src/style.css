@@ -3987,6 +3987,7 @@ h6 {
 .cms-history-picker{margin:14px 0}
 .cms-history-picker label,.cms-manager-panel>label{display:grid;gap:6px;color:#344456;font-size:13px;font-weight:600}
 .cms-history-picker input,.cms-history-picker select,.cms-manager-panel label input{min-height:40px;border:1px solid #cad6e1;border-radius:6px;padding:8px 10px;color:#1f2937}
+.cms-manager-grid .cms-manager-panel>label input:focus-visible{outline:0;border-color:#1e7ed8;box-shadow:0 0 0 3px rgba(0,194,255,.2)}
 .cms-revision-list{margin-top:14px}
 .cms-revision-list small{display:block;color:#687280;font-size:12px;line-height:1.45;margin-top:4px}
 .cms-page-manager-links{display:grid;gap:12px;margin-top:16px}
