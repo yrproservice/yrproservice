@@ -58,7 +58,16 @@ export default function CMSManagement() {
   const [storageReady, setStorageReady] = useState(false);
   const [settings, setSettings] = useState([]);
   const [settingKey, setSettingKey] = useState("site.navigation");
-  const [settingJson, setSettingJson] = useState('{"items":[{"label":"Products","url":"/products"},{"label":"Services","url":"/services","type":"services"},{"label":"Team","url":"/team"},{"label":"HR Contact","url":"/contact"}]}');
+  const [settingJson, setSettingJson] = useState(
+    JSON.stringify({
+      items: [
+        { label: "Products", url: "/products" },
+        { label: "Services", url: "/services", type: "services" },
+        { label: "Team", url: "/team" },
+        { label: "HR Contact", url: "/contact" },
+      ],
+    })
+  );
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -498,13 +507,94 @@ export default function CMSManagement() {
       ? items.map(row=>({key:row.product_slug,label:row.product_slug}))
       : settings.map(row=>({key:row.setting_key,label:row.setting_key}));
   if(tab==="products")return <section className="cms-admin-page"><div className="cms-admin-shell">
-    <header className="cms-admin-header"><div><p className="eyebrow">YR Proservice · Content Management</p><h1>CMS Management Centre</h1><p>Product changes are saved as drafts in the isolated Preview environment. Image paths stay unchanged unless you select a replacement in the image picker.</p></div><div className="cms-manager-header-actions"><a className="admin-secondary-button" href="/admin/cms/design-review">Review all pages together</a><a className="admin-public-link" href="/admin/cms">← Visual Editor</a></div></header>
+    <header className="cms-admin-header">
+      <div>
+        <p className="eyebrow">YR Proservice · Content Management</p>
+        <h1>CMS Management Centre</h1>
+        <p>
+          Product changes are saved as drafts in the isolated Preview environment.
+          Image paths stay unchanged unless you select a replacement in the image picker.
+        </p>
+      </div>
+      <div className="cms-manager-header-actions">
+        <a className="admin-secondary-button" href="/admin/cms/design-review">
+          Review all pages together
+        </a>
+        <a className="admin-public-link" href="/admin/cms">← Visual Editor</a>
+      </div>
+    </header>
     {error&&<p className="admin-alert admin-alert-error" role="alert">{error}</p>}{notice&&<p className="admin-alert admin-alert-success" role="status">{notice}</p>}
-    <nav className="cms-manager-tabs" aria-label="Page workspaces">{[["products","Products"],["services","Services"],["team","Team"],["cart","Product Cart"],["dental-chair-request","Dental Chair Request"],["quote","Quotation Request"],["service-request","Service Request"],["track-request","Track My Request"],["media","Media library"],["settings","Site settings"],["history","Revision history"]].map(([id,label])=><button key={id} className={tab===id?"active":""} onClick={()=>{setTab(id);setError("");setNotice("");}}>{label}</button>)}</nav>
+    <nav className="cms-manager-tabs" aria-label="Page workspaces">
+      {[
+        ["products", "Products"],
+        ["services", "Services"],
+        ["team", "Team"],
+        ["cart", "Product Cart"],
+        ["dental-chair-request", "Dental Chair Request"],
+        ["quote", "Quotation Request"],
+        ["service-request", "Service Request"],
+        ["track-request", "Track My Request"],
+        ["media", "Media library"],
+        ["settings", "Site settings"],
+        ["history", "Revision history"],
+      ].map(([id, label]) => (
+        <button
+          key={id}
+          className={tab === id ? "active" : ""}
+          onClick={() => {
+            setTab(id);
+            setError("");
+            setNotice("");
+          }}
+        >
+          {label}
+        </button>
+      ))}
+    </nav>
     <div className="cms-manager-grid">
       <section className="cms-manager-panel">
-        <div className="cms-manager-heading"><div><h2>Product catalogue</h2><p>{items.length} CMS products · {catalogue.length} products in existing code catalogue</p></div><button className="admin-secondary-button" disabled={busy} onClick={importCatalogue}>Import missing catalogue products</button></div>
-        <div className="cms-product-list">{items.map(row=>{const p=JSON.parse(row.draft_product||row.published_product||"{}");return <button key={row.id} className={selected?.slug===row.product_slug?"active":""} onClick={()=>chooseProduct(row)}><strong>{p.name||row.product_slug}</strong><small>{p.brand||"Unbranded"} · {p.category||"Uncategorised"}</small><span>{row.draft_id?`Draft V${row.draft_version}`:row.published_version?`Published V${row.published_version}`:"Not published"}</span></button>;})}</div>
+        <div className="cms-manager-heading">
+          <div>
+            <h2>Product catalogue</h2>
+            <p>
+              {items.length} CMS products · {catalogue.length} products in existing code catalogue
+            </p>
+          </div>
+          <button
+            className="admin-secondary-button"
+            disabled={busy}
+            onClick={importCatalogue}
+          >
+            Import missing catalogue products
+          </button>
+        </div>
+        <div className="cms-product-list">
+          {items.map((row) => {
+            const product = JSON.parse(
+              row.draft_product || row.published_product || "{}"
+            );
+
+            return (
+              <button
+                key={row.id}
+                className={selected?.slug === row.product_slug ? "active" : ""}
+                onClick={() => chooseProduct(row)}
+              >
+                <strong>{product.name || row.product_slug}</strong>
+                <small>
+                  {product.brand || "Unbranded"} · {product.category || "Uncategorised"}
+                </small>
+                <span>
+                  {row.draft_id
+                    ? `Draft V${row.draft_version}`
+                    : row.published_version
+                      ? `Published V${row.published_version}`
+                      : "Not published"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
         <button className="admin-secondary-button" onClick={()=>chooseProduct(null)}>＋ Add product</button>
       </section>
       <section className="cms-manager-panel">
@@ -514,7 +604,19 @@ export default function CMSManagement() {
         <div className="cms-manager-actions">
           <button className="admin-primary-button" disabled={busy||!selected} onClick={saveProduct}>Save product draft</button>
           <button className="admin-secondary-button" disabled={busy||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button>
-          <button className="admin-secondary-button" disabled={!selected?.slug} onClick={() => window.open("/admin/cms/product-preview?slug=" + encodeURIComponent(selected.slug), "_blank", "noopener,noreferrer")}>Preview Product</button>
+          <button
+            className="admin-secondary-button"
+            disabled={!selected?.slug}
+            onClick={() =>
+              window.open(
+                "/admin/cms/product-preview?slug=" + encodeURIComponent(selected.slug),
+                "_blank",
+                "noopener,noreferrer"
+              )
+            }
+          >
+            Preview Product
+          </button>
           <button className="admin-secondary-button" disabled={busy||!selected?.slug} onClick={archiveProduct}>Archive product</button>
           {selected?.slug&&<button className="admin-secondary-button" onClick={()=>loadHistory("product",selected.slug)}>View revisions</button>}
           {selected?.draftId&&<button className="admin-secondary-button" disabled={busy} onClick={()=>deleteDraft("product",selected.slug,selected.draftId)}>Delete Draft</button>}
@@ -522,12 +624,65 @@ export default function CMSManagement() {
         {history.length>0&&<RevisionList history={history} onRestore={id=>restoreRevision("product",selected.slug,id)} onDeleteDraft={id=>deleteDraft("product",selected.slug,id)}/>}
       </section>
     </div>
-    <section className="cms-manager-panel cms-page-editor-design"><h2>Products page appearance</h2><p>Product listing and product detail templates keep separate visual settings.</p><details className="cms-page-design-accordion" open><summary>Products listing · Visual Design Studio</summary><PageVisualDesignManager key="products" pageKey="products"/></details><details className="cms-page-design-accordion"><summary>Product details · Visual Design Studio</summary><PageVisualDesignManager key="product-detail" pageKey="product-detail"/></details></section>
+    <section className="cms-manager-panel cms-page-editor-design">
+      <h2>Products page appearance</h2>
+      <p>Product listing and product detail templates keep separate visual settings.</p>
+      <details className="cms-page-design-accordion" open>
+        <summary>Products listing · Visual Design Studio</summary>
+        <PageVisualDesignManager key="products" pageKey="products" />
+      </details>
+      <details className="cms-page-design-accordion">
+        <summary>Product details · Visual Design Studio</summary>
+        <PageVisualDesignManager key="product-detail" pageKey="product-detail" />
+      </details>
+    </section>
   </div></section>;
   return <section className="cms-admin-page"><div className="cms-admin-shell">
-    <header className="cms-admin-header"><div><p className="eyebrow">YR Proservice · Content Management</p><h1>CMS Management Centre</h1><p>Each customer-facing page has its own workspace. Open a page to manage its content or visual appearance. All publishing actions here target the isolated Preview database.</p></div><div className="cms-manager-header-actions"><a className="admin-secondary-button" href="/admin/cms/design-review">Review all pages together</a><a className="admin-public-link" href="/admin/cms">← Visual Editor</a></div></header>
+    <header className="cms-admin-header">
+      <div>
+        <p className="eyebrow">YR Proservice · Content Management</p>
+        <h1>CMS Management Centre</h1>
+        <p>
+          Each customer-facing page has its own workspace. Open a page to manage
+          its content or visual appearance. All publishing actions here target
+          the isolated Preview database.
+        </p>
+      </div>
+      <div className="cms-manager-header-actions">
+        <a className="admin-secondary-button" href="/admin/cms/design-review">
+          Review all pages together
+        </a>
+        <a className="admin-public-link" href="/admin/cms">← Visual Editor</a>
+      </div>
+    </header>
     {error&&<p className="admin-alert admin-alert-error" role="alert">{error}</p>}{notice&&<p className="admin-alert admin-alert-success" role="status">{notice}</p>}
-    <nav className="cms-manager-tabs" aria-label="Page workspaces">{[["products","Products"],["services","Services"],["team","Team"],["cart","Product Cart"],["dental-chair-request","Dental Chair Request"],["quote","Quotation Request"],["service-request","Service Request"],["track-request","Track My Request"],["media","Media library"],["settings","Site settings"],["history","Revision history"]].map(([id,label])=><button key={id} className={tab===id?"active":""} onClick={()=>{setTab(id);setError("");setNotice("");}}>{label}</button>)}</nav>
+    <nav className="cms-manager-tabs" aria-label="Page workspaces">
+      {[
+        ["products", "Products"],
+        ["services", "Services"],
+        ["team", "Team"],
+        ["cart", "Product Cart"],
+        ["dental-chair-request", "Dental Chair Request"],
+        ["quote", "Quotation Request"],
+        ["service-request", "Service Request"],
+        ["track-request", "Track My Request"],
+        ["media", "Media library"],
+        ["settings", "Site settings"],
+        ["history", "Revision history"],
+      ].map(([id, label]) => (
+        <button
+          key={id}
+          className={tab === id ? "active" : ""}
+          onClick={() => {
+            setTab(id);
+            setError("");
+            setNotice("");
+          }}
+        >
+          {label}
+        </button>
+      ))}
+    </nav>
     {tab === "products" && (
       <>
         <div className="cms-manager-grid">
@@ -720,7 +875,15 @@ export default function CMSManagement() {
         </section>
       </>
     )}
-    {tab==="services"&&<section className="cms-manager-panel"><ServicesManager/><details className="cms-page-design-accordion"><summary>Service details page · Visual Design Studio</summary><PageVisualDesignManager key="service-detail" pageKey="service-detail"/></details></section>}
+    {tab === "services" && (
+      <section className="cms-manager-panel">
+        <ServicesManager />
+        <details className="cms-page-design-accordion">
+          <summary>Service details page · Visual Design Studio</summary>
+          <PageVisualDesignManager key="service-detail" pageKey="service-detail" />
+        </details>
+      </section>
+    )}
     {tab==="team"&&<section className="cms-manager-panel"><TeamManager/></section>}
     {tab === "media" && (
       <section className="cms-manager-panel">
