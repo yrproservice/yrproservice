@@ -3971,16 +3971,16 @@ h6 {
 .cms-media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
 .cms-media-grid article{display:grid;gap:7px;align-content:start;border:1px solid #e1e8ef;border-radius:8px;padding:10px;min-width:0}
 .cms-media-grid img{width:100%;height:140px;object-fit:contain;background:#f5f7fa}
-.cms-media-grid strong{font-size:12px;overflow-wrap:anywhere}
-.cms-media-grid small{font-size:10px;color:#687280}
+.cms-media-grid strong{font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.cms-media-grid small{font-size:11px;line-height:1.45;color:#687280}
 .cms-upload-label{position:relative;overflow:hidden;cursor:pointer}
 .cms-upload-label input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .cms-setting-row,.cms-revision-list article{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #e7edf2;flex-wrap:wrap}
-.cms-setting-row strong,.cms-revision-list strong{display:block;color:#1f2937;font-size:12px}
+.cms-setting-row strong,.cms-revision-list strong{display:block;color:#1f2937;font-size:13px;line-height:1.4}
 .cms-history-picker{margin:14px 0}
 .cms-history-picker input,.cms-history-picker select,.cms-manager-panel label input{min-height:40px;border:1px solid #cad6e1;border-radius:6px;padding:8px 10px;color:#1f2937}
 .cms-revision-list{margin-top:14px}
-.cms-revision-list small{display:block;color:#687280;font-size:11px;margin-top:4px}
+.cms-revision-list small{display:block;color:#687280;font-size:12px;line-height:1.45;margin-top:4px}
 .cms-page-manager-links{display:grid;gap:12px;margin-top:16px}
 .cms-page-manager-links a{color:#1267a5;font-weight:700}
 .cms-page-manager-links span{padding:12px;background:#f5f7fa;border-radius:7px;color:#687280;font-size:12px}
