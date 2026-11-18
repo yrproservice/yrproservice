@@ -31,7 +31,13 @@ function TeamSection({ sectionKey, data, design, navigate }) {
           <p className="eyebrow">{hero.eyebrow}</p>
           <h1>{hero.title} <span>{hero.highlight}</span></h1>
           <p className="about-editorial-lead">{hero.lead}</p>
-          <div className="about-editorial-meta">{(hero.meta || []).map((item, index) => <span key={index}><b>{item.number}</b> {item.label}</span>)}</div>
+          <div className="about-editorial-meta">
+          {(hero.meta || []).map((item, index) => (
+            <span key={index}>
+              <b>{item.number}</b> {item.label}
+            </span>
+          ))}
+        </div>
         </div>
         <div className="about-editorial-image" style={{height: hero.imageHeight ? `${hero.imageHeight}px` : undefined}}>
           <img src={hero.imageUrl} alt={hero.imageAlt || ""} style={{objectPosition: hero.imagePosition || "center"}} />
@@ -55,7 +61,15 @@ function TeamSection({ sectionKey, data, design, navigate }) {
     return <section className="about-process team-pattern-process team-cms-section" style={style}>
       <div className="container">
         <div className="about-process-heading"><div><p className="eyebrow">{process.eyebrow}</p><h2>{process.title}</h2></div><p>{process.description}</p></div>
-        <div className="about-process-line">{(process.steps || []).map((step, index) => <article key={index} className="about-process-item"><div className="process-dot">{step.number}</div><h3>{step.title}</h3><p>{step.text}</p></article>)}</div>
+        <div className="about-process-line">
+          {(process.steps || []).map((step, index) => (
+            <article key={index} className="about-process-item">
+              <div className="process-dot">{step.number}</div>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </article>
+          ))}
+        </div>
       </div>
     </section>;
   }
@@ -64,7 +78,18 @@ function TeamSection({ sectionKey, data, design, navigate }) {
     return <section className="about-capabilities team-cms-section" style={style}>
       <div className="container">
         <div className="about-capability-intro"><div><p className="eyebrow">{capabilities.eyebrow}</p><h2>{capabilities.title}</h2></div><p>{capabilities.description}</p></div>
-        <div className="about-capability-list">{(capabilities.items || []).map((item, index) => <article key={index}><span>0{index + 1}</span><div><h3>{item.title}</h3><p>{item.text}</p></div><b>↗</b></article>)}</div>
+        <div className="about-capability-list">
+          {(capabilities.items || []).map((item, index) => (
+            <article key={index}>
+              <span>0{index + 1}</span>
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </div>
+              <b>↗</b>
+            </article>
+          ))}
+        </div>
       </div>
     </section>;
   }
@@ -73,7 +98,23 @@ function TeamSection({ sectionKey, data, design, navigate }) {
     return <section className="about-people team-pattern-people team-cms-section" style={style}>
       <div className="container">
         <div className="about-people-heading"><p className="eyebrow">{people.eyebrow}</p><h2>{people.title}</h2><p>{people.description}</p></div>
-        <div className="about-people-grid">{(people.items || []).map((item, index) => <article className={`about-person person-${index + 1}`} key={index}><div className="about-person-image"><img src={item.image} alt={item.imageAlt || ""} /></div><div className="about-person-copy"><span>0{index + 1}</span><h3>{item.title}</h3><p>{item.text}</p></div></article>)}</div>
+        <div className="about-people-grid">
+          {(people.items || []).map((item, index) => (
+            <article
+              className={`about-person person-${index + 1}`}
+              key={index}
+            >
+              <div className="about-person-image">
+                <img src={item.image} alt={item.imageAlt || ""} />
+              </div>
+              <div className="about-person-copy">
+                <span>0{index + 1}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </section>;
   }
@@ -81,7 +122,20 @@ function TeamSection({ sectionKey, data, design, navigate }) {
   return <section className="about-final team-cms-section" style={style}>
     <div className="container about-final-inner">
       <div><p className="eyebrow">{cta.eyebrow}</p><h2>{cta.title}</h2><p>{cta.body}</p></div>
-      <div className="about-final-actions"><button className="button" onClick={() => navigate?.(cta.quoteUrl || "/quote")}>{cta.quoteButton}</button><button className="button secondary" onClick={() => navigate?.(cta.servicesUrl || "/services")}>{cta.servicesButton}</button></div>
+      <div className="about-final-actions">
+        <button
+          className="button"
+          onClick={() => navigate?.(cta.quoteUrl || "/quote")}
+        >
+          {cta.quoteButton}
+        </button>
+        <button
+          className="button secondary"
+          onClick={() => navigate?.(cta.servicesUrl || "/services")}
+        >
+          {cta.servicesButton}
+        </button>
+      </div>
     </div>
   </section>;
 }
@@ -91,7 +145,9 @@ export default function TeamCmsRenderer({ content, navigate }) {
   const data = section?.content || content || {};
   const design = section?.design || content?.design || {};
   const defaultOrder = ["hero", "story", "process", "capabilities", "people", "cta"];
-  const order = Array.isArray(content?.sectionOrder) ? content.sectionOrder.filter((key) => defaultOrder.includes(key)) : defaultOrder;
+  const order = Array.isArray(content?.sectionOrder)
+    ? content.sectionOrder.filter((key) => defaultOrder.includes(key))
+    : defaultOrder;
   const orderedKeys = [...order, ...defaultOrder.filter((key) => !order.includes(key))];
   const global = design.global || {};
   const pageStyle = {
@@ -101,7 +157,20 @@ export default function TeamCmsRenderer({ content, navigate }) {
     "--team-body-size": `${Number(global.bodySize || 16)}px`
   };
   return <main className="team-cms-page" style={pageStyle}>
-    {orderedKeys.map((key, index) => <div className="team-cms-order-item" key={key} style={{order: index}}><TeamSection sectionKey={key} data={data} design={design} navigate={navigate} /></div>)}
+    {orderedKeys.map((key, index) => (
+      <div
+        className="team-cms-order-item"
+        key={key}
+        style={{ order: index }}
+      >
+        <TeamSection
+          sectionKey={key}
+          data={data}
+          design={design}
+          navigate={navigate}
+        />
+      </div>
+    ))}
   </main>;
 }
 
