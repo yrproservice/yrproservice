@@ -791,8 +791,52 @@ export default function CMSDashboard({ onAdminLogout }) {
                   return <details className="cms-home-style-card" key={section.id}>
                     <summary><strong>{label}</strong><small>{section.visible===false?"Hidden section":"Section styling"}</small></summary>
                     <div className="cms-home-style-controls">
-                      {[["backgroundColor","Background","#ffffff"],["textColor","Text","#1f2937"],["accentColor","Accent","#1e7ed8"]].map(([field,name,fallback])=><label key={field}><span>{name}</span><input aria-label={`${label} ${name.toLowerCase()} colour`} type="color" value={style[field]||fallback} onChange={(e)=>updateHomeSectionColor(section.id,field,e.target.value)} /><input aria-label={`${label} ${name.toLowerCase()} HEX`} className="cms-home-hex-input" type="text" key={`${section.id}-${field}-${style[field]||fallback}`} defaultValue={style[field]||fallback} maxLength={7} pattern="^#[0-9a-fA-F]{6}$" onBlur={(e)=>{if(/^#[0-9a-fA-F]{6}$/.test(e.target.value))updateHomeSectionColor(section.id,field,e.target.value);else e.target.value=style[field]||fallback;}} /></label>)}
-                      <label><span>Text alignment</span><select value={style.textAlign||"left"} onChange={(e)=>updateHomeSectionDesign(section.id,"textAlign",e.target.value)}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></label>
+                      {[
+                        ["backgroundColor", "Background", "#ffffff"],
+                        ["textColor", "Text", "#1f2937"],
+                        ["accentColor", "Accent", "#1e7ed8"],
+                      ].map(([field, name, fallback]) => (
+                        <label key={field}>
+                          <span>{name}</span>
+                          <input
+                            aria-label={`${label} ${name.toLowerCase()} colour`}
+                            type="color"
+                            value={style[field] || fallback}
+                            onChange={(event) =>
+                              updateHomeSectionColor(section.id, field, event.target.value)
+                            }
+                          />
+                          <input
+                            aria-label={`${label} ${name.toLowerCase()} HEX`}
+                            className="cms-home-hex-input"
+                            type="text"
+                            key={`${section.id}-${field}-${style[field] || fallback}`}
+                            defaultValue={style[field] || fallback}
+                            maxLength={7}
+                            pattern="^#[0-9a-fA-F]{6}$"
+                            onBlur={(event) => {
+                              if (/^#[0-9a-fA-F]{6}$/.test(event.target.value)) {
+                                updateHomeSectionColor(section.id, field, event.target.value);
+                              } else {
+                                event.target.value = style[field] || fallback;
+                              }
+                            }}
+                          />
+                        </label>
+                      ))}
+                      <label>
+                        <span>Text alignment</span>
+                        <select
+                          value={style.textAlign || "left"}
+                          onChange={(event) =>
+                            updateHomeSectionDesign(section.id, "textAlign", event.target.value)
+                          }
+                        >
+                          <option value="left">Left</option>
+                          <option value="center">Centre</option>
+                          <option value="right">Right</option>
+                        </select>
+                      </label>
                       <button type="button" className="admin-secondary-button" onClick={()=>resetHomeSectionDesign(section.id)}>Reset styling</button>
                     </div>
                   </details>;
@@ -808,18 +852,117 @@ export default function CMSDashboard({ onAdminLogout }) {
                     onChange={(value)=>updateSection("layout",value)}
                   />
                 </div>}
-                {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <label>Image position<select value={selectedSection.content?.imagePosition||"center"} onChange={(e)=>updateSection("imagePosition",e.target.value)}><option value="center">Centre</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="50% 35%">50% · 35%</option></select></label>}
+                {(selectedSection.type === "hero" ||
+                  selectedSection.type === "editorial" ||
+                  selectedSection.type === "services-banner") && (
+                  <label>
+                    Image position
+                    <select
+                      value={selectedSection.content?.imagePosition || "center"}
+                      onChange={(event) =>
+                        updateSection("imagePosition", event.target.value)
+                      }
+                    >
+                      <option value="center">Centre</option>
+                      <option value="top">Top</option>
+                      <option value="bottom">Bottom</option>
+                      <option value="left">Left</option>
+                      <option value="right">Right</option>
+                      <option value="50% 35%">50% · 35%</option>
+                    </select>
+                  </label>
+                )}
                 {(selectedSection.type==="hero" || selectedSection.type==="editorial" || selectedSection.type==="services-banner") && <>
-                  <label>Image height · {selectedSection.content?.imageHeight||420}px<input type="range" min="220" max="720" step="10" value={selectedSection.content?.imageHeight||420} onChange={(e)=>updateSection("imageHeight",Number(e.target.value))}/></label>
-                  <label>Image fit<select value={selectedSection.content?.imageFit||"cover"} onChange={(e)=>updateSection("imageFit",e.target.value)}><option value="contain">Contain · show full image</option><option value="cover">Cover · fill frame</option><option value="original">Original ratio</option></select></label>
+                  <label>
+                    Image height · {selectedSection.content?.imageHeight || 420}px
+                    <input
+                      type="range"
+                      min="220"
+                      max="720"
+                      step="10"
+                      value={selectedSection.content?.imageHeight || 420}
+                      onChange={(event) =>
+                        updateSection("imageHeight", Number(event.target.value))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Image fit
+                    <select
+                      value={selectedSection.content?.imageFit || "cover"}
+                      onChange={(event) => updateSection("imageFit", event.target.value)}
+                    >
+                      <option value="contain">Contain · show full image</option>
+                      <option value="cover">Cover · fill frame</option>
+                      <option value="original">Original ratio</option>
+                    </select>
+                  </label>
                 </>}
-                {["feature-grid","product-grid","brand-grid","benefits-grid"].includes(selectedSection.type) && <label>Grid columns<select value={homeDesign.sections?.[selectedSection.id]?.cardColumns || "auto"} onChange={(e)=>updateHomeSectionDesign(selectedSection.id,"cardColumns",e.target.value)}><option value="auto">Use responsive default</option><option value="2">2 columns</option><option value="3">3 columns</option><option value="4">4 columns</option></select></label>}
+                {["feature-grid", "product-grid", "brand-grid", "benefits-grid"].includes(
+                  selectedSection.type
+                ) && (
+                  <label>
+                    Grid columns
+                    <select
+                      value={homeDesign.sections?.[selectedSection.id]?.cardColumns || "auto"}
+                      onChange={(event) =>
+                        updateHomeSectionDesign(
+                          selectedSection.id,
+                          "cardColumns",
+                          event.target.value
+                        )
+                      }
+                    >
+                      <option value="auto">Use responsive default</option>
+                      <option value="2">2 columns</option>
+                      <option value="3">3 columns</option>
+                      <option value="4">4 columns</option>
+                    </select>
+                  </label>
+                )}
               </div>}
             </details>}
             {!selectedSection ? <p className="admin-empty">Select a section in the preview to edit its content.</p> : <>
               <div className="cms-inspector-title"><strong>{SECTION_TYPES.find((item) => item.value === selectedSection.type)?.label || selectedSection.type}</strong><small>Section settings</small></div>
-              <label>Show section<input type="checkbox" checked={selectedSection.visible !== false} onChange={(event) => setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, visible: event.target.checked } : item) }))} /></label>
-              <label>Layout variant<input value={selectedSection.layout?.variant || "standard"} onChange={(event) => setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, layout: { ...(item.layout || {}), variant: event.target.value } } : item) }))} /></label>
+              <label>
+                Show section
+                <input
+                  type="checkbox"
+                  checked={selectedSection.visible !== false}
+                  onChange={(event) =>
+                    setContent((current) => ({
+                      ...current,
+                      sections: current.sections.map((item) =>
+                        item.id === selectedSection.id
+                          ? { ...item, visible: event.target.checked }
+                          : item
+                      ),
+                    }))
+                  }
+                />
+              </label>
+              <label>
+                Layout variant
+                <input
+                  value={selectedSection.layout?.variant || "standard"}
+                  onChange={(event) =>
+                    setContent((current) => ({
+                      ...current,
+                      sections: current.sections.map((item) =>
+                        item.id === selectedSection.id
+                          ? {
+                              ...item,
+                              layout: {
+                                ...(item.layout || {}),
+                                variant: event.target.value,
+                              },
+                            }
+                          : item
+                      ),
+                    }))
+                  }
+                />
+              </label>
               <label>Heading<input value={selectedSection.content?.heading || ""} onChange={(event) => updateSection("heading", event.target.value)} /></label>
               {selectedSection.type === "hero" && <label>Heading highlight (second line)<input value={selectedSection.content?.headingHighlight || ""} onChange={(event) => updateSection("headingHighlight", event.target.value)} /></label>}
               <label>Description<textarea rows="5" value={selectedSection.content?.description || ""} onChange={(event) => updateSection("description", event.target.value)} /></label>
