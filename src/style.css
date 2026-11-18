@@ -3991,6 +3991,7 @@ h6 {
 .cms-manager-grid .cms-manager-panel>label input:focus-visible{outline:0;border-color:#1e7ed8;box-shadow:0 0 0 3px rgba(0,194,255,.2)}
 .cms-revision-list{margin-top:14px}
 .cms-revision-list small{display:block;color:#687280;font-size:12px;line-height:1.45;margin-top:4px}
+.cms-revision-list .admin-secondary-button:focus-visible{outline:0;border-color:#1e7ed8;box-shadow:0 0 0 3px rgba(0,194,255,.2)}
 .cms-page-manager-links{display:grid;gap:12px;margin-top:16px}
 .cms-page-manager-links a{color:#1267a5;font-weight:700}
 .cms-page-manager-links span{padding:12px;background:#f5f7fa;border-radius:7px;color:#687280;font-size:12px}
