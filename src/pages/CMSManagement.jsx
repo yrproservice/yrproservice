@@ -55,6 +55,8 @@ export default function CMSManagement() {
   const [json, setJson] = useState("{}");
   const [history, setHistory] = useState([]);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyFailed, setHistoryFailed] = useState(false);
   const [media, setMedia] = useState([]);
   const [storageReady, setStorageReady] = useState(false);
   const [settings, setSettings] = useState([]);
@@ -309,6 +311,9 @@ export default function CMSManagement() {
   async function loadHistory(type, key) {
     setHistory([]);
     setHistoryLoaded(false);
+    setHistoryFailed(false);
+    setHistoryLoading(true);
+    setError("");
     try {
       const data = await api(
         `/api/cms/admin/history?entityType=${type}&entityKey=${encodeURIComponent(key)}`
@@ -316,7 +321,10 @@ export default function CMSManagement() {
       setHistory(data.history || []);
       setHistoryLoaded(true);
     } catch (loadError) {
+      setHistoryFailed(true);
       setError(loadError.message);
+    } finally {
+      setHistoryLoading(false);
     }
   }
   async function restoreRevision(type, key, id) {
@@ -1091,6 +1099,7 @@ export default function CMSManagement() {
                 setHistoryKey("");
                 setHistory([]);
                 setHistoryLoaded(false);
+                setHistoryFailed(false);
               }}
             >
               <option value="page">Page</option>
@@ -1106,6 +1115,7 @@ export default function CMSManagement() {
                 setHistoryKey(event.target.value);
                 setHistory([]);
                 setHistoryLoaded(false);
+                setHistoryFailed(false);
               }}
             >
               <option value="">Select an item</option>
@@ -1127,10 +1137,16 @@ export default function CMSManagement() {
           onRestore={(id) => restoreRevision(historyType, historyKey, id)}
           onDeleteDraft={(id) => deleteDraft(historyType, historyKey, id)}
         />
-        {historyLoaded && history.length === 0 && (
+        {historyLoading && (
+          <p className="cms-history-empty" role="status" aria-live="polite">Loading revision history…</p>
+        )}
+        {!historyLoading && historyLoaded && history.length === 0 && (
           <p className="cms-history-empty" role="status">No revisions found for this item.</p>
         )}
-        {!historyLoaded && (
+        {!historyLoading && historyFailed && (
+          <p className="cms-history-empty" role="status">History could not be loaded. Check the error message above and try again.</p>
+        )}
+        {!historyLoading && !historyLoaded && !historyFailed && (
           <p className="cms-history-empty" role="status">Select a CMS item and load its history to see saved revisions.</p>
         )}
       </section>
