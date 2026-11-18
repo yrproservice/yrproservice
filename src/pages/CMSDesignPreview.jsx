@@ -108,7 +108,17 @@ export default function CMSDesignPreview() {
       {loading ? <div className="cms-full-preview-message">Loading saved design…</div>
         : error ? <div className="cms-full-preview-message">{error}</div>
         : design && page ? (
-          <div className="cms-design-preview-content" onClickCapture={(event) => { event.preventDefault(); event.stopPropagation(); }} onSubmitCapture={(event) => { event.preventDefault(); event.stopPropagation(); }}>
+          <div
+            className="cms-design-preview-content"
+            onClickCapture={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onSubmitCapture={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+          >
             <PageDesignScope pageKey={pageKey} designOverride={design}>{page}</PageDesignScope>
           </div>
         ) : <div className="cms-full-preview-message">This page preview could not be rendered.</div>}
