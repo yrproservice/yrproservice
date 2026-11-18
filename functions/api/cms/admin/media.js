@@ -1,5 +1,5 @@
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
-import { detectImageMime } from "../../../_utils/image-validation.js";
+import { detectImageDimensions, detectImageMime } from "../../../_utils/image-validation.js";
 
 function safeName(value) {
   return String(value || "upload").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(-100) || "upload";
@@ -51,6 +51,7 @@ export async function onRequestPost(context) {
   catch { return adminJson({ error: "Unable to read the selected image." }, 400); }
   const contentType = detectImageMime(bytes);
   if (!contentType) return adminJson({ error: "Unsupported image format. Upload a valid JPEG, PNG, GIF or WebP image. SVG and other active or unverified formats are not accepted." }, 415);
+  const dimensions = detectImageDimensions(bytes, contentType);
   const declaredType = String(file.type || "").toLowerCase();
   if (declaredType && declaredType !== contentType && !(declaredType === "image/jpg" && contentType === "image/jpeg")) {
     return adminJson({ error: "The file contents do not match the selected image type." }, 415);
@@ -65,9 +66,9 @@ export async function onRequestPost(context) {
     }
     const url = `${publicBase}/${key.split("/").map(encodeURIComponent).join("/")}`;
     const alt = String(form.get("altText") || "").slice(0,300);
-    await env.DB.prepare("INSERT INTO cms_media (id,storage_provider,object_key,public_url,original_file_name,mime_type,byte_size,alt_text,uploaded_by) VALUES (?,'r2',?,?,?,?,?,?,?)")
-      .bind(id,key,url,file.name,contentType,file.size,alt,auth.email || null).run();
-    return adminJson({ ok: true, media: { id, object_key:key, public_url:url, original_file_name:file.name, mime_type:contentType, byte_size:file.size, alt_text:alt } }, 201);
+    await env.DB.prepare("INSERT INTO cms_media (id,storage_provider,object_key,public_url,original_file_name,mime_type,byte_size,width,height,alt_text,uploaded_by) VALUES (?,'r2',?,?,?,?,?,?,?,?,?)")
+      .bind(id,key,url,file.name,contentType,file.size,dimensions?.width || null,dimensions?.height || null,alt,auth.email || null).run();
+    return adminJson({ ok: true, media: { id, object_key:key, public_url:url, original_file_name:file.name, mime_type:contentType, byte_size:file.size, width:dimensions?.width || null, height:dimensions?.height || null, alt_text:alt } }, 201);
   } catch (error) {
     console.error("CMS media upload failed", error);
     try { await env.CMS_MEDIA.delete(key); } catch {}
@@ -92,8 +93,30 @@ export async function onRequestDelete(context) {
     if (references.some(Boolean)) {
       return adminJson({ error: "This image is referenced by saved CMS content or revision history. Replace those references first; the media file has been kept." }, 409);
     }
-    if (row.storage_provider === "r2" && env.CMS_MEDIA) await env.CMS_MEDIA.delete(row.object_key);
-    await env.DB.prepare("UPDATE cms_media SET deleted_at=? WHERE id=?").bind(new Date().toISOString(),id).run();
+    if (row.storage_provider === "r2" && !env.CMS_MEDIA) {
+      return adminJson({ error: "Preview R2 storage is unavailable. The media record has been kept." }, 503);
+    }
+    const deletedAt = new Date().toISOString();
+    const softDelete = await env.DB.prepare(
+      "UPDATE cms_media SET deleted_at=? WHERE id=? AND deleted_at IS NULL"
+    ).bind(deletedAt, id).run();
+    if (softDelete?.meta?.changes === 0) {
+      return adminJson({ error: "This media item has already been removed." }, 409);
+    }
+    if (row.storage_provider === "r2") {
+      try {
+        await env.CMS_MEDIA.delete(row.object_key);
+      } catch (storageError) {
+        try {
+          await env.DB.prepare(
+            "UPDATE cms_media SET deleted_at=NULL WHERE id=? AND deleted_at=?"
+          ).bind(id, deletedAt).run();
+        } catch (rollbackError) {
+          console.error("CMS media delete rollback failed; record remains soft-deleted", rollbackError);
+        }
+        throw storageError;
+      }
+    }
     return adminJson({ ok: true });
   } catch (error) {
     console.error("CMS media delete failed", error);
