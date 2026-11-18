@@ -99,7 +99,14 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
         </div></div>
       </section>;
     case "feature-grid":
-      return <section className="bp-section bp-provide home-cms-section" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"}><div className="container">
+      return (
+        <section
+          className="bp-section bp-provide home-cms-section"
+          key={section.id}
+          style={sectionStyle}
+          data-card-columns={sectionDesign.cardColumns || "auto"}
+        >
+          <div className="container">
         <div className="bp-section-head"><div><p className="bp-eyebrow">{c.eyebrow}</p><h2>{c.heading}</h2></div><p>{c.description}</p></div>
         <div className="bp-provide-grid">
           {items.map((item, index) => (
