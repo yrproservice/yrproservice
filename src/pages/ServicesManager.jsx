@@ -322,7 +322,24 @@ export default function ServicesManager() {
                 <strong>
                   {index + 1}. {{ hero: "Hero banner", intro: "Introduction", listing: "Services list", process: "How we work", cta: "Call to action" }[key] || key}
                 </strong>
-              <span className="cms-team-order-actions"><button type="button" aria-label={`Move ${key} up`} disabled={index === 0} onClick={() => moveSection(index, index - 1)}>↑</button><button type="button" aria-label={`Move ${key} down`} disabled={index === sectionOrder.length - 1} onClick={() => moveSection(index, index + 1)}>↓</button></span>
+                <span className="cms-team-order-actions">
+                  <button
+                    type="button"
+                    aria-label={`Move ${key} up`}
+                    disabled={index === 0}
+                    onClick={() => moveSection(index, index - 1)}
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Move ${key} down`}
+                    disabled={index === sectionOrder.length - 1}
+                    onClick={() => moveSection(index, index + 1)}
+                  >
+                    ↓
+                  </button>
+                </span>
               </li>
             ))}
           </ol>
