@@ -3960,6 +3960,7 @@ h6 {
 .cms-editor-fields input:focus-visible,.cms-editor-fields textarea:focus-visible,.cms-editor-fields select:focus-visible,.cms-editor-row input:focus-visible,.cms-json-editor:focus-visible{outline:0;border-color:#1e7ed8;box-shadow:0 0 0 3px rgba(0,194,255,.2)}
 .cms-editor-section{display:grid;gap:10px}
 .cms-editor-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.cms-editor-section[aria-label="Product documents"] .cms-editor-section-heading .admin-secondary-button:focus-visible{outline:0;border-color:#1e7ed8;box-shadow:0 0 0 3px rgba(0,194,255,.2)}
 .cms-editor-section-heading h3{margin:0 0 3px;color:#0b4a88;font-size:15px}
 .cms-editor-section-heading p,.cms-advanced-json>p{margin:0;color:#687280;font-size:12px}
 .cms-editor-row{display:flex;align-items:flex-end;gap:8px;padding:10px;border:1px solid #e1e8ef;border-radius:7px}
