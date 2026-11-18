@@ -28,10 +28,6 @@ export default function ShowroomProductCard({ product, navigate, onPrimaryAction
             src={product.img}
             alt={product.img ? product.name : `${product.name} image unavailable`}
             variant="catalog"
-            onError={(event) => {
-              event.currentTarget.src = "/favicon.png";
-              event.currentTarget.onerror = null;
-            }}
           />
           <span className="bp-image-badge">{badgeLabel}</span>
         </div>

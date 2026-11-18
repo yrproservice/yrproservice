@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 /**
  * Shared product image stage.
@@ -12,18 +12,36 @@ export default function ProductMediaFrame({
   className = "",
   onError,
 }) {
-  const safeSrc = typeof src === "string" && src.trim() ? src : "/favicon.png";
-  const safeAlt = typeof alt === "string" && alt.trim() ? alt : "Product image";
+  const safeSrc = typeof src === "string" && src.trim() ? src.trim() : "";
+  const safeAlt = typeof alt === "string" && alt.trim() ? alt.trim() : "Product image";
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [safeSrc]);
 
   return (
     <div className={`yr-product-media yr-product-media--${variant} ${className}`.trim()}>
-      <img
-        src={safeSrc}
-        alt={safeAlt}
-        loading={variant === "detail" ? "eager" : "lazy"}
-        decoding="async"
-        onError={onError}
-      />
+      {!safeSrc || imageFailed ? (
+        <div
+          className="yr-product-media-placeholder"
+          role="img"
+          aria-label={`${safeAlt} — image unavailable`}
+        >
+          <span>Product image unavailable</span>
+        </div>
+      ) : (
+        <img
+          src={safeSrc}
+          alt={safeAlt}
+          loading={variant === "detail" ? "eager" : "lazy"}
+          decoding="async"
+          onError={(event) => {
+            setImageFailed(true);
+            onError?.(event);
+          }}
+        />
+      )}
     </div>
   );
 }

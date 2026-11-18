@@ -5,6 +5,7 @@ import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
 import { mergePublishedProduct } from "../data/productImages";
 import ShowroomProductCard from "../components/ShowroomProductCard";
+import ProductMediaFrame from "../components/ProductMediaFrame";
 import { getProductRequestFlow, isDentalChairProduct, PRODUCT_REQUEST_FLOWS } from "../data/productWorkflow";
 
 export default function Products({ navigate }) {
@@ -107,9 +108,10 @@ export default function Products({ navigate }) {
             </div>
           </div>
           <div className="products-hero-image">
-            <img
-              src={showcaseChair?.img || "/favicon.png"}
-              alt={showcaseChair?.name || "Dental chair"}
+            <ProductMediaFrame
+              src={showcaseChair?.img}
+              alt={showcaseChair?.name || "Featured dental chair"}
+              variant="hero"
             />
             <div className="products-hero-label">
               <small>{showcaseChair?.brand}</small>
@@ -177,7 +179,11 @@ export default function Products({ navigate }) {
                   <h3>{p.name}</h3>
                   <span>{p.brandLine}</span>
                 </div>
-                <img src={p.img || "/favicon.png"} alt={p.img ? p.name : `${p.name} image unavailable`} />
+                <ProductMediaFrame
+                  src={p.img}
+                  alt={p.name}
+                  variant="spotlight"
+                />
                 <b>Explore →</b>
               </Link>
             ))}

@@ -110,10 +110,6 @@ export default function ProductDetails({ product, navigate, previewMode = false 
               src={product.img}
               alt={product.img ? product.name : `${product.name} image unavailable`}
               variant="detail"
-              onError={(event) => {
-                event.currentTarget.src = "/favicon.png";
-                event.currentTarget.onerror = null;
-              }}
             />
           </div>
         </div>
@@ -312,13 +308,10 @@ export default function ProductDetails({ product, navigate, previewMode = false 
                   className="bp-product-card"
                 >
                   <div className="bp-product-img">
-                    <img
-                      src={item.img || "/favicon.png"}
-                      onError={(event) => {
-                        event.currentTarget.src = "/favicon.png";
-                        event.currentTarget.onerror = null;
-                      }}
-                      alt={item.img ? item.name : `${item.name} image unavailable`}
+                    <ProductMediaFrame
+                      src={item.img}
+                      alt={item.name}
+                      variant="related"
                     />
                   </div>
                   <div className="bp-product-body">

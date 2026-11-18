@@ -868,14 +868,13 @@ h6 {
   border-radius: 50%;
   box-shadow: 0 0 0 28px rgba(234,246,253,.58), 0 0 0 56px rgba(234,246,253,.3);
 }
-.products-hero-image img {
+.products-hero-image .yr-product-media--hero {
   position: relative;
   z-index: 1;
   width: 88%;
   height: 88%;
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
 }
 .products-hero-label {
   position: absolute;
@@ -1030,14 +1029,13 @@ h6 {
   line-height:1.5;
   color:#617385;
 }
-.spotlight-card img {
+.spotlight-card .yr-product-media--spotlight {
   position:absolute;
   top:112px;
   right:12px;
   bottom:38px;
   width:68%;
   height:calc(100% - 150px);
-  object-fit:contain;
   object-position:right bottom;
 }
 .spotlight-1 { background:linear-gradient(135deg,#082f55,#0b4a88);color:#fff;border-color:#0b4a88; }
@@ -4842,6 +4840,25 @@ h6 {
   max-height: 100%;
   object-fit: contain;
   object-position: center;
+}
+.yr-product-media-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 72px;
+  place-items: center;
+  padding: 18px;
+  box-sizing: border-box;
+  border: 1px dashed #c7d7e3;
+  border-radius: 10px;
+  background: rgba(234,246,253,.72);
+  color: #526477;
+  text-align: center;
+  font: 700 11px/1.5 Inter,sans-serif;
+}
+.bp-product-img .yr-product-media--related {
+  width: 100%;
+  height: 100%;
 }
 .bp-catalog-image .yr-product-media--catalog {
   width: 100%;
