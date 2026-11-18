@@ -62,8 +62,51 @@ export async function onRequestPost(context) {
     const statements = [];
     if (draft) statements.push(env.DB.prepare(`UPDATE ${config.versions} SET state = 'archived' WHERE id = ? AND state = 'draft'`).bind(draft.id));
     const newId = crypto.randomUUID();
-    statements.push(env.DB.prepare(`INSERT INTO ${config.versions} (id, ${config.fk}, version_number, state, ${config.json}, created_by, change_note, created_at) VALUES (?, ?, ?, 'draft', ?, ?, ?, ?)`).bind(newId, entity.id, nextVersion, source.content, actor, `Restored from V${source.version_number}`, now));
-    statements.push(env.DB.prepare(`INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'restore_revision_as_draft', ?, ?, ?)`).bind(crypto.randomUUID(), actor, type, entity.id, JSON.stringify({ sourceVersion: source.version_number, newVersion: nextVersion })));
+    statements.push(
+      env.DB.prepare(`
+        INSERT INTO ${config.versions} (
+          id,
+          ${config.fk},
+          version_number,
+          state,
+          ${config.json},
+          created_by,
+          change_note,
+          created_at
+        )
+        VALUES (?, ?, ?, 'draft', ?, ?, ?, ?)
+      `).bind(
+        newId,
+        entity.id,
+        nextVersion,
+        source.content,
+        actor,
+        `Restored from V${source.version_number}`,
+        now
+      )
+    );
+    statements.push(
+      env.DB.prepare(`
+        INSERT INTO cms_audit_log (
+          id,
+          actor_email,
+          action,
+          entity_type,
+          entity_id,
+          metadata_json
+        )
+        VALUES (?, ?, 'restore_revision_as_draft', ?, ?, ?)
+      `).bind(
+        crypto.randomUUID(),
+        actor,
+        type,
+        entity.id,
+        JSON.stringify({
+          sourceVersion: source.version_number,
+          newVersion: nextVersion,
+        })
+      )
+    );
     await env.DB.batch(statements);
     return adminJson({ ok: true, draftId: newId, version: nextVersion, restoredFrom: source.version_number }, 201);
   } catch (error) {
