@@ -690,12 +690,30 @@ export default function CMSDashboard({ onAdminLogout }) {
         <header className="cms-admin-header">
           <div><p className="eyebrow">YR Proservice · Content Management</p><h1>Visual Website Editor</h1>
             <p>Edit page sections in the preview and manage their content in the inspector. Changes remain drafts until published.</p></div>
-          <div className="cms-header-links"><a className="admin-public-link" href="/admin/cms/manage">Management Centre →</a><a className="admin-public-link" href="/admin">← Request Dashboard</a></div>
+          <div className="cms-header-links">
+            <a className="admin-public-link" href="/admin/cms/manage">
+              Management Centre →
+            </a>
+            <a className="admin-public-link" href="/admin">
+              ← Request Dashboard
+            </a>
+          </div>
         </header>
         {error && <p className="admin-alert admin-alert-error" role="alert">{error}</p>}
         {notice && <p className="admin-alert admin-alert-success" role="status">{notice}</p>}
         <div className="cms-admin-toolbar">
-          <div><strong>{pageTitle || "No page selected"}</strong><small>{pageKey ? `${route} · ${draftVersion ? `Draft V${draftVersion}` : publishedVersion ? `Published V${publishedVersion}` : "Not saved"}` : "Choose a page or create a draft"}</small></div>
+          <div>
+            <strong>{pageTitle || "No page selected"}</strong>
+            <small>
+              {pageKey
+                ? `${route} · ${draftVersion
+                    ? `Draft V${draftVersion}`
+                    : publishedVersion
+                      ? `Published V${publishedVersion}`
+                      : "Not saved"}`
+                : "Choose a page or create a draft"}
+            </small>
+          </div>
           <div className="cms-toolbar-actions">
             <button type="button" className="admin-secondary-button" onClick={loadHomeTemplate} disabled={busy || pages.some((page) => page.page_key === "home")}>Load Home template</button>
             <button type="button" className="admin-secondary-button" onClick={createPage}>New page</button>
@@ -703,7 +721,20 @@ export default function CMSDashboard({ onAdminLogout }) {
             <button type="button" className="admin-secondary-button" onClick={() => applyHistorySnapshot("redo")} disabled={busy || !canRedo} title="Redo the last undone editor change">Redo</button>
             <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save Preview draft</button>
             <button type="button" className="admin-secondary-button" onClick={restoreSavedDraft} disabled={busy || !savedSnapshot || !hasUnsavedChanges}>Restore last saved draft</button>
-            <button type="button" className="admin-secondary-button" onClick={() => window.open(`/admin/cms/preview?key=${encodeURIComponent(pageKey)}`, "_blank", "noopener,noreferrer")} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() =>
+                window.open(
+                  `/admin/cms/preview?key=${encodeURIComponent(pageKey)}`,
+                  "_blank",
+                  "noopener,noreferrer"
+                )
+              }
+              disabled={busy || !draftId || hasUnsavedChanges}
+            >
+              Preview saved draft
+            </button>
             {hasUnsavedChanges && <small role="status">Unsaved or invalid edits · correct the JSON and save before previewing</small>}
             <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !draftId || hasUnsavedChanges}>Publish</button>
             <div className="cms-admin-session" role="status"><span>Admin access active</span><button type="button" onClick={onAdminLogout}>Log out</button></div>
@@ -714,7 +745,15 @@ export default function CMSDashboard({ onAdminLogout }) {
             <h2>Pages</h2>
             {pages.length === 0 && <p className="admin-empty">No CMS pages yet. Create a page draft to begin. Existing website pages are not changed automatically.</p>}
             {pages.map((page) => <button key={page.id} type="button" className={pageKey === page.page_key ? "cms-page-link active" : "cms-page-link"} onClick={() => openPage(page)}>
-              <strong>{page.title}</strong><small>{page.route}</small><span>{page.draft_id ? `Draft V${page.draft_version}` : page.published_version ? `Published V${page.published_version}` : "No content"}</span>
+              <strong>{page.title}</strong>
+              <small>{page.route}</small>
+              <span>
+                {page.draft_id
+                  ? `Draft V${page.draft_version}`
+                  : page.published_version
+                    ? `Published V${page.published_version}`
+                    : "No content"}
+              </span>
             </button>)}
           </aside>
           <section className="cms-canvas-panel">
@@ -722,7 +761,18 @@ export default function CMSDashboard({ onAdminLogout }) {
               <div><h2>Page preview</h2><small>Click a section to select it for editing</small></div>
               <div className="cms-canvas-heading-actions">
                 <div className="cms-device-switcher" role="group" aria-label="Preview device size">
-                  {["desktop", "tablet", "mobile"].map((device) => <button key={device} type="button" className={previewDevice === device ? "is-active" : ""} aria-pressed={previewDevice === device} disabled={!pageKey} onClick={() => setPreviewDevice(device)}>{device[0].toUpperCase() + device.slice(1)}</button>)}
+                  {["desktop", "tablet", "mobile"].map((device) => (
+                    <button
+                      key={device}
+                      type="button"
+                      className={previewDevice === device ? "is-active" : ""}
+                      aria-pressed={previewDevice === device}
+                      disabled={!pageKey}
+                      onClick={() => setPreviewDevice(device)}
+                    >
+                      {device[0].toUpperCase() + device.slice(1)}
+                    </button>
+                  ))}
                 </div>
                 <span className="cms-preview-label">Draft preview</span>
               </div>
@@ -731,21 +781,84 @@ export default function CMSDashboard({ onAdminLogout }) {
               <div className="cms-canvas" style={{ "--cms-home-heading-font": homeDesign.global?.headingFont || "Montserrat", "--cms-home-body-font": homeDesign.global?.bodyFont || "Inter" }}>
               {!pageKey ? <div className="cms-empty-canvas">Select a page or create a new page draft.</div> :
                 content.sections.filter((section) => section.visible !== false).sort((a,b) => a.order-b.order).map((section) =>
-                  <div key={section.id} className="cms-home-draggable-section" draggable onDragStart={()=>{dragSectionId.current=section.id;}} onDragOver={(e)=>e.preventDefault()} onDrop={()=>reorderSections(dragSectionId.current,section.id)} onDragEnd={()=>{dragSectionId.current=null;}}>
-                    <SectionPreview section={section} selected={section.id === selectedSectionId} design={homeDesign} onClick={() => { setSelectedSectionId(section.id); setStructuredJson(JSON.stringify(section.content || {}, null, 2)); }} />
+                  <div
+                    key={section.id}
+                    className="cms-home-draggable-section"
+                    draggable
+                    onDragStart={() => {
+                      dragSectionId.current = section.id;
+                    }}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={() =>
+                      reorderSections(dragSectionId.current, section.id)
+                    }
+                    onDragEnd={() => {
+                      dragSectionId.current = null;
+                    }}
+                  >
+                    <SectionPreview
+                      section={section}
+                      selected={section.id === selectedSectionId}
+                      design={homeDesign}
+                      onClick={() => {
+                        setSelectedSectionId(section.id);
+                        setStructuredJson(
+                          JSON.stringify(section.content || {}, null, 2)
+                        );
+                      }}
+                    />
                   </div>)} 
               </div>
             </div>
-            {pageKey && <div className="cms-add-section"><label htmlFor="cms-add-section">Add section</label><select id="cms-add-section" value="" onChange={(event) => event.target.value && addSection(event.target.value)}><option value="">Choose a section type…</option>{SECTION_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>}
+            {pageKey && (
+              <div className="cms-add-section">
+                <label htmlFor="cms-add-section">Add section</label>
+                <select
+                  id="cms-add-section"
+                  value=""
+                  onChange={(event) =>
+                    event.target.value && addSection(event.target.value)
+                  }
+                >
+                  <option value="">Choose a section type…</option>
+                  {SECTION_TYPES.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </section>
           <aside className="cms-inspector-panel">
             <h2>Management panel</h2>
-            {pageKey && <div className="cms-page-settings"><label>Page title<input value={pageTitle} onChange={(event) => setPageTitle(event.target.value)} /></label><label>Route<input value={route} onChange={(event) => setRoute(event.target.value)} /></label></div>}
+            {pageKey && (
+              <div className="cms-page-settings">
+                <label>
+                  Page title
+                  <input
+                    value={pageTitle}
+                    onChange={(event) => setPageTitle(event.target.value)}
+                  />
+                </label>
+                <label>
+                  Route
+                  <input
+                    value={route}
+                    onChange={(event) => setRoute(event.target.value)}
+                  />
+                </label>
+              </div>
+            )}
 
 
             <details className="cms-recovery-bin">
               <summary>Removed sections · {removedSections.filter((item) => item.pageKey === pageKey).length}</summary>
-              <p className="cms-recovery-note">This recovery bin lasts for this editor session only. Restoring preserves section content, ID, styling reference and original position. Save the Preview draft to keep the restored version.</p>
+              <p className="cms-recovery-note">
+                This recovery bin lasts for this editor session only. Restoring
+                preserves section content, ID, styling reference and original
+                position. Save the Preview draft to keep the restored version.
+              </p>
               {removedSections.filter((item) => item.pageKey === pageKey).length === 0
                 ? <p className="cms-recovery-empty">No removed sections for this page.</p>
                 : <ul className="cms-recovery-list">{removedSections.filter((item) => item.pageKey === pageKey).map((entry) => {
@@ -1075,7 +1188,13 @@ export default function CMSDashboard({ onAdminLogout }) {
               </div>}
             </details>}
             {!selectedSection ? <p className="admin-empty">Select a section in the preview to edit its content.</p> : <>
-              <div className="cms-inspector-title"><strong>{SECTION_TYPES.find((item) => item.value === selectedSection.type)?.label || selectedSection.type}</strong><small>Section settings</small></div>
+              <div className="cms-inspector-title">
+                <strong>
+                  {SECTION_TYPES.find((item) => item.value === selectedSection.type)?.label ||
+                    selectedSection.type}
+                </strong>
+                <small>Section settings</small>
+              </div>
               <label>
                 Show section
                 <input
@@ -1116,7 +1235,17 @@ export default function CMSDashboard({ onAdminLogout }) {
                 />
               </label>
               <label>Heading<input value={selectedSection.content?.heading || ""} onChange={(event) => updateSection("heading", event.target.value)} /></label>
-              {selectedSection.type === "hero" && <label>Heading highlight (second line)<input value={selectedSection.content?.headingHighlight || ""} onChange={(event) => updateSection("headingHighlight", event.target.value)} /></label>}
+              {selectedSection.type === "hero" && (
+                <label>
+                  Heading highlight (second line)
+                  <input
+                    value={selectedSection.content?.headingHighlight || ""}
+                    onChange={(event) =>
+                      updateSection("headingHighlight", event.target.value)
+                    }
+                  />
+                </label>
+              )}
               <label>Description<textarea rows="5" value={selectedSection.content?.description || ""} onChange={(event) => updateSection("description", event.target.value)} /></label>
               <label>Image URL<input value={selectedSection.content?.imageUrl || ""} onChange={(event) => updateSection("imageUrl", event.target.value)} placeholder="/assets/example.jpg" /></label>
               <label>Image alt text<input value={selectedSection.content?.imageAlt || ""} onChange={(event) => updateSection("imageAlt", event.target.value)} /></label>
