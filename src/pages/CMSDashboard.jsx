@@ -765,22 +765,175 @@ export default function CMSDashboard({ onAdminLogout }) {
               <p className="cms-home-design-note">Adjust the Home page appearance without replacing its existing content. All changes are saved as a Preview draft.</p>
               <div className="cms-home-design-subpanel">
                 <h3>Global typography</h3>
-                <label>Heading font<select value={homeDesign.global?.headingFont || "Montserrat"} onChange={(e) => updateHomeGlobalDesign("headingFont", e.target.value)}><option>Montserrat</option><option>Inter</option><option>Arial</option></select></label>
-                <label>Body font<select value={homeDesign.global?.bodyFont || "Inter"} onChange={(e) => updateHomeGlobalDesign("bodyFont", e.target.value)}><option>Inter</option><option>Montserrat</option><option>Arial</option></select></label>
-                <label>Heading size · {Math.round(Number(homeDesign.global?.headingScale || 1) * 100)}%<input type="range" min="0.8" max="1.25" step="0.05" value={homeDesign.global?.headingScale || 1} onChange={(e) => updateHomeGlobalDesign("headingScale", Number(e.target.value))} /></label>
-                <label>Body text size · {homeDesign.global?.bodySize || 16}px<input type="range" min="13" max="20" step="1" value={homeDesign.global?.bodySize || 16} onChange={(e) => updateHomeGlobalDesign("bodySize", Number(e.target.value))} /></label>
-                <label>Heading weight<select value={homeDesign.global?.headingWeight || 700} onChange={(e) => updateHomeGlobalDesign("headingWeight", Number(e.target.value))}><option value="500">Medium</option><option value="600">Semi-bold</option><option value="700">Bold</option><option value="800">Extra-bold</option><option value="900">Black</option></select></label>
-                <label>Heading letter spacing · {Number(homeDesign.global?.headingLetterSpacing ?? -0.025).toFixed(3)}em<input type="range" min="-0.06" max="0.08" step="0.005" value={homeDesign.global?.headingLetterSpacing ?? -0.025} onChange={(e) => updateHomeGlobalDesign("headingLetterSpacing", Number(e.target.value))} /></label>
-                <label>Content width<select value={homeDesign.global?.contentWidth || "standard"} onChange={(e) => updateHomeGlobalDesign("contentWidth", e.target.value)}><option value="compact">Compact · 1040px</option><option value="standard">Standard · 1180px</option><option value="wide">Wide · 1380px</option></select></label>
+                <label>
+                  Heading font
+                  <select
+                    value={homeDesign.global?.headingFont || "Montserrat"}
+                    onChange={(event) =>
+                      updateHomeGlobalDesign("headingFont", event.target.value)
+                    }
+                  >
+                    <option>Montserrat</option>
+                    <option>Inter</option>
+                    <option>Arial</option>
+                  </select>
+                </label>
+                <label>
+                  Body font
+                  <select
+                    value={homeDesign.global?.bodyFont || "Inter"}
+                    onChange={(event) =>
+                      updateHomeGlobalDesign("bodyFont", event.target.value)
+                    }
+                  >
+                    <option>Inter</option>
+                    <option>Montserrat</option>
+                    <option>Arial</option>
+                  </select>
+                </label>
+                <label>
+                  Heading size · {Math.round(Number(homeDesign.global?.headingScale || 1) * 100)}%
+                  <input
+                    type="range"
+                    min="0.8"
+                    max="1.25"
+                    step="0.05"
+                    value={homeDesign.global?.headingScale || 1}
+                    onChange={(event) =>
+                      updateHomeGlobalDesign("headingScale", Number(event.target.value))
+                    }
+                  />
+                </label>
+                <label>
+                  Body text size · {homeDesign.global?.bodySize || 16}px
+                  <input
+                    type="range"
+                    min="13"
+                    max="20"
+                    step="1"
+                    value={homeDesign.global?.bodySize || 16}
+                    onChange={(event) =>
+                      updateHomeGlobalDesign("bodySize", Number(event.target.value))
+                    }
+                  />
+                </label>
+                <label>
+                  Heading weight
+                  <select
+                    value={homeDesign.global?.headingWeight || 700}
+                    onChange={(event) =>
+                      updateHomeGlobalDesign("headingWeight", Number(event.target.value))
+                    }
+                  >
+                    <option value="500">Medium</option>
+                    <option value="600">Semi-bold</option>
+                    <option value="700">Bold</option>
+                    <option value="800">Extra-bold</option>
+                    <option value="900">Black</option>
+                  </select>
+                </label>
+                <label>
+                  Heading letter spacing · {Number(homeDesign.global?.headingLetterSpacing ?? -0.025).toFixed(3)}em
+                  <input
+                    type="range"
+                    min="-0.06"
+                    max="0.08"
+                    step="0.005"
+                    value={homeDesign.global?.headingLetterSpacing ?? -0.025}
+                    onChange={(event) =>
+                      updateHomeGlobalDesign(
+                        "headingLetterSpacing",
+                        Number(event.target.value)
+                      )
+                    }
+                  />
+                </label>
+                <label>
+                  Content width
+                  <select
+                    value={homeDesign.global?.contentWidth || "standard"}
+                    onChange={(event) =>
+                      updateHomeGlobalDesign("contentWidth", event.target.value)
+                    }
+                  >
+                    <option value="compact">Compact · 1040px</option>
+                    <option value="standard">Standard · 1180px</option>
+                    <option value="wide">Wide · 1380px</option>
+                  </select>
+                </label>
               </div>
               <div className="cms-home-design-subpanel">
                 <h3>Section order</h3>
                 <p>Drag sections in the page preview to reorder them, or use the move buttons below.</p>
-                <ol className="cms-home-order-list">{[...content.sections].sort((a,b)=>(a.order||0)-(b.order||0)).map((section,index)=><li key={section.id} draggable onDragStart={()=>{dragSectionId.current=section.id;}} onDragOver={(e)=>e.preventDefault()} onDrop={()=>reorderSections(dragSectionId.current,section.id)} onDragEnd={()=>{dragSectionId.current=null;}}>
-                  <span aria-hidden="true">⠿</span><button type="button" className="cms-home-section-select" aria-pressed={section.id===selectedSectionId} onClick={()=>{setSelectedSectionId(section.id);setStructuredJson(JSON.stringify(section.content||{},null,2));}}>{index+1}. {section.content?.heading || section.type}</button>
+                <ol className="cms-home-order-list">
+                  {[...content.sections]
+                    .sort((first, second) => (first.order || 0) - (second.order || 0))
+                    .map((section, index) => (
+                      <li
+                        key={section.id}
+                        draggable
+                        onDragStart={() => {
+                          dragSectionId.current = section.id;
+                        }}
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={() =>
+                          reorderSections(dragSectionId.current, section.id)
+                        }
+                        onDragEnd={() => {
+                          dragSectionId.current = null;
+                        }}
+                      >
+                        <span aria-hidden="true">⠿</span>
+                        <button
+                          type="button"
+                          className="cms-home-section-select"
+                          aria-pressed={section.id === selectedSectionId}
+                          onClick={() => {
+                            setSelectedSectionId(section.id);
+                            setStructuredJson(
+                              JSON.stringify(section.content || {}, null, 2)
+                            );
+                          }}
+                        >
+                          {index + 1}. {section.content?.heading || section.type}
+                        </button>
                   <small>{section.visible===false?"Hidden":"Visible"}</small>
-                  <button type="button" className="cms-home-visibility-toggle" aria-label={`${section.visible===false?"Show":"Hide"} ${section.content?.heading||section.type}`} onClick={()=>setContent((current)=>({...current,sections:current.sections.map((item)=>item.id===section.id?{...item,visible:item.visible===false}:item)}))}>{section.visible===false?"Show":"Hide"}</button>
-                  <button type="button" aria-label={`Move ${section.content?.heading||section.type} up`} disabled={index===0} onClick={()=>moveSection(section.id,-1)}>↑</button><button type="button" aria-label={`Move ${section.content?.heading||section.type} down`} disabled={index===content.sections.length-1} onClick={()=>moveSection(section.id,1)}>↓</button>
+                        <button
+                          type="button"
+                          className="cms-home-visibility-toggle"
+                          aria-label={`${section.visible === false ? "Show" : "Hide"} ${section.content?.heading || section.type}`}
+                          onClick={() =>
+                            setContent((current) => ({
+                              ...current,
+                              sections: current.sections.map((item) =>
+                                item.id === section.id
+                                  ? { ...item, visible: item.visible === false }
+                                  : item
+                              ),
+                            }))
+                          }
+                        >
+                          {section.visible === false ? "Show" : "Hide"}
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Move ${section.content?.heading || section.type} up`}
+                          disabled={index === 0}
+                          onClick={() => moveSection(section.id, -1)}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Move ${section.content?.heading || section.type} down`}
+                          disabled={index === content.sections.length - 1}
+                          onClick={() => moveSection(section.id, 1)}
+                        >
+                          ↓
+                        </button>
+                      </li>
+                    ))}
+                </ol>
                 </li>)}</ol>
               </div>
               <div className="cms-home-design-subpanel">
@@ -970,8 +1123,69 @@ export default function CMSDashboard({ onAdminLogout }) {
               <label>Image alt text<input value={selectedSection.content?.imageAlt || ""} onChange={(event) => updateSection("imageAlt", event.target.value)} /></label>
               <label>Button text<input value={selectedSection.content?.buttonText || ""} onChange={(event) => updateSection("buttonText", event.target.value)} /></label>
               <label>Button destination<input value={selectedSection.content?.buttonUrl || ""} onChange={(event) => updateSection("buttonUrl", event.target.value)} placeholder="/products" /></label>
-              <details className="cms-advanced-section-json"><summary>Advanced section content (JSON)</summary><label>JSON content<textarea rows="12" spellCheck="false" value={structuredJson} onChange={(event) => setStructuredJson(event.target.value)} onBlur={() => { try { const parsed = JSON.parse(structuredJson); if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error(); setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, content: parsed } : item) })); setError(""); } catch { setError("Advanced section content must be valid JSON object data."); } }} /></label></details>
-              <div className="cms-section-actions"><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, -1)}>Move up</button><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, 1)}>Move down</button><button type="button" className="admin-secondary-button" onClick={removeSectionToRecoveryBin} disabled={busy}>Move to recovery bin</button></div>
+              <details className="cms-advanced-section-json">
+                <summary>Advanced section content (JSON)</summary>
+                <label>
+                  JSON content
+                  <textarea
+                    rows="12"
+                    spellCheck="false"
+                    value={structuredJson}
+                    onChange={(event) => setStructuredJson(event.target.value)}
+                    onBlur={() => {
+                      try {
+                        const parsed = JSON.parse(structuredJson);
+
+                        if (
+                          !parsed ||
+                          typeof parsed !== "object" ||
+                          Array.isArray(parsed)
+                        ) {
+                          throw new Error();
+                        }
+
+                        setContent((current) => ({
+                          ...current,
+                          sections: current.sections.map((item) =>
+                            item.id === selectedSection.id
+                              ? { ...item, content: parsed }
+                              : item
+                          ),
+                        }));
+                        setError("");
+                      } catch {
+                        setError(
+                          "Advanced section content must be valid JSON object data."
+                        );
+                      }
+                    }}
+                  />
+                </label>
+              </details>
+              <div className="cms-section-actions">
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  onClick={() => moveSection(selectedSection.id, -1)}
+                >
+                  Move up
+                </button>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  onClick={() => moveSection(selectedSection.id, 1)}
+                >
+                  Move down
+                </button>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  onClick={removeSectionToRecoveryBin}
+                  disabled={busy}
+                >
+                  Move to recovery bin
+                </button>
+              </div>
             </>}
           </aside>
         </div>
