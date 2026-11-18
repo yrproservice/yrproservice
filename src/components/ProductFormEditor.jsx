@@ -114,7 +114,12 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
             <option value={PRODUCT_REQUEST_FLOWS.QUOTATION}>General Quotation</option>
             <option value={PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR}>Dental Chair Request</option>
           </select>
-          <small>{getProductRequestFlow({ slug: product?.slug }) === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR ? "Confirmed dental chair model — requests are locked to Dental Chair Request." : "Controls where this product is sent when a customer requests it. This is separate from the legacy purchase type below."}</small>
+          <small>
+            {getProductRequestFlow({ slug: product?.slug }) ===
+            PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR
+              ? "Confirmed dental chair model — requests are locked to Dental Chair Request."
+              : "Controls where this product is sent when a customer requests it. This is separate from the legacy purchase type below."}
+          </small>
         </label>
         {PRODUCT_FIELDS.map(([key, label]) => (
           <label key={key} className={key === "summary" || key === "description" ? "cms-editor-field-wide" : ""}>
@@ -147,7 +152,14 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                 <img src={item.src} alt={item.file} loading="lazy" />
                 <strong>{item.file}</strong>
                 <small>{item.brand} · {item.category}</small>
-                <button type="button" className="admin-secondary-button" disabled={!product} onClick={() => selectProductImage(item.src)}>{product?.img === item.src ? "Selected" : "Use this image"}</button>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  disabled={!product}
+                  onClick={() => selectProductImage(item.src)}
+                >
+                  {product?.img === item.src ? "Selected" : "Use this image"}
+                </button>
               </article>
             ))}
           </div>
@@ -159,7 +171,16 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                   <img src={item.public_url} alt={item.alt_text || item.original_file_name} loading="lazy" />
                   <strong>{item.original_file_name}</strong>
                   <small>Preview upload</small>
-                  <button type="button" className="admin-secondary-button" disabled={!product} onClick={() => selectProductImage(item.public_url)}>{product?.img === item.public_url ? "Selected" : "Use this image"}</button>
+                  <button
+                    type="button"
+                    className="admin-secondary-button"
+                    disabled={!product}
+                    onClick={() => selectProductImage(item.public_url)}
+                  >
+                    {product?.img === item.public_url
+                      ? "Selected"
+                      : "Use this image"}
+                  </button>
                 </article>
               ))}
             </div>
