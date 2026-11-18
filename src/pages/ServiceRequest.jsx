@@ -14,19 +14,32 @@ export default function ServiceRequest({ navigate }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    let active = true;
+
     async function loadServices() {
       try {
-        const response = await fetch("/api/cms/public/pages?key=services", { cache: "no-store" });
+        const response = await fetch(
+          "/api/cms/public/pages?key=services",
+          { cache: "no-store" }
+        );
         if (!response.ok) return;
+
         const result = await response.json();
-        if (!result?.ok) return;
+        if (!active || !result?.ok) return;
+
         const page = getServicesCmsContent(result.page?.content);
-        if (page?.listing?.items?.length) setServices(page.listing.items);
+        if (page?.listing?.items?.length) {
+          setServices(page.listing.items);
+        }
       } catch {
         // Keep the built-in service list if CMS content cannot be loaded.
       }
     }
+
     loadServices();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
