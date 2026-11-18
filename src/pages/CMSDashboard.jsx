@@ -118,6 +118,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [previewDevice, setPreviewDevice] = useState("desktop");
+  const [removedSections, setRemovedSections] = useState([]);
   const [structuredJson, setStructuredJson] = useState("{}");
   const dragSectionId = React.useRef(null);
   const historyRef = React.useRef({ past: [], future: [], previous: JSON.stringify({ sections: [] }), suppressNext: false });
@@ -259,6 +260,43 @@ export default function CMSDashboard({ onAdminLogout }) {
         ? section : { ...section, content: { ...(section.content || {}), [field]: value } })
     }));
     setStructuredJson(JSON.stringify({ ...(selectedSection.content || {}), [field]: value }, null, 2));
+  }
+
+
+  function removeSectionToRecoveryBin() {
+    if (!selectedSection || !pageKey) return;
+    const originalIndex = content.sections.findIndex((section) => section.id === selectedSection.id);
+    if (originalIndex < 0) return;
+    const entry = { id: crypto.randomUUID(), pageKey, section: JSON.parse(JSON.stringify(selectedSection)), originalIndex };
+    setRemovedSections((current) => [...current.filter((item) => !(item.pageKey === pageKey && item.section.id === selectedSection.id)), entry]);
+    setContent((current) => ({ ...current, sections: current.sections.filter((item) => item.id !== selectedSection.id).map((item, index) => ({ ...item, order: index + 1 })) }));
+    const remaining = content.sections.filter((item) => item.id !== selectedSection.id);
+    const nextSelected = remaining[Math.min(originalIndex, remaining.length - 1)] || null;
+    setSelectedSectionId(nextSelected?.id || "");
+    setStructuredJson(JSON.stringify(nextSelected?.content || {}, null, 2));
+    setNotice("Section moved to the recovery bin. You can restore it or use Undo.");
+    setError("");
+  }
+
+  function restoreRemovedSection(entry) {
+    if (!entry || entry.pageKey !== pageKey || content.sections.some((section) => section.id === entry.section.id)) return;
+    setContent((current) => {
+      if (current.sections.some((section) => section.id === entry.section.id)) return current;
+      const sections = [...current.sections];
+      sections.splice(Math.max(0, Math.min(entry.originalIndex, sections.length)), 0, JSON.parse(JSON.stringify(entry.section)));
+      return { ...current, sections: sections.map((section, index) => ({ ...section, order: index + 1 })) };
+    });
+    setSelectedSectionId(entry.section.id);
+    setStructuredJson(JSON.stringify(entry.section.content || {}, null, 2));
+    setNotice("Section restored to its original position. Save the Preview draft to keep this change.");
+    setError("");
+  }
+
+  function permanentlyDiscardRemovedSection(entry) {
+    const label = entry.section.content?.heading || entry.section.type || "this section";
+    if (!window.confirm("Permanently discard “" + label + "” from the recovery bin? This cannot be undone.")) return;
+    setRemovedSections((current) => current.filter((item) => item.id !== entry.id));
+    setNotice("Removed section permanently discarded from this editor session.");
   }
 
   function addSection(type) {
@@ -448,6 +486,24 @@ export default function CMSDashboard({ onAdminLogout }) {
             <h2>Management panel</h2>
             {pageKey && <div className="cms-page-settings"><label>Page title<input value={pageTitle} onChange={(event) => setPageTitle(event.target.value)} /></label><label>Route<input value={route} onChange={(event) => setRoute(event.target.value)} /></label></div>}
 
+
+            <details className="cms-recovery-bin">
+              <summary>Removed sections · {removedSections.filter((item) => item.pageKey === pageKey).length}</summary>
+              <p className="cms-recovery-note">This recovery bin lasts for this editor session only. Restoring preserves section content, ID, styling reference and original position. Save the Preview draft to keep the restored version.</p>
+              {removedSections.filter((item) => item.pageKey === pageKey).length === 0
+                ? <p className="cms-recovery-empty">No removed sections for this page.</p>
+                : <ul className="cms-recovery-list">{removedSections.filter((item) => item.pageKey === pageKey).map((entry) => {
+                  const alreadyPresent = content.sections.some((section) => section.id === entry.section.id);
+                  const label = entry.section.content?.heading || SECTION_TYPES.find((type) => type.value === entry.section.type)?.label || entry.section.type;
+                  return <li key={entry.id}>
+                    <div><strong>{label}</strong><small>Original position: {entry.originalIndex + 1}{alreadyPresent ? " · Already in page" : ""}</small></div>
+                    <div className="cms-recovery-actions">
+                      <button type="button" className="admin-secondary-button" onClick={() => restoreRemovedSection(entry)} disabled={alreadyPresent || busy}>Restore</button>
+                      <button type="button" className="cms-recovery-discard" onClick={() => permanentlyDiscardRemovedSection(entry)} disabled={busy}>Discard</button>
+                    </div>
+                  </li>;
+                })}</ul>}
+            </details>
             {pageKey === "home" && <details className="cms-home-design-panel" open>
               <summary>Visual Design Studio</summary>
               <p className="cms-home-design-note">Adjust the Home page appearance without replacing its existing content. All changes are saved as a Preview draft.</p>
@@ -516,7 +572,7 @@ export default function CMSDashboard({ onAdminLogout }) {
               <label>Button text<input value={selectedSection.content?.buttonText || ""} onChange={(event) => updateSection("buttonText", event.target.value)} /></label>
               <label>Button destination<input value={selectedSection.content?.buttonUrl || ""} onChange={(event) => updateSection("buttonUrl", event.target.value)} placeholder="/products" /></label>
               <details className="cms-advanced-section-json"><summary>Advanced section content (JSON)</summary><label>JSON content<textarea rows="12" spellCheck="false" value={structuredJson} onChange={(event) => setStructuredJson(event.target.value)} onBlur={() => { try { const parsed = JSON.parse(structuredJson); if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error(); setContent((current) => ({ ...current, sections: current.sections.map((item) => item.id === selectedSection.id ? { ...item, content: parsed } : item) })); setError(""); } catch { setError("Advanced section content must be valid JSON object data."); } }} /></label></details>
-              <div className="cms-section-actions"><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, -1)}>Move up</button><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, 1)}>Move down</button><button type="button" className="admin-secondary-button" onClick={() => { if (!window.confirm(`Remove “${selectedSection.content?.heading || selectedSection.type}” from this draft? Its content will be removed from the current draft. This cannot be undone unless you restore the last saved draft.`)) return; setContent((current) => ({...current, sections: current.sections.filter((item) => item.id !== selectedSection.id).map((item, i) => ({...item, order:i+1}))})); setSelectedSectionId(""); setStructuredJson("{}"); }}>Remove</button></div>
+              <div className="cms-section-actions"><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, -1)}>Move up</button><button type="button" className="admin-secondary-button" onClick={() => moveSection(selectedSection.id, 1)}>Move down</button><button type="button" className="admin-secondary-button" onClick={removeSectionToRecoveryBin} disabled={busy}>Move to recovery bin</button></div>
             </>}
           </aside>
         </div>
