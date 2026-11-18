@@ -28,11 +28,24 @@ function starterContent(title) {
   };
 }
 
-function SectionPreview({ section, selected, onClick }) {
+function SectionPreview({ section, selected, onClick, design }) {
   const content = section.content || {};
+  const sectionDesign = design?.sections?.[section.id] || {};
+  const previewStyle = {
+    backgroundColor: sectionDesign.backgroundColor || "#ffffff",
+    color: sectionDesign.textColor || "#1f2937",
+    textAlign: sectionDesign.textAlign || "left",
+    "--cms-home-heading-color": sectionDesign.textColor || "#0b4a88",
+    "--cms-home-heading-font": design?.global?.headingFont || "Montserrat",
+    "--cms-home-body-font": design?.global?.bodyFont || "Inter",
+    "--cms-home-heading-scale": Number(design?.global?.headingScale || 1),
+    "--cms-home-body-size": `${Number(design?.global?.bodySize || 16)}px`,
+    "--cms-home-heading-weight": Number(design?.global?.headingWeight || 700),
+    "--cms-home-heading-letter-spacing": `${Number(design?.global?.headingLetterSpacing ?? -0.025)}em`
+  };
   return (
     <button type="button" className={`cms-preview-section ${selected ? "is-selected" : ""}`}
-      onClick={onClick} aria-pressed={selected}>
+      style={previewStyle} onClick={onClick} aria-pressed={selected}>
       <span className="cms-preview-type">{SECTION_TYPES.find((item) => item.value === section.type)?.label || section.type}</span>
       {section.type === "hero" ? <div className="cms-preview-hero">
         <div><h1>{content.heading || "Your heading"}{content.headingHighlight && <><br /><span>{content.headingHighlight}</span></>}</h1><p>{content.description || "Your description"}</p>
@@ -306,11 +319,11 @@ export default function CMSDashboard({ onAdminLogout }) {
           </aside>
           <section className="cms-canvas-panel">
             <div className="cms-canvas-heading"><div><h2>Page preview</h2><small>Click a section to select it for editing</small></div><span className="cms-preview-label">Draft preview</span></div>
-            <div className="cms-canvas">
+            <div className="cms-canvas" style={{ "--cms-home-heading-font": homeDesign.global?.headingFont || "Montserrat", "--cms-home-body-font": homeDesign.global?.bodyFont || "Inter" }}>
               {!pageKey ? <div className="cms-empty-canvas">Select a page or create a new page draft.</div> :
                 content.sections.filter((section) => section.visible !== false).sort((a,b) => a.order-b.order).map((section) =>
                   <div key={section.id} className="cms-home-draggable-section" draggable onDragStart={()=>{dragSectionId.current=section.id;}} onDragOver={(e)=>e.preventDefault()} onDrop={()=>reorderSections(dragSectionId.current,section.id)} onDragEnd={()=>{dragSectionId.current=null;}}>
-                    <SectionPreview section={section} selected={section.id === selectedSectionId} onClick={() => { setSelectedSectionId(section.id); setStructuredJson(JSON.stringify(section.content || {}, null, 2)); }} />
+                    <SectionPreview section={section} selected={section.id === selectedSectionId} design={homeDesign} onClick={() => { setSelectedSectionId(section.id); setStructuredJson(JSON.stringify(section.content || {}, null, 2)); }} />
                   </div>)} 
             </div>
             {pageKey && <div className="cms-add-section"><label htmlFor="cms-add-section">Add section</label><select id="cms-add-section" value="" onChange={(event) => event.target.value && addSection(event.target.value)}><option value="">Choose a section type…</option>{SECTION_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>}
@@ -350,7 +363,7 @@ export default function CMSDashboard({ onAdminLogout }) {
                   return <details className="cms-home-style-card" key={section.id}>
                     <summary><strong>{label}</strong><small>{section.visible===false?"Hidden section":"Section styling"}</small></summary>
                     <div className="cms-home-style-controls">
-                      {[["backgroundColor","Background","#ffffff"],["textColor","Text","#1f2937"],["accentColor","Accent","#1e7ed8"]].map(([field,name,fallback])=><label key={field}><span>{name}</span><input aria-label={`${label} ${name.toLowerCase()} colour`} type="color" value={style[field]||fallback} onChange={(e)=>updateHomeSectionColor(section.id,field,e.target.value)} /><input aria-label={`${label} ${name.toLowerCase()} HEX`} className="cms-home-hex-input" type="text" value={style[field]||fallback} maxLength={7} pattern="^#[0-9a-fA-F]{6}$" onChange={(e)=>updateHomeSectionColor(section.id,field,e.target.value)} /></label>)}
+                      {[["backgroundColor","Background","#ffffff"],["textColor","Text","#1f2937"],["accentColor","Accent","#1e7ed8"]].map(([field,name,fallback])=><label key={field}><span>{name}</span><input aria-label={`${label} ${name.toLowerCase()} colour`} type="color" value={style[field]||fallback} onChange={(e)=>updateHomeSectionColor(section.id,field,e.target.value)} /><input aria-label={`${label} ${name.toLowerCase()} HEX`} className="cms-home-hex-input" type="text" key={`${section.id}-${field}-${style[field]||fallback}`} defaultValue={style[field]||fallback} maxLength={7} pattern="^#[0-9a-fA-F]{6}$" onBlur={(e)=>{if(/^#[0-9a-fA-F]{6}$/.test(e.target.value))updateHomeSectionColor(section.id,field,e.target.value);else e.target.value=style[field]||fallback;}} /></label>)}
                       <label><span>Text alignment</span><select value={style.textAlign||"left"} onChange={(e)=>updateHomeSectionDesign(section.id,"textAlign",e.target.value)}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></label>
                       <button type="button" className="admin-secondary-button" onClick={()=>resetHomeSectionDesign(section.id)}>Reset styling</button>
                     </div>
