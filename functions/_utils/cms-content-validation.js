@@ -231,5 +231,17 @@ export function validatePageRoute(value) {
       /[?#\\\u0000-\u001f]/.test(value)) {
     return "Enter a valid site route.";
   }
+  const normalized = value.replace(/\/$/, "") || "/";
+  const reserved = [
+    "/", "/products", "/services", "/team", "/contact", "/cart",
+    "/quote", "/dental-chair-request", "/service-request", "/track-request",
+  ];
+  if (reserved.includes(normalized) ||
+      ["/products", "/services", "/api", "/assets", "/catalog"].some((prefix) =>
+        normalized === prefix || normalized.startsWith(prefix + "/")
+      ) ||
+      normalized.startsWith("/admin")) {
+    return "This route is reserved for an existing website page or system endpoint.";
+  }
   return null;
 }

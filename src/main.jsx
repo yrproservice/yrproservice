@@ -30,6 +30,7 @@ const AdminEntry = lazy(() => import("./pages/AdminEntry"));
 import { services } from "./data/services";
 import { products } from "./data/products";
 import { mergePublishedProduct } from "./data/productImages";
+import GenericCmsRenderer from "./components/GenericCmsRenderer";
 import "./style.css";
 
 const pageTitles = {
@@ -54,6 +55,8 @@ const pageTitles = {
 
 function Router() {
   const [path, setPath] = useState(window.location.pathname);
+  const [cmsPage, setCmsPage] = useState(null);
+  const [cmsPageLoading, setCmsPageLoading] = useState(false);
   const [accessMode, setAccessMode] = useState(() => {
     const savedMode = sessionStorage.getItem("yrproservice-access-mode");
     const isAdminEntryRoute = window.location.pathname === "/admin"
@@ -97,6 +100,32 @@ function Router() {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    const builtInRoute = [
+      "/", "/products", "/services", "/team", "/cart", "/quote",
+      "/dental-chair-request", "/service-request", "/track-request", "/contact",
+    ].includes(path) || path.startsWith("/admin") ||
+      path.startsWith("/products/") || path.startsWith("/services/");
+    setCmsPage(null);
+    if (builtInRoute) {
+      setCmsPageLoading(false);
+      return () => { active = false; };
+    }
+    setCmsPageLoading(true);
+    fetch("/api/cms/public/pages?route=" + encodeURIComponent(path), { cache: "no-store" })
+      .then(async (response) => {
+        const result = await response.json().catch(() => ({}));
+        if (response.status === 404) return null;
+        if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load this page.");
+        return result.page || null;
+      })
+      .then((page) => { if (active) setCmsPage(page); })
+      .catch(() => { if (active) setCmsPage(null); })
+      .finally(() => { if (active) setCmsPageLoading(false); });
+    return () => { active = false; };
+  }, [path]);
+
+  useEffect(() => {
     const serviceSlug = path.match(/^\/services\/([^/]+)$/)?.[1];
     const service = services.find((item) => item.slug === serviceSlug);
     const productSlug = path.match(/^\/products\/([^/]+)$/)?.[1];
@@ -105,8 +134,10 @@ function Router() {
       ? `${service.title} | YR Proservice`
       : product
         ? `${product.name} | YR Proservice`
-        : (pageTitles[path] ?? "Page Not Found | YR Proservice");
-  }, [path]);
+        : cmsPage?.route === path
+          ? `${cmsPage.title} | YR Proservice`
+          : (pageTitles[path] ?? "Page Not Found | YR Proservice");
+  }, [path, cmsPage]);
 
   function navigate(to) {
     window.history.pushState({}, "", to);
@@ -207,6 +238,10 @@ function Router() {
       <ServiceDetails service={servicePage} navigate={navigate} />
     ) : productPage ? (
       <ProductRoute product={productPage} navigate={navigate} />
+    ) : cmsPage?.route === path ? (
+      <GenericCmsRenderer content={cmsPage.content} navigate={navigate} />
+    ) : cmsPageLoading ? (
+      <section className="page-section container center" role="status"><p>Loading page…</p></section>
     ) : (
       <NotFound navigate={navigate} />
     ));

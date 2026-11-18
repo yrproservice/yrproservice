@@ -13,7 +13,19 @@ export async function onRequestGet({ request, env }) {
   if (!env.DB) return publicJson({ error: "CMS content is not available." }, 503);
   const url = new URL(request.url);
   const pageKey = (url.searchParams.get("key") || "").trim().slice(0, 60);
+  const pageRoute = (url.searchParams.get("route") || "").trim().slice(0, 160);
   try {
+    if (pageRoute) {
+      const row = await env.DB.prepare(`
+        SELECT p.page_key, p.title, p.route, v.version_number, v.content_json
+        FROM cms_pages p
+        JOIN cms_page_versions v ON v.id = p.published_version_id
+        WHERE p.route = ? AND v.state = 'published'
+        LIMIT 1
+      `).bind(pageRoute).first();
+      if (!row) return publicJson({ error: "Published page not found." }, 404);
+      return publicJson({ ok: true, page: { ...row, content: JSON.parse(row.content_json) } });
+    }
     if (pageKey) {
       const row = await env.DB.prepare(`
         SELECT p.page_key, p.title, p.route, v.version_number, v.content_json
