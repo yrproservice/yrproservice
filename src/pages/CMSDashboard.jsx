@@ -89,7 +89,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [structuredJson, setStructuredJson] = useState("{}");
   const dragSectionId = React.useRef(null);
   const historyRef = React.useRef({ past: [], future: [], previous: JSON.stringify({ sections: [] }), suppressNext: false });
-  const [historyRevision, setHistoryRevision] = useState(0);
+  const [, setHistoryRevision] = useState(0);
   const homeDesign = content.design || {};
   const selectedSection = useMemo(
     () => content.sections.find((section) => section.id === selectedSectionId) || null,
@@ -139,7 +139,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     setHistoryRevision((revision) => revision + 1);
   }
 
-  function applyHistorySnapshot(snapshot, direction) {
+  function applyHistorySnapshot(direction) {
     const history = historyRef.current;
     const current = JSON.stringify(content);
     if (direction === "undo") {
@@ -373,8 +373,8 @@ export default function CMSDashboard({ onAdminLogout }) {
           <div className="cms-toolbar-actions">
             <button type="button" className="admin-secondary-button" onClick={loadHomeTemplate} disabled={busy || pages.some((page) => page.page_key === "home")}>Load Home template</button>
             <button type="button" className="admin-secondary-button" onClick={createPage}>New page</button>
-            <button type="button" className="admin-secondary-button" onClick={() => applyHistorySnapshot(null, "undo")} disabled={busy || !canUndo} title="Undo the last editor change">Undo</button>
-            <button type="button" className="admin-secondary-button" onClick={() => applyHistorySnapshot(null, "redo")} disabled={busy || !canRedo} title="Redo the last undone editor change">Redo</button>
+            <button type="button" className="admin-secondary-button" onClick={() => applyHistorySnapshot("undo")} disabled={busy || !canUndo} title="Undo the last editor change">Undo</button>
+            <button type="button" className="admin-secondary-button" onClick={() => applyHistorySnapshot("redo")} disabled={busy || !canRedo} title="Redo the last undone editor change">Redo</button>
             <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save Preview draft</button>
             <button type="button" className="admin-secondary-button" onClick={restoreSavedDraft} disabled={busy || !savedSnapshot || !hasUnsavedChanges}>Restore last saved draft</button>
             <button type="button" className="admin-secondary-button" onClick={() => window.open(`/admin/cms/preview?key=${encodeURIComponent(pageKey)}`, "_blank", "noopener,noreferrer")} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
