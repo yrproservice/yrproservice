@@ -89,15 +89,52 @@ function SectionPreview({ section, selected, onClick, design }) {
         <div><h2>{content.heading || "Section heading"}</h2><p>{content.description || "Section description"}</p></div>
       </div> : section.type === "product-grid" ? <div className="cms-preview-content-grid">
         <h2>{content.heading || "Featured Products"}</h2>
-        <div className="cms-preview-product-grid">{(content.productSlugs?.length ? catalogueProducts.filter((product) => content.productSlugs.includes(product.slug)) : catalogueProducts.slice(0, 3)).slice(0, 3).map((product) => <article className="cms-preview-product-card" key={product.slug}>
-          <div>{product.img ? <img src={product.img} alt="" /> : <span>Product image</span>}</div><small>{product.brand || "YR Proservice"}</small><strong>{product.name}</strong><span>View details →</span>
-        </article>)}</div>
+        <div className="cms-preview-product-grid">
+          {(content.productSlugs?.length
+            ? catalogueProducts.filter((product) =>
+                content.productSlugs.includes(product.slug)
+              )
+            : catalogueProducts.slice(0, 3)
+          )
+            .slice(0, 3)
+            .map((product) => (
+              <article className="cms-preview-product-card" key={product.slug}>
+                <div>
+                  {product.img ? <img src={product.img} alt="" /> : <span>Product image</span>}
+                </div>
+                <small>{product.brand || "YR Proservice"}</small>
+                <strong>{product.name}</strong>
+                <span>View details →</span>
+              </article>
+            ))}
+        </div>
       </div> : section.type === "feature-grid" ? <div className="cms-preview-content-grid">
         <h2>{content.heading || "What We Provide"}</h2><p>{content.description || "Feature cards"}</p>
-        <div className="cms-preview-feature-grid">{(content.items || []).slice(0, 3).map((item, index) => <article key={item.number || item.heading || index}><span>{item.number || String(index + 1).padStart(2, "0")}</span><strong>{item.heading || "Feature title"}</strong><p>{item.description || "Feature description"}</p></article>)}</div>
+        <div className="cms-preview-feature-grid">
+          {(content.items || []).slice(0, 3).map((item, index) => (
+            <article key={item.number || item.heading || index}>
+              <span>{item.number || String(index + 1).padStart(2, "0")}</span>
+              <strong>{item.heading || "Feature title"}</strong>
+              <p>{item.description || "Feature description"}</p>
+            </article>
+          ))}
+        </div>
       </div> : section.type === "brand-grid" ? <div className="cms-preview-content-grid">
         <h2>{content.heading || "Trusted Brands We Carry"}</h2><p>{content.description || "Brand partners"}</p>
-        <div className="cms-preview-brand-grid">{(content.items || []).slice(0, 5).map((file) => <div key={file}><img src={`/brand logo/fitted/${String(file).replace(/\\.[^.]+$/, ".png")}`} alt={String(file).replace(/\\.[^.]+$/, "")} /></div>)}</div>
+        <div className="cms-preview-brand-grid">
+          {(content.items || []).slice(0, 5).map((file) => {
+            const brandName = String(file).replace(/\\.[^.]+$/, "");
+
+            return (
+              <div key={file}>
+                <img
+                  src={`/brand logo/fitted/${brandName}.png`}
+                  alt={brandName}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div> : <div><h2>{content.heading || "Section heading"}</h2><p>{content.description || "Section description"}</p>
           {content.buttonText && <span className="cms-preview-button">{content.buttonText}</span>}</div>}
     </button>
