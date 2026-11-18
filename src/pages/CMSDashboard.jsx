@@ -934,7 +934,6 @@ export default function CMSDashboard({ onAdminLogout }) {
                       </li>
                     ))}
                 </ol>
-                </li>)}</ol>
               </div>
               <div className="cms-home-design-subpanel">
                 <h3>Colours and alignment · all sections</h3>
