@@ -140,8 +140,10 @@ export default function Products({ navigate }) {
           <div className="bp-filter-tabs">
             {categories.map((item) => (
               <button
+                type="button"
                 key={item}
                 className={category === item ? "active" : ""}
+                aria-pressed={category === item}
                 onClick={() => setCategory(item)}
               >
                 {item}
@@ -158,13 +160,13 @@ export default function Products({ navigate }) {
                 aria-label="Search products"
               />
             </label>
-            <select value={brand} onChange={(e) => setBrand(e.target.value)}>
+            <select aria-label="Filter products by brand" value={brand} onChange={(e) => setBrand(e.target.value)}>
               <option value="All">All Brands</option>
               {brands.slice(1).map((item) => (
                 <option key={item}>{item}</option>
               ))}
             </select>
-            <span>{filtered.length} products</span>
+            <span aria-live="polite" aria-atomic="true">{filtered.length} products</span>
           </div>
 
           <div className="spotlight-row">
