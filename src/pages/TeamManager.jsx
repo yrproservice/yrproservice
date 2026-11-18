@@ -221,7 +221,14 @@ export default function TeamManager() {
     <section className="cms-services-manager cms-team-manager">
       <div className="cms-manager-heading">
         <div><h2>Team page manager</h2><p>Edit the existing Team page while preserving its editorial layout, section order and visual identity.</p></div>
-        <div className="cms-services-version">{draftVersion ? `Draft V${draftVersion}` : publishedVersion ? `Published V${publishedVersion}` : "Not saved"}{publishedVersion ? ` · Published V${publishedVersion}` : ""}</div>
+        <div className="cms-services-version">
+          {draftVersion
+            ? `Draft V${draftVersion}`
+            : publishedVersion
+              ? `Published V${publishedVersion}`
+              : "Not saved"}
+          {publishedVersion ? ` · Published V${publishedVersion}` : ""}
+        </div>
       </div>
       {error && <p className="admin-alert admin-alert-error" role="alert">{error}</p>}
       {notice && <p className="admin-alert admin-alert-success" role="status">{notice}</p>}
@@ -239,10 +246,60 @@ export default function TeamManager() {
         <div className="cms-team-design-subpanel">
           <h3>Typography</h3>
           <div className="cms-services-fields">
-            <label className="cms-services-field"><span>Heading font</span><select value={design.global?.headingFont || "Montserrat"} onChange={(e) => updateGlobalDesign("headingFont", e.target.value)}><option>Montserrat</option><option>Inter</option><option>Arial</option></select></label>
-            <label className="cms-services-field"><span>Body font</span><select value={design.global?.bodyFont || "Inter"} onChange={(e) => updateGlobalDesign("bodyFont", e.target.value)}><option>Inter</option><option>Montserrat</option><option>Arial</option></select></label>
-            <label className="cms-services-field"><span>Heading size scale · {Math.round(Number(design.global?.headingScale || 1) * 100)}%</span><input type="range" min="0.8" max="1.25" step="0.05" value={design.global?.headingScale || 1} onChange={(e) => updateGlobalDesign("headingScale", Number(e.target.value))} /></label>
-            <label className="cms-services-field"><span>Body text size · {design.global?.bodySize || 16}px</span><input type="range" min="13" max="20" step="1" value={design.global?.bodySize || 16} onChange={(e) => updateGlobalDesign("bodySize", Number(e.target.value))} /></label>
+            <label className="cms-services-field">
+              <span>Heading font</span>
+              <select
+                value={design.global?.headingFont || "Montserrat"}
+                onChange={(event) =>
+                  updateGlobalDesign("headingFont", event.target.value)
+                }
+              >
+                <option>Montserrat</option>
+                <option>Inter</option>
+                <option>Arial</option>
+              </select>
+            </label>
+            <label className="cms-services-field">
+              <span>Body font</span>
+              <select
+                value={design.global?.bodyFont || "Inter"}
+                onChange={(event) =>
+                  updateGlobalDesign("bodyFont", event.target.value)
+                }
+              >
+                <option>Inter</option>
+                <option>Montserrat</option>
+                <option>Arial</option>
+              </select>
+            </label>
+            <label className="cms-services-field">
+              <span>
+                Heading size scale · {Math.round(Number(design.global?.headingScale || 1) * 100)}%
+              </span>
+              <input
+                type="range"
+                min="0.8"
+                max="1.25"
+                step="0.05"
+                value={design.global?.headingScale || 1}
+                onChange={(event) =>
+                  updateGlobalDesign("headingScale", Number(event.target.value))
+                }
+              />
+            </label>
+            <label className="cms-services-field">
+              <span>Body text size · {design.global?.bodySize || 16}px</span>
+              <input
+                type="range"
+                min="13"
+                max="20"
+                step="1"
+                value={design.global?.bodySize || 16}
+                onChange={(event) =>
+                  updateGlobalDesign("bodySize", Number(event.target.value))
+                }
+              />
+            </label>
           </div>
         </div>
         <div className="cms-team-design-subpanel">
@@ -281,8 +338,36 @@ export default function TeamManager() {
           <Field label="Highlighted heading text" value={data.hero.highlight} onChange={(v) => update("hero", "highlight", v)} />
           <Field label="Lead text" value={data.hero.lead} onChange={(v) => update("hero", "lead", v)} multiline rows={3} />
           <Field label="Image alt text" value={data.hero.imageAlt} onChange={(v) => update("hero", "imageAlt", v)} />
-          <label className="cms-services-field"><span>Banner layout</span><select value={data.hero.layout || "split-right"} onChange={(e) => update("hero", "layout", e.target.value)}><option value="split-right">Text left · image right</option><option value="split-left">Image left · text right</option><option value="balanced">Equal columns</option><option value="stacked">Text above · image below</option></select></label>
-          <label className="cms-services-field"><span>Banner image position · {data.hero.imagePosition || "center"}</span><select value={data.hero.imagePosition || "center"} onChange={(e) => update("hero", "imagePosition", e.target.value)}><option value="center">Centre</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="50% 35%">50% · 35%</option></select></label>
+          <label className="cms-services-field">
+            <span>Banner layout</span>
+            <select
+              value={data.hero.layout || "split-right"}
+              onChange={(event) =>
+                update("hero", "layout", event.target.value)
+              }
+            >
+              <option value="split-right">Text left · image right</option>
+              <option value="split-left">Image left · text right</option>
+              <option value="balanced">Equal columns</option>
+              <option value="stacked">Text above · image below</option>
+            </select>
+          </label>
+          <label className="cms-services-field">
+            <span>Banner image position · {data.hero.imagePosition || "center"}</span>
+            <select
+              value={data.hero.imagePosition || "center"}
+              onChange={(event) =>
+                update("hero", "imagePosition", event.target.value)
+              }
+            >
+              <option value="center">Centre</option>
+              <option value="top">Top</option>
+              <option value="bottom">Bottom</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+              <option value="50% 35%">50% · 35%</option>
+            </select>
+          </label>
           <label className="cms-services-field"><span>Banner image height · {data.hero.imageHeight || 430}px</span><input type="range" min="300" max="600" step="10" value={data.hero.imageHeight || 430} onChange={(e) => update("hero", "imageHeight", Number(e.target.value))} /></label>
           <Field label="Image overlay label" value={data.hero.imageLabel} onChange={(v) => update("hero", "imageLabel", v)} />
           <Field label="Image overlay sub-label" value={data.hero.imageSubLabel} onChange={(v) => update("hero", "imageSubLabel", v)} />
