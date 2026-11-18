@@ -57,7 +57,16 @@ export async function onRequestPost(context) {
   }
   if (confirmedChairSlugs.has(slug.toLowerCase())) product.requestFlow = "dental_chair";
   if (product.stockStatus !== undefined && !["pending", "in-stock", "out-of-stock"].includes(product.stockStatus)) return adminJson({ error: "Invalid stock status." }, 400);
-  if (product.price !== undefined && product.price !== null && !["string", "number"].includes(typeof product.price)) return adminJson({ error: "Price must be a number, text value or null." }, 400);
+  if (
+    product.price !== undefined &&
+    product.price !== null &&
+    !["string", "number"].includes(typeof product.price)
+  ) {
+    return adminJson(
+      { error: "Price must be a number, text value or null." },
+      400
+    );
+  }
 
   const now = new Date().toISOString();
   const actor = auth.email || null;
@@ -69,8 +78,12 @@ export async function onRequestPost(context) {
       const versionId = crypto.randomUUID();
       await env.DB.batch([
         env.DB.prepare("INSERT INTO cms_products (id, product_slug, updated_at) VALUES (?, ?, ?)").bind(id, slug, now),
-        env.DB.prepare("INSERT INTO cms_product_versions (id, product_id, version_number, state, product_json, created_by, change_note) VALUES (?, ?, 1, 'draft', ?, ?, 'Initial product draft')").bind(versionId, id, json, actor),
-        env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'create_draft', 'product', ?, ?)").bind(crypto.randomUUID(), actor, id, JSON.stringify({ slug }))
+        env.DB.prepare(
+          "INSERT INTO cms_product_versions (id, product_id, version_number, state, product_json, created_by, change_note) VALUES (?, ?, 1, 'draft', ?, ?, 'Initial product draft')"
+        ).bind(versionId, id, json, actor),
+        env.DB.prepare(
+          "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'create_draft', 'product', ?, ?)"
+        ).bind(crypto.randomUUID(), actor, id, JSON.stringify({ slug }))
       ]);
       return adminJson({ ok: true, productId: id, draftId: versionId, version: 1 }, 201);
     }
@@ -78,9 +91,13 @@ export async function onRequestPost(context) {
     const draft = await env.DB.prepare("SELECT id, version_number FROM cms_product_versions WHERE product_id = ? AND state = 'draft' LIMIT 1").bind(row.id).first();
     if (draft) {
       await env.DB.batch([
-        env.DB.prepare("UPDATE cms_product_versions SET product_json = ?, created_by = ?, created_at = ?, change_note = 'Updated product draft' WHERE id = ? AND state = 'draft'").bind(json, actor, now, draft.id),
+        env.DB.prepare(
+          "UPDATE cms_product_versions SET product_json = ?, created_by = ?, created_at = ?, change_note = 'Updated product draft' WHERE id = ? AND state = 'draft'"
+        ).bind(json, actor, now, draft.id),
         env.DB.prepare("UPDATE cms_products SET updated_at = ? WHERE id = ?").bind(now, row.id),
-        env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'update_draft', 'product', ?, ?)").bind(crypto.randomUUID(), actor, row.id, JSON.stringify({ version: draft.version_number }))
+        env.DB.prepare(
+          "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'update_draft', 'product', ?, ?)"
+        ).bind(crypto.randomUUID(), actor, row.id, JSON.stringify({ version: draft.version_number }))
       ]);
       return adminJson({ ok: true, productId: row.id, draftId: draft.id, version: draft.version_number });
     }
@@ -88,9 +105,13 @@ export async function onRequestPost(context) {
     const version = Number(latest?.version || 0) + 1;
     const versionId = crypto.randomUUID();
     await env.DB.batch([
-      env.DB.prepare("INSERT INTO cms_product_versions (id, product_id, version_number, state, product_json, created_by, change_note) VALUES (?, ?, ?, 'draft', ?, ?, 'New product draft')").bind(versionId, row.id, version, json, actor),
+      env.DB.prepare(
+        "INSERT INTO cms_product_versions (id, product_id, version_number, state, product_json, created_by, change_note) VALUES (?, ?, ?, 'draft', ?, ?, 'New product draft')"
+      ).bind(versionId, row.id, version, json, actor),
       env.DB.prepare("UPDATE cms_products SET updated_at = ? WHERE id = ?").bind(now, row.id),
-      env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'create_draft', 'product', ?, ?)").bind(crypto.randomUUID(), actor, row.id, JSON.stringify({ version }))
+      env.DB.prepare(
+        "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'create_draft', 'product', ?, ?)"
+      ).bind(crypto.randomUUID(), actor, row.id, JSON.stringify({ version }))
     ]);
     return adminJson({ ok: true, productId: row.id, draftId: versionId, version }, 201);
   } catch (error) {
