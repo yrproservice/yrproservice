@@ -13,8 +13,9 @@ export function isApprovedProductImage(value) {
 export function mergePublishedProduct(catalogueProduct, publishedProduct) {
   const base = catalogueProduct && typeof catalogueProduct === "object" ? catalogueProduct : {};
   const published = publishedProduct && typeof publishedProduct === "object" ? publishedProduct : {};
-  const image = isApprovedProductImage(published.img)
-    ? published.img
-    : isApprovedProductImage(base.img) ? base.img : "";
+  const hasPublishedRecord = Boolean(publishedProduct && typeof publishedProduct === "object" && !Array.isArray(publishedProduct));
+  const image = hasPublishedRecord
+    ? (isApprovedProductImage(published.img) ? published.img : "")
+    : (isApprovedProductImage(base.img) ? base.img : "");
   return { ...base, ...published, img: image };
 }
