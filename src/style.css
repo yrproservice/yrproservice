@@ -3979,6 +3979,7 @@ h6 {
 .cms-media-grid img{width:100%;height:140px;object-fit:contain;background:#f5f7fa}
 .cms-media-grid strong{font-size:13px;line-height:1.4;overflow-wrap:anywhere}
 .cms-media-grid small{font-size:11px;line-height:1.45;color:#687280}
+.cms-media-grid button:focus-visible{outline:0;border-color:#1e7ed8;box-shadow:0 0 0 3px rgba(0,194,255,.2)}
 .cms-upload-label{position:relative;overflow:hidden;cursor:pointer}
 .cms-upload-label input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .cms-setting-row,.cms-revision-list article{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #e7edf2;flex-wrap:wrap}
