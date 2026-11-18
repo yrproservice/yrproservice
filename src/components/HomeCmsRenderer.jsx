@@ -8,7 +8,7 @@ function CmsLink({ to, navigate, className, children }) {
   return to ? <Link to={to} navigate={navigate} className={className}>{children}</Link> : null;
 }
 
-function HomeCmsSection({ section, navigate, design }) {
+function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
   const c = section.content || {};
   const items = Array.isArray(c.items) ? c.items : [];
   const sectionDesign = design?.sections?.[section.id] || {};
@@ -110,5 +110,5 @@ export default function HomeCmsRenderer({ content, navigate }) {
     "--home-container-width": ({ compact: "1040px", standard: "1180px", wide: "1380px" }[design.global?.contentWidth] || "1180px"),
     "--home-container-gutter": ({ compact: "28px", standard: "40px", wide: "48px" }[design.global?.contentWidth] || "40px")
   };
-  return <main className="bp-home home-cms-page" style={pageStyle}>{sections.filter((section) => section.visible !== false).map((section) => <HomeCmsSection key={section.id} section={section} navigate={navigate} design={design} />)}</main>;
+  return <main className="bp-home home-cms-page" style={pageStyle}>{sections.filter((section) => section.visible !== false).map((section) => <HomeCmsSection key={section.id} section={section} navigate={navigate} design={design} catalogueProducts={catalogueProducts} />)}</main>;
 }
