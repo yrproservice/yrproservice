@@ -2091,14 +2091,14 @@ h6 {
 .services-hero-grid {
   display: grid;
   grid-template-columns: 1fr 0.9fr;
-  gap: 50px;
+  gap: 32px;
   align-items: center;
 }
 .services-hero-copy {
-  padding: 70px 0;
+  padding: 48px 0;
 }
 .services-hero-copy h1 {
-  font-size: 50px;
+  font-size: 40px;
   margin: 10px 0 18px;
 }
 .services-hero-lead {
@@ -2108,20 +2108,20 @@ h6 {
 }
 .services-hero-visual {
   position: relative;
-  min-height: 420px;
+  min-height: 340px;
 }
 .services-hero-visual img {
   width: 100%;
-  height: 420px;
+  height: 340px;
   object-fit: cover;
 }
 .services-hero-badge {
   position: absolute;
-  left: -22px;
+  left: 0;
   bottom: 25px;
   background: #fff;
   color: var(--yr-navy);
-  padding: 15px 18px;
+  padding: 12px 14px;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
 }
 .services-hero-badge strong,
@@ -2141,11 +2141,11 @@ h6 {
 .services-intro-grid {
   display: grid;
   grid-template-columns: 1fr 0.8fr;
-  gap: 50px;
+  gap: 32px;
   align-items: end;
 }
 .services-intro h2 {
-  font-size: 34px;
+  font-size: 28px;
   color: var(--yr-navy);
   margin: 7px 0;
 }
@@ -2156,7 +2156,7 @@ h6 {
   background: var(--yr-ice);
 }
 .services-heading {
-  margin-bottom: 35px;
+  margin-bottom: 24px;
 }
 .services-heading h2 {
   color: var(--yr-navy);
@@ -2173,13 +2173,13 @@ h6 {
 .premium-service-card {
   background: #fff;
   border: 1px solid var(--yr-border);
-  padding: 22px;
-  min-height: 330px;
+  padding: 18px;
+  min-height: 270px;
   position: relative;
   overflow: hidden;
 }
 .premium-service-card:before {
-  content: "";
+  content: none;
   position: absolute;
   right: -35px;
   top: -35px;
@@ -2212,7 +2212,7 @@ h6 {
 .premium-service-card h3 {
   font-size: 19px;
   color: var(--yr-navy);
-  margin: 35px 0 8px;
+  margin: 22px 0 8px;
 }
 .premium-service-card > p {
   font-size: 12px;
@@ -2248,7 +2248,7 @@ h6 {
   background: #fff;
 }
 .services-pattern-process:before {
-  content: "01  /  02  /  03  /  04";
+  content: none;
   position: absolute;
   right: 6%;
   top: 45px;
@@ -2292,11 +2292,11 @@ h6 {
 .services-cta {
   background: var(--yr-deep);
   color: #fff;
-  padding: 42px;
+  padding: 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 30px;
+  gap: 22px;
 }
 .services-cta h2 {
   margin: 7px 0;
@@ -2324,7 +2324,7 @@ h6 {
   overflow: hidden;
 }
 .team-pattern-hero:before {
-  content: "";
+  content: none;
   position: absolute;
   inset: 0;
   background:
@@ -2340,7 +2340,7 @@ h6 {
     );
 }
 .team-pattern-hero:after {
-  content: "";
+  content: none;
   position: absolute;
   right: -150px;
   top: -180px;
@@ -2355,16 +2355,16 @@ h6 {
 .about-editorial-grid {
   display: grid;
   grid-template-columns: 1fr 0.9fr;
-  gap: 60px;
+  gap: 36px;
   align-items: center;
   position: relative;
   z-index: 1;
 }
 .about-editorial-copy {
-  padding: 75px 0;
+  padding: 48px 0;
 }
 .about-editorial-copy h1 {
-  font-size: 48px;
+  font-size: 40px;
   color: #fff;
   margin: 10px 0 18px;
 }
@@ -2392,7 +2392,7 @@ h6 {
 }
 .about-editorial-image {
   position: relative;
-  height: 430px;
+  height: 350px;
 }
 .about-editorial-image img {
   width: 100%;
@@ -2418,7 +2418,7 @@ h6 {
 .about-capabilities,
 .about-people,
 .about-final {
-  padding: 85px 0;
+  padding: 60px 0;
 }
 .about-story {
   background: #fff;
@@ -2426,10 +2426,10 @@ h6 {
 .about-story-grid {
   display: grid;
   grid-template-columns: 100px 1fr 300px;
-  gap: 35px;
+  gap: 24px;
 }
 .about-story-number {
-  font: 500 65px Montserrat;
+  font: 500 48px Montserrat;
   color: #b6ccdc;
 }
 .about-story h2,
@@ -2450,7 +2450,7 @@ h6 {
 }
 .about-story-note {
   background: var(--yr-soft);
-  padding: 22px;
+  padding: 18px;
 }
 .about-story-note span {
   font: 800 10px Montserrat;
@@ -2468,7 +2468,7 @@ h6 {
   overflow: hidden;
 }
 .team-pattern-process:before {
-  content: "01     02     03     04";
+  content: none;
   position: absolute;
   right: 7%;
   top: 35px;
@@ -2479,8 +2479,8 @@ h6 {
 .about-process-heading {
   display: flex;
   justify-content: space-between;
-  gap: 40px;
-  margin-bottom: 45px;
+  gap: 28px;
+  margin-bottom: 30px;
 }
 .about-process-heading > p {
   max-width: 430px;
@@ -2555,7 +2555,7 @@ h6 {
   overflow: hidden;
 }
 .team-pattern-people:after {
-  content: "";
+  content: none;
   position: absolute;
   left: -70px;
   top: 40px;
@@ -2588,7 +2588,7 @@ h6 {
   border: 1px solid var(--yr-border);
 }
 .about-person-image {
-  height: 250px;
+  height: 210px;
 }
 .about-person-image img {
   width: 100%;
@@ -2596,7 +2596,7 @@ h6 {
   object-fit: cover;
 }
 .about-person-copy {
-  padding: 18px;
+  padding: 15px;
 }
 .about-person-copy span {
   font: 800 10px Montserrat;
@@ -2617,11 +2617,11 @@ h6 {
 }
 .about-final-inner {
   background: var(--yr-navy);
-  padding: 45px;
+  padding: 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 30px;
+  gap: 24px;
 }
 .about-final h2 {
   color: #fff;
