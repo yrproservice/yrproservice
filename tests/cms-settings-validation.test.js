@@ -50,7 +50,7 @@ test("footer text fields must be strings within the length limit", () => {
   assert.match(validateSiteSetting("site.footer", { description: "x".repeat(501) }), /must be text/);
 });
 
-test("page-design and unrelated settings remain extensible", () => {
+test("page-design settings remain extensible while unknown setting keys are rejected", () => {
   assert.equal(validateSiteSetting("page-design.home", { sections: [{ id: "hero", title: "Welcome" }] }), null);
-  assert.equal(validateSiteSetting("custom.integration", { enabled: true }), null);
+  assert.match(validateSiteSetting("custom.integration", { enabled: true }), /not supported/);
 });
