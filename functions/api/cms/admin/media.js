@@ -150,6 +150,41 @@ export async function onRequestGet(context) {
       return adminJson({ error: "Unable to load image usage information." }, 500);
     }
   }
+  if (params.get("reconcileOrphans") === "1") {
+    if (!context.env.CMS_MEDIA) return adminJson({ error: "Preview R2 storage is unavailable; orphan objects cannot be inspected." }, 503);
+    const cursor = params.get("cursor") || undefined;
+    if (cursor && (cursor.length > 2048 || !/^[A-Za-z0-9_=-]+$/.test(cursor))) {
+      return adminJson({ error: "Invalid R2 listing cursor." }, 400);
+    }
+    try {
+      const listing = await context.env.CMS_MEDIA.list({ prefix: "cms/", limit: 100, ...(cursor ? { cursor } : {}) });
+      const objects = listing.objects || [];
+      const known = await context.env.DB.prepare(
+        "SELECT object_key FROM cms_media WHERE storage_provider='r2'"
+      ).all();
+      const knownKeys = new Set((known.results || []).map((row) => row.object_key));
+      const orphanObjects = objects
+        .filter((object) => !knownKeys.has(object.key))
+        .map((object) => ({
+          key: object.key,
+          size: object.size,
+          uploaded: object.uploaded || null,
+          etag: object.etag || null,
+        }));
+      return adminJson({
+        ok: true,
+        prefix: "cms/",
+        scanned: objects.length,
+        orphanObjects,
+        truncated: Boolean(listing.truncated),
+        nextCursor: listing.truncated ? listing.cursor || null : null,
+        note: "Read-only, bounded R2 listing. Results cover this batch only; continue to inspect later batches.",
+      });
+    } catch (error) {
+      console.error("CMS R2 orphan reconciliation failed", error);
+      return adminJson({ error: "Unable to inspect Preview R2 objects." }, 500);
+    }
+  }
   try {
     const includeDeleted = params.get("includeDeleted") === "1";
     const rows = await context.env.DB.prepare(`
