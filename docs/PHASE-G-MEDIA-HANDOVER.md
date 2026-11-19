@@ -1708,3 +1708,12 @@ The remaining significant verification gate is authenticated Preview CMS runtime
 - Current live compare reports `cms-development` 967 commits ahead of `main`, 0 behind, with 98 changed files. The count changes as checkpoint documentation commits are added; it is not merge approval.
 - Current PR #2 head at the time of this note: `d46102557ec96d4f20b702919a28528d92457ef0`; PR remains Open, Draft and unmerged per the latest PR update response.
 - No current-head Actions result is available through the connected GitHub operations in this session. Build/deployment execution remains unconfirmed.
+
+
+## Atomic public request rate limiter — implementation and verified Preview build (19 November 2026)
+
+- Fixed the public request submission rate-limit race in `functions/api/requests.js`: the per-email and per-IP hourly count checks and attempt insertion now execute in one conditional SQLite statement. Existing thresholds are unchanged (5 per email, 20 per IP); requests without a Cloudflare client IP still receive the email limit.
+- Code commit: `e3161928a4d1bd6f44facb6f754e1b5f3203a1dd`. Source-review note: `c24603870c31386911092d5dd2ef23ec417241fa`.
+- Exact current branch commit `c24603870c31386911092d5dd2ef23ec417241fa` completed GitHub Actions run [#44498558369](https://github.com/yrproservice/yrproservice/actions/runs/44498558369): locked dependency install, Vite build (255.10 kB JS / 78.58 kB gzip; 146.25 kB CSS / 25.90 kB gzip), Wrangler Pages Functions build, Preview D1 schema readiness (title/route/index present, zero null metadata), and Git-integrated Preview asset verification (same hashed references, all four assets HTTP-successful).
+- No test step ran. This is build and static Preview deployment verification only; rate-limit concurrency and authenticated CMS runtime checks remain deferred to final-stage verification.
+- No migration, screenshot, image processing or Production operation was performed.
