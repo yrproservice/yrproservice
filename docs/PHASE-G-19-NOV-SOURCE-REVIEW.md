@@ -75,3 +75,13 @@ The main running handover remains `docs/PHASE-G-MEDIA-HANDOVER.md`. This checkpo
 - The current implementation now gates normal-cart persistence until migration and cart storage are ready; storage read/write exceptions are caught and surfaced; chair migration writes the destination chair store before rewriting the normal cart; and the migration quantity marker supports idempotent retry if the destination write succeeds but the source rewrite fails.
 - The previous source-review concern about an initializer silently replacing the original cart is therefore addressed in the current source. This is a source-level confirmation only; quota/security failure scenarios and UI retry behaviour still require the deferred final-stage tests/runtime checks. No test files were inspected or executed.
 - No code change made in this follow-up.
+
+
+## Public request rate-limit concurrency fix — 19 November 2026
+
+- Re-reviewed `functions/api/requests.js` and confirmed the hourly rate limiter previously counted IP/email attempts and inserted the new attempt in separate database operations. Concurrent submissions could pass the same count before either insert completed.
+- Replaced the split check/insert with one conditional SQLite `INSERT ... SELECT ... WHERE` statement. The email threshold remains five attempts per rolling hour; the IP threshold remains twenty. When the request has no Cloudflare client IP, the email threshold still applies.
+- The insert result's `meta.changes` determines whether the request is allowed. No schema migration was added; the existing lazily-created attempts table and indexes remain in use.
+- Source re-fetched after commit `e3161928a4d1bd6f44facb6f754e1b5f3203a1dd` and confirmed the old separate SELECT/INSERT block is gone.
+- Exact-commit Preview build workflow run `44498433313` succeeded: locked install, Vite build, Pages Functions compilation, Preview D1 schema readiness and Git-integrated Preview asset verification all passed. No tests were run. Authenticated runtime/concurrency verification remains deferred to the final stage.
+- No migration, Production change, screenshot or image processing was performed.
