@@ -572,6 +572,12 @@ export default function CMSManagement() {
     }
   }
   async function publishSetting(row) {
+    if (!row?.setting_key || !row?.draft_id || busy) return;
+
+    setBusy(true);
+    setError("");
+    setNotice("");
+
     try {
       await api("/api/cms/admin/publish", {
         method: "POST",
@@ -586,6 +592,8 @@ export default function CMSManagement() {
       await refreshSettings();
     } catch (publishError) {
       setError(publishError.message);
+    } finally {
+      setBusy(false);
     }
   }
   const historyOptions = historyType==="page"
