@@ -70,3 +70,12 @@ Verify these separately:
 - Authenticated CMS runtime: save, preview, publish and restore operations work against Preview.
 
 No Production deployment, Production database migration, PR merge or Production binding change is part of this workflow.
+
+
+## Browser cart-storage migration recovery
+
+Legacy dental-chair entries found in `yr-cart` are moved to `yr-chair-requests` by the client-side providers. The migration writes the destination chair list first and rewrites the normal cart only after the destination write succeeds. A per-item migration quantity marker makes a retry safe if the destination write succeeds but the normal-cart rewrite fails. In that case the original cart remains intact until a later retry completes.
+
+While migration is pending, cart and chair-request mutations and chair-request submission are paused. Public routes display a recovery message with a retry action. Storage read/write exceptions are caught; an unreadable source store is not replaced with an empty list. The retry logic and simulated quota failures are covered by `tests/cart-storage-migration.test.js`.
+
+Do not manually clear `yr-cart` or `yr-chair-requests` to recover a failed migration. Use the on-page retry control first, and preserve both keys if the browser continues to reject writes.
