@@ -7,7 +7,7 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest functional source checkpoint reviewed in this continuation: `82f8638d1d1d589e581e7a2e197db2d4d52eb33b` (Product, Settings, Services and Team tab navigation safeguards). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
+- Latest functional source checkpoint reviewed in this continuation: `d4b363ddaa86f844bb8e7030065b648fb56dc69e` (Product, Settings, Services, Team and Visual Design Studio tab navigation safeguards). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: verified 19 November 2026 as Open, Draft, and unmerged, targeting `main`. The PR tracks `cms-development`; this handover refresh is committed to that branch. It must remain Draft and unmerged without explicit user approval.
 - Production: untouched; do not merge or deploy.
@@ -332,6 +332,22 @@ This is client-side navigation protection only. It does not change product data,
 
 Commit:
 - `82f8638d1d1d589e581e7a2e197db2d4d52eb33b` — protect unsaved product edits during CMS tab navigation.
+
+Source review only. Runtime behaviour remains unverified and is deferred to Phase H.
+
+## Additional Phase G continuation — Visual Design Studio navigation protection (19 November 2026)
+
+The CMS tab-navigation safeguards now also cover unsaved design-control edits in the embedded Visual Design Studio panels:
+- `PageVisualDesignManager` reports its dirty state and page-design key to the CMS parent.
+- Leaving the Products tab prompts if either the Products listing or Product details design editor has unsaved changes.
+- Leaving the Services tab prompts if its Service details design editor has unsaved changes.
+- Existing page-design save, publish and preview restrictions remain unchanged.
+
+These are client-side navigation safeguards only. No design settings were saved or published by these changes, and no API, database schema, media, Preview published content, Production or deployment configuration was changed.
+
+Commits:
+- `a349a4a76440c08cbb1f555e749ff166a64ef959` — report Visual Design Studio dirty state to CMS navigation.
+- `d4b363ddaa86f844bb8e7030065b648fb56dc69e` — protect unsaved visual design edits during CMS tab navigation.
 
 Source review only. Runtime behaviour remains unverified and is deferred to Phase H.
 
