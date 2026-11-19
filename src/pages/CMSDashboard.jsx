@@ -387,7 +387,11 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   async function openPage(page) {
-    if (page.page_key === pageKey) return;
+    if (!pagesReady || busy) {
+      setError("Load the current CMS page list successfully before opening another page.");
+      return;
+    }
+    if (!page?.page_key || page.page_key === pageKey) return;
     if (!confirmDiscardPageEdits("open another page")) return;
     setBusy(true);
     setError("");
@@ -1037,7 +1041,7 @@ export default function CMSDashboard({ onAdminLogout }) {
           <aside className="cms-pages-panel">
             <h2>Pages</h2>
             {pages.length === 0 && <p className="admin-empty">No CMS pages yet. Create a page draft to begin. Existing website pages are not changed automatically.</p>}
-            {pages.map((page) => <button key={page.id} type="button" className={pageKey === page.page_key ? "cms-page-link active" : "cms-page-link"} onClick={() => openPage(page)} disabled={busy}>
+            {pages.map((page) => <button key={page.id} type="button" className={pageKey === page.page_key ? "cms-page-link active" : "cms-page-link"} onClick={() => openPage(page)} disabled={busy || !pagesReady}>
               <strong>{page.title}</strong>
               <small>{page.route}</small>
               <span>
