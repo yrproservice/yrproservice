@@ -57,19 +57,24 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   const [notice, setNotice] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [settingsLoadFailed, setSettingsLoadFailed] = useState(false);
+  const [settingsReady, setSettingsReady] = useState(false);
 
   useEffect(() => {
     onUnsavedChange?.(pageKey, hasUnsavedChanges);
   }, [pageKey, hasUnsavedChanges, onUnsavedChange]);
 
   async function loadSettings() {
+    setSettingsReady(false);
     try {
       const result = await api("/api/cms/admin/settings");
-      setSettings(result.settings || []);
+      const rows = result.settings || [];
+      setSettings(rows);
       setSettingsLoadFailed(false);
-      return result.settings || [];
+      setSettingsReady(true);
+      return rows;
     } catch (loadError) {
       setSettingsLoadFailed(true);
+      setSettingsReady(false);
       throw loadError;
     }
   }
@@ -100,17 +105,20 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
 
   useEffect(() => {
     let active = true;
+    setSettingsReady(false);
     api("/api/cms/admin/settings")
       .then((result) => {
         if (!active) return;
         const rows = result.settings || [];
         setSettings(rows);
         setSettingsLoadFailed(false);
+        setSettingsReady(true);
         loadPage(initialPageKey, rows);
       })
       .catch((loadError) => {
         if (active) {
           setSettingsLoadFailed(true);
+          setSettingsReady(false);
           setError(
             loadError.message || "Unable to load page design settings. Reload this manager before saving."
           );
@@ -123,12 +131,20 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }, [initialPageKey]);
 
   function update(field, value) {
+    if (!settingsReady || settingsLoadFailed) {
+      setError("Wait for the current design settings to load successfully before editing.");
+      return;
+    }
     setDesign((current) => ({ ...current, [field]: value }));
     setHasUnsavedChanges(true);
     setNotice("Unsaved design changes.");
   }
 
   async function saveDraft() {
+    if (!settingsReady || settingsLoadFailed) {
+      setError("Wait for the current design settings to load successfully before saving. Reload this manager if loading failed.");
+      return;
+    }
     if (settingsLoadFailed) {
       setError("Reload this design manager to retrieve the current settings before saving. No design draft has been changed.");
       return;
@@ -159,6 +175,10 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }
 
   async function deleteDraft() {
+    if (!settingsReady || settingsLoadFailed) {
+      setError("Load the current design settings successfully before deleting its draft.");
+      return;
+    }
     if (!draftId) return;
     const confirmed = window.confirm(
       hasUnsavedChanges
@@ -190,6 +210,10 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }
 
   async function publishToPreview() {
+    if (!settingsReady || settingsLoadFailed) {
+      setError("Load the current design settings successfully before publishing its draft.");
+      return;
+    }
     if (!draftId) return;
     if (hasUnsavedChanges) {
       setError("Save the current design edits before publishing. The previously saved design draft has not been published.");
@@ -231,6 +255,10 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }
 
   function resetControls() {
+    if (!settingsReady || settingsLoadFailed) {
+      setError("Load the current design settings successfully before resetting the editor.");
+      return;
+    }
     const confirmed = window.confirm(
       "Reset these design controls to their defaults? This changes the editor only until you save a new draft."
     );
@@ -276,10 +304,10 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
 
       <div className="page-visual-manager-toolbar">
         <div className="page-visual-manager-actions">
-          <button type="button" className="admin-secondary-button" disabled={busy} onClick={resetControls}>Reset controls</button>
-          <button type="button" className="admin-primary-button" disabled={busy} onClick={saveDraft}>Save design draft</button>
-          <button type="button" className="admin-secondary-button" disabled={busy || !draftId || hasUnsavedChanges} onClick={publishToPreview}>Publish to Preview</button>
-          <button type="button" className="admin-secondary-button" disabled={busy || !draftId} onClick={deleteDraft}>Delete Draft</button>
+          <button type="button" className="admin-secondary-button" disabled={busy || !settingsReady || settingsLoadFailed} onClick={resetControls}>Reset controls</button>
+          <button type="button" className="admin-primary-button" disabled={busy || !settingsReady || settingsLoadFailed} onClick={saveDraft}>Save design draft</button>
+          <button type="button" className="admin-secondary-button" disabled={busy || !settingsReady || settingsLoadFailed || !draftId || hasUnsavedChanges} onClick={publishToPreview}>Publish to Preview</button>
+          <button type="button" className="admin-secondary-button" disabled={busy || !settingsReady || settingsLoadFailed || !draftId} onClick={deleteDraft}>Delete Draft</button>
           <button type="button" className="admin-secondary-button" disabled={busy || hasUnsavedChanges || (!draftId && !publishedVersion)} onClick={openPreview}>Preview page</button>
         </div>
       </div>
