@@ -62,6 +62,10 @@ test("Fussen imaging plate scanner is matched to the official F200 model and spe
   assert.ok(product.specifications.includes("Grayscale: 14 bit"));
   assert.ok(product.specifications.includes("Pixel size: 35 μm"));
   assert.ok(product.specifications.includes("Scan time: Under 20 seconds"));
+  assert.ok(product.specifications.includes("Imaging plate thickness: 0.1 mm"));
+  assert.ok(product.specifications.includes("Imaging plate flexibility: Bends up to 270 degrees"));
+  assert.ok(product.specifications.includes("Imaging plate reuse: Over 20 uses (manufacturer statement)"));
+  assert.ok(product.highlights.some((highlight) => highlight.includes("Four imaging plate sizes")));
 });
 
 test("MELAG Vacuclave 118 uses its verified local catalogue image", () => {
