@@ -2,7 +2,7 @@ import { products as catalogue } from "../data/products";
 import { mergePublishedProduct } from "../data/productImages";
 import { isDentalChairProduct } from "../data/productWorkflow";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 const CartContext = createContext(null);
 
@@ -11,61 +11,113 @@ function normalizeQuantity(value) {
   return Number.isSafeInteger(quantity) && quantity > 0 ? quantity : 1;
 }
 
-export function CartProvider({ children }) {
-  const [items, setItems] = useState(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("yr-cart") || "[]");
-      if (!Array.isArray(stored)) return [];
-      const hydrated = stored.filter((item) => item && typeof item === "object").map((item) => {
+function readCartState() {
+  try {
+    const stored = JSON.parse(localStorage.getItem("yr-cart") || "[]");
+    if (!Array.isArray(stored)) throw new Error("The saved product cart is not a valid list.");
+    const hydrated = stored
+      .filter((item) => item && typeof item === "object" && !Array.isArray(item))
+      .map((item) => {
         const base = catalogue.find((product) => product.slug === item.slug);
         return { ...mergePublishedProduct(base, item), quantity: normalizeQuantity(item.quantity) };
       });
-      // Move legacy chair entries into their dedicated request store before
-      // ChairRequestProvider initializes (CartProvider is its parent).
-      const chairs = hydrated.filter(isDentalChairProduct);
-      if (chairs.length) {
-        let existing = [];
-        try {
-          const saved = JSON.parse(localStorage.getItem("yr-chair-requests") || "[]");
-          if (Array.isArray(saved)) existing = saved.filter((item) => item && typeof item === "object" && isDentalChairProduct(item)).map((item) => ({ ...item, quantity: normalizeQuantity(item.quantity) }));
-        } catch { /* Recover using the chair entries found in the old cart. */ }
-        const migrated = [...existing];
-        for (const chair of chairs) {
-          const found = migrated.find((item) => item.slug === chair.slug);
-          if (found) found.quantity = normalizeQuantity(found.quantity) + normalizeQuantity(chair.quantity);
-          else migrated.push({ ...chair, quantity: normalizeQuantity(chair.quantity) });
-        }
-        localStorage.setItem("yr-chair-requests", JSON.stringify(migrated));
-      }
-      return hydrated.filter((item) => !isDentalChairProduct(item));
-    } catch {
-      return [];
-    }
-  });
+    const legacyChairItems = hydrated.filter(isDentalChairProduct);
+    return {
+      items: hydrated.filter((item) => !isDentalChairProduct(item)),
+      legacyChairItems,
+      cartStorageReady: true,
+      migrationReady: legacyChairItems.length === 0,
+      migrationError: "",
+    };
+  } catch {
+    return {
+      items: [],
+      legacyChairItems: [],
+      cartStorageReady: false,
+      migrationReady: false,
+      migrationError: "The saved product cart could not be read. It has not been overwritten. Check browser storage permissions, then retry.",
+    };
+  }
+}
+
+export function CartProvider({ children }) {
+  const [initialState] = useState(readCartState);
+  const [items, setItems] = useState(initialState.items);
+  const [legacyChairItems, setLegacyChairItems] = useState(initialState.legacyChairItems);
+  const [cartStorageReady, setCartStorageReady] = useState(initialState.cartStorageReady);
+  const [migrationReady, setMigrationReady] = useState(initialState.migrationReady);
+  const [migrationError, setMigrationError] = useState(initialState.migrationError);
+  const [migrationRetry, setMigrationRetry] = useState(0);
+  const [cartStorageError, setCartStorageError] = useState("");
+  const skipNextCartPersist = useRef(false);
 
   useEffect(() => {
-    localStorage.setItem("yr-cart", JSON.stringify(items));
-  }, [items]);
+    if (!migrationReady || !cartStorageReady) return;
+    if (skipNextCartPersist.current) {
+      skipNextCartPersist.current = false;
+      return;
+    }
+    try {
+      localStorage.setItem("yr-cart", JSON.stringify(items));
+      setCartStorageError("");
+    } catch {
+      setCartStorageError("Your product cart changes could not be saved to this browser. Retry saving before leaving this page.");
+    }
+  }, [items, migrationReady, cartStorageReady]);
+
+  const completeLegacyChairMigration = useCallback(() => {
+    skipNextCartPersist.current = true;
+    setLegacyChairItems([]);
+    setMigrationReady(true);
+    setMigrationError("");
+  }, []);
+
+  const reportMigrationError = useCallback((message) => {
+    setMigrationError(message || "The legacy chair requests could not be moved safely. Your original cart has been preserved.");
+  }, []);
+
+  const retryLegacyChairMigration = useCallback(() => {
+    const refreshed = readCartState();
+    setItems(refreshed.items);
+    setLegacyChairItems(refreshed.legacyChairItems);
+    setCartStorageReady(refreshed.cartStorageReady);
+    setMigrationReady(refreshed.migrationReady);
+    setMigrationError(refreshed.migrationError);
+    setCartStorageError("");
+    setMigrationRetry((value) => value + 1);
+  }, []);
+
+  function retryCartPersistence() {
+    try {
+      localStorage.setItem("yr-cart", JSON.stringify(items));
+      setCartStorageError("");
+    } catch {
+      setCartStorageError("Your product cart is still not saved. Check browser storage space/permissions and retry.");
+    }
+  }
 
   function addToCart(product, quantity = 1) {
-    if (isDentalChairProduct(product)) return;
+    if (!migrationReady || !cartStorageReady || isDentalChairProduct(product)) return;
     const amount = normalizeQuantity(quantity);
     setItems((current) => {
       const found = current.find((item) => item.slug === product.slug);
       if (found)
         return current.map((item) =>
           item.slug === product.slug
-            ? { ...item, quantity: item.quantity + amount }
+            ? { ...item, quantity: normalizeQuantity(item.quantity) + amount }
             : item,
         );
       return [...current, { ...product, quantity: amount }];
     });
   }
+
   function removeFromCart(slug) {
+    if (!migrationReady || !cartStorageReady) return;
     setItems((current) => current.filter((item) => item.slug !== slug));
   }
+
   function updateQuantity(slug, quantity) {
-    if (items.some((item) => item.slug === slug && isDentalChairProduct(item))) return;
+    if (!migrationReady || !cartStorageReady) return;
     const value = normalizeQuantity(quantity);
     setItems((current) =>
       current.map((item) =>
@@ -73,20 +125,33 @@ export function CartProvider({ children }) {
       ),
     );
   }
+
   function clearCart() {
+    if (!migrationReady || !cartStorageReady) return;
     setItems([]);
   }
 
   const value = {
     items,
-    cartCount: items.reduce((sum, item) => sum + item.quantity, 0),
+    cartCount: items.reduce((sum, item) => sum + normalizeQuantity(item.quantity), 0),
     addToCart,
     removeFromCart,
     updateQuantity,
     clearCart,
+    legacyChairItems,
+    migrationReady,
+    migrationError,
+    migrationRetry,
+    cartStorageReady,
+    cartStorageError,
+    completeLegacyChairMigration,
+    reportMigrationError,
+    retryLegacyChairMigration,
+    retryCartPersistence,
   };
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
+
 export function useCart() {
   return useContext(CartContext);
 }
