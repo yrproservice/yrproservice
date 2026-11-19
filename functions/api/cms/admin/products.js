@@ -36,7 +36,7 @@ export async function onRequestPost(context) {
   let product;
   try {
     const raw = await request.text();
-    if (raw.length > MAX_BYTES) return adminJson({ error: "Product data is too large." }, 413);
+    if (new TextEncoder().encode(raw).byteLength > MAX_BYTES) return adminJson({ error: "Product data is too large." }, 413);
     product = JSON.parse(raw);
   } catch { return adminJson({ error: "Invalid JSON body." }, 400); }
   if (!product || typeof product !== "object" || Array.isArray(product)) return adminJson({ error: "Invalid product data." }, 400);
