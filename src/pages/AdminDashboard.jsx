@@ -204,6 +204,7 @@ export default function AdminDashboard({ onAuthenticated }) {
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
+                disabled={saving}
                 maxLength={100}
                 placeholder="Reference, customer, email or company"
               />
@@ -213,6 +214,7 @@ export default function AdminDashboard({ onAuthenticated }) {
               <select
                 value={type}
                 onChange={(event) => setType(event.target.value)}
+                disabled={saving}
               >
                 <option value="">All types</option>
                 <option value="service">Service</option>
@@ -225,6 +227,7 @@ export default function AdminDashboard({ onAuthenticated }) {
               <select
                 value={status}
                 onChange={(event) => setStatus(event.target.value)}
+                disabled={saving}
               >
                 <option value="">All statuses</option>
                 {STATUSES.map((key) => (
@@ -285,6 +288,7 @@ export default function AdminDashboard({ onAuthenticated }) {
                         type="button"
                         className="admin-open-button"
                         onClick={() => openRequest(item)}
+                        disabled={saving}
                       >
                         View
                       </button>
@@ -315,6 +319,7 @@ export default function AdminDashboard({ onAuthenticated }) {
                 type="button"
                 className="admin-secondary-button"
                 onClick={() => setSelected(null)}
+                disabled={saving}
               >
                 Close details
               </button>
@@ -359,6 +364,7 @@ export default function AdminDashboard({ onAuthenticated }) {
                 <select
                   value={draftStatus}
                   onChange={(event) => setDraftStatus(event.target.value)}
+                  disabled={saving}
                 >
                   {STATUSES.map((key) => (
                     <option key={key} value={key}>
