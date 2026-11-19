@@ -507,6 +507,13 @@ export default function CMSManagement() {
     }
   }
 
+  async function inspectCurrentProductImageUsage() {
+    const item = media.find((row) => row.public_url === currentProductImage);
+    if (!item) return;
+    setTab("media");
+    await inspectMediaUsage(item);
+  }
+
   async function uploadMedia(event) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -903,6 +910,11 @@ export default function CMSManagement() {
                   Open Media Library
                 </button>
               </div>
+              {currentProductImage && media.some((item) => item.public_url === currentProductImage) && (
+                <button type="button" className="admin-secondary-button" onClick={inspectCurrentProductImageUsage}>
+                  View where this product image is used
+                </button>
+              )}
               {currentProductImage && (
                 <div className="cms-current-product-image">
                   <img src={currentProductImage} alt="Current product image preview" />
