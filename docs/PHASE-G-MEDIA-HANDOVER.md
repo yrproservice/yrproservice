@@ -1242,3 +1242,19 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 ### Resume point
 - Continue bounded source-only review on `cms-development`. Check the live PR/head and this handover before each subsequent write.
 - Keep PR #2 Open/Draft/unmerged; do not deploy, migrate, or touch Production. Phase H remains deferred until explicit user authorization.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (public renderer and navigation review)
+
+### Additional source-only review
+- Reviewed the shared layout/navigation, public generic/home/services/team CMS renderers, published catalogue merge, product image resolver, and fixed product request-flow rules.
+- CMS page content validation constrains section types, internal button routes, image URLs, product slugs, and section item links before publishing. The shared navigation renderer independently accepts only safe internal routes; it does not turn CMS navigation values into arbitrary external links.
+- The homepage and service/team renderers use React text rendering for CMS copy rather than injecting HTML. Product links are derived from validated product slugs and the fixed catalogue route pattern.
+- The 11 confirmed dental-chair slugs remain a fixed routing rule in `productWorkflow.js`; CMS metadata cannot reroute those models to the standard cart or general quotation flow.
+- No additional renderer or navigation code change was justified by this source review.
+
+### Current Phase G scope
+- Product editor pending-mutation lock fix and documentation corrections are recorded in the preceding checkpoint section.
+- README and Preview operations guide now accurately describe the build-check as manual-only during Phase G; the separate Preview migration workflow remains unchanged.
+- No tests/builds/browser checks, API requests, database queries, migrations, screenshots, image processing, Preview deployment, or Production operations were performed.
+- Continue source-only review. Phase H remains deferred until explicit user authorization.
