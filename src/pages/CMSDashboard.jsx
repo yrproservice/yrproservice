@@ -94,6 +94,7 @@ function SectionPreview({ section, selected, onClick, design }) {
     textAlign: sectionDesign.textAlign || "left",
     "--cms-home-heading-color": sectionDesign.textColor || "#0b4a88",
     "--cms-home-accent-color": sectionDesign.accentColor || "#1e7ed8",
+    "--cms-home-section-text": sectionDesign.textColor || "#687280",
     "--cms-home-heading-font": design?.global?.headingFont || "Montserrat",
     "--cms-home-body-font": design?.global?.bodyFont || "Inter",
     "--cms-home-heading-scale": Number(design?.global?.headingScale || 1),
