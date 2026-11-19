@@ -428,7 +428,15 @@ export default function CMSManagement() {
       }
 
       if (type === "setting") {
-        await refreshSettings();
+        const refreshed = await api("/api/cms/admin/settings");
+        const savedSettings = refreshed.settings || [];
+        setSettings(savedSettings);
+        if (settingKey === key) {
+          const row = savedSettings.find((item) => item.setting_key === key);
+          const nextJson = row?.draft_value || row?.published_value || "{}";
+          settingBaseline.current = { key, json: nextJson };
+          setSettingJson(nextJson);
+        }
       }
 
       await loadHistory(type, key);
@@ -497,9 +505,9 @@ export default function CMSManagement() {
         );
 
         if (settingKey === key) {
-          setSettingJson(
-            settingRow?.draft_value || settingRow?.published_value || "{}"
-          );
+          const nextJson = settingRow?.draft_value || settingRow?.published_value || "{}";
+          settingBaseline.current = { key, json: nextJson };
+          setSettingJson(nextJson);
         }
       }
 
@@ -634,8 +642,11 @@ export default function CMSManagement() {
         setError(`Setting "${reference.key}" is not in the currently loaded settings list. Refresh the CMS before editing it.`);
         return;
       }
+      if (hasUnsavedSettingChanges && !window.confirm("Discard the unsaved settings edits and open this referenced setting?")) return;
+      const nextJson = row.draft_value || row.published_value || "{}";
+      settingBaseline.current = { key: row.setting_key, json: nextJson };
       setSettingKey(row.setting_key);
-      setSettingJson(row.draft_value || row.published_value || "{}");
+      setSettingJson(nextJson);
       setTab("settings");
       setNotice(`Opened the current editor for ${reference.key}. This does not rewrite historical revisions.`);
       return;
