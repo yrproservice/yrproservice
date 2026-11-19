@@ -633,3 +633,31 @@ Source-level review only. No tests, builds, screenshots, image processing, visua
 - Source assertions confirmed the targeted guards and messages are present. This is not runtime verification.
 - No tests, builds, screenshots, image processing, visual checks or deployments were run, as requested.
 - If interrupted, resume by confirming the current branch head and PR #2 state, then read this handover. Continue source-only inspection in small batches; do not begin Phase H verification until the final stage.
+
+## Additional Phase G continuation — media refresh recovery and Visual Editor page-load safeguards (19 November 2026)
+
+A source-only review identified two more recovery edges:
+
+- Media upload, archive and restore requests could succeed on the server, then be caught as generic operation failures if the follow-up Media Library refresh failed. The UI now reports the media mutation as successful and separately explains that the library refresh failed and the administrator must reload before continuing. Archive/restore usage-inspection state is cleared immediately after the successful archive action, independent of refresh outcome.
+- The Visual Website Editor previously treated an empty page list after an initial load failure like a genuinely empty site. The Home-template and New-page actions could therefore be started before the existing page list had been loaded successfully.
+- The Visual Editor now tracks whether its page list is ready. Creating a page, loading the Home template, saving a draft and publishing are guarded until the current page list loads successfully. The Home-template handler also refuses to start if a Home page already exists.
+- Page-list requests now use request sequencing so a stale response cannot overwrite a newer successful result or reset the readiness state after a newer request has completed.
+
+Commits:
+- 491b1f1edb20153791fdf6d83ead437985e79168 — distinguish media upload/archive/restore success from Media Library refresh failures.
+- 407c983be3b517c393cd548f2005dcede6a64d66 — require a successfully loaded page list before Visual Editor page mutations.
+- 21d1ad85af4779da38b22819ce01ee186f9ab1f2 — ignore stale Visual Editor page-list refresh responses.
+
+No media objects, media metadata, product/page content, published content, database schema, deployment configuration or Production data were changed by these source edits. Source inspection only; no tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (media and Visual Editor safeguards)
+
+- Repository: `yrproservice/yrproservice`
+- Working branch: `cms-development`
+- Latest source checkpoint: `21d1ad85af4779da38b22819ce01ee186f9ab1f2`.
+- PR #2 must remain Open, Draft and unmerged, targeting `main`. Confirm the PR head against the branch before resuming after an interruption.
+- Production remains untouched. Do not merge, deploy, publish to Preview or run migrations.
+- Latest continuation addressed media mutation/refresh separation and Visual Website Editor page-list readiness plus stale-response protection.
+- Source-only review; no tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+- Resume by confirming the branch head and PR state, then continue small source-only reviews of remaining CMS workflows. Keep Phase H as the final stage for runtime, image and visual verification.
+
