@@ -93,11 +93,24 @@ export default function GenericCmsRenderer({ content, navigate }) {
               <h2>{sectionContent.heading}</h2>
               <p>{sectionContent.description}</p>
               <div className="cms-generic-brands">
-                {(Array.isArray(sectionContent.items) ? sectionContent.items : []).filter((item) => typeof item === "string").map((item) => (
-                  <span key={item}>
-                    {String(item).replace(/\.[^.]+$/, "")}
-                  </span>
-                ))}
+                {(Array.isArray(sectionContent.items) ? sectionContent.items : [])
+                  .filter((item) => typeof item === "string" ||
+                    (item && typeof item === "object" && !Array.isArray(item) && typeof item.url === "string"))
+                  .map((item, index) => {
+                    if (typeof item === "string") {
+                      return (
+                        <span key={item}>
+                          {String(item).replace(/\.[^.]+$/, "")}
+                        </span>
+                      );
+                    }
+                    return (
+                      <span key={item.mediaId || item.url || index}>
+                        <img src={item.url} alt={item.alt || item.name || ""} loading="lazy" />
+                        {item.name && <strong>{item.name}</strong>}
+                      </span>
+                    );
+                  })}
               </div>
             </section>
           );
