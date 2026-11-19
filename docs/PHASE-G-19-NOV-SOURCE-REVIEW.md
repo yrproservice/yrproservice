@@ -51,3 +51,11 @@ The main running handover remains `docs/PHASE-G-MEDIA-HANDOVER.md`. This checkpo
 - Failure-path concern: if the chair-store write throws (for example, browser storage quota/security failure), the outer initializer catch returns an empty cart; the normal persistence effect can then overwrite the original `yr-cart` data. Storage writes in both providers' persistence effects are also not guarded. This is a genuine recovery/data-preservation risk, but a safe fix needs coordinated migration state and retry/error UX so it does not either lose legacy chair entries or put chairs back into the normal cart.
 - No code change made in this pass because a partial catch-only patch would risk masking the error while still losing chair entries. Keep this as a Phase G follow-up candidate for a complete, coordinated migration-recovery implementation; Phase H must test quota/security exceptions and verify both stores preserve all items.
 - No local storage was accessed or changed. No tests, builds, browser/API calls, Preview operations or image/PDF work were performed.
+
+
+## CMS editor and stylesheet cascade review — 19 November 2026
+
+- Re-reviewed the Services Manager, Team Manager, Page Visual Design Manager, shared navigation/footer, Service Details, document/specification editors and their current source. Existing save/publish guards and load-failure handling were retained; no additional confirmed application defect justified a code change.
+- Performed a bounded structural review of `src/style.css`: 171,443 characters, 5,193 lines, 1,571 parsed rules, 1,382 distinct selector strings, and 172 selector strings repeated. Repetition includes expected media-query/responsive variants as well as later component/layout adjustments. A text-only duplicate count cannot reliably distinguish intentional breakpoints from harmful cascade overrides.
+- No broad CSS consolidation was attempted. That work requires mapping the cascade to the V10 page structure and checking desktop/mobile rendering in Phase H; changing it blindly risks regressions and conflicts with the no-patch-piling requirement.
+- No tests, builds, test-file inspection, browser/API requests, Preview operations, images, screenshots or PDFs were performed.
