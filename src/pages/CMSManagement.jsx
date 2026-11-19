@@ -88,6 +88,7 @@ export default function CMSManagement() {
   const [historyFailed, setHistoryFailed] = useState(false);
   const [media, setMedia] = useState([]);
   const [mediaIncludeArchived, setMediaIncludeArchived] = useState(false);
+  const mediaListRequestId = useRef(0);
   const [mediaIntegrityFilter, setMediaIntegrityFilter] = useState("all");
   const [mediaSearch, setMediaSearch] = useState("");
   const [mediaHistoryId, setMediaHistoryId] = useState("");
@@ -136,8 +137,9 @@ export default function CMSManagement() {
   }
 
   async function refreshMedia(isActive = () => true) {
+    const requestId = ++mediaListRequestId.current;
     const data = await api("/api/cms/admin/media" + (mediaIncludeArchived ? "?includeDeleted=1" : ""));
-    if (!isActive()) return;
+    if (!isActive() || requestId !== mediaListRequestId.current) return;
 
     setMedia(data.media || []);
     setStorageReady(Boolean(data.storageReady));
@@ -1591,14 +1593,24 @@ export default function CMSManagement() {
               checked={mediaIncludeArchived}
               disabled={busy}
               onChange={async (event) => {
-                setMediaIncludeArchived(event.target.checked);
+                const includeArchived = event.target.checked;
+                setMediaIncludeArchived(includeArchived);
+                const requestId = ++mediaListRequestId.current;
                 mediaUsageRequestId.current += 1;
                 setMediaUsageLoading(false);
                 setMediaUsageId("");
                 setMediaUsage(null);
-                const data = await api("/api/cms/admin/media" + (event.target.checked ? "?includeDeleted=1" : ""));
-                setMedia(data.media || []);
-                setStorageReady(Boolean(data.storageReady));
+                setError("");
+                try {
+                  const data = await api("/api/cms/admin/media" + (includeArchived ? "?includeDeleted=1" : ""));
+                  if (requestId !== mediaListRequestId.current) return;
+                  setMedia(data.media || []);
+                  setStorageReady(Boolean(data.storageReady));
+                } catch (loadError) {
+                  if (requestId !== mediaListRequestId.current) return;
+                  setMediaIncludeArchived(!includeArchived);
+                  setError(loadError.message || "Unable to change the archived-media view. The previous media list remains loaded.");
+                }
               }}
             />
             Show archived media
