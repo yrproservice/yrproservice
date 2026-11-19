@@ -65,6 +65,7 @@ export default function PageDesignScope({ pageKey, designOverride, children }) {
     "--page-design-body-size": `${design.bodySize}px`,
     "--page-design-content-width": `${design.contentWidth}px`,
     "--page-design-section-space": `${design.sectionSpacing}px`,
+    "--page-design-image-fit": design.imageFit,
     "--page-design-card-radius": `${design.cardRadius}px`,
     "--page-design-button-radius": `${design.buttonRadius}px`,
     "--page-design-card-shadow": design.cardStyle === "elevated"
