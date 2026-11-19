@@ -104,4 +104,10 @@ test("Mocom M7 M8 and M9 stool records link to the matching manufacturer catalog
   assert.match(m7.description, /lumbar support/i);
   assert.match(m8.description, /360-degree rotating armrest/i);
   assert.match(m9.description, /saddle-shaped/i);
+  assert.ok(m7.highlights.some((highlight) => /independent seat and backrest height adjustment/i.test(highlight)));
+  assert.ok(m8.highlights.some((highlight) => /rotating 360-degree armrest/i.test(highlight)));
+  assert.ok(m9.highlights.some((highlight) => /balance system is standard/i.test(highlight)));
+  assert.deepEqual(m7.specifications, []);
+  assert.deepEqual(m8.specifications, []);
+  assert.deepEqual(m9.specifications, []);
 });
