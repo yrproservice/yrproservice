@@ -27,6 +27,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
   const imageChanged = useRef(false);
   const originalProduct = initialProduct.current || {};
   const product = parseProductJson(json);
+  const referencedUploadedMedia = media.filter((item) => product && JSON.stringify(product).includes(item.public_url));
 
   function protectProduct(edited) {
     const protectedProduct = protectProductImage(originalProduct, edited, imageChanged.current);
