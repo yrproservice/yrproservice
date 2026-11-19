@@ -7,9 +7,9 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest functional source checkpoint: `c845023346f9170a828c202a403ec74ac8d48ddc` (Team media picker search). The branch tip may be newer because the recovery document is updated in separate commits.
+- Latest branch checkpoint at this handover refresh: `a1d293f5ca13fa8e6c425d2d62425e6f9cbaf631` (homepage media-search wording and recovery-document checkpoint). The latest functional source changes are recorded in the commits below.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
-- PR status: Open, Draft, unmerged (must remain Draft and unmerged without explicit user approval).
+- PR status: verified 19 November 2026 as Open, Draft, and unmerged (head `a1d293f5ca13fa8e6c425d2d62425e6f9cbaf631`, base `main`). It must remain Draft and unmerged without explicit user approval.
 - Production: untouched; do not merge or deploy.
 - Preview-only D1/R2 CMS workflow remains the intended target.
 
@@ -236,6 +236,25 @@ Source-level review only; runtime verification remains deferred to Phase H.
 - Archived R2 objects are retained for recovery; restore checks object availability.
 - No automatic bulk replacement, historical-revision rewriting, or object deletion was introduced.
 
+## Additional Phase G continuation — structured product-content editor review (19 November 2026)
+
+A source-only review was continued across the structured product editor, specification builder, document manager, and CMS product/settings manager.
+
+Confirmed from the current source:
+- Product fields, specifications, documents, primary image, gallery, and advanced JSON all feed the same product JSON draft; saving creates a CMS draft, while publishing is separately guarded against edits made after that saved snapshot.
+- Specification rows preserve their existing string/object shape when edited, and document rows preserve their supported string/object shape. The editor retains unknown product metadata through the product-data merge helper.
+- Product selection resets the child editor instance, and gallery replacement selection is cleared when the product JSON changes.
+- Settings image references are surfaced from the currently open setting JSON and can be sent to the saved-reference report; arbitrary settings JSON remains an advanced structured editor rather than an unsafe automatic image rewrite tool.
+- The specification/document fallback controls for unusual non-string/non-object row types accept JSON text but only commit a value when it parses and retains the original row type. This conservative behavior avoids silently changing data shape; a more guided raw-value editor can be considered during a later scoped improvement if those data shapes are confirmed in actual product records.
+
+No source change was made in this review because changing the raw-value editing interaction without confirming real catalogue data and later Phase H verification would introduce avoidable risk. No product records, specifications, documents, settings, media objects, or historical revisions were changed.
+
+Current repository checkpoint was refreshed from GitHub:
+- Branch: `cms-development`
+- Branch head: `a1d293f5ca13fa8e6c425d2d62425e6f9cbaf631`
+- PR #2: Open, Draft, unmerged; head matches the branch head; base is `main`
+- Production and deployment state were not changed.
+
 ## Verification boundary
 
 No tests, builds, screenshots, visual checks, image processing, deployments, or database migrations were run in this continuation. Source-level inspection only was performed after the edits.
@@ -244,7 +263,7 @@ Defer all testing, builds, screenshots, image work, and final visual/functional 
 
 ## Next work
 
-Continue Phase G by reviewing the complete media replacement journey in the authenticated Preview CMS, without running it as a test now:
+Continue Phase G by reviewing the remaining structured content and media-selection workflows in source only, without running them as tests now:
 - Confirm that the product editor and Visual Editor replacement pickers make the selected media URL clear before saving.
 - Ensure the current draft/published record can be updated without changing unrelated media references.
 - Keep historical revisions immutable and explain why those references continue to block archiving.
