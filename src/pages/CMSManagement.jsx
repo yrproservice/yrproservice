@@ -192,6 +192,11 @@ export default function CMSManagement() {
         setEditorSelection((value) => value + 1);
       }
 
+      historyRequestId.current += 1;
+      setHistory([]);
+      setHistoryLoaded(false);
+      setHistoryLoading(false);
+      setHistoryFailed(false);
       setSelected({
         slug: product.slug,
         draftId: data.draftId,
@@ -233,6 +238,11 @@ export default function CMSManagement() {
         body: JSON.stringify(product),
       });
 
+      historyRequestId.current += 1;
+      setHistory([]);
+      setHistoryLoaded(false);
+      setHistoryLoading(false);
+      setHistoryFailed(false);
       setSelected({
         slug: product.slug,
         draftId: data.draftId,
@@ -265,6 +275,11 @@ export default function CMSManagement() {
         }),
       });
 
+      historyRequestId.current += 1;
+      setHistory([]);
+      setHistoryLoaded(false);
+      setHistoryLoading(false);
+      setHistoryFailed(false);
       setNotice(
         `Product revision V${data.version} published to this Preview environment.`
       );
