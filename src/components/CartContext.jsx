@@ -6,6 +6,11 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 const CartContext = createContext(null);
 
+function normalizeQuantity(value) {
+  const quantity = Number(value);
+  return Number.isSafeInteger(quantity) && quantity > 0 ? quantity : 1;
+}
+
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
     try {
@@ -13,7 +18,7 @@ export function CartProvider({ children }) {
       if (!Array.isArray(stored)) return [];
       const hydrated = stored.filter((item) => item && typeof item === "object").map((item) => {
         const base = catalogue.find((product) => product.slug === item.slug);
-        return mergePublishedProduct(base, item);
+        return { ...mergePublishedProduct(base, item), quantity: normalizeQuantity(item.quantity) };
       });
       // Move legacy chair entries into their dedicated request store before
       // ChairRequestProvider initializes (CartProvider is its parent).
@@ -22,13 +27,13 @@ export function CartProvider({ children }) {
         let existing = [];
         try {
           const saved = JSON.parse(localStorage.getItem("yr-chair-requests") || "[]");
-          if (Array.isArray(saved)) existing = saved.filter((item) => item && typeof item === "object");
+          if (Array.isArray(saved)) existing = saved.filter((item) => item && typeof item === "object" && isDentalChairProduct(item)).map((item) => ({ ...item, quantity: normalizeQuantity(item.quantity) }));
         } catch { /* Recover using the chair entries found in the old cart. */ }
         const migrated = [...existing];
         for (const chair of chairs) {
           const found = migrated.find((item) => item.slug === chair.slug);
-          if (found) found.quantity = Math.max(1, Number(found.quantity) || 1) + Math.max(1, Number(chair.quantity) || 1);
-          else migrated.push({ ...chair, quantity: Math.max(1, Number(chair.quantity) || 1) });
+          if (found) found.quantity = normalizeQuantity(found.quantity) + normalizeQuantity(chair.quantity);
+          else migrated.push({ ...chair, quantity: normalizeQuantity(chair.quantity) });
         }
         localStorage.setItem("yr-chair-requests", JSON.stringify(migrated));
       }
@@ -44,7 +49,7 @@ export function CartProvider({ children }) {
 
   function addToCart(product, quantity = 1) {
     if (isDentalChairProduct(product)) return;
-    const amount = Math.max(1, Number(quantity) || 1);
+    const amount = normalizeQuantity(quantity);
     setItems((current) => {
       const found = current.find((item) => item.slug === product.slug);
       if (found)
@@ -61,7 +66,7 @@ export function CartProvider({ children }) {
   }
   function updateQuantity(slug, quantity) {
     if (items.some((item) => item.slug === slug && isDentalChairProduct(item))) return;
-    const value = Math.max(1, Number(quantity) || 1);
+    const value = normalizeQuantity(quantity);
     setItems((current) =>
       current.map((item) =>
         item.slug === slug ? { ...item, quantity: value } : item,
