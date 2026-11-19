@@ -74,6 +74,7 @@ export default function CMSManagement() {
   const [mediaUsage, setMediaUsage] = useState(null);
   const [mediaUsageId, setMediaUsageId] = useState("");
   const [mediaUsageLoading, setMediaUsageLoading] = useState(false);
+  const mediaUsageRequestId = useRef(0);
   const [mediaStorageChecks, setMediaStorageChecks] = useState({});
   const [mediaStorageCheckingId, setMediaStorageCheckingId] = useState("");
   const [mediaOrphanReport, setMediaOrphanReport] = useState(null);
@@ -557,13 +558,31 @@ export default function CMSManagement() {
 
   async function inspectMediaUsage(item, forceRefresh = false) {
     if (!item?.id) return;
-    if (!forceRefresh && mediaUsageId === item.id && mediaUsage) { setMediaUsage(null); setMediaUsageId(""); return; }
-    setMediaUsageId(item.id); setMediaUsage(null); setMediaUsageLoading(true);
+    if (!forceRefresh && mediaUsageId === item.id && mediaUsage) {
+      mediaUsageRequestId.current += 1;
+      setMediaUsage(null);
+      setMediaUsageId("");
+      setMediaUsageLoading(false);
+      return;
+    }
+    const requestId = ++mediaUsageRequestId.current;
+    setMediaUsageId(item.id);
+    setMediaUsage(null);
+    setMediaUsageLoading(true);
     try {
-      const data = await api("/api/cms/admin/media?id=" + encodeURIComponent(item.id));
-      setMediaUsage(data.usage || { groups: { pages: [], products: [], settings: [] }, total: 0 });
-    } catch (usageError) { setError(usageError.message); setMediaUsageId(""); }
-    finally { setMediaUsageLoading(false); }
+      const includeArchived = item.deleted_at ? "&includeDeleted=1" : "";
+      const data = await api("/api/cms/admin/media?id=" + encodeURIComponent(item.id) + includeArchived);
+      if (requestId === mediaUsageRequestId.current) {
+        setMediaUsage(data.usage || { groups: { pages: [], products: [], settings: [] }, total: 0 });
+      }
+    } catch (usageError) {
+      if (requestId === mediaUsageRequestId.current) {
+        setError(usageError.message);
+        setMediaUsageId("");
+      }
+    } finally {
+      if (requestId === mediaUsageRequestId.current) setMediaUsageLoading(false);
+    }
   }
 
   function openMediaReferenceEditor(group, reference) {
@@ -1570,7 +1589,7 @@ export default function CMSManagement() {
               </button>
               {mediaUsageId === item.id && mediaUsage && (
                 <div className="cms-media-usage">
-                  <strong>{mediaUsage.total ? "Referenced in " + mediaUsage.total + " saved record(s)" : "No saved CMS references found"}</strong>
+                  <strong>{mediaUsage.total ? "URL text appears in " + mediaUsage.total + " saved revision(s)" : "No saved CMS URL-text matches found"}</strong>
                   {mediaUsage.truncated && <small>Some results may be omitted; each group is limited to 50 revisions.</small>}
                   {["pages", "products", "settings"].map((group) => (
                     <div key={group}>
@@ -1602,7 +1621,7 @@ export default function CMSManagement() {
                       <strong>Replacement guidance</strong>
                       <small>Use the editor link beside a reference to review the current draft or published content. Select a replacement image there, then save a new draft and publish to Preview only when ready.</small>
                       <small>Each result is a saved revision, not necessarily the current live record. Opening an editor does not edit that exact historical revision. Historical references remain protected and will continue to block archiving while they exist.</small>
-                      <small>{mediaUsage.truncated ? "The report is a partial sample: up to 50 revisions per content group are displayed, while the counts above include all matching saved revisions." : "All matching saved revisions are represented in this report."}</small>
+                      <small>Counts use a conservative URL-text search across saved revisions. Exact field paths are listed for displayed records only when a stored string exactly matches this media URL. {mediaUsage.truncated ? "The report is a partial sample: up to 50 revisions per content group are displayed, while the counts include all URL-text matches." : "All URL-text matches are represented in this report."}</small>
                     </div>
                   )}
                 </div>
