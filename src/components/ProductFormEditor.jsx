@@ -22,6 +22,7 @@ const PRODUCT_FIELDS = [
 export default function ProductFormEditor({ json, onJsonChange, slugLocked = false, media = [], onInspectMedia }) {
   const [advancedJson, setAdvancedJson] = useState(json);
   const [advancedError, setAdvancedError] = useState("");
+  const [galleryReplacementIndex, setGalleryReplacementIndex] = useState(null);
   const initialProduct = useRef(createProductSnapshot(json));
   const advancedEditing = useRef(false);
   const imageChanged = useRef(false);
@@ -191,7 +192,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
         <section className="cms-editor-field-wide cms-product-gallery-editor">
           <div>
             <h3>Product detail gallery</h3>
-            <p>Gallery images appear as selectable thumbnails on the product detail page. The primary product image remains separate. Images are saved with this product draft only.</p>
+            <p>Gallery images appear as selectable thumbnails on the product detail page. The primary product image remains separate. Choose Replace from library on an image, then select a catalogue or uploaded image below. Changes are saved with this product draft only.</p>
           </div>
           {(Array.isArray(product?.gallery) ? product.gallery : []).map((image, index) => (
             <article key={image?.url || index}>
@@ -208,6 +209,8 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                 <div className="cms-gallery-row-actions">
                   <button type="button" className="admin-secondary-button" disabled={index === 0} onClick={() => moveGalleryImage(index, -1)}>Move up</button>
                   <button type="button" className="admin-secondary-button" disabled={index === product.gallery.length - 1} onClick={() => moveGalleryImage(index, 1)}>Move down</button>
+                  <button type="button" className="admin-secondary-button" onClick={() => setGalleryReplacementIndex(index)}>Replace from library</button>
+                  {galleryReplacementIndex === index && <button type="button" className="admin-secondary-button" onClick={() => setGalleryReplacementIndex(null)}>Cancel replacement</button>}
                   <button type="button" className="admin-secondary-button" onClick={() => removeGalleryImage(index)}>Remove</button>
                 </div>
               </div>
@@ -228,7 +231,12 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                   type="button"
                   className="admin-secondary-button"
                   disabled={!product}
-                  onClick={() => selectProductImage(item.src)}
+                  onClick={() => {
+                    if (galleryReplacementIndex !== null) {
+                      updateGalleryImage(galleryReplacementIndex, { url: item.src, alt: item.file });
+                      setGalleryReplacementIndex(null);
+                    } else selectProductImage(item.src);
+                  }}
                 >
                   {product?.img === item.src ? "Selected" : "Use this image"}
                 </button>
@@ -250,7 +258,12 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                     type="button"
                     className="admin-secondary-button"
                     disabled={!product}
-                    onClick={() => selectProductImage(item.public_url)}
+                    onClick={() => {
+                      if (galleryReplacementIndex !== null) {
+                        updateGalleryImage(galleryReplacementIndex, { url: item.public_url, alt: item.alt_text || item.original_file_name });
+                        setGalleryReplacementIndex(null);
+                      } else selectProductImage(item.public_url);
+                    }}
                   >
                     {product?.img === item.public_url
                       ? "Selected"
