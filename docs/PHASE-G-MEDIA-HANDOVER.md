@@ -7,7 +7,7 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Latest source checkpoint before this continuation: `b6ac454ecd4bfb0871c1b6247613376ab977cbbe`.
-- Latest Phase G continuation checkpoint recorded below: `1c6f2609082c2e6f48a96b5ed7015a88370c7479` (settings unsaved-warning styling); this handover update will be committed immediately after it.
+- Latest Phase G continuation checkpoint recorded below: `ff045d8c4b02f1259fa71695aed6a98341396073` (gallery replacement target stability); this handover update will be committed immediately after it.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: Open, Draft, unmerged (must remain Draft and unmerged without explicit user approval).
 - Production: untouched; do not merge or deploy.
@@ -110,6 +110,18 @@ Additional commits:
 - `1c6f2609082c2e6f48a96b5ed7015a88370c7479` — style unsaved settings warning.
 
 Together with the prior Services, Team and product safeguards, the current Phase G continuation now protects draft publishing across Services, Team, products, the Visual Editor and settings. This remains a source-level review only; no tests or builds were run.
+
+## Additional Phase G continuation — visual design and gallery-target safeguards (19 November 2026)
+
+Two further edge cases were addressed after reviewing the Visual Design Studio and product gallery picker:
+
+- Page Visual Design Studio now blocks its Publish to Preview handler and disables the publish button whenever the design controls contain unsaved changes. The saved draft remains available for preview only after the edits are saved.
+- Product gallery replacement mode is cancelled when a gallery image is moved or removed. This prevents an index-based replacement target from silently shifting to a different image after the gallery order changes.
+- These are editor-state safeguards only; they do not change stored content or images.
+
+Additional commits:
+- `125d31f68a5595c9e9aa56260602de1b09b5bd19` — guard visual design publishing against unsaved edits.
+- `ff045d8c4b02f1259fa71695aed6a98341396073` — keep gallery replacement target stable during edits.
 
 ## Existing safeguards and limits retained
 
