@@ -729,3 +729,31 @@ No product records, product drafts, published catalogue content, media, database
 - No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were run in this continuation.
 - On resumption: read this handover, verify the current branch and PR head, then continue the remaining source-only CMS workflow review in small batches. Defer all runtime, image, responsive, accessibility, security and final Preview verification to Phase H.
 
+## Additional Phase G continuation — settings refresh sequencing and stale revision protection (19 November 2026)
+
+A source-only review found that CMS Management's settings refresh did not have the same request sequencing used for the product list. Revision restore and draft deletion also fetched settings directly, bypassing the shared refresh path. After a refresh failure, some settings revision actions could still be invoked from stale rows.
+
+Updated `src/pages/CMSManagement.jsx`:
+- Settings-list requests now have a request sequence. Older responses cannot overwrite a newer result.
+- Settings readiness is cleared while the current refresh is pending and remains false after a failed current request; only the latest successful response restores readiness.
+- Settings revision restore and settings draft deletion now use the shared sequenced refresh path rather than direct uncoordinated fetches.
+- Product draft deletion likewise uses the shared sequenced product refresh path.
+- Settings revision restore, settings draft deletion and settings Preview publishing are blocked unless the settings list is current and successfully loaded.
+- Existing successful mutation messages and post-mutation refresh recovery remain intact.
+
+Commits:
+- a051f6c45f61a268f452ffac24a012da258a0d13 — sequence settings refreshes and invalidate stale settings after load failures.
+- 4c664fe6c747697aaf28e790635b844062bda14c — route revision and draft recovery through sequenced CMS list refreshes.
+- db7033b9de56604601edf5b25c71af96160275b2 — guard settings revision and draft actions when settings are stale.
+
+No settings, product drafts, published content, media, database schema, deployment configuration or Production data were changed by these source edits. Source inspection only; no tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (settings list sequencing)
+
+- Working branch: `cms-development`
+- Latest settings workflow source commit: `db7033b9de56604601edf5b25c71af96160275b2`.
+- Settings refresh sequencing is now used by settings revision restore and draft deletion as well as ordinary refreshes; stale settings rows cannot trigger settings publish/restore/delete actions while readiness is false.
+- PR #2 must remain Open, Draft and unmerged. Confirm its head matches the branch before resuming.
+- Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+- Continue small source-only reviews. Keep Phase H for final runtime, image and visual verification.
+
