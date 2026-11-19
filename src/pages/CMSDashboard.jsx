@@ -166,8 +166,8 @@ function SectionPreview({ section, selected, onClick, design }) {
           <span className="cms-preview-brand-grid" style={gridColumns ? { gridTemplateColumns: gridColumns } : undefined}>
             {items.slice(0, 6).map((item, index) => {
               const uploaded = item && typeof item === "object" && !Array.isArray(item);
-              const brandName = uploaded ? (item.name || item.alt || `Brand \${index + 1}`) : String(item).replace(/\.[^.]+$/, "");
-              const imageUrl = uploaded ? item.url : `/brand logo/fitted/\${brandName}.png`;
+              const brandName = uploaded ? (item.name || item.alt || `Brand ${index + 1}`) : String(item).replace(/\.[^.]+$/, "");
+              const imageUrl = uploaded ? item.url : `/brand logo/fitted/${brandName}.png`;
               return <span key={uploaded ? (item.mediaId || item.url || index) : (item || index)}><img src={imageUrl} alt={brandName} /></span>;
             })}
             {items.length === 0 && <span className="cms-preview-empty-item">Add brand logo filenames in the section inspector</span>}
@@ -1542,7 +1542,7 @@ export default function CMSDashboard({ onAdminLogout }) {
                         <>
                           <label>Brand logo
                             <select
-                              value={typeof item === "string" ? (item ? `static:\${item}` : "") : item?.mediaId ? `media:\${item.mediaId}` : ""}
+                              value={typeof item === "string" ? (item ? `static:${item}` : "") : item?.mediaId ? `media:${item.mediaId}` : ""}
                               onChange={(event) => {
                                 const value = event.target.value;
                                 if (value.startsWith("static:")) updateSectionItem(index, "", value.slice(7));
@@ -1559,15 +1559,15 @@ export default function CMSDashboard({ onAdminLogout }) {
                             >
                               <option value="">Choose a logo</option>
                               <optgroup label="Existing website logos">
-                                {typeof item === "string" && item && !BRAND_LOGO_FILES.includes(item) && <option value={`static:\${item}`}>{item} · current custom filename</option>}
-                                {BRAND_LOGO_FILES.map((filename) => <option key={filename} value={`static:\${filename}`}>{filename.replace(/\.png$/i, "").toUpperCase()}</option>)}
+                                {typeof item === "string" && item && !BRAND_LOGO_FILES.includes(item) && <option value={`static:${item}`}>{item} · current custom filename</option>}
+                                {BRAND_LOGO_FILES.map((filename) => <option key={filename} value={`static:${filename}`}>{filename.replace(/\.png$/i, "").toUpperCase()}</option>)}
                               </optgroup>
                               <optgroup label="Uploaded Preview media">
-                                {uploadedMedia.filter((media) => media.mime_type?.startsWith("image/")).map((media) => <option key={media.id} value={`media:\${media.id}`}>{media.original_file_name}</option>)}
+                                {uploadedMedia.filter((media) => media.mime_type?.startsWith("image/")).map((media) => <option key={media.id} value={`media:${media.id}`}>{media.original_file_name}</option>)}
                               </optgroup>
                             </select>
                           </label>
-                          {typeof item === "string" && item && <img className="cms-brand-logo-inspector-preview" src={`/brand logo/fitted/\${item.replace(/\.png$/i, "")}.png`} alt={item.replace(/\.png$/i, "")} />}
+                          {typeof item === "string" && item && <img className="cms-brand-logo-inspector-preview" src={`/brand logo/fitted/${item.replace(/\.png$/i, "")}.png`} alt={item.replace(/\.png$/i, "")} />}
                           {item && typeof item === "object" && item.url && <img className="cms-brand-logo-inspector-preview" src={item.url} alt={item.alt || item.name || "Uploaded brand logo"} />}
 
                             <button type="button" className="admin-secondary-button" disabled={index === 0 || busy} onClick={() => moveSectionItem(index, -1)}>Move up</button>
