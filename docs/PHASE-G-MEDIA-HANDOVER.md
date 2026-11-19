@@ -1120,3 +1120,13 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - This complements the Visual Website Editor busy guards recorded above. No product, setting or media data was changed by this source update.
 - No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
 - Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged; continue Phase G source-only review. Phase H remains deferred.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (CI deferral and Management Centre editor guards)
+
+- Commit `7c890bc344fd58943c2a0f68edb989b13c2c2e74` guards ProductFormEditor JSON updates, product image apply/clear actions, settings JSON edits and media filename/alt-text draft edits while a shared management mutation is pending.
+- Commit `53f70a64293b2230458a2c7ab7a63c12865af510` updates `.github/workflows/cms-build-check.yml`: the install/test/build workflow is now available through `workflow_dispatch` only. Automatic `push` and `pull_request` triggers are paused during Phase G so intermediate commits do not automatically start `npm test` or a build. The workflow steps themselves are preserved for the final Phase H verification.
+- `.github/workflows/cms-preview-migration.yml` was inspected and left unchanged. It is scoped to pushes changing `migrations/0002_create_cms.sql` or manual dispatch; no migration file was changed in this continuation. No migration was run.
+- This trigger change is intentional deferral, not a passed/failed test result. Do not manually dispatch the build workflow until the user authorizes Phase H.
+- No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed by this continuation.
+- Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged; continue Phase G source-only review. Phase H remains deferred.
