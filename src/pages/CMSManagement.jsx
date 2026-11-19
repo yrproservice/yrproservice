@@ -24,7 +24,10 @@ async function api(url, options = {}) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok || data.ok === false) {
-    throw new Error(data.error || `Request failed (${response.status})`);
+    const error = new Error(data.error || `Request failed (${response.status})`);
+    error.status = response.status;
+    error.data = data;
+    throw error;
   }
 
   return data;
@@ -577,6 +580,11 @@ export default function CMSManagement() {
       await refreshMedia();
       setNotice("Media removed.");
     } catch (removeError) {
+      if (removeError.status === 409 && removeError.data?.usage) {
+        setMediaUsageId(id);
+        setMediaUsage(removeError.data.usage);
+        setNotice("Removal blocked. The saved-reference report is open below the media item.");
+      }
       setError(removeError.message);
     }
   }
@@ -1133,6 +1141,7 @@ export default function CMSManagement() {
               </button>
               <button
                 className="admin-secondary-button"
+                disabled={busy}
                 onClick={() => removeMedia(item.id)}
               >
                 Remove
