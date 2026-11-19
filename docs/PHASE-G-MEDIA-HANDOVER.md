@@ -452,3 +452,21 @@ This was a source-level review and targeted edit only. It did not change product
 - No tests, builds, screenshots, visual checks, image processing, deployments or migrations were run. Production and Preview published content were not changed.
 - Resume on cms-development from the latest branch head. Continue source-only Phase G review in small batches; defer all runtime and image verification to Phase H.
 
+## Additional Phase G continuation — destructive draft actions and local edit warnings (19 November 2026)
+
+A source-only review found that deleting a saved Services, Team or page-design draft reloads the editor from saved content. If newer unsaved local edits existed, those edits would also be discarded, but the prior confirmation only described deleting the saved draft. The three editors now include the local unsaved edits in the confirmation message when applicable. No draft was deleted by this code change.
+
+The product revision restore/delete flows also needed stronger coordination with the existing product-selection dirty guard. They now include current unsaved product JSON in the confirmation before the server-side restore/delete request. After confirmation, the refreshed product record is deliberately reloaded without a second prompt (including when it is the same selected product), preventing an already-completed server action from being followed by a stale local editor state or a second cancellation prompt. Product selection outside those confirmed refreshes retains its normal discard prompt.
+
+The media-reference shortcut for settings now completes the CMS tab-leave guard before changing the selected setting key and editor JSON. This avoids partially switching settings behind the currently displayed tab if leaving that tab is cancelled due to another unsaved editor.
+
+Commits:
+- 9d5cce88aff311a62a7d698c87736cff79d0505e — warn before deleting Services draft with unsaved edits.
+- 8011df3617871aebdb88dc6759b4dd29bb9c38f3 — warn before deleting Team draft with unsaved edits.
+- 55ab1d6aa5cb7a77837fd644425669d6809e63ab — warn before deleting design draft with unsaved edits.
+- 9e90189eac6bf6ffab4ccdabdacf1d59d229ce81 — guard product revision actions and order settings reference navigation safely.
+- 0eb53ed27cd9562e89da403095e076239033d932 — avoid a second product discard prompt after confirmed draft deletion.
+- c84cefba523bd073782cdff5d2c5cdc9add75ea0 — reload product after confirmed restore or draft deletion.
+
+Source-level checks confirmed all three conditional delete warnings, pre-request product restore/delete confirmations, deliberate refreshed-product reload after confirmation, and safe settings-reference navigation ordering. No live draft or published record was modified by this work. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
