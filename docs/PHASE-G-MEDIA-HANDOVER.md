@@ -7,7 +7,7 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Latest source checkpoint before this continuation: `b6ac454ecd4bfb0871c1b6247613376ab977cbbe`.
-- Latest Phase G continuation checkpoint recorded below: `95f21b245b177b4917b81be1f7c10471c43c8cad` (product stale-draft publish guard); this handover update will be committed immediately after it.
+- Latest Phase G continuation checkpoint recorded below: `1c6f2609082c2e6f48a96b5ed7015a88370c7479` (settings unsaved-warning styling); this handover update will be committed immediately after it.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: Open, Draft, unmerged (must remain Draft and unmerged without explicit user approval).
 - Production: untouched; do not merge or deploy.
@@ -94,6 +94,22 @@ Commits:
 - `95f21b245b177b4917b81be1f7c10471c43c8cad` — prevent publishing stale product drafts.
 
 Source review only; no runtime tests were performed. The next review should cover the Settings editor's saved-draft baseline and the remaining structured content managers before Phase H.
+
+## Additional Phase G continuation — settings and editor publish safeguards (19 November 2026)
+
+A follow-up source review extended the stale-draft publishing protection to the product and settings managers:
+
+- Product editor now stores the exact JSON snapshot associated with the loaded or most recently saved draft. The Publish to Preview action is disabled and guarded when the current JSON differs from that saved snapshot.
+- Product save and archive-draft save both update the saved snapshot; loading an existing product establishes the baseline.
+- Settings editor now compares parsed JSON values (rather than raw whitespace formatting) against the currently saved draft. If the selected setting has unsaved edits, its Publish to Preview action is disabled and the handler rejects the publish attempt.
+- Added a readable warning style for the settings unsaved-edits message.
+- No setting or product data was changed by these source edits. No database schema, media, Production or deployment configuration was changed.
+
+Additional commits:
+- `75985efe993b4fce153b91e3887368a0aaba0987` — guard settings publishing against unsaved edits.
+- `1c6f2609082c2e6f48a96b5ed7015a88370c7479` — style unsaved settings warning.
+
+Together with the prior Services, Team and product safeguards, the current Phase G continuation now protects draft publishing across Services, Team, products, the Visual Editor and settings. This remains a source-level review only; no tests or builds were run.
 
 ## Existing safeguards and limits retained
 
