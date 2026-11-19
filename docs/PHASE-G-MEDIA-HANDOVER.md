@@ -600,3 +600,23 @@ Commit:
 - `c958f14654d4a39486a3d8022cc80e7cf368ca9b` — separate Visual Design Studio save actions from settings refresh failures.
 
 Source-level assertions confirmed the success/failure messaging and delete-state ordering. No tests, builds, screenshots, image processing, visual checks, deployments or migrations were performed.
+
+## Additional Phase G continuation — CMS mutation success and refresh-failure recovery (19 November 2026)
+
+Source review found several CMS operations where the server mutation could succeed but the subsequent list refresh could fail inside the same try/catch. The UI could then report that the save/publish/restore/delete failed even though the server had already completed it. Some destructive draft operations could also leave stale editor selection active.
+
+Updated `src/pages/CMSManagement.jsx`:
+- Product draft save and archive-draft save now retain their success state and report a separate product-list refresh error if the follow-up refresh fails.
+- Product Preview publish now reports successful publication separately from a failed product-list refresh; the editor selection is cleared before refreshing.
+- Settings draft save and Preview publish similarly distinguish completed server actions from failed settings refreshes. A failed refresh marks settings unavailable so the existing settings save guard prevents further writes until a successful reload.
+- Revision restore now reports when the restore succeeded but its editor/list refresh failed. If the currently selected product cannot be refreshed, that stale product selection is cleared. Failed settings refresh marks settings unavailable.
+- Draft deletion clears the currently selected product editor before refreshing when its own draft was deleted. If a settings draft was deleted from the active settings editor, the local setting value is invalidated and settings saves are blocked until refresh succeeds. A failed post-delete refresh is reported as a completed deletion plus a reload requirement, rather than as a failed deletion.
+- Product deletion refresh continues to select the refreshed product row (or clear the editor if no published/draft record remains), preserving the existing selection behaviour.
+
+Commits:
+- `dabfd1efe9b4486a16e9abb5b1e941ff525674af` — distinguish completed product/settings mutations from refresh failures.
+- `0a98cd36c6d50a6e4779cdbd24ecb6c150dc2996` — protect revision restore and draft deletion from stale editor refresh state.
+- `40bf819af923f2401a5102f715f7a3603aab8a54` — preserve product selection refresh after draft deletion.
+- `8df6ead3f1b34a770985df8ce3df896a1cd29e13` — block stale product/settings editors after revision restore refresh failures.
+
+Source-level review only. No tests, builds, screenshots, image processing, visual checks, deployments, migrations or data changes were performed.
