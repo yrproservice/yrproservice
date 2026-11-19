@@ -107,7 +107,9 @@ test("Mocom M7 M8 and M9 stool records link to the matching manufacturer catalog
   assert.ok(m7.highlights.some((highlight) => /independent seat and backrest height adjustment/i.test(highlight)));
   assert.ok(m8.highlights.some((highlight) => /rotating 360-degree armrest/i.test(highlight)));
   assert.ok(m9.highlights.some((highlight) => /balance system is standard/i.test(highlight)));
-  assert.deepEqual(m7.specifications, []);
-  assert.deepEqual(m8.specifications, []);
-  assert.deepEqual(m9.specifications, []);
+  assert.ok(m7.specifications.includes("Footrest ring: Optional"));
+  assert.ok(m7.specifications.includes("Balance system: Not available"));
+  assert.ok(m8.specifications.includes("Memory Foam padding: Not available"));
+  assert.ok(m9.specifications.includes("Balance system: Standard"));
+  assert.ok(m9.specifications.includes("Memory Foam padding: Optional"));
 });
