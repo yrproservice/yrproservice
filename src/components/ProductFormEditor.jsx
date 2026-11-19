@@ -58,6 +58,12 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
     if (!advancedEditing.current) setAdvancedJson(json);
   }, [json]);
 
+  useEffect(() => {
+    // A JSON edit can reorder or replace gallery entries; never carry an index-based
+    // replacement target over to a potentially different image.
+    setGalleryReplacementIndex(null);
+  }, [json]);
+
   function commit(next) {
     const protectedProduct = protectProduct(next);
     const formatted = JSON.stringify(protectedProduct, null, 2);
@@ -113,7 +119,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
   }
 
   function updateGalleryImage(index, patch) {
-    if (!product || !Array.isArray(product.gallery)) return;
+    if (!product || !Array.isArray(product.gallery) || !Number.isInteger(index) || index < 0 || index >= product.gallery.length) return;
     updateField("gallery", product.gallery.map((image, imageIndex) =>
       imageIndex === index ? { ...image, ...patch } : image
     ));
