@@ -636,8 +636,8 @@ export default function CMSManagement() {
         setError(`Product "${reference.key}" is not in the currently loaded product list. Refresh the CMS before editing it.`);
         return;
       }
-      chooseProduct(row);
       if (!changeManagerTab("products")) return;
+      chooseProduct(row);
       setNotice(`Opened the current editor for ${reference.title || reference.key}. This does not rewrite historical revisions.`);
       return;
     }
