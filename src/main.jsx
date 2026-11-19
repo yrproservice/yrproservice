@@ -54,6 +54,13 @@ const pageTitles = {
 };
 
 function Router() {
+  const {
+    migrationReady,
+    migrationError,
+    retryLegacyChairMigration,
+    cartStorageError,
+    retryCartPersistence,
+  } = useCart();
   const [path, setPath] = useState(window.location.pathname);
   const [cmsPage, setCmsPage] = useState(null);
   const [cmsPageLoading, setCmsPageLoading] = useState(false);
@@ -270,6 +277,18 @@ function Router() {
         <div className="admin-session-utility">
           <span>Admin access active</span>
           <button type="button" onClick={handleAdminLogout}>Log out</button>
+        </div>
+      )}
+      {path !== "/cart" && path !== "/dental-chair-request" && (!migrationReady || migrationError) && (
+        <div className="container bp-chair-note" role="alert">
+          <p>{migrationError || "Saved chair requests are being moved to their separate list. Cart changes are paused until this finishes."}</p>
+          <button type="button" onClick={retryLegacyChairMigration}>Retry safe storage migration</button>
+        </div>
+      )}
+      {path !== "/cart" && path !== "/dental-chair-request" && cartStorageError && (
+        <div className="container bp-chair-note" role="alert">
+          <p>{cartStorageError}</p>
+          <button type="button" onClick={retryCartPersistence}>Retry saving product cart</button>
         </div>
       )}
       <main>
