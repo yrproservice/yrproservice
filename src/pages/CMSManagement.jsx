@@ -61,6 +61,8 @@ function areJsonValuesEqual(left, right) {
 
 export default function CMSManagement() {
   const [tab, setTab] = useState("products");
+  const [servicesHaveUnsavedChanges, setServicesHaveUnsavedChanges] = useState(false);
+  const [teamHaveUnsavedChanges, setTeamHaveUnsavedChanges] = useState(false);
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
   const [json, setJson] = useState("{}");
@@ -1014,6 +1016,16 @@ export default function CMSManagement() {
       hasUnsavedSettingChanges &&
       !window.confirm("Discard the unsaved settings edits and leave the Settings editor?")
     ) return false;
+    if (
+      tab === "services" &&
+      servicesHaveUnsavedChanges &&
+      !window.confirm("Discard the unsaved Services edits and leave the Services editor?")
+    ) return false;
+    if (
+      tab === "team" &&
+      teamHaveUnsavedChanges &&
+      !window.confirm("Discard the unsaved Team edits and leave the Team editor?")
+    ) return false;
     setTab(nextTab);
     return true;
   }
@@ -1425,14 +1437,14 @@ export default function CMSManagement() {
     )}
     {tab === "services" && (
       <section className="cms-manager-panel">
-        <ServicesManager />
+        <ServicesManager onUnsavedChange={setServicesHaveUnsavedChanges} />
         <details className="cms-page-design-accordion">
           <summary>Service details page · Visual Design Studio</summary>
           <PageVisualDesignManager key="service-detail" pageKey="service-detail" />
         </details>
       </section>
     )}
-    {tab==="team"&&<section className="cms-manager-panel"><TeamManager/></section>}
+    {tab==="team"&&<section className="cms-manager-panel"><TeamManager onUnsavedChange={setTeamHaveUnsavedChanges} /></section>}
     {tab === "media" && (
       <section className="cms-manager-panel">
         <div className="cms-manager-heading">
