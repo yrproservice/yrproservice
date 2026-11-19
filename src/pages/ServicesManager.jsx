@@ -16,6 +16,37 @@ function cloneTemplate() {
   return JSON.parse(JSON.stringify(servicesCmsTemplate));
 }
 
+function ServicesMediaPicker({ media, value, onSelect }) {
+  const [search, setSearch] = useState("");
+  const term = search.trim().toLowerCase();
+  const matches = media.filter((item) =>
+    `${item.original_file_name || ""} ${item.alt_text || ""} ${item.mime_type || ""} ${item.object_key || ""}`.toLowerCase().includes(term)
+  );
+
+  return (
+    <div className="cms-team-media">
+      <strong>Hero image</strong>
+      <Field label="Image URL" value={value} onChange={onSelect} hint="Existing website asset paths are supported. You can also select an image from the Preview Media Library below." />
+      <label className="cms-services-field">
+        <span>Search Preview media</span>
+        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Filename, alt text or storage key" />
+      </label>
+      {media.length > 0 ? (
+        matches.length > 0 ? (
+          <div className="cms-team-media-grid">
+            {matches.map((item) => (
+              <button type="button" key={item.id} className={value === item.public_url ? "selected" : ""} aria-pressed={value === item.public_url} onClick={() => onSelect(item.public_url)}>
+                <img src={item.public_url} alt={item.alt_text || item.original_file_name} loading="lazy" />
+                <span>{item.original_file_name}</span>
+              </button>
+            ))}
+          </div>
+        ) : <p className="admin-empty">No Preview media matches this search. Existing website assets remain available by their current paths.</p>
+      ) : <p className="admin-empty">No Preview media uploaded. Existing website assets remain available by their current paths.</p>}
+    </div>
+  );
+}
+
 function Field({ label, value, onChange, multiline = false, rows = 3, hint = "" }) {
   return (
     <label className="cms-services-field">
@@ -430,7 +461,7 @@ export default function ServicesManager() {
           <Field label="Eyebrow" value={data.hero.eyebrow} onChange={(v) => update("hero", "eyebrow", v)} />
           <Field label="Main heading" value={data.hero.title} onChange={(v) => update("hero", "title", v)} />
           <Field label="Lead text" value={data.hero.lead} onChange={(v) => update("hero", "lead", v)} multiline rows={4} />
-          <Field label="Image URL" value={data.hero.imageUrl} onChange={(v) => update("hero", "imageUrl", v)} hint="Uses an existing website asset or a URL from the Preview Media Library." />
+          <ServicesMediaPicker media={media} value={data.hero.imageUrl} onSelect={(v) => update("hero", "imageUrl", v)} />
           <Field label="Image alt text" value={data.hero.imageAlt} onChange={(v) => update("hero", "imageAlt", v)} />
           <label className="cms-services-field">
             <span>Banner layout</span>
