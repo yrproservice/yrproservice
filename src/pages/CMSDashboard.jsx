@@ -829,7 +829,7 @@ export default function CMSDashboard({ onAdminLogout }) {
         JSON.stringify({ pageKey, pageTitle, route, content })
       );
       setNotice(
-        `Draft V${result.version} saved. The public website has not changed.`
+        `Draft V${result.version} saved. The Preview website has not changed.`
       );
       await loadPages();
     } catch (saveError) {
@@ -851,7 +851,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     }
 
     const confirmed = window.confirm(
-      "Publish this page revision to the public website?"
+      "Publish this page revision to the isolated Preview website only? Production will not be changed."
     );
     if (!confirmed) return;
 
@@ -878,7 +878,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       setPublishedVersion(result.version);
       setDraftId("");
       setDraftVersion(null);
-      setNotice(`Page revision V${result.version} published.`);
+      setNotice(`Page revision V${result.version} published to this Preview environment only. Production remains unchanged.`);
       await loadPages();
     } catch (publishError) {
       setError(publishError.message || "Unable to publish this page.");
