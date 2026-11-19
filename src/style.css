@@ -4149,6 +4149,7 @@ h6 {
 .cms-generic-cards p{color:#687280;font-size:14px;line-height:1.6}
 .cms-generic-brands{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
 .cms-generic-brands span{padding:16px 22px;background:#fff;border:1px solid #e1e8ef;border-radius:8px;color:#0b4a88;font-weight:700}
+.cms-generic-brands span img{display:block;max-width:160px;max-height:64px;object-fit:contain}
 @media(max-width:700px){.cms-generic-hero{grid-template-columns:1fr;padding:40px 24px}.cms-generic-section{padding:38px 20px}}
 
 
