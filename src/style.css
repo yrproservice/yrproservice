@@ -4380,6 +4380,10 @@ h6 {
 .cms-home-hex-input { width:100%; min-width:0; min-height:28px; padding:4px 7px; border:1px solid #d6e0e8; border-radius:4px; color:#1f2937; font:12px/1.2 ui-monospace,monospace; }
 .cms-home-section-select { flex:1; min-width:0; width:auto !important; height:auto !important; padding:3px 4px !important; border:0 !important; background:transparent !important; color:#30465a !important; text-align:left; font-size:12px; font-weight:700; }
 .cms-home-order-list li > button[aria-label] { flex:none; }
+.cms-inspector-secondary-action { margin:12px 0; padding:10px 11px; border:1px solid #dce5ec; border-radius:6px; background:#f8fafc; }
+.cms-inspector-secondary-action > strong { display:block; margin-bottom:7px; color:#0b4a88; font-size:12px; }
+.cms-inspector-secondary-action label { display:block; margin-top:8px; color:#30465a; font-size:12px; font-weight:600; }
+.cms-inspector-secondary-action input { display:block; width:100%; min-width:0; margin-top:5px; padding:8px 9px; border:1px solid #d6e0e8; border-radius:5px; background:#fff; color:#1f2937; font:13px/1.4 Inter,sans-serif; }
 .cms-inspector-collection { margin:14px 0; padding:12px; border:1px solid #dce5ec; border-radius:7px; background:#f8fafc; }
 .cms-inspector-collection-heading, .cms-inspector-collection-item-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
 .cms-inspector-collection-heading h3 { margin:0 0 4px; color:#0b4a88; font-size:14px; }
