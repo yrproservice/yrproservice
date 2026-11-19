@@ -63,6 +63,7 @@ export default function CMSManagement() {
   const [tab, setTab] = useState("products");
   const [servicesHaveUnsavedChanges, setServicesHaveUnsavedChanges] = useState(false);
   const [teamHaveUnsavedChanges, setTeamHaveUnsavedChanges] = useState(false);
+  const [visualDesignUnsaved, setVisualDesignUnsaved] = useState({});
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
   const [json, setJson] = useState("{}");
@@ -1023,6 +1024,16 @@ export default function CMSManagement() {
       !window.confirm("Discard the unsaved product edits and leave the Product editor?")
     ) return false;
     if (
+      tab === "products" &&
+      Object.entries(visualDesignUnsaved).some(([key, dirty]) => dirty && ["products", "product-detail"].includes(key)) &&
+      !window.confirm("Discard the unsaved page design edits and leave the Products editor?")
+    ) return false;
+    if (
+      tab === "services" &&
+      visualDesignUnsaved["service-detail"] &&
+      !window.confirm("Discard the unsaved service page design edits and leave the Services editor?")
+    ) return false;
+    if (
       tab === "services" &&
       servicesHaveUnsavedChanges &&
       !window.confirm("Discard the unsaved Services edits and leave the Services editor?")
@@ -1176,11 +1187,11 @@ export default function CMSManagement() {
       <p>Product listing and product detail templates keep separate visual settings.</p>
       <details className="cms-page-design-accordion" open>
         <summary>Products listing · Visual Design Studio</summary>
-        <PageVisualDesignManager key="products" pageKey="products" />
+        <PageVisualDesignManager key="products" pageKey="products" onUnsavedChange={(key, dirty) => setVisualDesignUnsaved((current) => ({ ...current, [key]: dirty }))} />
       </details>
       <details className="cms-page-design-accordion">
         <summary>Product details · Visual Design Studio</summary>
-        <PageVisualDesignManager key="product-detail" pageKey="product-detail" />
+        <PageVisualDesignManager key="product-detail" pageKey="product-detail" onUnsavedChange={(key, dirty) => setVisualDesignUnsaved((current) => ({ ...current, [key]: dirty }))} />
       </details>
     </section>
   </div></section>;
@@ -1446,7 +1457,7 @@ export default function CMSManagement() {
         <ServicesManager onUnsavedChange={setServicesHaveUnsavedChanges} />
         <details className="cms-page-design-accordion">
           <summary>Service details page · Visual Design Studio</summary>
-          <PageVisualDesignManager key="service-detail" pageKey="service-detail" />
+          <PageVisualDesignManager key="service-detail" pageKey="service-detail" onUnsavedChange={(key, dirty) => setVisualDesignUnsaved((current) => ({ ...current, [key]: dirty }))} />
         </details>
       </section>
     )}
