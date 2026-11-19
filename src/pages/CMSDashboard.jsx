@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { homeCmsTemplate } from "../data/homeCmsTemplate";
 import { products as catalogueProducts } from "../data/products";
+import { catalogMedia } from "../data/catalogMedia";
 import { removeSectionFromContent, restoreSectionToContent } from "../utils/sectionRecovery";
 
 const SECTION_TYPES = [
@@ -184,6 +185,10 @@ function SectionPreview({ section, selected, onClick, design }) {
 
 export default function CMSDashboard({ onAdminLogout }) {
   const [pages, setPages] = useState([]);
+  const [uploadedMedia, setUploadedMedia] = useState([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const [mediaSearch, setMediaSearch] = useState("");
   const [pageKey, setPageKey] = useState("");
   const [pageTitle, setPageTitle] = useState("");
   const [route, setRoute] = useState("/");
@@ -218,6 +223,20 @@ export default function CMSDashboard({ onAdminLogout }) {
   const hasUnsavedChanges = Boolean(pageKey) && (hasUnappliedStructuredJson || savedSnapshot !== currentSnapshot);
   const canUndo = historyRef.current.past.length > 0;
   const canRedo = historyRef.current.future.length > 0;
+
+  useEffect(() => {
+    let active = true;
+    setMediaLoading(true);
+    fetch("/api/cms/admin/media", { headers: { Accept: "application/json" }, cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.ok === false) throw new Error(data.error || `Media request failed (${response.status})`);
+        if (active) setUploadedMedia(Array.isArray(data.media) ? data.media : []);
+      })
+      .catch((error) => { if (active) setMediaError(error.message); })
+      .finally(() => { if (active) setMediaLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     const snapshot = JSON.stringify(content);
@@ -1388,6 +1407,33 @@ export default function CMSDashboard({ onAdminLogout }) {
               )}
               <label>Description<textarea rows="5" value={selectedSection.content?.description || ""} onChange={(event) => updateSection("description", event.target.value)} /></label>
               <label>Image URL<input value={selectedSection.content?.imageUrl || ""} onChange={(event) => updateSection("imageUrl", event.target.value)} placeholder="/assets/example.jpg" /></label>
+              <div className="cms-section-media-picker">
+                <div className="cms-section-media-heading"><strong>Choose from media library</strong><span>{uploadedMedia.length} uploaded · {catalogMedia.length} catalogue assets</span></div>
+                <input aria-label="Search media library" value={mediaSearch} onChange={(event) => setMediaSearch(event.target.value)} placeholder="Search filename, brand or category" />
+                {mediaError && <p className="cms-media-picker-error">{mediaError} You can still enter an image path manually.</p>}
+                {mediaLoading && <p className="cms-media-picker-note">Loading uploaded media…</p>}
+                <details className="cms-section-media-group">
+                  <summary>Uploaded Preview media ({uploadedMedia.length})</summary>
+                  {uploadedMedia.length ? <div className="cms-section-media-grid">
+                    {uploadedMedia.filter((item) => `${item.original_file_name} ${item.mime_type}`.toLowerCase().includes(mediaSearch.toLowerCase())).map((item) => (
+                      <button type="button" key={item.id} className={selectedSection.content?.imageUrl === item.public_url ? "is-selected" : ""} onClick={() => updateSection("imageUrl", item.public_url)}>
+                        <img src={item.public_url} alt="" loading="lazy" /><span>{item.original_file_name}</span><small>{item.width && item.height ? `${item.width} × ${item.height} · ` : ""}{Math.round(item.byte_size / 1024)} KB</small>
+                      </button>
+                    ))}
+                  </div> : <p className="cms-media-picker-note">No uploaded Preview images are available.</p>}
+                </details>
+                <details className="cms-section-media-group">
+                  <summary>Original catalogue images ({catalogMedia.length})</summary>
+                  <div className="cms-section-media-grid">
+                    {catalogMedia.filter((item) => `${item.file} ${item.brand} ${item.category} ${item.folder}`.toLowerCase().includes(mediaSearch.toLowerCase())).map((item) => (
+                      <button type="button" key={item.src} className={selectedSection.content?.imageUrl === item.src ? "is-selected" : ""} onClick={() => updateSection("imageUrl", item.src)}>
+                        <img src={item.src} alt="" loading="lazy" /><span>{item.file}</span><small>{item.brand} · {item.category}</small>
+                      </button>
+                    ))}
+                  </div>
+                </details>
+                {selectedSection.content?.imageUrl && <button type="button" className="admin-secondary-button" onClick={() => updateSection("imageUrl", "")}>Clear selected image</button>}
+              </div>
               <label>Image alt text<input value={selectedSection.content?.imageAlt || ""} onChange={(event) => updateSection("imageAlt", event.target.value)} /></label>
               {["editorial", "image-text", "services-banner"].includes(selectedSection.type) && (
                 <>
