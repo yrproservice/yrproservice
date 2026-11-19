@@ -51,6 +51,17 @@ const blankProduct = () => ({
   reviewStatus: "No customer reviews published yet.",
 });
 
+const VISUAL_DESIGN_KEYS_BY_TAB = {
+  products: ["products", "product-detail"],
+  services: ["service-detail"],
+  settings: ["site-chrome"],
+  cart: ["cart"],
+  "dental-chair-request": ["dental-chair-request"],
+  quote: ["quote"],
+  "service-request": ["service-request"],
+  "track-request": ["track-request"],
+};
+
 function areJsonValuesEqual(left, right) {
   try {
     return JSON.stringify(JSON.parse(left)) === JSON.stringify(JSON.parse(right));
@@ -1029,17 +1040,6 @@ export default function CMSManagement() {
   );
 
   const allowUnloadAfterConfirm = useRef(false);
-  const visualDesignKeysByTab = {
-    products: ["products", "product-detail"],
-    services: ["service-detail"],
-    settings: ["site-chrome"],
-    cart: ["cart"],
-    "dental-chair-request": ["dental-chair-request"],
-    quote: ["quote"],
-    "service-request": ["service-request"],
-    "track-request": ["track-request"],
-  };
-
   function confirmCurrentTabLeave() {
     if (
       tab === "settings" &&
@@ -1057,7 +1057,7 @@ export default function CMSManagement() {
       selected.savedJson !== json &&
       !window.confirm("Discard the unsaved product edits and leave the Product editor?")
     ) return false;
-    const activeDesignKeys = visualDesignKeysByTab[tab] || [];
+    const activeDesignKeys = VISUAL_DESIGN_KEYS_BY_TAB[tab] || [];
     if (
       activeDesignKeys.some((key) => visualDesignUnsaved[key]) &&
       !window.confirm("Discard the unsaved page design edits and leave this page workspace?")
