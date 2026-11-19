@@ -204,6 +204,20 @@ export function validateProductContent(value) {
   if (value.img !== undefined && value.img !== "" && !validApprovedProductImage(value.img)) {
     return "Product image must use an approved /catalog/ path or Preview R2 URL.";
   }
+  if (value.gallery !== undefined) {
+    if (!Array.isArray(value.gallery) || value.gallery.length > 24) {
+      return "Product gallery must be an array with no more than 24 images.";
+    }
+    for (let index = 0; index < value.gallery.length; index += 1) {
+      const image = value.gallery[index];
+      if (!isRecord(image) || typeof image.url !== "string" || !validApprovedProductImage(image.url)) {
+        return "Product gallery image " + (index + 1) + " must use an approved /catalog/ path or Preview R2 URL.";
+      }
+      if (image.alt !== undefined && (typeof image.alt !== "string" || image.alt.length > 300)) {
+        return "Product gallery image " + (index + 1) + " has invalid alt text.";
+      }
+    }
+  }
   if (value.manufacturerSource !== undefined && value.manufacturerSource !== "") {
     try {
       if (new URL(value.manufacturerSource).protocol !== "https:") throw new Error();
