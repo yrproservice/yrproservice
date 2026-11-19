@@ -585,3 +585,18 @@ Source-level review only. No tests, builds, screenshots, image processing, visua
 - Work completed in this continuation: removed duplicate Settings-reference discard prompts; prevented Services/Team draft deletion recovery from silently substituting templates when published content cannot be reloaded; blocked Services/Team saves after initial load failures; blocked Visual Design Studio saves if settings failed to load; required successfully loaded settings before saving CMS setting drafts.
 - Source-only review and source assertions were performed. No tests, builds, screenshots, image processing, visual checks or runtime verification were performed.
 - Resume by confirming branch head and PR state, reading this handover, then reviewing remaining unreviewed CMS data-loss paths. Keep changes small and targeted. Phase H remains the only stage for tests/builds/images/visual verification.
+
+## Additional Phase G continuation — Visual Design Studio mutation/refresh separation (19 November 2026)
+
+Source review found that a successful server-side save, publish or draft deletion could be followed by a failed settings-list refresh. The previous combined try/catch could then display a generic operation-failed message even though the server mutation had already succeeded. After deletion, the stale draft identifier could also remain in editor state.
+
+Updated `src/pages/PageVisualDesignManager.jsx`:
+- `loadSettings()` now marks settings as unavailable when its request fails; the existing save guard then blocks further saves until a successful reload.
+- After a successful draft deletion, the local draft ID/version are cleared before attempting the refresh. If refresh fails, the UI reports that deletion succeeded and explicitly requires a reload before further edits.
+- Successful save and Preview publish operations retain their success state if the subsequent settings refresh fails; the error message now distinguishes the completed mutation from the failed refresh.
+- No page design, settings values, published content or database records were changed.
+
+Commit:
+- `c958f14654d4a39486a3d8022cc80e7cf368ca9b` — separate Visual Design Studio save actions from settings refresh failures.
+
+Source-level assertions confirmed the success/failure messaging and delete-state ordering. No tests, builds, screenshots, image processing, visual checks, deployments or migrations were performed.
