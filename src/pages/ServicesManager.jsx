@@ -30,7 +30,7 @@ function Field({ label, value, onChange, multiline = false, rows = 3, hint = "" 
 
 export default function ServicesManager() {
   const [content, setContent] = useState(() => cloneTemplate());
-  const [savedContentJson, setSavedContentJson] = useState("");
+  const [savedContentJson, setSavedContentJson] = useState(() => JSON.stringify(cloneTemplate()));
   const [media, setMedia] = useState([]);
   const [draftId, setDraftId] = useState("");
   const [draftVersion, setDraftVersion] = useState(null);
@@ -43,7 +43,7 @@ export default function ServicesManager() {
   const design = content.design || {};
   const defaultSectionOrder = ["hero", "intro", "listing", "process", "cta"];
   const sectionOrder = content.sectionOrder || defaultSectionOrder;
-  const hasUnsavedChanges = Boolean(draftId) && JSON.stringify(content) !== savedContentJson;
+  const hasUnsavedChanges = JSON.stringify(content) !== savedContentJson;
 
   useEffect(() => {
     let active = true;
@@ -177,6 +177,10 @@ export default function ServicesManager() {
 
   async function publishDraft() {
     if (!draftId) return;
+    if (hasUnsavedChanges) {
+      setError("Save the current edits before publishing. The previously saved draft has not been published.");
+      return;
+    }
     if (!window.confirm("Publish this Services revision to the isolated Preview website? Production will not change.")) return;
     setBusy(true); setError(""); setNotice("");
     try {
