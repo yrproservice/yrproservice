@@ -1025,6 +1025,7 @@ export default function CMSManagement() {
     }
   }
   function applyMediaImage(url) {
+    if (busy) return;
     let product;
     try { product = JSON.parse(json); } catch {
       setError("Fix the product JSON before selecting an image.");
@@ -1036,6 +1037,7 @@ export default function CMSManagement() {
     setNotice("Image selected. Save the product draft to keep this change.");
   }
   function clearProductImage() {
+    if (busy) return;
     let product;
     try { product = JSON.parse(json); } catch {
       setError("Fix the product JSON before clearing its image.");
@@ -1417,7 +1419,7 @@ export default function CMSManagement() {
       <section className="cms-manager-panel">
         <h2>{selected?.slug?"Edit product":"Product editor"}</h2>
         <p>Structured fields edit only the chosen values. Specifications, documents, image paths, and unexposed product metadata are preserved when saving. {selected?.draftId ? `You are editing draft V${selected.version}; published content remains unchanged until you publish to Preview.` : selected?.slug ? "No saved draft is loaded. The editor starts from the published product; save your changes as a new draft before publishing to Preview." : "New product content remains a draft until you explicitly publish it to Preview."}</p>
-        <ProductFormEditor key={editorSelection} json={json} onJsonChange={setJson} slugLocked={Boolean(selected&&!selected.isNew)} media={media} onInspectMedia={(item) => { if (changeManagerTab("media")) inspectMediaUsage(item, true); }}/>
+        <ProductFormEditor key={editorSelection} json={json} onJsonChange={(value) => { if (!busy) setJson(value); }} slugLocked={Boolean(selected&&!selected.isNew)} media={media} onInspectMedia={(item) => { if (changeManagerTab("media")) inspectMediaUsage(item, true); }}/>
         <div className="cms-manager-actions">
           <button className="admin-primary-button" disabled={busy||!productsReady||!selected} onClick={saveProduct}>Save product draft</button>
           <button className="admin-secondary-button" disabled={busy||!productsReady||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button>
@@ -1651,7 +1653,7 @@ export default function CMSManagement() {
               className="cms-json-editor"
               spellCheck="false"
               value={json}
-              onChange={(event) => setJson(event.target.value)}
+              onChange={(event) => { if (!busy) setJson(event.target.value); }}
               rows={28}
             />
             <div className="cms-manager-actions">
@@ -1966,7 +1968,7 @@ export default function CMSManagement() {
                   <input
                     maxLength={255}
                     value={mediaFilenameDrafts[item.id] ?? item.original_file_name ?? ""}
-                    onChange={(event) => setMediaFilenameDrafts((current) => ({ ...current, [item.id]: event.target.value }))}
+                    onChange={(event) => { if (!busy) setMediaFilenameDrafts((current) => ({ ...current, [item.id]: event.target.value })); }}
                     placeholder="Enter the correct filename"
                   />
                 </label>
@@ -1974,7 +1976,7 @@ export default function CMSManagement() {
                   <input
                     maxLength={300}
                     value={mediaAltDrafts[item.id] ?? item.alt_text ?? ""}
-                    onChange={(event) => setMediaAltDrafts((current) => ({ ...current, [item.id]: event.target.value }))}
+                    onChange={(event) => { if (!busy) setMediaAltDrafts((current) => ({ ...current, [item.id]: event.target.value })); }}
                     placeholder="Describe the image for accessibility"
                   />
                 </label>
@@ -2146,7 +2148,7 @@ export default function CMSManagement() {
               className="cms-json-editor"
               rows={18}
               value={settingJson}
-              onChange={(event) => setSettingJson(event.target.value)}
+              onChange={(event) => { if (!busy) setSettingJson(event.target.value); }}
             />
             {hasUnsavedSettingChanges && (
               <p className="admin-alert admin-alert-warning" role="status">
