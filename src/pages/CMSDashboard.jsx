@@ -78,8 +78,16 @@ function SectionPreview({ section, selected, onClick, design }) {
     ? <span className="cms-preview-eyebrow">{content.eyebrow}</span>
     : null;
   const renderImage = (className = "") => content.imageUrl
-    ? <img className={className} src={content.imageUrl} alt={content.imageAlt || ""} />
+    ? <img className={className} src={content.imageUrl} alt={content.imageAlt || ""} style={previewImageStyle} />
     : <span className="cms-preview-image-placeholder">Image not selected</span>;
+  const previewImageStyle = {
+    objectPosition: content.imagePosition || "center",
+    height: content.imageFit === "original" ? "auto" : content.imageHeight ? `${content.imageHeight}px` : undefined,
+    objectFit: content.imageFit === "contain" ? "contain" : content.imageFit === "original" ? "initial" : "cover"
+  };
+  const gridColumns = sectionDesign.cardColumns && sectionDesign.cardColumns !== "auto"
+    ? `repeat(${sectionDesign.cardColumns}, minmax(0, 1fr))`
+    : undefined;
   const previewStyle = {
     backgroundColor: sectionDesign.backgroundColor || "#ffffff",
     color: sectionDesign.textColor || "#1f2937",
@@ -127,7 +135,7 @@ function SectionPreview({ section, selected, onClick, design }) {
       ) : section.type === "product-grid" ? (
         <span className="cms-preview-content-grid">
           {renderEyebrow()}<strong>{content.heading || "Featured Products"}</strong><span>{content.description}</span>
-          <span className="cms-preview-product-grid">
+          <span className="cms-preview-product-grid" style={gridColumns ? { gridTemplateColumns: gridColumns } : undefined}>
             {selectedProducts.slice(0, 3).map((product) => (
               <span className="cms-preview-product-card" key={product.slug}>
                 <span>{product.img ? <img src={product.img} alt="" /> : "Product image"}</span>
@@ -139,7 +147,7 @@ function SectionPreview({ section, selected, onClick, design }) {
       ) : ["feature-grid", "benefits-grid"].includes(section.type) ? (
         <span className="cms-preview-content-grid">
           {renderEyebrow()}<strong>{content.heading || (section.type === "benefits-grid" ? "Why choose us" : "What We Provide")}</strong><span>{content.description || "Section introduction"}</span>
-          <span className="cms-preview-feature-grid">
+          <span className="cms-preview-feature-grid" style={gridColumns ? { gridTemplateColumns: gridColumns } : undefined}>
             {items.slice(0, 4).map((item, index) => (
               <span key={item.id || item.number || item.heading || index}>
                 <small>{item.number || String(index + 1).padStart(2, "0")}</small><b>{item.heading || item.title || "Card heading"}</b><span>{item.description || "Card description"}</span>
@@ -151,7 +159,7 @@ function SectionPreview({ section, selected, onClick, design }) {
       ) : section.type === "brand-grid" ? (
         <span className="cms-preview-content-grid">
           {renderEyebrow()}<strong>{content.heading || "Trusted Brands We Carry"}</strong><span>{content.description || "Brand partners"}</span>
-          <span className="cms-preview-brand-grid">
+          <span className="cms-preview-brand-grid" style={gridColumns ? { gridTemplateColumns: gridColumns } : undefined}>
             {items.slice(0, 6).map((file, index) => {
               const brandName = String(file).replace(/\.[^.]+$/, "");
               return <span key={file || index}><img src={`/brand logo/fitted/${brandName}.png`} alt={brandName} /></span>;
