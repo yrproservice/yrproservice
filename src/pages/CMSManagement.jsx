@@ -227,6 +227,7 @@ export default function CMSManagement() {
     };
   }, [tab]);
   function chooseProduct(row, confirmedDiscard = false) {
+    if (busy && !confirmedDiscard) return;
     if (!productsReady && !confirmedDiscard) {
       setError("Load the current product list successfully before opening or creating a product.");
       return;
@@ -271,6 +272,7 @@ export default function CMSManagement() {
     setEditorSelection((value) => value + 1);
   }
   async function saveProduct() {
+    if (busy) return;
     if (!productsReady) {
       setError("Load the current product list successfully before saving. Reload the CMS and try again.");
       return;
@@ -327,6 +329,7 @@ export default function CMSManagement() {
     }
   }
   async function archiveProduct() {
+    if (busy) return;
     if (!productsReady) {
       setError("Load the current product list successfully before archiving a product.");
       return;
@@ -387,6 +390,7 @@ export default function CMSManagement() {
     }
   }
   async function publishProduct() {
+    if (busy) return;
     if (!productsReady) {
       setError("Load the current product list successfully before publishing a product.");
       return;
@@ -431,6 +435,7 @@ export default function CMSManagement() {
     }
   }
   async function importCatalogue() {
+    if (busy) return;
     if (!productsReady) {
       setError("Load the current product list successfully before importing catalogue products.");
       return;
