@@ -41,7 +41,7 @@ The previous attempt using `CLOUDFLARE_API_TOKEN` failed at the database identit
 
 ## Build checks and deployment distinction
 
-The `CMS Preview Build Check` workflow runs `npm ci` and `npm run build` on pushes to `cms-development`. A successful build confirms the source compiles; it does not by itself prove that Cloudflare Pages has deployed the commit or that the Preview D1 migration has completed.
+The `CMS Preview Build Check` workflow is currently manual-dispatch-only during Phase G. It retains `npm ci`, `npm test`, and `npm run build` for the final Phase H verification and does not automatically run for intermediate commits. A successful build confirms the source compiles; it does not by itself prove that Cloudflare Pages has deployed the commit or that the Preview D1 migration has completed.
 
 Verify these separately:
 - GitHub Actions build check: successful for the latest commit.
