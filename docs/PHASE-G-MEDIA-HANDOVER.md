@@ -1434,3 +1434,20 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 
 ### Resume point
 - Continue bounded source-only Phase G review on `cms-development`. Recheck live branch HEAD and PR #2 before further edits. Keep PR #2 Open/Draft/unmerged and Production untouched. Keep tests, builds, PDFs, screenshots and image processing deferred to the final Phase H stage, pending explicit authorization.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (request and media workflow review)
+
+### Source-only review completed
+- Re-reviewed the quotation and dental-chair forms against `functions/api/requests.js`. The quotation page now permits a product selection or freeform requirements message, matching the server-side rule committed in `74c8a19691688e6b816bc7b802cbd3a46308443b`. Dental-chair requests still require a non-empty chair selection and use their dedicated chair store; the normal quotation page reads only the normal product cart, so the dedicated chair page remains the authoritative submission path for chair requests.
+- Re-reviewed the service form, request tracking page/API, administrator request list/status API, and HR Contact page. The public tracking response remains limited to reference, request type, status and creation time after reference+email matching. Admin request list/status routes remain protected by the shared Access authentication helper, filter values are allowlisted, SQL values are bound, and request status remains restricted to the supported state set.
+- Re-reviewed CMS media upload, metadata, archive/restore, usage lookup, orphan reconciliation and corresponding CMS management handlers. Upload remains Preview-R2-only, capped at 12 MB, filename-validated before reading bytes, MIME-signature checked, and cleaned up if metadata persistence fails. Archive is soft-delete and retains the R2 object; restore checks object existence; archive is blocked when saved page/product/settings versions contain the exact public URL. Usage/orphan/history requests use request IDs to ignore stale responses; metadata, upload, archive and restore mutations are guarded by the shared busy state.
+- Reviewed the shared product image resolver and server content validator. Product images remain restricted to approved local `/catalog/` paths or HTTPS R2-hosted URLs; CMS page image fields permit HTTPS or internal site paths. No image was loaded or processed.
+- The reviewed source did not justify another code change in these areas. Previously documented operational considerations remain: rate-limit check/insert is not atomic under concurrent submissions; request status changes have no dedicated audit trail; media usage counts are capped at 50 records per content group and should be interpreted with the truncation flag; the active media list is limited to 300 records.
+
+### Verification status and Phase H follow-up
+- This review was limited to source inspection and re-fetching. No tests/builds, form submissions, browser/API requests, authenticated Preview access, D1 queries, migrations, R2 reads/writes, screenshots, PDFs, image loading or image processing were performed.
+- Phase H should verify normal-cart versus chair-request separation end-to-end; product-only and message-only quotations; chair submission and empty-chair rejection; service submission and service allowlist; request tracking privacy/rate limits; administrator status updates and the known lack of a dedicated status audit trail; media upload rejection/cleanup, metadata edits, referenced-media archive blocking, restore, orphan pagination, usage truncation messaging, and behaviour beyond the 300-item media list limit.
+
+### Resume point
+- Continue bounded source-only Phase G review on `cms-development`. Recheck branch HEAD, PR #2 and compare counts before any further edits. Keep PR #2 Open/Draft/unmerged and Production untouched. Keep tests, builds, generated PDFs, screenshots and all image work deferred to the final Phase H stage, pending explicit authorization.
