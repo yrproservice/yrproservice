@@ -75,6 +75,36 @@ export async function onRequestPost(context) {
     return adminJson({ error: "Unable to store this image in Preview media storage." }, 500);
   }
 }
+export async function onRequestPatch(context) {
+  const auth = await requireAdmin(context);
+  if (!auth.ok) return auth.response;
+  const { env, request } = context;
+  if (!env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return adminJson({ error: "Media ID is required." }, 400);
+  let body;
+  try { body = await request.json(); } catch { return adminJson({ error: "Send valid JSON." }, 400); }
+  if (typeof body.altText !== "string" || body.altText.length > 300) {
+    return adminJson({ error: "Alt text must be a string of 300 characters or fewer." }, 400);
+  }
+  try {
+    const result = await env.DB.prepare(
+      "UPDATE cms_media SET alt_text=? WHERE id=? AND deleted_at IS NULL"
+    ).bind(body.altText.trim(), id).run();
+    if (result?.meta?.changes === 0) {
+      const existing = await env.DB.prepare("SELECT id FROM cms_media WHERE id=? AND deleted_at IS NULL").bind(id).first();
+      if (!existing) return adminJson({ error: "Media item not found." }, 404);
+    }
+    const media = await env.DB.prepare(
+      "SELECT id, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at FROM cms_media WHERE id=? AND deleted_at IS NULL"
+    ).bind(id).first();
+    return adminJson({ ok: true, media });
+  } catch (error) {
+    console.error("CMS media metadata update failed", error);
+    return adminJson({ error: "Unable to update image metadata." }, 500);
+  }
+}
+
 export async function onRequestDelete(context) {
   const auth = await requireAdmin(context);
   if (!auth.ok) return auth.response;
