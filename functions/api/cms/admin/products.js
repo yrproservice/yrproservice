@@ -91,17 +91,20 @@ export async function onRequestPost(context) {
       return adminJson({ ok: true, productId: id, draftId: versionId, version: 1 }, 201);
     }
 
-    const draft = await env.DB.prepare("SELECT id, version_number FROM cms_product_versions WHERE product_id = ? AND state = 'draft' LIMIT 1").bind(row.id).first();
+    const draft = await env.DB.prepare("SELECT id, version_number, created_at, product_json FROM cms_product_versions WHERE product_id = ? AND state = 'draft' LIMIT 1").bind(row.id).first();
     if (draft) {
-      await env.DB.batch([
+      const results = await env.DB.batch([
         env.DB.prepare(
-          "UPDATE cms_product_versions SET product_json = ?, created_by = ?, created_at = ?, change_note = 'Updated product draft' WHERE id = ? AND state = 'draft'"
-        ).bind(json, actor, now, draft.id),
-        env.DB.prepare("UPDATE cms_products SET updated_at = ? WHERE id = ?").bind(now, row.id),
+          "UPDATE cms_product_versions SET product_json = ?, created_by = ?, created_at = ?, change_note = 'Updated product draft' WHERE id = ? AND state = 'draft' AND created_at = ? AND product_json = ?"
+        ).bind(json, actor, now, draft.id, draft.created_at, draft.product_json),
+        env.DB.prepare("UPDATE cms_products SET updated_at = ? WHERE id = ? AND EXISTS (SELECT 1 FROM cms_product_versions WHERE id = ? AND state = 'draft' AND created_at = ? AND product_json = ?)").bind(now, row.id, draft.id, now, json),
         env.DB.prepare(
-          "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'update_draft', 'product', ?, ?)"
-        ).bind(crypto.randomUUID(), actor, row.id, JSON.stringify({ version: draft.version_number }))
+          "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) SELECT ?, ?, 'update_draft', 'product', ?, ? WHERE EXISTS (SELECT 1 FROM cms_product_versions WHERE id = ? AND state = 'draft' AND created_at = ? AND product_json = ?)"
+        ).bind(crypto.randomUUID(), actor, row.id, JSON.stringify({ version: draft.version_number }), draft.id, now, json)
       ]);
+      if (Number(results?.[0]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "This product draft changed in another session. Reload it before saving again." }, 409);
+      }
       return adminJson({ ok: true, productId: row.id, draftId: draft.id, version: draft.version_number });
     }
     const latest = await env.DB.prepare("SELECT COALESCE(MAX(version_number), 0) AS version FROM cms_product_versions WHERE product_id = ?").bind(row.id).first();
