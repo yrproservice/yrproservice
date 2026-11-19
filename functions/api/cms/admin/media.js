@@ -324,7 +324,7 @@ export async function onRequestPatch(context) {
     values.push(body.altText.trim());
   }
   if (Object.prototype.hasOwnProperty.call(body, "originalFileName")) {
-    if (typeof body.originalFileName !== "string" || !body.originalFileName.trim() || body.originalFileName.length > 255 || /[\\/\\u0000-\\u001f\\u007f]/.test(body.originalFileName)) {
+    if (typeof body.originalFileName !== "string" || !body.originalFileName.trim() || body.originalFileName.length > 255 || /[\/\\\x00-\x1f\x7f]/.test(body.originalFileName)) {
       return adminJson({ error: "Original filename must be 1–255 characters and cannot contain path separators or control characters." }, 400);
     }
     updates.push("original_file_name=?");
