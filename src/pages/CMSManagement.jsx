@@ -912,6 +912,18 @@ export default function CMSManagement() {
     try { return JSON.parse(json).img || ""; } catch { return ""; }
   })();
   async function removeMedia(id) {
+    const item = media.find((row) => row.id === id);
+    if (!item) {
+      setError("This media record is no longer in the loaded library. Refresh the Media Library before archiving it.");
+      return;
+    }
+    const hasUnsavedMetadata =
+      (mediaAltDrafts[id] ?? item.alt_text ?? "") !== (item.alt_text ?? "") ||
+      (mediaFilenameDrafts[id] ?? item.original_file_name ?? "") !== (item.original_file_name ?? "");
+    if (hasUnsavedMetadata) {
+      setError("Save or revert this image's unsaved filename and alt-text edits before archiving it. The archive action has not been started.");
+      return;
+    }
     const confirmed = window.confirm(
       "Move this image to Archived media? Its Preview storage object will be retained so it can be restored. Referenced content and revision history will still block this action."
     );
