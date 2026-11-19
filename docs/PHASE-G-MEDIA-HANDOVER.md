@@ -386,3 +386,16 @@ Commit:
 
 Source inspection and targeted source edit only. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed. Runtime behaviour remains deferred to Phase H.
 
+## Additional Phase G continuation — media metadata draft navigation protection (19 November 2026)
+
+A further review of the Media Library found that filename and alt-text inputs keep local unsaved drafts until the administrator selects “Save descriptive metadata”. Switching to another CMS tab could unmount the Media Library and discard those edits without warning.
+
+The CMS parent now derives a dirty-state flag from the currently loaded active media records and their filename/alt-text draft maps. Leaving the Media Library prompts before discarding any changed filename or alt-text value. Values that match the saved metadata do not trigger the prompt, and archived records remain outside this editing guard.
+
+This protects only unsaved client-side metadata drafts. It does not write media metadata, alter media URLs or storage keys, add audit events, change API contracts or database schema, modify Preview published content, Production or deployment configuration.
+
+Commit:
+- 975caec5b59e489a65cb401d08bf81db68f3ebea — protect unsaved media metadata edits during CMS navigation.
+
+Source inspection and targeted source edit only. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed. Runtime behaviour remains deferred to Phase H.
+
