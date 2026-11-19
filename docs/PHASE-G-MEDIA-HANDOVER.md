@@ -1555,3 +1555,13 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - No tests, builds, test-file inspection, browser/API requests, Preview operations, images, screenshots or PDFs were performed.
 
 - Latest review note commit: `a8756e6c262e183cd01e2fddcb17c9bc0088879b`.
+
+
+## Main Visual CMS dashboard bounded workflow review — 19 November 2026
+
+- Re-read the 1,796-line `src/pages/CMSDashboard.jsx` in bounded ranges, focusing on saved-snapshot restoration, page loading, save/publish, section media-reference inspection, structured section updates, recovery-bin remove/restore/discard and section reordering.
+- Confirmed save/publish handlers check busy/readiness state, validate unique section IDs, block publishing while unsaved edits exist, require Preview confirmation, and report Preview-only outcomes. Media-usage inspection uses a request-generation guard so stale responses do not replace the current selection.
+- Section recovery is guarded against wrong-page restores and duplicate section IDs; permanent discard requires confirmation. No additional confirmed defect warranted a code change in this pass.
+- No tests, builds, test-file inspection, browser/API requests, Preview operations, images, screenshots or PDFs were performed. Recovery and media behaviours remain part of final-stage verification.
+
+- Latest dashboard review note commit: `9606b5140d1007d057fd9a328e0106a28931d5f9`.
