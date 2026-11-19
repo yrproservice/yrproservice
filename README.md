@@ -57,7 +57,7 @@ npm test
 npm run build
 ```
 
-The GitHub Actions workflow `.github/workflows/cms-build-check.yml` runs the locked install, automated Node tests, and Vite build for pushes to `cms-development`. A successful build confirms compilation; it does not replace authenticated browser testing of CMS workflows or verification that Cloudflare Pages Preview deployed the same branch commit.
+The GitHub Actions workflow `.github/workflows/cms-build-check.yml` is currently manual-dispatch-only while Phase G source work is in progress. Its locked install, automated Node tests, and Vite build are preserved for the final Phase H verification; it does not run automatically for intermediate commits. A successful build confirms compilation; it does not replace authenticated browser testing of CMS workflows or verification that Cloudflare Pages Preview deployed the same branch commit.
 
 The migration workflow `.github/workflows/cms-preview-migration.yml` targets only `yr-proservice-test-db`. Review migration contents and workflow output before treating a schema change as complete.
 
