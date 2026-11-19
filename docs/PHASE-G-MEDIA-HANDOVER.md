@@ -1042,3 +1042,12 @@ Resume by refreshing branch/PR state, then continue the bounded Phase G source-o
 - This aligns the small metadata action endpoint with the bounded JSON request handling already applied to settings. It does not alter upload handling, media records, R2 objects or restore/archive state.
 - Source review only. No tests, builds, API requests, image processing, screenshots, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
 - Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged and continue Phase G source-only review in small batches; Phase H remains deferred.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (revision action request bounds)
+
+- Commit `11c02f5a14317f7d8d8a326cd9e8b74e6bf1b302` updates `functions/api/cms/admin/draft.js`: draft deletion now requires JSON content type, caps the raw request at 4,096 characters, and rejects malformed/non-object payloads before reading identifiers.
+- Commit `2bb67323a3ac348d9235eb8f395276320387818b` updates `functions/api/cms/admin/history.js`: revision restore now applies the same JSON content-type, 4,096-character request bound and object-shape validation.
+- These are request-boundary safeguards only. No draft/revision was deleted or restored and no D1 data was changed.
+- No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
+- Recheck branch HEAD and PR #2 before resuming. Keep PR #2 Open/Draft/unmerged; continue Phase G source-only review. Phase H remains deferred.
