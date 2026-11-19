@@ -9,7 +9,7 @@ async function getMediaUsage(db, media) {
   const [pages, products, settings, pageCount, productCount, settingCount] = await Promise.all([
     db.prepare(`
       SELECT p.page_key AS key, COALESCE(v.title, p.title) AS title,
-        v.version_number AS version, v.state, v.created_at
+        v.content_json, v.version_number AS version, v.state, v.created_at
       FROM cms_page_versions v
       JOIN cms_pages p ON p.id = v.page_id
       WHERE instr(v.content_json, ?) > 0
@@ -55,8 +55,28 @@ async function getMediaUsage(db, media) {
     visit(product);
     return { ...row, product_json: undefined, references };
   });
+  const pagesWithImageLocations = (pages.results || []).map((row) => {
+    let page = null;
+    try { page = JSON.parse(row.content_json || "{}"); } catch {}
+    const references = [];
+    const visit = (value, path = "$") => {
+      if (typeof value === "string") {
+        if (value === media.public_url) references.push(path);
+        return;
+      }
+      if (Array.isArray(value)) {
+        value.forEach((entry, index) => visit(entry, path + "[" + index + "]"));
+        return;
+      }
+      if (value && typeof value === "object") {
+        Object.entries(value).forEach(([key, entry]) => visit(entry, path + "." + key));
+      }
+    };
+    visit(page);
+    return { ...row, content_json: undefined, references };
+  });
   const groups = {
-    pages: pages.results || [],
+    pages: pagesWithImageLocations,
     products: productsWithImageLocations,
     settings: settings.results || [],
   };
