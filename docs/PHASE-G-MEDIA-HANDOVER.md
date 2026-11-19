@@ -1004,3 +1004,22 @@ Additional source-only safeguards:
 These changes complement the save/delete/publish handler guards recorded in the previous checkpoint. They only protect editor state during in-flight mutations; no content, drafts, settings, media or published records were changed.
 
 Resume by refreshing branch/PR state, then continue the bounded Phase G source-only review. Phase H remains deferred until the final stage and explicit user direction.
+
+## Recovery checkpoint refresh — 19 November 2026 (settings API request validation)
+
+- Source-only review continued from the verified branch checkpoint `5b7e7c1682eb2a809778c4b857001b6b2bc39300`.
+- Commit `53d6f38e152d2707e895d9a137ee8ac4c85bc0f1` updates `functions/api/cms/admin/settings.js`:
+  - Requires an application/json content type for settings writes.
+  - Reads and caps the raw request body at 60,000 characters before parsing.
+  - Rejects malformed JSON, null/primitives and array payloads.
+  - Bounds the optional change note to 240 characters and falls back to the existing default note when absent/blank.
+  - Retains the existing setting-key/value validation and 50,000-character serialized setting-value cap.
+- Source assertions checked that each guard is present. No request was sent to the API and no settings were changed.
+- No tests, builds, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
+
+### Additional source review notes
+
+- Reviewed the current CMS draft deletion, publish, revision history/restore, page draft, product draft, settings, product preview, CMS content/settings/route validators and admin authentication source.
+- The history UI intentionally exposes restore for non-draft revisions; the restore API creates a new draft and preserves the currently published pointer. No change was made to that workflow.
+- Product/page publish paths validate the selected saved draft before the D1 batch. No change was made to publish behavior in this pass.
+- Continue review in small source-only batches. Recheck the live branch/PR before each continuation. This does not declare Phase G complete.
