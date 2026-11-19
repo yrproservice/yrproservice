@@ -6,8 +6,8 @@ Updated: 19 November 2026
 
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
-- Prior checkpoint before this continuation: `b6ac454ecd4bfb0871c1b6247613376ab977cbbe`.
-- Latest functional source checkpoint: `66f91a6f9ebb7ad85e183b92933c4044b2310580` (homepage Preview publishing clarity). The branch tip may be newer because the recovery document is updated in separate commits.
+- Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
+- Latest functional source checkpoint: `a06b2bbb5cdd94b76bb1a6f08867531924a356dd` (page media usage request sequencing). The branch tip may be newer because the recovery document is updated in separate commits.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: Open, Draft, unmerged (must remain Draft and unmerged without explicit user approval).
 - Production: untouched; do not merge or deploy.
@@ -136,6 +136,25 @@ Commit:
 - `66f91a6f9ebb7ad85e183b92933c4044b2310580` — label homepage publish action as Preview-only.
 
 The homepage Visual Editor already had a handler-level unsaved-change guard and disabled the publish action for unsaved/invalid edits; this review confirmed and retained that protection. Source-level review only; no tests, builds, screenshots or image processing were performed.
+
+## Additional Phase G continuation — page image-reference inspection and media search (19 November 2026)
+
+A focused source review of the homepage Visual Website Editor found that its image-reference inspection request did not have request sequencing. If an administrator opened the reference report for one image and then changed the selected section or image before the first request returned, the older response could populate the report for the newer selection. This is now guarded:
+
+- Each image-usage inspection gets a monotonically increasing request ID.
+- Only the latest request may populate the usage report, surface its error, or clear its loading state.
+- Changing the selected section invalidates any pending usage request and clears the previous report.
+- Changing or clearing the selected image invalidates any pending request and clears stale report/loading state.
+- Closing an open usage report also invalidates its request.
+- Uploaded Preview media search now includes original filename, alt text, MIME type and R2 object key. The input hint matches the fields searched.
+- A no-match message is shown when the uploaded media list is non-empty but the current search has no matches.
+- Catalogue media search remains filename/brand/category/folder based.
+
+Commits:
+- `09becaeeac61f19c232739f9e9904b42998ba114` — protect page media usage inspection from stale responses and improve media search.
+- `a06b2bbb5cdd94b76bb1a6f08867531924a356dd` — invalidate page media usage when the selected section changes.
+
+Source-level checks confirmed request sequencing, invalidation on section/image changes, expanded search fields and the no-match state. No runtime tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 
 ## Existing safeguards and limits retained
 
