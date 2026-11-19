@@ -1140,3 +1140,14 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Source review of `AdminDashboard.jsx`, `TrackRequest.jsx`, `functions/api/admin/requests.js`, `functions/api/track.js`, `functions/api/admin/session.js`, cart/chair request contexts, product workflow routing and published-product image merge logic was completed. Existing server validation and the fixed 11-model chair routing rule were retained.
 - No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
 - Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged; continue remaining Phase G source-only review. Phase H remains deferred.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (Customer request submission safeguards)
+
+- Commit `d9f5141b323a278c40d1309f4820a5659e433574` updates `src/pages/ServiceRequest.jsx`.
+- The service request submit handler now rejects repeated submissions at handler level while a request is already pending, in addition to the disabled submit button.
+- A service request is now considered successful only when the HTTP response is successful, the JSON response reports `ok: true`, and a non-empty request reference is returned. This aligns the service form with the quotation and dental-chair submission flows and prevents a malformed success response from showing a false confirmation.
+- Source review also covered the Product Cart, Dental Chair Request, Quote, Service Request, Product Details, customer tracking and Admin Request Dashboard. The fixed chair-model routing and separation between standard cart and chair request list were retained. No cart contents or customer requests were changed.
+- The Admin dashboard and customer tracking pending-state protections are recorded in the preceding checkpoint.
+- No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
+- Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged; continue remaining Phase G source-only review. Phase H remains deferred.
