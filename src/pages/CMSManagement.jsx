@@ -64,6 +64,7 @@ export default function CMSManagement() {
   const [media, setMedia] = useState([]);
   const [mediaIncludeArchived, setMediaIncludeArchived] = useState(false);
   const [mediaIntegrityFilter, setMediaIntegrityFilter] = useState("all");
+  const [mediaSearch, setMediaSearch] = useState("");
   const [mediaHistoryId, setMediaHistoryId] = useState("");
   const [mediaHistory, setMediaHistory] = useState([]);
   const [mediaHistoryLoading, setMediaHistoryLoading] = useState(false);
@@ -882,6 +883,13 @@ export default function CMSManagement() {
       setBusy(false);
     }
   }
+  const mediaSearchTerm = mediaSearch.trim().toLocaleLowerCase();
+  const visibleMedia = media.filter((item) => {
+    const matchesIntegrity = mediaIntegrityFilter === "all" || getMediaIntegrityPriority(item) === mediaIntegrityFilter;
+    const searchable = [item.original_file_name, item.alt_text, item.object_key, item.public_url, item.mime_type, item.id]
+      .filter(Boolean).join(" ").toLocaleLowerCase();
+    return matchesIntegrity && (!mediaSearchTerm || searchable.includes(mediaSearchTerm));
+  });
   const settingImageReferences = media.filter((item) => settingJson.includes(item.public_url));
   const historyOptions = historyType==="page"
     ? pages.map(row=>({key:row.page_key,label:`${row.title} · ${row.route}`}))
@@ -1423,6 +1431,21 @@ export default function CMSManagement() {
             <small>This is a read-only, partial report until every batch is scanned. No objects are deleted or modified. Objects outside <code>cms/</code> are not included.</small>
           </section>
         </section>
+        <div className="cms-media-search">
+          <label htmlFor="cms-media-search-input">Find media</label>
+          <div>
+            <input
+              id="cms-media-search-input"
+              type="search"
+              value={mediaSearch}
+              onChange={(event) => setMediaSearch(event.target.value)}
+              placeholder="Search filename, alt text, file type or storage key"
+              autoComplete="off"
+            />
+            {mediaSearch && <button type="button" className="admin-secondary-button" onClick={() => setMediaSearch("")}>Clear search</button>}
+          </div>
+          <small>Showing {visibleMedia.length} of {media.length} loaded record(s). Search is local to the currently loaded library (maximum 300 records).</small>
+        </div>
         <div className="cms-media-integrity-filter">
           <label htmlFor="cms-media-integrity-filter">Prioritise media records</label>
           <select id="cms-media-integrity-filter" value={mediaIntegrityFilter} onChange={(event) => setMediaIntegrityFilter(event.target.value)}>
@@ -1435,7 +1458,7 @@ export default function CMSManagement() {
         </div>
         <h3>{mediaIncludeArchived ? "Preview media · Active and archived" : "Uploaded Preview media"}</h3>
         <div className="cms-media-grid">
-          {media.filter((item) => mediaIntegrityFilter === "all" || getMediaIntegrityPriority(item) === mediaIntegrityFilter).map((item) => (
+          {visibleMedia.map((item) => (
             <article key={item.id}>
               <img src={item.public_url} alt={item.alt_text || item.original_file_name} />
               {item.deleted_at && <strong className="cms-media-archived-label">Archived · {item.deleted_at}</strong>}
@@ -1552,6 +1575,9 @@ export default function CMSManagement() {
             </article>
           ))}
         </div>
+        {visibleMedia.length === 0 && (
+          <p className="admin-empty">{media.length ? "No media records match the current search and integrity filter." : "No Preview media records are loaded yet."}</p>
+        )}
         {!media.length && <p className="admin-empty">No uploaded CMS media yet.</p>}
         <h3>Original catalogue images</h3>
         <p>These static assets are part of the website catalogue and are not removable from this library.</p>
