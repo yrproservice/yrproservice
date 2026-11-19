@@ -112,6 +112,7 @@ export default function CMSManagement() {
   const [storageReady, setStorageReady] = useState(false);
   const [settings, setSettings] = useState([]);
   const [settingsReady, setSettingsReady] = useState(false);
+  const settingsListRequestId = useRef(0);
   const [settingKey, setSettingKey] = useState("site.navigation");
   const [settingJson, setSettingJson] = useState(
     JSON.stringify({
@@ -160,10 +161,20 @@ export default function CMSManagement() {
   }
 
   async function refreshSettings(isActive = () => true) {
-    const data = await api("/api/cms/admin/settings");
-    if (isActive()) {
-      setSettings(data.settings || []);
+    const requestId = ++settingsListRequestId.current;
+    if (isActive()) setSettingsReady(false);
+    try {
+      const data = await api("/api/cms/admin/settings");
+      if (!isActive() || requestId !== settingsListRequestId.current) return null;
+      const rows = data.settings || [];
+      setSettings(rows);
       setSettingsReady(true);
+      return rows;
+    } catch (loadError) {
+      if (isActive() && requestId === settingsListRequestId.current) {
+        setSettingsReady(false);
+      }
+      throw loadError;
     }
   }
 
