@@ -1669,3 +1669,24 @@ The new migration marker is internal metadata stored with a chair-request item. 
 - No images, screenshots or image-processing operations were performed.
 
 The remaining significant verification gate is authenticated Preview CMS runtime testing (save, preview, publish, restore, Admin session, media protections and customer request flows). Static asset matching is not a substitute for those workflows. Keep PR #2 Draft; do not merge or deploy Production without explicit approval.
+
+
+## Build-only Preview continuation checkpoint — 19 November 2026
+
+### Workflow change
+- Commit `9427614eea6594485cc10b19bfacb91ade277f06` removed the non-image automated test step from `.github/workflows/cms-build-check.yml`.
+- The current workflow still installs locked dependencies, builds Vite, compiles Pages Functions, checks Preview D1 schema readiness and deploys/verifies only the `cms-development` Preview branch.
+- The workflow file was re-fetched and confirmed to contain no test command. No successful run/build/deployment is confirmed for this commit in this session; do not claim one.
+
+### Documentation and PR synchronization
+- `docs/CMS-PREVIEW-OPERATIONS.md` updated in commit `19c1dffc1c688fab4bff55f09d613808720ea0f2` to reflect build-only operation and defer tests/screenshots/images.
+- `docs/CMS_RELEASE_READINESS.md` updated in commit `052b1d0c77828e6145676c421673860f76007f7a` with current execution uncertainty and release gates.
+- PR #2 description updated with the current checkpoint. GitHub confirms PR #2 is Open, Draft, unmerged, head `cms-development`, and latest head `052b1d0c77828e6145676c421673860f76007f7a`.
+- Live branch comparison: 963 commits ahead of `main`, 0 behind, 98 changed files. This large delta remains a mandatory full-history/diff review before any merge.
+
+### Current boundaries
+- No tests, screenshots or image processing.
+- No migration SQL changed or rerun. Existing Preview migrations 0002/0003 are not being reapplied without a demonstrated schema need.
+- No Production deployment, migration, binding, secret or data changes.
+- Next operational action: inspect GitHub Actions for the push-triggered `CMS Preview Build Check` run on the latest branch HEAD. If no run was created, use GitHub Actions UI to dispatch the workflow on `cms-development` only after confirming the workflow file shown there matches the build-only version. Do not use the migration workflow.
+- If a run is available, review its job steps/logs for dependency install, Vite build, Pages Functions build, Preview D1 readiness and Preview deployment/asset fingerprint. Record the exact run ID and commit SHA. A build/deploy result is not a test result.
