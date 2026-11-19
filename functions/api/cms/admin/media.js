@@ -6,7 +6,7 @@ function safeName(value) {
 }
 
 async function getMediaUsage(db, media) {
-  const [pages, products, settings] = await Promise.all([
+  const [pages, products, settings, pageCount, productCount, settingCount] = await Promise.all([
     db.prepare(`
       SELECT p.page_key AS key, COALESCE(v.title, p.title) AS title,
         v.version_number AS version, v.state, v.created_at
@@ -31,16 +31,25 @@ async function getMediaUsage(db, media) {
       WHERE instr(v.value_json, ?) > 0
       ORDER BY v.created_at DESC LIMIT 50
     `).bind(media.public_url).all(),
+    db.prepare("SELECT COUNT(*) AS total FROM cms_page_versions WHERE instr(content_json, ?) > 0").bind(media.public_url).first(),
+    db.prepare("SELECT COUNT(*) AS total FROM cms_product_versions WHERE instr(product_json, ?) > 0").bind(media.public_url).first(),
+    db.prepare("SELECT COUNT(*) AS total FROM cms_site_setting_versions WHERE instr(value_json, ?) > 0").bind(media.public_url).first(),
   ]);
   const groups = {
     pages: pages.results || [],
     products: products.results || [],
     settings: settings.results || [],
   };
+  const counts = {
+    pages: Number(pageCount?.total || 0),
+    products: Number(productCount?.total || 0),
+    settings: Number(settingCount?.total || 0),
+  };
   return {
     groups,
-    total: groups.pages.length + groups.products.length + groups.settings.length,
-    truncated: Object.values(groups).some((rows) => rows.length === 50),
+    counts,
+    total: counts.pages + counts.products + counts.settings,
+    truncated: Object.keys(groups).some((key) => counts[key] > groups[key].length),
   };
 }
 
