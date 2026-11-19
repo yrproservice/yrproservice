@@ -189,6 +189,7 @@ function SectionPreview({ section, selected, onClick, design }) {
 
 export default function CMSDashboard({ onAdminLogout }) {
   const [pages, setPages] = useState([]);
+  const [pagesReady, setPagesReady] = useState(false);
   const [uploadedMedia, setUploadedMedia] = useState([]);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [mediaError, setMediaError] = useState("");
@@ -327,6 +328,7 @@ export default function CMSDashboard({ onAdminLogout }) {
 
   async function loadPages(isActive = () => true) {
     setError("");
+    if (isActive()) setPagesReady(false);
 
     try {
       const response = await fetch("/api/cms/admin/pages", {
@@ -341,9 +343,11 @@ export default function CMSDashboard({ onAdminLogout }) {
 
       if (isActive()) {
         setPages(result.pages || []);
+        setPagesReady(true);
       }
     } catch (loadError) {
       if (isActive()) {
+        setPagesReady(false);
         setError(loadError.message || "Unable to load CMS pages.");
       }
     }
@@ -429,6 +433,14 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function loadHomeTemplate() {
+    if (!pagesReady) {
+      setError("Load the current CMS page list successfully before starting a Home template draft. Reload the editor and try again.");
+      return;
+    }
+    if (pages.some((page) => page.page_key === "home")) {
+      setError("A Home page already exists. Open the existing page instead of starting a template over it.");
+      return;
+    }
     if (!confirmDiscardPageEdits("load the Home template")) return;
     const initial = JSON.parse(JSON.stringify(homeCmsTemplate));
     const firstSection = initial.sections[0];
@@ -451,6 +463,10 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function createPage() {
+    if (!pagesReady) {
+      setError("Load the current CMS page list successfully before creating a page. Reload the editor and try again.");
+      return;
+    }
     if (!confirmDiscardPageEdits("start a new page")) return;
     const title = window.prompt("New page title");
     if (!title?.trim()) return;
@@ -842,6 +858,10 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   async function saveDraft() {
+    if (!pagesReady) {
+      setError("Load the current CMS page list successfully before saving. Reload the Visual Website Editor and try again.");
+      return;
+    }
     if (!pageKey || !pageTitle.trim()) {
       setError("Choose a page title first.");
       return;
@@ -904,6 +924,10 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   async function publishDraft() {
+    if (!pagesReady) {
+      setError("Load the current CMS page list successfully before publishing. Reload the Visual Website Editor and try again.");
+      return;
+    }
     if (!draftId || !pageKey) {
       setError("Save a draft before publishing.");
       return;
@@ -982,11 +1006,11 @@ export default function CMSDashboard({ onAdminLogout }) {
             </small>
           </div>
           <div className="cms-toolbar-actions">
-            <button type="button" className="admin-secondary-button" onClick={loadHomeTemplate} disabled={busy || pages.some((page) => page.page_key === "home")}>Load Home template</button>
-            <button type="button" className="admin-secondary-button" onClick={createPage}>New page</button>
+            <button type="button" className="admin-secondary-button" onClick={loadHomeTemplate} disabled={busy || !pagesReady || pages.some((page) => page.page_key === "home")}>Load Home template</button>
+            <button type="button" className="admin-secondary-button" onClick={createPage} disabled={busy || !pagesReady}>New page</button>
             <button type="button" className="admin-secondary-button" onClick={() => applyHistorySnapshot("undo")} disabled={busy || !canUndo} title="Undo the last editor change">Undo</button>
             <button type="button" className="admin-secondary-button" onClick={() => applyHistorySnapshot("redo")} disabled={busy || !canRedo} title="Redo the last undone editor change">Redo</button>
-            <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pageKey}>Save Preview draft</button>
+            <button type="button" className="admin-secondary-button" onClick={saveDraft} disabled={busy || !pagesReady || !pageKey}>Save Preview draft</button>
             <button type="button" className="admin-secondary-button" onClick={restoreSavedDraft} disabled={busy || !savedSnapshot || !hasUnsavedChanges}>Restore last saved draft</button>
             <button
               type="button"
@@ -1003,7 +1027,7 @@ export default function CMSDashboard({ onAdminLogout }) {
               Preview saved draft
             </button>
             {hasUnsavedChanges && <small role="status">Unsaved or invalid edits · correct the JSON and save before previewing</small>}
-            <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !draftId || hasUnsavedChanges}>Publish to Preview</button>
+            <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !pagesReady || !draftId || hasUnsavedChanges}>Publish to Preview</button>
             <div className="cms-admin-session" role="status"><span>Admin access active</span><button type="button" onClick={onAdminLogout}>Log out</button></div>
           </div>
         </div>
