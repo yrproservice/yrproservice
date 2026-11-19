@@ -164,9 +164,11 @@ function SectionPreview({ section, selected, onClick, design }) {
         <span className="cms-preview-content-grid">
           {renderEyebrow()}<strong>{content.heading || "Trusted Brands We Carry"}</strong><span>{content.description || "Brand partners"}</span>
           <span className="cms-preview-brand-grid" style={gridColumns ? { gridTemplateColumns: gridColumns } : undefined}>
-            {items.slice(0, 6).map((file, index) => {
-              const brandName = String(file).replace(/\.[^.]+$/, "");
-              return <span key={file || index}><img src={`/brand logo/fitted/${brandName}.png`} alt={brandName} /></span>;
+            {items.slice(0, 6).map((item, index) => {
+              const uploaded = item && typeof item === "object" && !Array.isArray(item);
+              const brandName = uploaded ? (item.name || item.alt || \`Brand \${index + 1}\`) : String(item).replace(/\.[^.]+$/, "");
+              const imageUrl = uploaded ? item.url : \`/brand logo/fitted/\${brandName}.png\`;
+              return <span key={uploaded ? (item.mediaId || item.url || index) : (item || index)}><img src={imageUrl} alt={brandName} /></span>;
             })}
             {items.length === 0 && <span className="cms-preview-empty-item">Add brand logo filenames in the section inspector</span>}
           </span>
@@ -1538,13 +1540,36 @@ export default function CMSDashboard({ onAdminLogout }) {
                       <div className="cms-inspector-collection-item-heading"><strong>{selectedSection.type === "brand-grid" ? `Brand ${index + 1}` : `Item ${index + 1}`}</strong><button type="button" className="cms-recovery-discard" onClick={() => removeSectionItem(index)} disabled={busy}>Remove</button></div>
                       {selectedSection.type === "brand-grid" ? (
                         <>
-                          <label>Brand logo<select value={typeof item === "string" ? item : ""} onChange={(event) => updateSectionItem(index, "", event.target.value)}>
-                            <option value="">Choose an existing brand logo</option>
-                            {typeof item === "string" && item && !BRAND_LOGO_FILES.includes(item) && <option value={item}>{item} · current custom filename</option>}
-                            {BRAND_LOGO_FILES.map((filename) => <option key={filename} value={filename}>{filename.replace(/\.png$/i, "").toUpperCase()}</option>)}
-                          </select></label>
-                          {typeof item === "string" && item && <img className="cms-brand-logo-inspector-preview" src={`/brand logo/fitted/${item.replace(/\.png$/i, "")}.png`} alt={item.replace(/\.png$/i, "")} />}
-                          <div className="cms-gallery-row-actions">
+                          <label>Brand logo
+                            <select
+                              value={typeof item === "string" ? (item ? \`static:\${item}\` : "") : item?.mediaId ? \`media:\${item.mediaId}\` : ""}
+                              onChange={(event) => {
+                                const value = event.target.value;
+                                if (value.startsWith("static:")) updateSectionItem(index, "", value.slice(7));
+                                else if (value.startsWith("media:")) {
+                                  const media = uploadedMedia.find((entry) => entry.id === value.slice(6));
+                                  if (media) updateSectionItem(index, "", {
+                                    mediaId: media.id,
+                                    url: media.public_url,
+                                    alt: media.alt_text || "",
+                                    name: media.original_file_name.replace(/\.[^.]+$/, "")
+                                  });
+                                } else updateSectionItem(index, "", "");
+                              }}
+                            >
+                              <option value="">Choose a logo</option>
+                              <optgroup label="Existing website logos">
+                                {typeof item === "string" && item && !BRAND_LOGO_FILES.includes(item) && <option value={\`static:\${item}\`}>{item} · current custom filename</option>}
+                                {BRAND_LOGO_FILES.map((filename) => <option key={filename} value={\`static:\${filename}\`}>{filename.replace(/\.png$/i, "").toUpperCase()}</option>)}
+                              </optgroup>
+                              <optgroup label="Uploaded Preview media">
+                                {uploadedMedia.filter((media) => media.mime_type?.startsWith("image/")).map((media) => <option key={media.id} value={\`media:\${media.id}\`}>{media.original_file_name}</option>)}
+                              </optgroup>
+                            </select>
+                          </label>
+                          {typeof item === "string" && item && <img className="cms-brand-logo-inspector-preview" src={\`/brand logo/fitted/\${item.replace(/\.png$/i, "")}.png\`} alt={item.replace(/\.png$/i, "")} />}
+                          {item && typeof item === "object" && item.url && <img className="cms-brand-logo-inspector-preview" src={item.url} alt={item.alt || item.name || "Uploaded brand logo"} />}
+
                             <button type="button" className="admin-secondary-button" disabled={index === 0 || busy} onClick={() => moveSectionItem(index, -1)}>Move up</button>
                             <button type="button" className="admin-secondary-button" disabled={index === (selectedSection.content?.items || []).length - 1 || busy} onClick={() => moveSectionItem(index, 1)}>Move down</button>
                           </div>
