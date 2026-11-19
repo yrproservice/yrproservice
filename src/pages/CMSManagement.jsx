@@ -76,6 +76,7 @@ export default function CMSManagement() {
   const [mediaHistoryId, setMediaHistoryId] = useState("");
   const [mediaHistory, setMediaHistory] = useState([]);
   const [mediaHistoryLoading, setMediaHistoryLoading] = useState(false);
+  const mediaHistoryRequestId = useRef(0);
   const [mediaHistoryFilter, setMediaHistoryFilter] = useState("all");
   const [mediaAltDrafts, setMediaAltDrafts] = useState({});
   const [mediaFilenameDrafts, setMediaFilenameDrafts] = useState({});
@@ -558,22 +559,27 @@ export default function CMSManagement() {
   async function inspectMediaHistory(item) {
     if (!item?.id) return;
     if (mediaHistoryId === item.id) {
+      mediaHistoryRequestId.current += 1;
       setMediaHistoryId("");
       setMediaHistory([]);
+      setMediaHistoryLoading(false);
       return;
     }
+    const requestId = ++mediaHistoryRequestId.current;
     setMediaHistoryId(item.id);
     setMediaHistory([]);
     setMediaHistoryLoading(true);
     try {
       const includeArchived = item.deleted_at ? "&includeDeleted=1" : "";
       const data = await api(`/api/cms/admin/media?id=${encodeURIComponent(item.id)}${includeArchived}&history=1`);
-      setMediaHistory(data.history || []);
+      if (requestId === mediaHistoryRequestId.current) setMediaHistory(data.history || []);
     } catch (historyError) {
-      setError(historyError.message);
-      setMediaHistoryId("");
+      if (requestId === mediaHistoryRequestId.current) {
+        setError(historyError.message);
+        setMediaHistoryId("");
+      }
     } finally {
-      setMediaHistoryLoading(false);
+      if (requestId === mediaHistoryRequestId.current) setMediaHistoryLoading(false);
     }
   }
 
