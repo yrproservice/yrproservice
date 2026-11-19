@@ -1623,3 +1623,33 @@ The first real build exposed several incomplete or malformed source files that h
 3. The known cart local-storage migration failure mode under browser storage quota/security exceptions remains unresolved and needs a coordinated recovery-state implementation.
 4. Direct Wrangler Pages upload requires the optional `CLOUDFLARE_PAGES_API_TOKEN`; the Git-integrated Preview branch has been verified to serve the current build assets.
 5. Keep PR #2 Draft and unmerged. Do not merge or deploy Production without explicit approval.
+
+
+## Cart storage migration recovery fix — 19 November 2026
+
+The earlier failure mode during legacy dental-chair migration is now addressed in source and covered by non-image automated tests.
+
+- Extracted the storage migration into `src/data/cartMigration.js`.
+- The migration writes the dedicated chair-request store first, then rewrites the normal cart. If the destination write fails, the original cart is untouched. If the normal-cart rewrite fails after the destination succeeds, the original cart remains available and a per-item `legacyCartMigratedQuantity` marker prevents duplicate quantity addition on retry.
+- Cart and chair-request providers pause persistence and mutations while migration is pending. They catch browser storage read/write errors instead of allowing an effect exception to crash the app or silently overwrite the source cart.
+- Cart and Dental Chair Request pages now surface migration/storage errors and provide explicit retry actions. Request submission and chair-list mutations remain disabled until the chair migration is safe.
+- Retry paths re-read storage before writing; unreadable storage is not replaced with an empty list.
+
+Commits:
+- `136ba0f4b014d1d7c11169d140656299c17a0f85` — add retry-safe migration helper.
+- `02e50c958a5f922b635a78564c18d9c803b9db05` — gate cart persistence and mutations.
+- `8cbcef0b1dd44d8b6cf5e9befc438dd871669e2c` — coordinate migration with chair-request provider.
+- `89146ad95da62c95d792f85ad8fe584b09a98f8e` — add migration failure/retry tests.
+- `4128cf2a8dc212ffd25da2f07eb649df264340f1`, `bc7b20e41df7d2b50c564cca66d4169243d01a9e` — guard storage retry paths.
+- `b1795aab95cb9344018dacc5f2e43ac46900be67`, `17dcbd048ca2200a84b35cef2c4b856bb10552ef` — show user-facing recovery messages and pause chair request controls.
+- `8c4227abdb8c3500c1cb0e0f38cd8b33a50dbe4a` — correct explicit ESM extension for Node test execution.
+
+Verification:
+- GitHub Actions run #44496229753 succeeded for `8c4227abdb8c3500c1cb0e0f38cd8b33a50dbe4a`.
+- Non-image tests: 66 passed, 0 failed. Image-specific test files remain excluded.
+- Vite build and Cloudflare Pages Functions build passed.
+- Preview D1 schema readiness passed.
+- Git-integrated Preview served the same hashed JS/CSS assets as the build; all four referenced assets returned successful responses.
+- Browser storage quota/security failure behaviour has unit-level coverage through a simulated storage adapter. No actual browser storage was accessed or modified.
+
+The new migration marker is internal metadata stored with a chair-request item. It is not displayed in the public request summary. Revisit only if a future migration changes the storage format or if legacy chair entries can be reintroduced after a successful migration.
