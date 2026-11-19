@@ -7,7 +7,7 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest functional source checkpoint reviewed in this continuation: `c964818bedba334ec4ee6e668bebe63baa5aeab0` (Visual Website Editor unsaved-navigation safeguards). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
+- Latest functional source checkpoint reviewed in this continuation: `6b3b3261aec5886c46854d12a02110b86d435ef3` (Settings tab navigation safeguards). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: verified 19 November 2026 as Open, Draft, and unmerged, targeting `main`. The PR tracks `cms-development`; this handover refresh is committed to that branch. It must remain Draft and unmerged without explicit user approval.
 - Production: untouched; do not merge or deploy.
@@ -284,6 +284,25 @@ These changes only protect editor navigation state. They do not modify API contr
 
 Commit:
 - `c964818bedba334ec4ee6e668bebe63baa5aeab0` — protect unsaved page and section edits during editor navigation.
+
+Source review only. Runtime behaviour remains unverified and is deferred to Phase H.
+
+## Additional Phase G continuation — Settings tab navigation protection (19 November 2026)
+
+A source review found that the Settings editor correctly detected unsaved JSON/key changes and protected its own save, publish, restore and delete actions, but leaving the Settings tab through the CMS tab navigation could unmount the editor without a discard prompt.
+
+Focused navigation protection was added in `src/pages/CMSManagement.jsx`:
+- Centralised CMS tab changes through `changeManagerTab`.
+- When leaving Settings with unsaved changes, the administrator is asked to confirm discarding them.
+- The guard also covers internal shortcuts that navigate from Settings to Products or Media, including product/media reference actions.
+- Product reference navigation now confirms before changing the selected product, so cancelling the tab change does not first replace the product editor selection.
+- Switching tabs when Settings has no unsaved changes remains unchanged.
+
+These changes are client-side editor safeguards only. No settings, product content, media objects, API contracts, database schema, Preview published content, Production or deployment configuration were changed.
+
+Commits:
+- `15e926ef5f03ebea4463d537997ace5dffd2f2b4` — confirm unsaved settings before leaving CMS tab.
+- `6b3b3261aec5886c46854d12a02110b86d435ef3` — confirm settings navigation before changing product selection.
 
 Source review only. Runtime behaviour remains unverified and is deferred to Phase H.
 
