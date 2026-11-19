@@ -30,19 +30,28 @@ function Field({ label, value, onChange, multiline = false, rows = 3, hint = "" 
 }
 
 function MediaPicker({ media, value, onSelect, label }) {
+  const [search, setSearch] = useState("");
+  const term = search.trim().toLowerCase();
+  const matches = media.filter((item) =>
+    `${item.original_file_name || ""} ${item.alt_text || ""} ${item.mime_type || ""} ${item.object_key || ""}`.toLowerCase().includes(term)
+  );
+
   return (
     <div className="cms-team-media">
       <strong>{label}</strong>
       <Field label="Image URL" value={value} onChange={onSelect} hint="Existing website asset paths are supported. You can also select an image from Preview Media Library below." />
+      <Field label="Search Preview media" value={search} onChange={setSearch} hint="Search filename, alt text, MIME type or storage key." />
       {media.length > 0 ? (
-        <div className="cms-team-media-grid">
-          {media.map((item) => (
-            <button type="button" key={item.id} className={value === item.public_url ? "selected" : ""} onClick={() => onSelect(item.public_url)}>
-              <img src={item.public_url} alt={item.alt_text || item.original_file_name} />
-              <span>{item.original_file_name}</span>
-            </button>
-          ))}
-        </div>
+        matches.length > 0 ? (
+          <div className="cms-team-media-grid">
+            {matches.map((item) => (
+              <button type="button" key={item.id} className={value === item.public_url ? "selected" : ""} aria-pressed={value === item.public_url} onClick={() => onSelect(item.public_url)}>
+                <img src={item.public_url} alt={item.alt_text || item.original_file_name} loading="lazy" />
+                <span>{item.original_file_name}</span>
+              </button>
+            ))}
+          </div>
+        ) : <p className="admin-empty">No Preview media matches this search. Existing website assets remain available by their current paths.</p>
       ) : <p className="admin-empty">No Preview media uploaded. Existing website assets remain available by their current paths.</p>}
     </div>
   );
