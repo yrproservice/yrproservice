@@ -95,6 +95,35 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
     if (current) setAdvancedJson(JSON.stringify(protectProduct(current), null, 2));
   }
 
+  function addGalleryImage(url, alt = "") {
+    if (!product || !url) return;
+    const gallery = Array.isArray(product.gallery) ? product.gallery : [];
+    if (gallery.some((image) => image?.url === url)) return;
+    if (gallery.length >= 24) return;
+    updateField("gallery", [...gallery, { url, alt: alt || product.name || "Product image" }]);
+  }
+
+  function updateGalleryImage(index, patch) {
+    if (!product || !Array.isArray(product.gallery)) return;
+    updateField("gallery", product.gallery.map((image, imageIndex) =>
+      imageIndex === index ? { ...image, ...patch } : image
+    ));
+  }
+
+  function moveGalleryImage(index, offset) {
+    if (!product || !Array.isArray(product.gallery)) return;
+    const target = index + offset;
+    if (target < 0 || target >= product.gallery.length) return;
+    const gallery = product.gallery.slice();
+    [gallery[index], gallery[target]] = [gallery[target], gallery[index]];
+    updateField("gallery", gallery);
+  }
+
+  function removeGalleryImage(index) {
+    if (!product || !Array.isArray(product.gallery)) return;
+    updateField("gallery", product.gallery.filter((_, imageIndex) => imageIndex !== index));
+  }
+
   function updateArray(key, value) {
     if (!product) return;
     updateField(key, value);
@@ -159,6 +188,33 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
             ))}
           </section>
         )}
+        <section className="cms-editor-field-wide cms-product-gallery-editor">
+          <div>
+            <h3>Product detail gallery</h3>
+            <p>Gallery images appear as selectable thumbnails on the product detail page. The primary product image remains separate. Images are saved with this product draft only.</p>
+          </div>
+          {(Array.isArray(product?.gallery) ? product.gallery : []).map((image, index) => (
+            <article key={image?.url || index}>
+              <img src={image?.url || ""} alt={image?.alt || product?.name || "Gallery image"} />
+              <div>
+                <label>
+                  Image URL
+                  <input value={image?.url || ""} readOnly aria-readonly="true" />
+                </label>
+                <label>
+                  Alt text
+                  <input value={image?.alt || ""} maxLength={300} onChange={(event) => updateGalleryImage(index, { alt: event.target.value })} />
+                </label>
+                <div className="cms-gallery-row-actions">
+                  <button type="button" className="admin-secondary-button" disabled={index === 0} onClick={() => moveGalleryImage(index, -1)}>Move up</button>
+                  <button type="button" className="admin-secondary-button" disabled={index === product.gallery.length - 1} onClick={() => moveGalleryImage(index, 1)}>Move down</button>
+                  <button type="button" className="admin-secondary-button" onClick={() => removeGalleryImage(index)}>Remove</button>
+                </div>
+              </div>
+            </article>
+          ))}
+          <p>{(product?.gallery || []).length} of 24 gallery images</p>
+        </section>
         <section className="cms-editor-field-wide cms-product-image-library">
           <h3>Choose an existing catalogue image</h3>
           <p>These are the original static website images. Selecting one changes only this product's image path; it does not copy, move, or delete the file.</p>
@@ -175,6 +231,9 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                   onClick={() => selectProductImage(item.src)}
                 >
                   {product?.img === item.src ? "Selected" : "Use this image"}
+                </button>
+                <button type="button" className="admin-secondary-button" disabled={!product || (product?.gallery || []).length >= 24 || (product?.gallery || []).some((image) => image?.url === item.src)} onClick={() => addGalleryImage(item.src, item.file)}>
+                  Add to gallery
                 </button>
               </article>
             ))}
@@ -196,6 +255,9 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                     {product?.img === item.public_url
                       ? "Selected"
                       : "Use this image"}
+                  </button>
+                  <button type="button" className="admin-secondary-button" disabled={!product || (product?.gallery || []).length >= 24 || (product?.gallery || []).some((image) => image?.url === item.public_url)} onClick={() => addGalleryImage(item.public_url, item.alt_text || item.original_file_name)}>
+                    Add to gallery
                   </button>
                 </article>
               ))}
