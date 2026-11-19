@@ -7,9 +7,9 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest branch checkpoint at this handover refresh: `a1d293f5ca13fa8e6c425d2d62425e6f9cbaf631` (homepage media-search wording and recovery-document checkpoint). The latest functional source changes are recorded in the commits below.
+- Latest functional source checkpoint reviewed in this continuation: `a1d293f5ca13fa8e6c425d2d62425e6f9cbaf631` (homepage media-search wording and prior recovery-document checkpoint). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
-- PR status: verified 19 November 2026 as Open, Draft, and unmerged (head `a1d293f5ca13fa8e6c425d2d62425e6f9cbaf631`, base `main`). It must remain Draft and unmerged without explicit user approval.
+- PR status: verified 19 November 2026 as Open, Draft, and unmerged, targeting `main`. The PR tracks `cms-development`; this handover refresh is committed to that branch. It must remain Draft and unmerged without explicit user approval.
 - Production: untouched; do not merge or deploy.
 - Preview-only D1/R2 CMS workflow remains the intended target.
 
