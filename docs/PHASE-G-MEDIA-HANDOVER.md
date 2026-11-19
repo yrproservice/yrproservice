@@ -1023,3 +1023,13 @@ Resume by refreshing branch/PR state, then continue the bounded Phase G source-o
 - The history UI intentionally exposes restore for non-draft revisions; the restore API creates a new draft and preserves the currently published pointer. No change was made to that workflow.
 - Product/page publish paths validate the selected saved draft before the D1 batch. No change was made to publish behavior in this pass.
 - Continue review in small source-only batches. Recheck the live branch/PR before each continuation. This does not declare Phase G complete.
+
+## Recovery checkpoint refresh — 19 November 2026 (upload filename validation)
+
+- Commit `076a76df0feafb04e81ebb070639eb3a9c355ef2` updates `functions/api/cms/admin/media.js`.
+- The Media Library upload handler now validates the original multipart filename before reading/storing the image: non-empty, at most 255 characters, and no slash/backslash path separators or ASCII control characters (including DEL).
+- The validated, trimmed filename is used consistently for the sanitized R2 object key, database metadata and returned media record. Existing metadata-edit filename validation remains in place.
+- Source review confirmed the guard is before image-byte reading and the validated name is used in the upload path. No image was uploaded or processed; no R2 object or database row was changed.
+- This supplements (rather than replaces) commit `005338e0ae620ed20eca2bb05374b6c919efc2ba`, which hardened the separate metadata-edit endpoint.
+- Settings request validation from `53d6f38e152d2707e895d9a137ee8ac4c85bc0f1` remains in place.
+- No tests, builds, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
