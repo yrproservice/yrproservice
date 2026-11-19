@@ -3674,6 +3674,11 @@ h6 {
   color: #17653c;
   border: 1px solid #b5eacb;
 }
+.admin-alert-warning {
+  background: #fff7df;
+  color: #76520b;
+  border: 1px solid #f0d58b;
+}
 .admin-security-note {
   font-size: 11px;
   color: #687280;
