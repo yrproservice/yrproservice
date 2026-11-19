@@ -59,3 +59,11 @@ The main running handover remains `docs/PHASE-G-MEDIA-HANDOVER.md`. This checkpo
 - Performed a bounded structural review of `src/style.css`: 171,443 characters, 5,193 lines, 1,571 parsed rules, 1,382 distinct selector strings, and 172 selector strings repeated. Repetition includes expected media-query/responsive variants as well as later component/layout adjustments. A text-only duplicate count cannot reliably distinguish intentional breakpoints from harmful cascade overrides.
 - No broad CSS consolidation was attempted. That work requires mapping the cascade to the V10 page structure and checking desktop/mobile rendering in Phase H; changing it blindly risks regressions and conflicts with the no-patch-piling requirement.
 - No tests, builds, test-file inspection, browser/API requests, Preview operations, images, screenshots or PDFs were performed.
+
+
+## Main Visual CMS dashboard bounded workflow review — 19 November 2026
+
+- Re-read the 1,796-line `src/pages/CMSDashboard.jsx` in bounded ranges, focusing on saved-snapshot restoration, page loading, save/publish, section media-reference inspection, structured section updates, recovery-bin remove/restore/discard and section reordering.
+- Confirmed save/publish handlers check busy/readiness state, validate unique section IDs, block publishing while unsaved edits exist, require Preview confirmation, and report Preview-only outcomes. Media-usage inspection uses a request-generation guard so stale responses do not replace the current selection.
+- Section recovery is guarded against wrong-page restores and duplicate section IDs; permanent discard requires confirmation. No additional confirmed defect warranted a code change in this pass.
+- No tests, builds, test-file inspection, browser/API requests, Preview operations, images, screenshots or PDFs were performed. Recovery and media behaviours remain part of final-stage verification.
