@@ -1419,7 +1419,7 @@ export default function CMSManagement() {
       <section className="cms-manager-panel">
         <h2>{selected?.slug?"Edit product":"Product editor"}</h2>
         <p>Structured fields edit only the chosen values. Specifications, documents, image paths, and unexposed product metadata are preserved when saving. {selected?.draftId ? `You are editing draft V${selected.version}; published content remains unchanged until you publish to Preview.` : selected?.slug ? "No saved draft is loaded. The editor starts from the published product; save your changes as a new draft before publishing to Preview." : "New product content remains a draft until you explicitly publish it to Preview."}</p>
-        <ProductFormEditor key={editorSelection} json={json} onJsonChange={(value) => { if (!busy) setJson(value); }} slugLocked={Boolean(selected&&!selected.isNew)} media={media} onInspectMedia={(item) => { if (changeManagerTab("media")) inspectMediaUsage(item, true); }}/>
+        <ProductFormEditor key={editorSelection} json={json} disabled={busy} onJsonChange={(value) => { if (!busy) setJson(value); }} slugLocked={Boolean(selected&&!selected.isNew)} media={media} onInspectMedia={(item) => { if (changeManagerTab("media")) inspectMediaUsage(item, true); }}/>
         <div className="cms-manager-actions">
           <button className="admin-primary-button" disabled={busy||!productsReady||!selected} onClick={saveProduct}>Save product draft</button>
           <button className="admin-secondary-button" disabled={busy||!productsReady||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button>
