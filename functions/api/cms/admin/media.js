@@ -153,7 +153,7 @@ export async function onRequestGet(context) {
   if (params.get("reconcileOrphans") === "1") {
     if (!context.env.CMS_MEDIA) return adminJson({ error: "Preview R2 storage is unavailable; orphan objects cannot be inspected." }, 503);
     const cursor = params.get("cursor") || undefined;
-    if (cursor && (cursor.length > 2048 || !/^[A-Za-z0-9_=-]+$/.test(cursor))) {
+    if (cursor && (cursor.length > 2048 || /[\u0000-\u001f\u007f]/.test(cursor))) {
       return adminJson({ error: "Invalid R2 listing cursor." }, 400);
     }
     try {
