@@ -400,6 +400,56 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
 
+  function updateSectionItem(index, field, value) {
+    if (!selectedSection) return;
+    const currentItems = Array.isArray(selectedSection.content?.items) ? selectedSection.content.items : [];
+    const nextItems = currentItems.map((item, itemIndex) => {
+      if (itemIndex !== index) return item;
+      if (selectedSection.type === "brand-grid") return value;
+      return { ...(item || {}), [field]: value };
+    });
+    updateSection("items", nextItems);
+  }
+
+  function addSectionItem() {
+    if (!selectedSection) return;
+    const currentItems = Array.isArray(selectedSection.content?.items) ? selectedSection.content.items : [];
+    if (currentItems.length >= 100) return setError("A section can contain no more than 100 items.");
+    const item = selectedSection.type === "brand-grid" ? "" : { id: crypto.randomUUID(), heading: "", description: "" };
+    updateSection("items", [...currentItems, item]);
+  }
+
+  function removeSectionItem(index) {
+    if (!selectedSection) return;
+    const currentItems = Array.isArray(selectedSection.content?.items) ? selectedSection.content.items : [];
+    updateSection("items", currentItems.filter((_, itemIndex) => itemIndex !== index));
+  }
+
+  function toggleFeaturedProduct(slug, checked) {
+    if (!selectedSection) return;
+    const currentSlugs = Array.isArray(selectedSection.content?.productSlugs) ? selectedSection.content.productSlugs : [];
+    updateSection("productSlugs", checked ? [...new Set([...currentSlugs, slug])] : currentSlugs.filter((item) => item !== slug));
+  }
+
+  function updateProofItem(index, value) {
+    if (!selectedSection) return;
+    const currentItems = Array.isArray(selectedSection.content?.proofItems) ? selectedSection.content.proofItems : [];
+    updateSection("proofItems", currentItems.map((item, itemIndex) => itemIndex === index ? value : item));
+  }
+
+  function addProofItem() {
+    if (!selectedSection) return;
+    const currentItems = Array.isArray(selectedSection.content?.proofItems) ? selectedSection.content.proofItems : [];
+    if (currentItems.length >= 30) return setError("A hero section can contain no more than 30 proof items.");
+    updateSection("proofItems", [...currentItems, ""]);
+  }
+
+  function removeProofItem(index) {
+    if (!selectedSection) return;
+    const currentItems = Array.isArray(selectedSection.content?.proofItems) ? selectedSection.content.proofItems : [];
+    updateSection("proofItems", currentItems.filter((_, itemIndex) => itemIndex !== index));
+  }
+
   function removeSectionToRecoveryBin() {
     if (!selectedSection || !pageKey) return;
 
@@ -1299,6 +1349,52 @@ export default function CMSDashboard({ onAdminLogout }) {
               <label>Image alt text<input value={selectedSection.content?.imageAlt || ""} onChange={(event) => updateSection("imageAlt", event.target.value)} /></label>
               <label>Button text<input value={selectedSection.content?.buttonText || ""} onChange={(event) => updateSection("buttonText", event.target.value)} /></label>
               <label>Button destination<input value={selectedSection.content?.buttonUrl || ""} onChange={(event) => updateSection("buttonUrl", event.target.value)} placeholder="/products" /></label>
+              {selectedSection.type === "product-grid" && (
+                <section className="cms-inspector-collection">
+                  <div className="cms-inspector-collection-heading"><div><h3>Featured products</h3><p>Choose which catalogue products appear in this section.</p></div></div>
+                  <div className="cms-inspector-product-options">
+                    {catalogueProducts.map((product) => {
+                      const selectedSlugs = Array.isArray(selectedSection.content?.productSlugs) ? selectedSection.content.productSlugs : [];
+                      return <label key={product.slug}><input type="checkbox" checked={selectedSlugs.includes(product.slug)} onChange={(event) => toggleFeaturedProduct(product.slug, event.target.checked)} /><span>{product.name}</span><small>{product.brand || product.slug}</small></label>;
+                    })}
+                  </div>
+                </section>
+              )}
+              {["feature-grid", "benefits-grid", "brand-grid"].includes(selectedSection.type) && (
+                <section className="cms-inspector-collection">
+                  <div className="cms-inspector-collection-heading">
+                    <div><h3>{selectedSection.type === "brand-grid" ? "Brand items" : selectedSection.type === "benefits-grid" ? "Benefits" : "Feature cards"}</h3><p>{selectedSection.type === "brand-grid" ? "Manage the logo filenames used by this grid." : "Edit each card without opening the JSON editor."}</p></div>
+                    <button type="button" className="admin-secondary-button" onClick={addSectionItem} disabled={busy || (selectedSection.content?.items || []).length >= 100}>＋ Add item</button>
+                  </div>
+                  {(Array.isArray(selectedSection.content?.items) ? selectedSection.content.items : []).map((item, index) => (
+                    <article className="cms-inspector-collection-item" key={item?.id || item?.slug || index}>
+                      <div className="cms-inspector-collection-item-heading"><strong>{selectedSection.type === "brand-grid" ? `Brand ${index + 1}` : `Item ${index + 1}`}</strong><button type="button" className="cms-recovery-discard" onClick={() => removeSectionItem(index)} disabled={busy}>Remove</button></div>
+                      {selectedSection.type === "brand-grid" ? (
+                        <label>Image filename<input value={typeof item === "string" ? item : ""} onChange={(event) => updateSectionItem(index, "", event.target.value)} placeholder="manufacturer-logo.png" /></label>
+                      ) : (
+                        <>
+                          <div className="cms-inspector-item-fields">
+                            <label>Number / label<input value={item?.number || ""} onChange={(event) => updateSectionItem(index, "number", event.target.value)} /></label>
+                            <label>Heading<input value={item?.heading || item?.title || ""} onChange={(event) => updateSectionItem(index, "heading", event.target.value)} /></label>
+                            <label>Icon<input value={item?.icon || ""} onChange={(event) => updateSectionItem(index, "icon", event.target.value)} /></label>
+                          </div>
+                          <label>Description<textarea rows="3" value={item?.description || ""} onChange={(event) => updateSectionItem(index, "description", event.target.value)} /></label>
+                          <label>Destination<input value={item?.url || ""} onChange={(event) => updateSectionItem(index, "url", event.target.value)} placeholder="/products" /></label>
+                        </>
+                      )}
+                    </article>
+                  ))}
+                  {(selectedSection.content?.items || []).length === 0 && <p className="admin-empty">No items yet. Add the first item to populate this section.</p>}
+                </section>
+              )}
+              {selectedSection.type === "hero" && (
+                <section className="cms-inspector-collection">
+                  <div className="cms-inspector-collection-heading"><div><h3>Hero proof points</h3><p>Short labels displayed below the hero actions.</p></div><button type="button" className="admin-secondary-button" onClick={addProofItem} disabled={busy || (selectedSection.content?.proofItems || []).length >= 30}>＋ Add point</button></div>
+                  {(Array.isArray(selectedSection.content?.proofItems) ? selectedSection.content.proofItems : []).map((item, index) => (
+                    <div className="cms-inspector-inline-item" key={index}><input aria-label={`Proof point ${index + 1}`} value={item} onChange={(event) => updateProofItem(index, event.target.value)} /><button type="button" className="cms-recovery-discard" onClick={() => removeProofItem(index)} disabled={busy}>Remove</button></div>
+                  ))}
+                </section>
+              )}
               <details className="cms-advanced-section-json">
                 <summary>Advanced section content (JSON)</summary>
                 <label>
