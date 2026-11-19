@@ -1461,3 +1461,5 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Commit: `0892d6ae2bf0e5258b8f2a8aa9e9273338d9bb2f`.
 - This was source-reviewed only. No tests/builds, browser/API requests, Preview checks, screenshots, PDF generation, or image work performed. Phase H must verify page-to-page design switching, slow/failing settings responses, and design override transitions.
 - Other reviewed areas had no sufficiently confirmed defect to justify a code change. Existing Phase H visual confirmation for Team role-card imagery remains open.
+
+- Follow-up hardening: published design state is now tagged with its `pageKey`, and rendering only applies a loaded value when its key matches the current page. This closes the brief pre-effect render window as well as delayed/failing request carryover. Commit: `1d297d8bd65d54e2af7a33e281c5ec21dfd61328`.
