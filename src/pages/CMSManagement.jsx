@@ -496,6 +496,59 @@ export default function CMSManagement() {
     } catch (usageError) { setError(usageError.message); setMediaUsageId(""); }
     finally { setMediaUsageLoading(false); }
   }
+  function exportMediaIntegrityReport() {
+    if (!media.length) {
+      setError("There are no loaded media records to export.");
+      return;
+    }
+    const columns = [
+      "media_id", "archive_status", "storage_provider", "object_key", "public_url",
+      "original_file_name", "mime_type", "byte_size", "width", "height", "alt_text",
+      "created_at", "deleted_at", "metadata_warning_count", "metadata_warnings",
+      "r2_check_status", "r2_checked_at", "r2_check_detail",
+    ];
+    const csvCell = (value) => {
+      let text = value == null ? "" : String(value);
+      if (/^[\\s]*[=+@-]/.test(text)) text = "'" + text;
+      return '"' + text.replace(/"/g, '""') + '"';
+    };
+    const rows = media.map((item) => {
+      const warnings = getMediaIntegrityIssues(item);
+      const storage = mediaStorageChecks[item.id] || {};
+      return [
+        item.id,
+        item.deleted_at ? "archived" : "active",
+        item.storage_provider,
+        item.object_key,
+        item.public_url,
+        item.original_file_name,
+        item.mime_type,
+        item.byte_size,
+        item.width,
+        item.height,
+        item.alt_text,
+        item.created_at,
+        item.deleted_at,
+        warnings.length,
+        warnings.join("; "),
+        storage.status || "not-checked",
+        storage.checkedAt || "",
+        storage.detail || "",
+      ];
+    });
+    const csv = [columns, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+    const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `yr-proservice-media-integrity-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setNotice(`Exported ${media.length} loaded media record(s). The report does not modify CMS data.`);
+  }
+
   function getMediaIntegrityIssues(item) {
     const issues = [];
     const provider = String(item.storage_provider || "").toLowerCase();
@@ -1219,6 +1272,10 @@ export default function CMSManagement() {
         <div className="cms-media-integrity-summary">
           <strong>{media.filter((item) => getMediaIntegrityIssues(item).length > 0).length} record(s) with metadata warnings</strong>
           <span>Checks cover the loaded records only. Warnings identify database metadata inconsistencies; they do not confirm whether an image URL is publicly reachable or whether an R2 object exists.</span>
+        </div>
+        <div className="cms-media-report-actions">
+          <span>Export includes the records currently loaded here (maximum 300), including archived records only when “Show archived media” is enabled.</span>
+          <button type="button" className="admin-secondary-button" disabled={!media.length} onClick={exportMediaIntegrityReport}>Export metadata report (CSV)</button>
         </div>
         <section className="cms-media-orphan-report">
           <div>
