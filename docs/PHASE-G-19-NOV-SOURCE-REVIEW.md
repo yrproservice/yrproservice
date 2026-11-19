@@ -34,3 +34,12 @@ Source-only review on `cms-development`. No tests, builds, browser/API requests,
 
 ## Recovery pointer
 The main running handover remains `docs/PHASE-G-MEDIA-HANDOVER.md`. This checkpoint supplements it and should be read together with the latest handover and branch history.
+
+
+## Additional documentation and environment review — 19 November 2026
+
+- Reviewed `README.md`, `docs/CMS-PREVIEW-OPERATIONS.md`, `docs/CMS_RELEASE_READINESS.md`, `docs/PHASE5-ADMIN-DASHBOARD-SETUP.md`, `package.json`, and `wrangler.toml`.
+- Confirmed the package scripts retain the intended test/build commands and the Wrangler configuration still separates Production D1 from Preview D1/R2. No package, workflow, binding, secret, or environment setting was changed.
+- The release-readiness document's header still identifies the 16 November audit commit as its latest verified commit. Its dated audit sections are historical records, not evidence that the current 19 November HEAD has been built or browser-verified. The README likewise describes the earlier 47-test/build and Preview checks as dated historical evidence; do not treat these as verification of the current HEAD.
+- The Phase 5 setup guide contains historical Production configuration instructions. They are not authorization to change Production; current Phase G work remains source-only on `cms-development`, and Production stays untouched.
+- No source defect was confirmed in this documentation/configuration pass. No tests, builds, test-file inspection, browser/API requests, Preview operations, migrations, deployments, screenshots, PDFs, or image processing were performed.
