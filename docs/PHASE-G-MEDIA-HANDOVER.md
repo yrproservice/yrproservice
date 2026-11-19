@@ -797,3 +797,31 @@ No product or settings records, media metadata, drafts, published content, datab
 - Production remains untouched. PR #2 must not be merged without explicit approval.
 - Resume with a fresh branch/PR check, then continue remaining Phase G source-only review in small batches. Do not start Phase H verification until the user requests or approves the final stage.
 
+## Additional Phase G continuation — Visual Design Studio initial settings readiness (19 November 2026)
+
+A source-only review of `src/pages/PageVisualDesignManager.jsx` found that the manager guarded saves after a failed settings request, but did not distinguish an initial request that was still pending. The editor began with default design values and its controls could be used before the current saved/published settings arrived. A fast administrator action could therefore race the initial load.
+
+Updated `src/pages/PageVisualDesignManager.jsx`:
+- Added an explicit settings-ready state, initially false.
+- Initial loading now keeps the editor blocked until the current settings request succeeds; a failed request leaves it blocked.
+- The shared settings refresh path clears readiness while a refresh is pending and restores it only after a successful response.
+- Design field updates, Reset controls, Save draft, Publish to Preview and Delete Draft have handler-level readiness guards.
+- The corresponding toolbar actions are disabled while settings are unavailable or loading.
+- Existing unsaved-change reporting and successful mutation/refresh-failure messaging are preserved.
+
+Commit:
+- b7a5f54ef0cdb18b2c8e31c8d209da38f87980ee — guard Visual Design Studio until settings finish loading.
+
+Source-level assertions confirmed the readiness state, initial pending/failure behaviour, refresh invalidation, edit/reset/save/publish/delete handler guards and toolbar disabled states. These are source assertions only, not runtime tests.
+
+No design values, settings records, drafts, published content, media, database schema, deployment configuration or Production data were changed by this source edit. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (Visual Design Studio readiness)
+
+- Working branch: `cms-development`
+- Latest source change: `b7a5f54ef0cdb18b2c8e31c8d209da38f87980ee`.
+- Visual Design Studio now blocks edits and draft actions until the initial settings load succeeds, including while the request is pending.
+- PR #2 must remain Open, Draft and unmerged; verify its head matches the branch before resuming.
+- Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+- Continue remaining Phase G source-only CMS review in small batches. Keep Phase H for final runtime, image, responsive, accessibility, security and Preview verification.
+
