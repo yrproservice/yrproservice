@@ -1051,3 +1051,18 @@ Resume by refreshing branch/PR state, then continue the bounded Phase G source-o
 - These are request-boundary safeguards only. No draft/revision was deleted or restored and no D1 data was changed.
 - No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
 - Recheck branch HEAD and PR #2 before resuming. Keep PR #2 Open/Draft/unmerged; continue Phase G source-only review. Phase H remains deferred.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (CMS API request-boundary review)
+
+The current PR #2 API/utility inventory was reviewed from its exact changed-file list. Source review covered:
+- `pages.js` and `products.js`: JSON content-type checks, bounded request bodies and object-shape validation are already present for their content writes.
+- `publish.js`: JSON content-type, 4,000-character request cap and object-shape validation are already present before publish identifiers are used.
+- `settings.js`: bounded JSON parsing and setting-value validation remain in place.
+- `media.js`, `draft.js` and `history.js`: the new bounded JSON parsing safeguards are recorded above.
+- `preview.js` and `product-preview.js`: read-only preview routes; no request-body write path was identified.
+- `admin-auth.js` and the CMS content, route and settings validators were reviewed as the shared authorization/validation layer.
+
+No additional speculative changes were made where the existing validation was already adequate or where a source-only change could risk changing established CMS workflows. This is a source review checkpoint, not a claim that all CMS behavior has been runtime-verified.
+
+No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed. Phase G remains in progress; Phase H remains the final verification stage and is deferred.
