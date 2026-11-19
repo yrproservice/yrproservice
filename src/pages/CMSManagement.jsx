@@ -1026,15 +1026,20 @@ export default function CMSManagement() {
       selected.savedJson !== json &&
       !window.confirm("Discard the unsaved product edits and leave the Product editor?")
     ) return false;
+    const visualDesignKeysByTab = {
+      products: ["products", "product-detail"],
+      services: ["service-detail"],
+      settings: ["site-chrome"],
+      cart: ["cart"],
+      "dental-chair-request": ["dental-chair-request"],
+      quote: ["quote"],
+      "service-request": ["service-request"],
+      "track-request": ["track-request"],
+    };
+    const activeDesignKeys = visualDesignKeysByTab[tab] || [];
     if (
-      tab === "products" &&
-      Object.entries(visualDesignUnsaved).some(([key, dirty]) => dirty && ["products", "product-detail"].includes(key)) &&
-      !window.confirm("Discard the unsaved page design edits and leave the Products editor?")
-    ) return false;
-    if (
-      tab === "services" &&
-      visualDesignUnsaved["service-detail"] &&
-      !window.confirm("Discard the unsaved service page design edits and leave the Services editor?")
+      activeDesignKeys.some((key) => visualDesignUnsaved[key]) &&
+      !window.confirm("Discard the unsaved page design edits and leave this page workspace?")
     ) return false;
     if (
       tab === "services" &&
@@ -1894,7 +1899,7 @@ export default function CMSManagement() {
           <p>This is the shared site-wide design area, separate from individual page appearance.</p>
           <details className="cms-page-design-accordion">
             <summary>Header & footer · Visual Design Studio</summary>
-            <PageVisualDesignManager key="site-chrome" pageKey="site-chrome" />
+            <PageVisualDesignManager key="site-chrome" pageKey="site-chrome" onUnsavedChange={reportVisualDesignUnsaved} />
           </details>
         </section>
       </>
@@ -1977,7 +1982,7 @@ export default function CMSManagement() {
             <p>Manage the Cart page appearance here. Cart items, quantities, totals and navigation behaviour remain unchanged.</p>
           </div>
         </header>
-        <PageVisualDesignManager key="cart" pageKey="cart" />
+        <PageVisualDesignManager key="cart" pageKey="cart" onUnsavedChange={reportVisualDesignUnsaved} />
       </section>
     )}
     {tab === "dental-chair-request" && (
@@ -1988,7 +1993,7 @@ export default function CMSManagement() {
             <p>Manage the Dental Chair Request page appearance here. Chair selection, request data, validation and submission behaviour remain unchanged.</p>
           </div>
         </header>
-        <PageVisualDesignManager key="dental-chair-request" pageKey="dental-chair-request" />
+        <PageVisualDesignManager key="dental-chair-request" pageKey="dental-chair-request" onUnsavedChange={reportVisualDesignUnsaved} />
       </section>
     )}
     {tab === "quote" && (
@@ -1999,7 +2004,7 @@ export default function CMSManagement() {
             <p>Manage the Quotation Request page appearance here. Cart contents, request validation and submission behaviour remain unchanged.</p>
           </div>
         </header>
-        <PageVisualDesignManager key="quote" pageKey="quote" />
+        <PageVisualDesignManager key="quote" pageKey="quote" onUnsavedChange={reportVisualDesignUnsaved} />
       </section>
     )}
     {tab === "service-request" && (
@@ -2010,7 +2015,7 @@ export default function CMSManagement() {
             <p>Manage the Service Request page appearance here. Service selection, required fields, validation and submission behaviour remain unchanged.</p>
           </div>
         </header>
-        <PageVisualDesignManager key="service-request" pageKey="service-request" />
+        <PageVisualDesignManager key="service-request" pageKey="service-request" onUnsavedChange={reportVisualDesignUnsaved} />
       </section>
     )}
     {tab === "track-request" && (
@@ -2021,7 +2026,7 @@ export default function CMSManagement() {
             <p>Manage the Track My Request page appearance here. Request lookup and status retrieval behaviour remain unchanged.</p>
           </div>
         </header>
-        <PageVisualDesignManager key="track-request" pageKey="track-request" />
+        <PageVisualDesignManager key="track-request" pageKey="track-request" onUnsavedChange={reportVisualDesignUnsaved} />
       </section>
     )}
   </div></section>;
