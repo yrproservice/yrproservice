@@ -451,6 +451,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
   function updateSectionFields(patch) {
     if (!selectedSection || !patch || typeof patch !== "object") return;
+    if (Object.prototype.hasOwnProperty.call(patch, "imageUrl")) { setSectionMediaUsage(null); setSectionMediaUsageId(""); }
     const nextSectionContent = { ...(selectedSection.content || {}), ...patch };
     setContent((current) => ({
       ...current,
@@ -463,6 +464,7 @@ export default function CMSDashboard({ onAdminLogout }) {
 
   function updateSection(field, value) {
     if (!selectedSection) return;
+    if (field === "imageUrl") { setSectionMediaUsage(null); setSectionMediaUsageId(""); }
 
     setContent((current) => ({
       ...current,
