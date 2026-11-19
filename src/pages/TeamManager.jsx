@@ -60,6 +60,7 @@ function MediaPicker({ media, value, onSelect, label }) {
 export default function TeamManager({ onUnsavedChange }) {
   const [content, setContent] = useState(() => cloneTemplate());
   const [reloadRequired, setReloadRequired] = useState(false);
+  const [contentReady, setContentReady] = useState(false);
   const [savedContentJson, setSavedContentJson] = useState(() => JSON.stringify(cloneTemplate()));
   const [media, setMedia] = useState([]);
   const [draftId, setDraftId] = useState("");
@@ -87,6 +88,7 @@ export default function TeamManager({ onUnsavedChange }) {
     ]).then(([page, mediaResult]) => {
       if (!active) return;
       setMedia(mediaResult.media || []);
+      setContentReady(true);
       if (page?.page?.content) {
         setContent(page.page.content);
         setSavedContentJson(JSON.stringify(page.page.content));
@@ -100,6 +102,7 @@ export default function TeamManager({ onUnsavedChange }) {
     }).catch((err) => {
       if (active) {
         setReloadRequired(true);
+        setContentReady(false);
         setError(err.message || "Unable to load Team content. Reload this manager before saving.");
       }
     });
@@ -107,6 +110,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }, []);
 
   function update(group, field, value) {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => section.type !== "team-page" ? section : {
@@ -116,6 +120,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   function updateItem(group, index, field, value, arrayKey = "items") {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => {
@@ -128,6 +133,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   function updateGlobalDesign(field, value) {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => section.type !== "team-page" ? section : {
@@ -138,6 +144,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   function updateSectionDesign(sectionKey, field, value) {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => section.type !== "team-page" ? section : {
@@ -154,6 +161,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   function moveSection(from, to) {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => {
       const order = [...(current.sectionOrder || ["hero", "story", "process", "capabilities", "people", "cta"])];
       if (to < 0 || to >= order.length || from === to) return current;
@@ -170,6 +178,10 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   async function saveDraft() {
+    if (!contentReady) {
+      setError("Wait for the current Team content and media to finish loading before editing or saving.");
+      return;
+    }
     if (reloadRequired) {
       setError("Reload this manager to retrieve the published page content before saving. The deleted draft is no longer available.");
       return;
@@ -249,6 +261,10 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   function resetToTemplate() {
+    if (!contentReady || reloadRequired) {
+      setError("Load the current Team content successfully before restoring the editor baseline.");
+      return;
+    }
     if (!window.confirm("Discard the current unsaved edits and reload the original Team page content? This does not delete any saved draft.")) return;
     setContent(cloneTemplate());
     setError("");
@@ -272,14 +288,14 @@ export default function TeamManager({ onUnsavedChange }) {
       {notice && <p className="admin-alert admin-alert-success" role="status">{notice}</p>}
 
       <div className="cms-services-toolbar">
-        <button type="button" className="admin-secondary-button" onClick={resetToTemplate} disabled={busy}>Restore original content in editor</button>
+        <button type="button" className="admin-secondary-button" onClick={resetToTemplate} disabled={busy || !contentReady || reloadRequired}>Restore original content in editor</button>
         <button type="button" className="admin-secondary-button" onClick={openPreview} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
-        <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish to Preview</button>
+        <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !contentReady || reloadRequired || !draftId}>Publish to Preview</button>
         <button
           type="button"
           className="admin-secondary-button"
-          onClick={deleteDraft} disabled={busy || !draftId}>Delete Draft</button>
-        <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Team draft"}</button>
+          onClick={deleteDraft} disabled={busy || !contentReady || reloadRequired || !draftId}>Delete Draft</button>
+        <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy || !contentReady || reloadRequired}>{busy ? "Saving…" : "Save Team draft"}</button>
       </div>
 
       <details className="cms-services-group cms-team-design-panel" open>
