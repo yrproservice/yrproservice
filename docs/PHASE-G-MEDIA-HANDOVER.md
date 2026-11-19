@@ -1565,3 +1565,61 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - No tests, builds, test-file inspection, browser/API requests, Preview operations, images, screenshots or PDFs were performed. Recovery and media behaviours remain part of final-stage verification.
 
 - Latest dashboard review note commit: `9606b5140d1007d057fd9a328e0106a28931d5f9`.
+
+
+## Phase H operational release checkpoint — 19 November 2026 (image work excluded)
+
+### Current branch and release gate
+- Repository: `yrproservice/yrproservice`
+- Working branch: `cms-development`
+- Last fully verified code/deployment checkpoint: `5770bda0a25793db4112d72646ccfff3dd229022`
+- PR #2 remains Open, Draft and unmerged, targeting `main`.
+- Production website, Production D1, Production R2, Production bindings and Production secrets were not changed.
+- No image generation, image processing, image review or screenshots were performed.
+
+### Automated checks and build
+- GitHub Actions run #44495279584 completed successfully for `5770bda0a25793db4112d72646ccfff3dd229022`.
+- Non-image automated tests: 63 passed, 0 failed.
+- The image-specific suites `tests/image-validation.test.js` and `tests/product-images.test.js` were intentionally excluded from this run. The earlier product-image resolver test failure remains unresolved and is not represented as passing.
+- Vite production build completed successfully.
+- Cloudflare Pages Functions build completed successfully with Wrangler 4.157.0.
+- Preview D1 schema-readiness query passed: `title_column=1`, `route_column=1`, `route_index=1`, `null_metadata=0`.
+
+### Preview D1 migration
+- GitHub Actions run #44494472823 completed successfully for commit `59b54dba7e9c91124c0602c8b0ae0ae1b8ea542e`.
+- The workflow verified the target database name `yr-proservice-test-db` and UUID `7fca4ad0-3baa-4148-ad28-bfd2ef416c16` before executing SQL.
+- CMS migration 0002 completed and CMS table verification succeeded.
+- Page metadata migration 0003 completed. Final verification confirmed both `title` and `route` columns, the `idx_cms_page_versions_route_state` index, and zero null page metadata rows.
+- The workflow now guards the non-idempotent `ALTER TABLE` operations: both columns absent means apply 0003; both present means only complete null backfill/index creation; a partially migrated schema fails closed.
+- No Production database was referenced or migrated.
+
+### Cloudflare Pages Preview deployment verification
+- The deployment workflow's direct Wrangler upload initially failed because the existing `CLOUDFLARE_API_TOKEN` lacks Cloudflare Pages Edit permission (Cloudflare authentication error 10000). The existing token was not modified.
+- The workflow now falls back to the Git-integrated Preview branch when no dedicated `CLOUDFLARE_PAGES_API_TOKEN` is configured.
+- For run #44495279584, the Preview branch `https://cms-development.yrproservice.pages.dev` served the same hashed JS/CSS asset references as the verified build, and all four referenced assets returned successful HTTP responses.
+- Direct upload remains available if a dedicated `CLOUDFLARE_PAGES_API_TOKEN` is added with Account → Cloudflare Pages → Edit and User → Memberships → Read. The Git-integrated Preview verification succeeded without changing the existing token.
+- The Preview check is a build-asset fingerprint and asset-response check, not a screenshot or full authenticated CMS browser test.
+
+### Source integrity recovery and build fixes
+The first real build exposed several incomplete or malformed source files that had not been caught by the prior source-only review. They were repaired before deployment:
+
+- `src/pages/CMSManagement.jsx` had been truncated to 330 lines in commit `bfba6dabc32a29ebfe344d5e0f7707b940e3a452`. Restored the complete 2,367-line parent version from `2b2aedff8bbd7654183ee127a391af90dcf5c95c`, then reapplied malformed saved-product JSON recovery and non-object product validation. Restoration commit: `7e46801ab9746b866d8258b95c1fe1c7dbb070dc`.
+- `src/pages/CMSDesignPreview.jsx` had been truncated to 158 lines in commit `13e77844f9a7b7d3a1c0b8854f74b83c4d4abd4f`. Restored the complete parent source from `99d82829ad53c4726a88e64d0617c13d2eea57c3` and reapplied the latest-request-wins product-preview guard. Restoration commit: `5dac72f2560efac043f3be074a94eb6dcff41b9c`.
+- `src/components/PageDesignScope.jsx` had been truncated during the page-key/image-fit changes. Restored the complete parent source from `1346a93195390ea327d9bc94a05f6e8aaa2983a8`, then reapplied page-key-scoped published settings and the image-fit CSS variable. Restoration commit: `2ad1a028816215355f0a5df983bc5cf9b49f7012`.
+- Fixed the unclosed brand-grid action wrapper in `src/pages/CMSDashboard.jsx` (`ee6dd2baa09cab61772a3905156a7e2ab04ae543`).
+- Fixed the unclosed media-library heading container in `src/pages/CMSManagement.jsx` (`f9cf5948e0ee7c080c2f106955a2b63e08ab785e`).
+- Fixed five malformed JSX return closures in `src/components/HomeCmsRenderer.jsx` (`f0a3662acb182fc276d757bc49076dfc64681f5e`).
+
+### Test and workflow corrections
+- Updated CMS publishing test mocks to normalize multiline SQL and provide valid draft fixtures; corrected the page-specific metadata pointer assertion.
+- Aligned the settings validation test with the supported setting-key policy.
+- The verification workflow now runs on pushes to `cms-development`, executes only non-image test files, runs the Vite build even if tests fail after dependency installation, compiles Pages Functions, verifies Preview D1 readiness, and verifies the Preview branch asset fingerprint.
+- The Preview migration workflow now includes migration 0003 and validates its final schema state.
+- Updated `docs/CMS-PREVIEW-OPERATIONS.md` to describe the current build, migration and Preview deployment pipeline.
+
+### Remaining work and cautions
+1. Image-specific tests, product image resolution, screenshots and all image processing remain deliberately deferred under the current instruction.
+2. Authenticated Preview CMS runtime verification (save, preview, publish, restore, admin session and request workflows) remains a separate release gate; a static asset fingerprint does not prove those flows.
+3. The known cart local-storage migration failure mode under browser storage quota/security exceptions remains unresolved and needs a coordinated recovery-state implementation.
+4. Direct Wrangler Pages upload requires the optional `CLOUDFLARE_PAGES_API_TOKEN`; the Git-integrated Preview branch has been verified to serve the current build assets.
+5. Keep PR #2 Draft and unmerged. Do not merge or deploy Production without explicit approval.
