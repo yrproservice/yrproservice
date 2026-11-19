@@ -88,6 +88,10 @@ export function CartProvider({ children }) {
   }, []);
 
   function retryCartPersistence() {
+    if (!cartStorageReady) {
+      retryLegacyChairMigration();
+      return;
+    }
     try {
       localStorage.setItem("yr-cart", JSON.stringify(items));
       setCartStorageError("");
