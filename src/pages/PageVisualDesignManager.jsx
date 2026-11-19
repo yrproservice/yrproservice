@@ -56,6 +56,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [settingsLoadFailed, setSettingsLoadFailed] = useState(false);
 
   useEffect(() => {
     onUnsavedChange?.(pageKey, hasUnsavedChanges);
@@ -64,6 +65,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   async function loadSettings() {
     const result = await api("/api/cms/admin/settings");
     setSettings(result.settings || []);
+    setSettingsLoadFailed(false);
     return result.settings || [];
   }
 
@@ -98,12 +100,14 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
         if (!active) return;
         const rows = result.settings || [];
         setSettings(rows);
+        setSettingsLoadFailed(false);
         loadPage(initialPageKey, rows);
       })
       .catch((loadError) => {
         if (active) {
+          setSettingsLoadFailed(true);
           setError(
-            loadError.message || "Unable to load page design settings."
+            loadError.message || "Unable to load page design settings. Reload this manager before saving."
           );
         }
       });
@@ -120,6 +124,10 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }
 
   async function saveDraft() {
+    if (settingsLoadFailed) {
+      setError("Reload this design manager to retrieve the current settings before saving. No design draft has been changed.");
+      return;
+    }
     setBusy(true);
     setError("");
     setNotice("");
