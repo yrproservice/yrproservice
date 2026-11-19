@@ -25,9 +25,19 @@ export async function onRequestPost(context) {
   const auth = await requireAdmin(context);
   if (!auth.ok) return auth.response;
   if (!context.env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
+  if (!(context.request.headers.get("content-type") || "").toLowerCase().includes("application/json")) {
+    return adminJson({ error: "Submit JSON data." }, 415);
+  }
   let body;
-  try { body = await context.request.json(); } catch { return adminJson({ error: "Submit valid JSON." }, 400); }
-  const key = typeof body?.key === "string" ? body.key.trim() : "";
+  try {
+    const raw = await context.request.text();
+    if (raw.length > 60000) return adminJson({ error: "Setting data is too large." }, 413);
+    body = JSON.parse(raw);
+  } catch { return adminJson({ error: "Invalid JSON body." }, 400); }
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return adminJson({ error: "Invalid JSON body." }, 400);
+  }
+  const key = typeof body.key === "string" ? body.key.trim() : "";
   if (!KEY.test(key) || !Object.prototype.hasOwnProperty.call(body || {}, "value")) return adminJson({ error: "A valid setting key and value are required." }, 400);
   const validationError = validateSiteSetting(key, body.value);
   if (validationError) return adminJson({ error: validationError }, 400);
@@ -55,7 +65,8 @@ export async function onRequestPost(context) {
         version,
         json,
         actor,
-        body.changeNote || (draft ? "Updated settings draft" : "New settings draft")
+        (typeof body.changeNote === "string" ? body.changeNote.trim().slice(0, 240) : "") ||
+          (draft ? "Updated settings draft" : "New settings draft")
       ),
       db.prepare("UPDATE cms_site_settings SET updated_at=? WHERE setting_key=?").bind(now,key),
       db.prepare(
