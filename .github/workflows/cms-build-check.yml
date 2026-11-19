@@ -84,7 +84,17 @@ jobs:
           if (expected.length === 0 || expected.join("\n") !== actual.join("\n")) {
             process.exit(1);
           }
-          console.log('Preview branch is serving the same hashed JS/CSS assets as this build.');
+          (async () => {
+            const origin = 'https://cms-development.yrproservice.pages.dev';
+            for (const asset of expected) {
+              const response = await fetch(new URL(asset, origin));
+              if (!response.ok) throw new Error('Preview asset failed to load: ' + asset + ' (' + response.status + ')');
+            }
+            console.log('Preview branch is serving this build and all ' + expected.length + ' referenced JS/CSS assets returned successfully.');
+          })().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
           NODE
               then
                 exit 0
