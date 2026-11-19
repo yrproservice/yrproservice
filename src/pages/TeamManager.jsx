@@ -50,7 +50,7 @@ function MediaPicker({ media, value, onSelect, label }) {
 
 export default function TeamManager() {
   const [content, setContent] = useState(() => cloneTemplate());
-  const [savedContentJson, setSavedContentJson] = useState("");
+  const [savedContentJson, setSavedContentJson] = useState(() => JSON.stringify(cloneTemplate()));
   const [media, setMedia] = useState([]);
   const [draftId, setDraftId] = useState("");
   const [draftVersion, setDraftVersion] = useState(null);
@@ -63,7 +63,7 @@ export default function TeamManager() {
   const data = teamSection.content;
   const design = teamSection.design || {};
   const sectionOrder = content.sectionOrder || ["hero", "story", "process", "capabilities", "people", "cta"];
-  const hasUnsavedChanges = Boolean(draftId) && JSON.stringify(content) !== savedContentJson;
+  const hasUnsavedChanges = JSON.stringify(content) !== savedContentJson;
 
   useEffect(() => {
     let active = true;
@@ -187,6 +187,10 @@ export default function TeamManager() {
 
   async function publishDraft() {
     if (!draftId) return;
+    if (hasUnsavedChanges) {
+      setError("Save the current edits before publishing. The previously saved draft has not been published.");
+      return;
+    }
     if (!window.confirm("Publish this Team revision to the isolated Preview website? Production will not change.")) return;
     setBusy(true); setError(""); setNotice("");
     try {
