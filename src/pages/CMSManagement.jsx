@@ -89,6 +89,7 @@ export default function CMSManagement() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyFailed, setHistoryFailed] = useState(false);
   const [media, setMedia] = useState([]);
+  const [mediaReady, setMediaReady] = useState(false);
   const [mediaIncludeArchived, setMediaIncludeArchived] = useState(false);
   const mediaListRequestId = useRef(0);
   const [mediaIntegrityFilter, setMediaIntegrityFilter] = useState("all");
@@ -153,11 +154,18 @@ export default function CMSManagement() {
 
   async function refreshMedia(isActive = () => true) {
     const requestId = ++mediaListRequestId.current;
-    const data = await api("/api/cms/admin/media" + (mediaIncludeArchived ? "?includeDeleted=1" : ""));
-    if (!isActive() || requestId !== mediaListRequestId.current) return;
+    if (isActive()) setMediaReady(false);
+    try {
+      const data = await api("/api/cms/admin/media" + (mediaIncludeArchived ? "?includeDeleted=1" : ""));
+      if (!isActive() || requestId !== mediaListRequestId.current) return;
 
-    setMedia(data.media || []);
-    setStorageReady(Boolean(data.storageReady));
+      setMedia(data.media || []);
+      setStorageReady(Boolean(data.storageReady));
+      setMediaReady(true);
+    } catch (loadError) {
+      if (isActive() && requestId === mediaListRequestId.current) setMediaReady(false);
+      throw loadError;
+    }
   }
 
   async function refreshSettings(isActive = () => true) {
@@ -934,6 +942,10 @@ export default function CMSManagement() {
 
   async function saveMediaDescriptiveMetadata(item) {
     if (!item?.id || busy || item.deleted_at) return;
+    if (!mediaReady) {
+      setError("Refresh the Media Library successfully before saving media metadata.");
+      return;
+    }
     const altText = mediaAltDrafts[item.id] ?? item.alt_text ?? "";
     const originalFileName = mediaFilenameDrafts[item.id] ?? item.original_file_name ?? "";
     if (!originalFileName.trim()) {
@@ -969,8 +981,8 @@ export default function CMSManagement() {
   }
 
   async function uploadMedia(event) {
-    if (busy || !storageReady) {
-      setError("Wait for Preview storage to be available before uploading. No file has been uploaded.");
+    if (busy || !mediaReady || !storageReady) {
+      setError("Refresh the Media Library and confirm Preview storage is available before uploading. No file has been uploaded.");
       if (event?.target) event.target.value = "";
       return;
     }
@@ -1028,6 +1040,10 @@ export default function CMSManagement() {
   })();
   async function removeMedia(id) {
     if (busy) return;
+    if (!mediaReady) {
+      setError("Refresh the Media Library successfully before archiving media.");
+      return;
+    }
     const item = media.find((row) => row.id === id);
     if (!item) {
       setError("This media record is no longer in the loaded library. Refresh the Media Library before archiving it.");
@@ -1076,6 +1092,10 @@ export default function CMSManagement() {
   }
   async function restoreMedia(id) {
     if (busy) return;
+    if (!mediaReady) {
+      setError("Refresh the Media Library successfully before restoring media.");
+      return;
+    }
     setBusy(true);
     setError("");
     setNotice("");
@@ -1710,17 +1730,24 @@ export default function CMSManagement() {
             <h2>Media library</h2>
             <p>Preview-only uploads are stored in the CMS R2 bucket.</p>
           </div>
-          <label className="admin-primary-button cms-upload-label">
+          <div className="cms-media-heading-actions">
+            <button type="button" className="admin-secondary-button" disabled={busy} onClick={() => refreshMedia().then(() => setNotice("Media Library refreshed.")).catch((loadError) => setError(loadError.message || "Unable to refresh the Media Library."))}>
+              Refresh library
+            </button>
+            <label className="admin-primary-button cms-upload-label">
             Upload image
             <input
               type="file"
               accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
-              disabled={busy || !storageReady}
+              disabled={busy || !mediaReady || !storageReady}
               onChange={uploadMedia}
             />
-          </label>
-        </div>
-        {!storageReady && (
+            </label>
+          </div>
+        {!mediaReady && (
+          <p className="admin-alert admin-alert-error">The Media Library is loading or could not be refreshed. Media actions remain disabled until a successful refresh.</p>
+        )}
+        {mediaReady && !storageReady && (
           <p className="admin-alert admin-alert-error">
             Preview R2 storage is not configured yet. The upload endpoint is ready,
             but requires a Preview-only R2 bucket binding named CMS_MEDIA and
@@ -1737,6 +1764,7 @@ export default function CMSManagement() {
                 const includeArchived = event.target.checked;
                 setMediaIncludeArchived(includeArchived);
                 const requestId = ++mediaListRequestId.current;
+                setMediaReady(false);
                 mediaUsageRequestId.current += 1;
                 setMediaUsageLoading(false);
                 setMediaUsageId("");
@@ -1747,10 +1775,12 @@ export default function CMSManagement() {
                   if (requestId !== mediaListRequestId.current) return;
                   setMedia(data.media || []);
                   setStorageReady(Boolean(data.storageReady));
+                  setMediaReady(true);
                 } catch (loadError) {
                   if (requestId !== mediaListRequestId.current) return;
                   setMediaIncludeArchived(!includeArchived);
-                  setError(loadError.message || "Unable to change the archived-media view. The previous media list remains loaded.");
+                  setMediaReady(false);
+                  setError(loadError.message || "Unable to change the archived-media view. Refresh the Media Library before continuing.");
                 }
               }}
             />
