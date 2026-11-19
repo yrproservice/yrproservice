@@ -279,8 +279,18 @@ export async function onRequestPatch(context) {
   if (!env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return adminJson({ error: "Media ID is required." }, 400);
+  if (!(request.headers.get("content-type") || "").toLowerCase().includes("application/json")) {
+    return adminJson({ error: "Send JSON data." }, 415);
+  }
   let body;
-  try { body = await request.json(); } catch { return adminJson({ error: "Send valid JSON." }, 400); }
+  try {
+    const raw = await request.text();
+    if (raw.length > 4096) return adminJson({ error: "Media metadata request is too large." }, 413);
+    body = JSON.parse(raw);
+  } catch { return adminJson({ error: "Send valid JSON." }, 400); }
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return adminJson({ error: "Send a valid media action object." }, 400);
+  }
   if (body.action === "restore") {
     try {
       const row = await env.DB.prepare(
