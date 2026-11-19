@@ -1416,7 +1416,7 @@ export default function CMSDashboard({ onAdminLogout }) {
                   <summary>Uploaded Preview media ({uploadedMedia.length})</summary>
                   {uploadedMedia.length ? <div className="cms-section-media-grid">
                     {uploadedMedia.filter((item) => `${item.original_file_name} ${item.mime_type}`.toLowerCase().includes(mediaSearch.toLowerCase())).map((item) => (
-                      <button type="button" key={item.id} className={selectedSection.content?.imageUrl === item.public_url ? "is-selected" : ""} onClick={() => updateSection("imageUrl", item.public_url)}>
+                      <button type="button" key={item.id} className={selectedSection.content?.imageUrl === item.public_url ? "is-selected" : ""} onClick={() => { updateSection("imageUrl", item.public_url); updateSection("imageAlt", item.alt_text || ""); }}>
                         <img src={item.public_url} alt="" loading="lazy" /><span>{item.original_file_name}</span><small>{item.width && item.height ? `${item.width} × ${item.height} · ` : ""}{Math.round(item.byte_size / 1024)} KB</small>
                       </button>
                     ))}
