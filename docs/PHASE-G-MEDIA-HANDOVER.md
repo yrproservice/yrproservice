@@ -369,3 +369,20 @@ Continue Phase G by reviewing the remaining structured content and media-selecti
 - Review lifecycle audit entries and recovery messaging in Phase H verification.
 
 Do not start Phase H until the remaining CMS implementation work is complete and the user explicitly directs the final verification stage.
+
+## Additional Phase G continuation — remaining page-design tab navigation protection (19 November 2026)
+
+A source-only review of the CMS workspace mounts found six additional embedded Visual Design Studio instances that were not yet reporting unsaved state to the parent CMS tab navigator: shared site chrome, Product Cart, Dental Chair Request, Quotation Request, Service Request, and Track My Request.
+
+The existing PageVisualDesignManager already exposes an optional dirty-state callback and reports the selected page key with its current unsaved state. The CMS parent now wires that callback to all six instances and checks the active workspace's page-design keys before allowing a tab change.
+
+- Leaving Settings now also prompts when the shared header/footer design has unsaved changes, in addition to the existing settings JSON/key guard.
+- Leaving Cart, Dental Chair Request, Quotation Request, Service Request, or Track My Request now prompts when that workspace's visual design has unsaved changes.
+- The existing Products and Services page-design safeguards remain in place.
+- No design values were saved or published. No page content, product data, media objects, API contracts, database schema, Preview published content, Production or deployment configuration was changed.
+
+Commit:
+- 1f64b01477bc4e9a9aa03f6b5f2dfcd65e6e3de5 — protect remaining CMS page design drafts during tab navigation.
+
+Source inspection and targeted source edit only. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed. Runtime behaviour remains deferred to Phase H.
+
