@@ -924,3 +924,27 @@ No media was uploaded, archived, restored or modified. No database records, stor
 - Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
 - Continue remaining Phase G source-only review in small batches. Phase H remains the final runtime, image, responsive, accessibility, security and Preview verification stage.
 
+## Additional Phase G continuation — Product action duplicate-request guards (19 November 2026)
+
+A source-only review found several product actions relied on disabled UI controls but did not independently reject a busy state in their handlers. Rapid repeated events could attempt overlapping saves, archives, publishes or catalogue imports. Product selection also lacked a busy guard, although revision restoration intentionally uses a confirmed internal selection while its recovery operation is still active.
+
+Updated `src/pages/CMSManagement.jsx`:
+- Save Product, Archive Product, Publish Product and Import Catalogue now return immediately when another CMS action is busy.
+- Product selection now rejects ordinary selection changes while busy.
+- The explicit confirmed selection path used by the product revision-restore workflow remains allowed, preserving the existing restore-and-refresh flow.
+
+Commit:
+- 87ccb454ccbeb0f48e9ad69a30d4cab68cf1744a — add handler-level busy guards to CMS product actions.
+
+No product data, drafts, published catalogue entries, media, settings, database records, deployment configuration or Production data were changed by this source edit. Source review only; no tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (product action guards)
+
+- Working branch: `cms-development`
+- Latest product action guard: `87ccb454ccbeb0f48e9ad69a30d4cab68cf1744a`.
+- Media Library readiness and refresh commits: `67d428d5e65b7f1a0701f0af9c080d04cd8fc843`, `9516b31559770325073f5e74d1c39b4d2d36d664`.
+- Visual Website Editor and Visual Design Studio safeguards remain in earlier commits listed above in this handover.
+- PR #2 must remain Open, Draft and unmerged; verify its head matches branch HEAD before resuming.
+- Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+- Continue remaining Phase G source-only review in small batches. Phase H remains the final runtime, image, responsive, accessibility, security and Preview verification stage.
+
