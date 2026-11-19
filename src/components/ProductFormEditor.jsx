@@ -19,7 +19,7 @@ const PRODUCT_FIELDS = [
   ["reviewStatus", "Review status"],
 ];
 
-export default function ProductFormEditor({ json, onJsonChange, slugLocked = false, media = [], onInspectMedia }) {
+export default function ProductFormEditor({ json, onJsonChange, slugLocked = false, media = [], onInspectMedia, disabled = false }) {
   const [advancedJson, setAdvancedJson] = useState(json);
   const [advancedError, setAdvancedError] = useState("");
   const [galleryReplacementIndex, setGalleryReplacementIndex] = useState(null);
@@ -65,6 +65,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
   }, [json]);
 
   function commit(next) {
+    if (disabled) return;
     const protectedProduct = protectProduct(next);
     const formatted = JSON.stringify(protectedProduct, null, 2);
     setAdvancedJson(formatted);
@@ -86,6 +87,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
   }
 
   function updateAdvanced(value) {
+    if (disabled) return;
     setAdvancedJson(value);
     const edited = parseProductJson(value);
     if (!edited) {
@@ -154,7 +156,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
           Request flow
           <select
             value={product ? getProductRequestFlow(product) : PRODUCT_REQUEST_FLOWS.CART}
-            disabled={!product || getProductRequestFlow({ slug: product.slug }) === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR}
+            disabled={disabled || !product || getProductRequestFlow({ slug: product.slug }) === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR}
             onChange={(event) => updateField("requestFlow", event.target.value)}
           >
             <option value={PRODUCT_REQUEST_FLOWS.CART}>Product Cart</option>
@@ -174,14 +176,14 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
             <textarea
               rows={key === "description" ? 4 : key === "summary" ? 2 : 1}
               value={String(product?.[key] ?? "")}
-              disabled={!product || (key === "slug" && slugLocked)}
+              disabled={disabled || !product || (key === "slug" && slugLocked)}
               onChange={(event) => updateField(key, event.target.value)}
             />
           </label>
         ))}
         <label className="cms-editor-field-wide">
           Selected product image
-          <input value={String(product?.img ?? "")} readOnly aria-readonly="true" />
+          <input value={String(product?.img ?? "")} readOnly aria-readonly="true" disabled={disabled} />
         </label>
         {product?.img && <div className="cms-editor-field-wide cms-product-selected-image-preview">
           <strong>Image preview</strong>
@@ -198,7 +200,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
               <div key={item.id}>
                 <img src={item.public_url} alt={item.alt_text || item.original_file_name} />
                 <span>{item.original_file_name}</span>
-                <button type="button" className="admin-secondary-button" onClick={() => onInspectMedia?.(item)}>
+                <button type="button" className="admin-secondary-button" disabled={disabled} onClick={() => onInspectMedia?.(item)}>
                   Inspect saved references
                 </button>
               </div>
@@ -216,18 +218,18 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
               <div>
                 <label>
                   Image URL
-                  <input value={image?.url || ""} readOnly aria-readonly="true" />
+                  <input value={image?.url || ""} readOnly aria-readonly="true" disabled={disabled} />
                 </label>
                 <label>
                   Alt text
-                  <input value={image?.alt || ""} maxLength={300} onChange={(event) => updateGalleryImage(index, { alt: event.target.value })} />
+                  <input value={image?.alt || ""} maxLength={300} disabled={disabled} onChange={(event) => updateGalleryImage(index, { alt: event.target.value })} />
                 </label>
                 <div className="cms-gallery-row-actions">
-                  <button type="button" className="admin-secondary-button" disabled={index === 0} onClick={() => moveGalleryImage(index, -1)}>Move up</button>
-                  <button type="button" className="admin-secondary-button" disabled={index === product.gallery.length - 1} onClick={() => moveGalleryImage(index, 1)}>Move down</button>
-                  <button type="button" className="admin-secondary-button" onClick={() => setGalleryReplacementIndex(index)}>Replace from library</button>
-                  {galleryReplacementIndex === index && <button type="button" className="admin-secondary-button" onClick={() => setGalleryReplacementIndex(null)}>Cancel replacement</button>}
-                  <button type="button" className="admin-secondary-button" onClick={() => removeGalleryImage(index)}>Remove</button>
+                  <button type="button" className="admin-secondary-button" disabled={disabled || index === 0} onClick={() => moveGalleryImage(index, -1)}>Move up</button>
+                  <button type="button" className="admin-secondary-button" disabled={disabled || index === product.gallery.length - 1} onClick={() => moveGalleryImage(index, 1)}>Move down</button>
+                  <button type="button" className="admin-secondary-button" disabled={disabled} onClick={() => setGalleryReplacementIndex(index)}>Replace from library</button>
+                  {galleryReplacementIndex === index && <button type="button" className="admin-secondary-button" disabled={disabled} onClick={() => setGalleryReplacementIndex(null)}>Cancel replacement</button>}
+                  <button type="button" className="admin-secondary-button" disabled={disabled} onClick={() => removeGalleryImage(index)}>Remove</button>
                 </div>
               </div>
             </article>
@@ -238,7 +240,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
           <h3>{galleryReplacementIndex === null ? "Choose a replacement for the primary product image" : `Choose a replacement for gallery image ${galleryReplacementIndex + 1}`}</h3>
           <p>These are the original static website images. Selecting one changes only the indicated image field in this product draft; it does not copy, move, or delete the file. The published product is unchanged until you explicitly publish to Preview.</p>
           <label className="cms-product-media-search">Find an image
-            <input value={productMediaSearch} onChange={(event) => setProductMediaSearch(event.target.value)} placeholder="Search filename, brand, category or storage key" />
+            <input value={productMediaSearch} disabled={disabled} onChange={(event) => setProductMediaSearch(event.target.value)} placeholder="Search filename, brand, category or storage key" />
           </label>
           <small>{visibleCatalogMedia.length} catalogue image(s) and {visibleUploadedMedia.length} uploaded image(s) match{mediaSearchTerm ? " your search" : ""}.</small>
           <div className="cms-product-media-picker-grid">
@@ -250,7 +252,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                 <button
                   type="button"
                   className="admin-secondary-button"
-                  disabled={!product}
+                  disabled={disabled || !product}
                   onClick={() => {
                     if (galleryReplacementIndex !== null) {
                       updateGalleryImage(galleryReplacementIndex, { url: item.src, alt: item.file });
@@ -260,7 +262,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                 >
                   {galleryReplacementIndex !== null && product?.gallery?.[galleryReplacementIndex]?.url === item.src ? "Selected for this gallery image" : galleryReplacementIndex === null && product?.img === item.src ? "Current primary image" : galleryReplacementIndex === null ? "Replace primary image" : "Replace gallery image"}
                 </button>
-                <button type="button" className="admin-secondary-button" disabled={!product || (product?.gallery || []).length >= 24 || (product?.gallery || []).some((image) => image?.url === item.src)} onClick={() => addGalleryImage(item.src, item.file)}>
+                <button type="button" className="admin-secondary-button" disabled={disabled || !product || (product?.gallery || []).length >= 24 || (product?.gallery || []).some((image) => image?.url === item.src)} onClick={() => addGalleryImage(item.src, item.file)}>
                   Add to gallery
                 </button>
               </article>
@@ -278,7 +280,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                   <button
                     type="button"
                     className="admin-secondary-button"
-                    disabled={!product}
+                    disabled={disabled || !product}
                     onClick={() => {
                       if (galleryReplacementIndex !== null) {
                         updateGalleryImage(galleryReplacementIndex, { url: item.public_url, alt: item.alt_text || item.original_file_name });
@@ -294,7 +296,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                           ? "Replace primary image"
                           : "Replace gallery image"}
                   </button>
-                  <button type="button" className="admin-secondary-button" disabled={!product || (product?.gallery || []).length >= 24 || (product?.gallery || []).some((image) => image?.url === item.public_url)} onClick={() => addGalleryImage(item.public_url, item.alt_text || item.original_file_name)}>
+                  <button type="button" className="admin-secondary-button" disabled={disabled || !product || (product?.gallery || []).length >= 24 || (product?.gallery || []).some((image) => image?.url === item.public_url)} onClick={() => addGalleryImage(item.public_url, item.alt_text || item.original_file_name)}>
                     Add to gallery
                   </button>
                 </article>
@@ -304,13 +306,14 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
           </>}
         </section>
       </div>
-      <SpecBuilder specifications={product?.specifications} onChange={(value) => updateArray("specifications", value)} />
-      <DocumentManager documents={product?.docs} onChange={(value) => updateArray("docs", value)} />
+      <SpecBuilder specifications={product?.specifications} onChange={(value) => updateArray("specifications", value)} disabled={disabled} />
+      <DocumentManager documents={product?.docs} onChange={(value) => updateArray("docs", value)} disabled={disabled} />
       <details className="cms-advanced-json">
         <summary>Advanced JSON (optional fallback)</summary>
         <p>Unedited product metadata is retained, nested objects are merged, and the original image path is protected.</p>
         <textarea
           className="cms-json-editor"
+          disabled={disabled}
           spellCheck="false"
           value={advancedJson}
           rows={18}
