@@ -439,7 +439,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function loadHomeTemplate() {
-    if (!pagesReady) {
+    if (busy || !pagesReady) {
       setError("Load the current CMS page list successfully before starting a Home template draft. Reload the editor and try again.");
       return;
     }
@@ -469,7 +469,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function createPage() {
-    if (!pagesReady) {
+    if (busy || !pagesReady) {
       setError("Load the current CMS page list successfully before creating a page. Reload the editor and try again.");
       return;
     }
