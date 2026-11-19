@@ -97,7 +97,12 @@ export default function TeamManager({ onUnsavedChange }) {
       } else {
         setNotice("The existing Team page is loaded as the starting point. Save to create the first Team draft.");
       }
-    }).catch((err) => { if (active) setError(err.message || "Unable to load Team content."); });
+    }).catch((err) => {
+      if (active) {
+        setReloadRequired(true);
+        setError(err.message || "Unable to load Team content. Reload this manager before saving.");
+      }
+    });
     return () => { active = false; };
   }, []);
 
