@@ -496,3 +496,14 @@ Commits:
 
 Source-level assertions confirmed the media archive block, request identity checks, failure recovery for the archive toggle, and product archive confirmation. These checks do not establish runtime behaviour. No media records, product records, R2 objects or published content were changed. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 
+## Recovery checkpoint refresh — 19 November 2026 (media lifecycle safeguards)
+
+- Repository: yrproservice/yrproservice
+- Working branch: cms-development
+- Latest functional source checkpoint: aeda44741a638a0f87c75313b36d00000dbadb9b (media archive blocked while descriptive metadata is unsaved; archive-view requests are race/failure guarded; product archive confirmation explains inclusion of unsaved edits).
+- Branch head before this recovery-document refresh: 6b25d24fa38d38b16fe065ed1be04c5e084e9ea6.
+- PR #2 remains Open, Draft and unmerged, based on main. Confirm its head against the branch before resuming after an interruption.
+- Source-level checks passed for media archive protection, shared request-ID handling across media refresh/toggle, toggle failure recovery, and product archive confirmation.
+- No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed. Production, Preview published content, product records, media records and R2 objects were not changed.
+- Resume from the latest cms-development branch head. Continue small source-only Phase G reviews; defer all runtime and image verification to Phase H.
+
