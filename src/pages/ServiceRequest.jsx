@@ -6,7 +6,9 @@ import { downloadRequestConfirmationPdf } from "../utils/requestConfirmationPdf"
 
 export default function ServiceRequest({ navigate }) {
   const [sent, setSent] = useState(false);
-  const [service, setService] = useState("");
+  const [service, setService] = useState(() =>
+    new URLSearchParams(window.location.search).get("service") || ""
+  );
   const [services, setServices] = useState(fallbackServices);
   const [submittedReference, setSubmittedReference] = useState("");
   const [confirmationData, setConfirmationData] = useState(null);
@@ -41,11 +43,6 @@ export default function ServiceRequest({ navigate }) {
       active = false;
     };
   }, []);
-
-  useEffect(() => {
-    const value = new URLSearchParams(window.location.search).get("service");
-    setService(value || "");
-  }, [services]);
 
   const selected = services.find((item) => item.slug === service);
 
