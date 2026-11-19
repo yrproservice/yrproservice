@@ -31,7 +31,7 @@ export async function onRequestPost(context) {
   let body;
   try {
     const raw = await context.request.text();
-    if (raw.length > 60000) return adminJson({ error: "Setting data is too large." }, 413);
+    if (new TextEncoder().encode(raw).byteLength > 60000) return adminJson({ error: "Setting data is too large." }, 413);
     body = JSON.parse(raw);
   } catch { return adminJson({ error: "Invalid JSON body." }, 400); }
   if (!body || typeof body !== "object" || Array.isArray(body)) {
