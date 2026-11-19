@@ -145,33 +145,35 @@ export function downloadRequestConfirmationPdf(data) {
   }
 
   function field(label, value) {
-    const ctx = page.context;
+    const measureContext = page.context;
     const labelWidth = 255;
-    ctx.font = "700 20px Arial, sans-serif";
-    const valueLines = wrapText(ctx, value || "—", PAGE_WIDTH - MARGIN * 2 - labelWidth - 20);
+    measureContext.font = "700 20px Arial, sans-serif";
+    const valueLines = wrapText(measureContext, value || "—", PAGE_WIDTH - MARGIN * 2 - labelWidth - 20);
     const lineHeight = 30;
     const height = Math.max(42, valueLines.length * lineHeight + 10);
     ensureSpace(height);
-    ctx.fillStyle = MUTED;
-    ctx.font = "700 19px Arial, sans-serif";
-    ctx.fillText(label, MARGIN, page.y);
-    ctx.fillStyle = TEXT;
-    ctx.font = "400 20px Arial, sans-serif";
+    const context = page.context;
+    context.fillStyle = MUTED;
+    context.font = "700 19px Arial, sans-serif";
+    context.fillText(label, MARGIN, page.y);
+    context.fillStyle = TEXT;
+    context.font = "400 20px Arial, sans-serif";
     valueLines.forEach((line, index) => {
-      ctx.fillText(line, MARGIN + labelWidth, page.y + index * lineHeight);
+      context.fillText(line, MARGIN + labelWidth, page.y + index * lineHeight);
     });
     page.y += height;
   }
 
   function paragraph(label, value) {
     sectionHeading(label);
-    const ctx = page.context;
-    ctx.fillStyle = TEXT;
-    ctx.font = "400 20px Arial, sans-serif";
-    const lines = wrapText(ctx, value || "—", PAGE_WIDTH - MARGIN * 2);
+    page.context.fillStyle = TEXT;
+    page.context.font = "400 20px Arial, sans-serif";
+    const lines = wrapText(page.context, value || "—", PAGE_WIDTH - MARGIN * 2);
     for (const line of lines) {
       ensureSpace(34);
-      ctx.fillText(line, MARGIN, page.y);
+      page.context.fillStyle = TEXT;
+      page.context.font = "400 20px Arial, sans-serif";
+      page.context.fillText(line, MARGIN, page.y);
       page.y += 31;
     }
     page.y += 16;
