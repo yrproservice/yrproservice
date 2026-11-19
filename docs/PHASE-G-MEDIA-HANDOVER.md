@@ -507,3 +507,25 @@ Source-level assertions confirmed the media archive block, request identity chec
 - No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed. Production, Preview published content, product records, media records and R2 objects were not changed.
 - Resume from the latest cms-development branch head. Continue small source-only Phase G reviews; defer all runtime and image verification to Phase H.
 
+## Additional Phase G continuation — settings reference confirmation clarity (19 November 2026)
+
+A source review of the Media Library reference shortcuts found that opening a referenced setting could show two consecutive discard confirmations when the Settings tab was already active: the shortcut's setting-specific confirmation was followed by the shared tab-leave guard, even though no tab change was occurring.
+
+- The shortcut now invokes the shared tab-leave guard only when it actually needs to switch into the Settings tab.
+- When already in Settings, the setting-specific confirmation is the only prompt before replacing the current editor content.
+- When switching from another tab, the existing guard for that current tab remains in force.
+- No settings, media, content, database schema, deployment configuration or Production data were changed.
+
+Commit:
+- `f34cc9146e20ff896e68cbf42263e023f7fd1a1f` — avoid duplicate confirmation when opening a settings media reference.
+
+Source review only. No tests, builds, screenshots, image processing, visual checks, deployments or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026
+
+- Latest branch: `cms-development`
+- Latest source commit: `f34cc9146e20ff896e68cbf42263e023f7fd1a1f`
+- PR #2: Open, Draft, unmerged; base `main`; head `cms-development`.
+- Production remains untouched. Do not merge, deploy, or run migrations.
+- Continue source-only Phase G review in small batches. Phase H remains the point for tests, builds, responsive/accessibility checks, screenshots, image processing and final Preview verification.
+- If interrupted, resume by reading this handover first, confirming the current branch head and PR state, then inspect the next unreviewed CMS workflow before editing.
