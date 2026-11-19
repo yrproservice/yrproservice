@@ -201,6 +201,10 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   async function deleteDraft() {
+    if (!contentReady || reloadRequired) {
+      setError("Load the current Team content successfully before deleting its draft.");
+      return;
+    }
     if (!draftId) return;
     if (!window.confirm(hasUnsavedChanges
       ? "Delete the saved Team draft and discard the current unsaved Team edits? The published page and archived revision history will remain unchanged. The saved draft cannot be recovered."
@@ -232,6 +236,10 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   async function publishDraft() {
+    if (!contentReady || reloadRequired) {
+      setError("Load the current Team content successfully before publishing its draft.");
+      return;
+    }
     if (!draftId) return;
     if (hasUnsavedChanges) {
       setError("Save the current edits before publishing. The previously saved draft has not been published.");
