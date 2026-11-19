@@ -63,10 +63,15 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }, [pageKey, hasUnsavedChanges, onUnsavedChange]);
 
   async function loadSettings() {
-    const result = await api("/api/cms/admin/settings");
-    setSettings(result.settings || []);
-    setSettingsLoadFailed(false);
-    return result.settings || [];
+    try {
+      const result = await api("/api/cms/admin/settings");
+      setSettings(result.settings || []);
+      setSettingsLoadFailed(false);
+      return result.settings || [];
+    } catch (loadError) {
+      setSettingsLoadFailed(true);
+      throw loadError;
+    }
   }
 
   function loadPage(key, rows = settings) {
@@ -141,7 +146,11 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
       setDraftVersion(result.version);
       setHasUnsavedChanges(false);
       setNotice(`Design draft V${result.version} saved. The public website has not changed.`);
-      await loadSettings();
+      try {
+        await loadSettings();
+      } catch (refreshError) {
+        setError(`Design draft V${result.version} was saved successfully, but the settings list could not be refreshed (${refreshError.message}). Reload this manager before making further changes.`);
+      }
     } catch (err) {
       setError(err.message || "Unable to save the design draft.");
     } finally {
@@ -163,9 +172,16 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
         method: "DELETE",
         body: JSON.stringify({ entityType: "setting", entityKey: `page-design.${pageKey}`, versionId: draftId })
       });
-      const rows = await loadSettings();
-      loadPage(pageKey, rows);
-      setNotice(`Design draft V${result.deletedVersion} deleted. The published design and archived history were preserved.`);
+      setDraftId("");
+      setDraftVersion(null);
+      setSettingsLoadFailed(true);
+      try {
+        const rows = await loadSettings();
+        loadPage(pageKey, rows);
+        setNotice(`Design draft V${result.deletedVersion} deleted. The published design and archived history were preserved.`);
+      } catch (refreshError) {
+        setError(`Design draft V${result.deletedVersion} was deleted, but the current design settings could not be reloaded (${refreshError.message}). Reload this manager before saving further changes.`);
+      }
     } catch (err) {
       setError(err.message || "Unable to delete the design draft.");
     } finally {
@@ -190,7 +206,11 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
       setDraftVersion(null);
       setHasUnsavedChanges(false);
       setNotice(`Design V${result.version || draftVersion} published to the isolated Preview website only.`);
-      await loadSettings();
+      try {
+        await loadSettings();
+      } catch (refreshError) {
+        setError(`Design V${result.version || draftVersion} was published to Preview successfully, but the settings list could not be refreshed (${refreshError.message}). Reload this manager before making further changes.`);
+      }
     } catch (err) {
       setError(err.message || "Unable to publish the design to Preview.");
     } finally {
