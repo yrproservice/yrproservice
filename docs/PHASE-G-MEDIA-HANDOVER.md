@@ -1098,3 +1098,13 @@ Source-only inspection extended to `ProductFormEditor.jsx`, `productEditorData.j
 No further source changes were justified by this pass. The remaining uncertainty is runtime and visual behavior, which is intentionally reserved for Phase H.
 
 No tests, builds, screenshots, image processing, visual checks, API requests, deployments, Preview publishing, migrations or Production changes were performed. Phase G remains in progress; Phase H remains deferred.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (Visual Website Editor pending-mutation guards)
+
+- Commit `d50c10ead2ee867e313beba221b308ef43d790d6` updates `src/pages/CMSDashboard.jsx` with handler-level `busy` guards across section content edits, collection/proof-point edits, visibility/layout changes, section add/remove/restore/reorder actions, Home design controls, undo/redo and saved-draft restore.
+- Commit `29706c0543b22d631091900b11462007735062fd` adds guards to inline visibility/layout/advanced-JSON editor handlers, preventing content changes while a page load/save/publish request is pending.
+- Commit `a0d3f6fa0999282399f9485bf8e2ebd2f3269130` is the source blob observed after these changes. Source inspection confirmed the guards at the named handlers and inline mutation points. No runtime or behavioral verification was performed.
+- Rationale: a pending network mutation should not allow additional editor changes to slip into the same in-memory draft state while the operation is in flight. This complements the existing save/publish guards without changing page data, API contracts or publication behavior.
+- No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
+- Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged; continue Phase G source-only review. Phase H remains deferred.
