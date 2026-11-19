@@ -1017,6 +1017,12 @@ export default function CMSManagement() {
       !window.confirm("Discard the unsaved settings edits and leave the Settings editor?")
     ) return false;
     if (
+      tab === "products" &&
+      selected &&
+      selected.savedJson !== json &&
+      !window.confirm("Discard the unsaved product edits and leave the Product editor?")
+    ) return false;
+    if (
       tab === "services" &&
       servicesHaveUnsavedChanges &&
       !window.confirm("Discard the unsaved Services edits and leave the Services editor?")
