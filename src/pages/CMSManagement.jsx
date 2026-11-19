@@ -638,6 +638,7 @@ export default function CMSManagement() {
       setBusy(false);
     }
   }
+  const settingImageReferences = media.filter((item) => settingJson.includes(item.public_url));
   const historyOptions = historyType==="page"
     ? pages.map(row=>({key:row.page_key,label:`${row.title} · ${row.route}`}))
     : historyType==="product"
@@ -1231,6 +1232,25 @@ export default function CMSManagement() {
               value={settingJson}
               onChange={(event) => setSettingJson(event.target.value)}
             />
+            {settingImageReferences.length > 0 && (
+              <section className="cms-setting-image-references">
+                <strong>Uploaded images referenced by this setting ({settingImageReferences.length})</strong>
+                <p>These image URLs appear in the setting JSON currently open in this editor. Selecting an item opens its saved-reference report; changing this JSON does not update other settings or historical revisions.</p>
+                {settingImageReferences.map((item) => (
+                  <div key={item.id}>
+                    <img src={item.public_url} alt={item.alt_text || item.original_file_name} />
+                    <span>{item.original_file_name}</span>
+                    <button
+                      type="button"
+                      className="admin-secondary-button"
+                      onClick={() => { setTab("media"); inspectMediaUsage(item, true); }}
+                    >
+                      Inspect references
+                    </button>
+                  </div>
+                ))}
+              </section>
+            )}
             <button
               className="admin-primary-button"
               disabled={busy}
