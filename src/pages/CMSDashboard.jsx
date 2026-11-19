@@ -297,6 +297,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function applyHistorySnapshot(direction) {
+    if (busy) return;
     const history = historyRef.current;
     const current = JSON.stringify(content);
     if (direction === "undo") {
@@ -540,6 +541,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     }
   }
   function updateSectionFields(patch) {
+    if (busy) return;
     if (!selectedSection || !patch || typeof patch !== "object") return;
     if (Object.prototype.hasOwnProperty.call(patch, "imageUrl")) clearSectionMediaUsage();
     const nextSectionContent = { ...(selectedSection.content || {}), ...patch };
@@ -553,6 +555,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function updateSection(field, value) {
+    if (busy) return;
     if (!selectedSection) return;
     if (field === "imageUrl") clearSectionMediaUsage();
 
@@ -582,6 +585,7 @@ export default function CMSDashboard({ onAdminLogout }) {
 
 
   function updateSectionItem(index, field, value) {
+    if (busy) return;
     if (!selectedSection) return;
     const currentItems = Array.isArray(selectedSection.content?.items) ? selectedSection.content.items : [];
     const nextItems = currentItems.map((item, itemIndex) => {
@@ -593,6 +597,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function addSectionItem() {
+    if (busy) return;
     if (!selectedSection) return;
     const currentItems = Array.isArray(selectedSection.content?.items) ? selectedSection.content.items : [];
     if (currentItems.length >= 100) return setError("A section can contain no more than 100 items.");
@@ -601,12 +606,14 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function removeSectionItem(index) {
+    if (busy) return;
     if (!selectedSection) return;
     const currentItems = Array.isArray(selectedSection.content?.items) ? selectedSection.content.items : [];
     updateSection("items", currentItems.filter((_, itemIndex) => itemIndex !== index));
   }
 
   function moveSectionItem(index, offset) {
+    if (busy) return;
     if (!selectedSection) return;
     const currentItems = Array.isArray(selectedSection.content?.items) ? selectedSection.content.items : [];
     const target = index + offset;
@@ -617,18 +624,21 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function toggleFeaturedProduct(slug, checked) {
+    if (busy) return;
     if (!selectedSection) return;
     const currentSlugs = Array.isArray(selectedSection.content?.productSlugs) ? selectedSection.content.productSlugs : [];
     updateSection("productSlugs", checked ? [...new Set([...currentSlugs, slug])] : currentSlugs.filter((item) => item !== slug));
   }
 
   function updateProofItem(index, value) {
+    if (busy) return;
     if (!selectedSection) return;
     const currentItems = Array.isArray(selectedSection.content?.proofItems) ? selectedSection.content.proofItems : [];
     updateSection("proofItems", currentItems.map((item, itemIndex) => itemIndex === index ? value : item));
   }
 
   function addProofItem() {
+    if (busy) return;
     if (!selectedSection) return;
     const currentItems = Array.isArray(selectedSection.content?.proofItems) ? selectedSection.content.proofItems : [];
     if (currentItems.length >= 30) return setError("A hero section can contain no more than 30 proof items.");
@@ -636,12 +646,14 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function removeProofItem(index) {
+    if (busy) return;
     if (!selectedSection) return;
     const currentItems = Array.isArray(selectedSection.content?.proofItems) ? selectedSection.content.proofItems : [];
     updateSection("proofItems", currentItems.filter((_, itemIndex) => itemIndex !== index));
   }
 
   function removeSectionToRecoveryBin() {
+    if (busy) return;
     if (!selectedSection || !pageKey) return;
 
     const result = removeSectionFromContent(
@@ -680,6 +692,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function restoreRemovedSection(entry) {
+    if (busy) return;
     if (!entry) return;
 
     const alreadyExists = content.sections.some(
@@ -702,6 +715,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function permanentlyDiscardRemovedSection(entry) {
+    if (busy) return;
     const label =
       entry.section.content?.heading || entry.section.type || "this section";
     const confirmed = window.confirm(
@@ -717,6 +731,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function addSection(type) {
+    if (busy) return;
     const section = {
       id: crypto.randomUUID(),
       type,
@@ -744,6 +759,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function moveSection(id, direction) {
+    if (busy) return;
     setContent((current) => {
       const items = [...current.sections];
       const index = items.findIndex((item) => item.id === id);
@@ -773,6 +789,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function updateHomeGlobalDesign(field, value) {
+    if (busy) return;
     setContent((current) => ({
       ...current,
       design: {
@@ -786,6 +803,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function updateHomeSectionDesign(sectionId, field, value) {
+    if (busy) return;
     setContent((current) => ({
       ...current,
       design: {
@@ -807,6 +825,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function resetHomeSectionDesign(sectionId) {
+    if (busy) return;
     setContent((current) => ({
       ...current,
       design: {
@@ -820,6 +839,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function reorderSections(fromId, toId) {
+    if (busy) return;
     if (!fromId || !toId || fromId === toId) return;
 
     setContent((current) => {
@@ -845,6 +865,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function restoreSavedDraft() {
+    if (busy) return;
     if (!savedSnapshot) return;
     try {
       const snapshot = JSON.parse(savedSnapshot);
@@ -1138,14 +1159,14 @@ export default function CMSDashboard({ onAdminLogout }) {
                   Page title
                   <input
                     value={pageTitle}
-                    onChange={(event) => setPageTitle(event.target.value)}
+                    onChange={(event) => { if (!busy) setPageTitle(event.target.value); }}
                   />
                 </label>
                 <label>
                   Route
                   <input
                     value={route}
-                    onChange={(event) => setRoute(event.target.value)}
+                    onChange={(event) => { if (!busy) setRoute(event.target.value); }}
                   />
                 </label>
               </div>
@@ -1706,7 +1727,7 @@ export default function CMSDashboard({ onAdminLogout }) {
                     rows="12"
                     spellCheck="false"
                     value={structuredJson}
-                    onChange={(event) => setStructuredJson(event.target.value)}
+                    onChange={(event) => { if (!busy) setStructuredJson(event.target.value); }}
                     onBlur={() => {
                       try {
                         const parsed = JSON.parse(structuredJson);
