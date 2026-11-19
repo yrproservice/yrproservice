@@ -105,7 +105,8 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
             ))}
           </div>
         </div></div>
-      </section>;
+      </section>
+      );
     case "feature-grid":
       return (
         <section
@@ -134,7 +135,8 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
             </article>
           ))}
         </div>
-      </div></section>;
+      </div></section>
+      );
     case "editorial":
       return (
         <section
@@ -173,7 +175,8 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
             <p>{c.imageDescription}</p>
           </div>
         </div>
-      </div></section>;
+      </div></section>
+      );
     case "product-grid": {
       const featured = catalogueProducts.filter((p) => productSlugs.includes(p.slug));
       return <section className="bp-featured home-cms-section" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"}><div className="container">
@@ -268,7 +271,8 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
             {c.buttonText || "View Services"} →
           </CmsLink>
         </div>
-      </div></div></section>;
+      </div></div></section>
+      );
     case "benefits-grid":
       return <section className="bp-why home-cms-section" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"}><div className="container">
         <div className="bp-section-head"><div><p className="bp-eyebrow">{c.eyebrow}</p><h2>{c.heading}</h2></div><p>{c.description}</p></div>
@@ -313,7 +317,8 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
             {c.secondaryButtonText}
           </CmsLink>
         )}
-      </div></div></section>;
+      </div></div></section>
+      );
     default:
       return <section className="bp-section" key={section.id}><div className="container"><p className="bp-eyebrow">{c.eyebrow}</p><h2>{c.heading}</h2><p>{c.description}</p></div></section>;
   }
