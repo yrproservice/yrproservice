@@ -69,6 +69,7 @@ export function ChairRequestProvider({ children }) {
   }, [
     migrationReady,
     cartStorageReady,
+    storageReady,
     legacyChairItems,
     cartItems,
     migrationRetry,
