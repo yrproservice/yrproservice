@@ -1526,3 +1526,13 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Re-fetch and source inspection confirmed the lazy-loading attribute. No tests, builds, browser checks, Preview calls or image work were performed. Phase H should verify that all 13 previews eventually load when scrolled into view and that the first visible preview appears normally.
 - Team CMS template still references role-based image assets (`team-1.jpg` through `team-4.jpg`) rather than named employees. Do not substitute or generate people imagery; confirm the intended genuine company imagery/content in the final visual stage.
 - No further confirmed code defect was identified in this review pass. Existing follow-ups remain: runtime verification of async loading and error states, malformed legacy CMS data, and final responsive/accessibility review.
+
+
+## Documentation/configuration review checkpoint — 19 November 2026
+
+- Reviewed the README, Preview operations guide, release-readiness audit, Phase 5 Admin setup guide, package manifest and Wrangler bindings.
+- Confirmed `package.json` retains the intended test/build scripts and `wrangler.toml` still separates Production D1 from Preview D1/R2. No package, workflow, binding, secret or environment setting was changed.
+- The release-readiness document's header still records the 16 November audit commit; its dated test/build/browser evidence is historical and does not verify the current HEAD. The README's 47-test/build and Preview statements are also dated historical evidence, not current-HEAD verification. The Phase 5 setup guide's historical Production setup instructions are not authorization to change Production.
+- No additional source defect was confirmed in this documentation/configuration pass. No tests, test-file inspection, builds, browser/API requests, Preview operations, migrations, deployments, screenshots, PDFs or image processing were performed.
+- Detailed review note: `docs/PHASE-G-19-NOV-SOURCE-REVIEW.md` (commit `73c8998e48c4201f24cfaf9b358e9e6768776729`).
+- Current Phase G remains source-only on `cms-development`; defer all verification and image/PDF work to Phase H after explicit authorization.
