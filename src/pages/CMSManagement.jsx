@@ -1341,46 +1341,87 @@ export default function CMSManagement() {
             Show archived media
           </label>
         </div>
-        <div className="cms-media-health" aria-live="polite">
-          <div><strong>{media.length}</strong><span>Loaded records</span></div>
-          <div><strong>{media.filter((item) => !item.deleted_at).length}</strong><span>Active</span></div>
-          <div><strong>{media.filter((item) => Boolean(item.deleted_at)).length}</strong><span>Archived</span></div>
-          <div><strong>{media.filter((item) => mediaStorageChecks[item.id]?.status === "available").length}</strong><span>R2 objects present</span></div>
-          <div><strong>{media.filter((item) => mediaStorageChecks[item.id]?.status === "missing").length}</strong><span>Missing objects</span></div>
-          <div><strong>{media.filter((item) => !mediaStorageChecks[item.id] || mediaStorageChecks[item.id]?.status === "unavailable").length}</strong><span>Not verified</span></div>
-        </div>
-        <p className="cms-media-health-note">Counts cover only the records currently loaded in this library view (up to 300). R2 status is based only on checks you have run; unverified does not mean missing. This is not a full-bucket inventory.</p>
-        <div className="cms-media-integrity-summary">
-          <strong>{media.filter((item) => getMediaIntegrityPriority(item) !== "clean").length} record(s) with metadata warnings</strong>
-          <span>Critical: {media.filter((item) => getMediaIntegrityPriority(item) === "critical").length} · Other metadata: {media.filter((item) => getMediaIntegrityPriority(item) === "metadata").length} · Descriptive: {media.filter((item) => getMediaIntegrityPriority(item) === "descriptive").length} · Clean: {media.filter((item) => getMediaIntegrityPriority(item) === "clean").length}</span>
-          <span>Critical flags identify storage identity or URL problems. Other metadata flags cover file type, size or dimensions. Descriptive flags identify filename/alt-text follow-up. Checks cover loaded records only and do not confirm public URL reachability.</span>
-        </div>
-        <div className="cms-media-report-actions">
-          <span>Export includes the records currently loaded here (maximum 300), including archived records only when “Show archived media” is enabled.</span>
-          <button type="button" className="admin-secondary-button" disabled={!media.length} onClick={exportMediaIntegrityReport}>Export metadata report (CSV)</button>
-        </div>
-        <section className="cms-media-orphan-report">
-          <div>
-            <strong>Orphaned R2 object review</strong>
-            <p>Inspect the Preview bucket's <code>cms/</code> upload prefix in batches of up to 100 objects. An orphan is an object key with no matching R2 media record in D1.</p>
-          </div>
-          <button className="admin-secondary-button" disabled={!storageReady || mediaOrphanScanning} onClick={() => scanMediaOrphans(false)}>
-            {mediaOrphanScanning ? "Scanning Preview R2…" : "Start read-only scan"}
-          </button>
-          {mediaOrphanReport && (
-            <div className="cms-media-orphan-results">
-              <p>{mediaOrphanReport.scanned} objects inspected across {mediaOrphanReport.batches} batch(es) · {mediaOrphanReport.orphanObjects.length} possible orphan(s)</p>
-              {mediaOrphanReport.orphanObjects.length === 0
-                ? <small>No unreferenced objects were found in the batches inspected so far.</small>
-                : mediaOrphanReport.orphanObjects.map((object) => (
-                  <div key={object.key}><strong>{object.key}</strong><small>{Math.round((object.size || 0) / 1024)} KB · {object.uploaded ? new Date(object.uploaded).toLocaleString() : "Upload time unavailable"}</small></div>
-                ))}
-              {mediaOrphanReport.truncated
-                ? <button className="admin-secondary-button" disabled={mediaOrphanScanning} onClick={() => scanMediaOrphans(true)}>{mediaOrphanScanning ? "Scanning…" : "Scan next batch"}</button>
-                : <small>End of bucket prefix reached for this scan.</small>}
+        <section className="cms-media-overview" aria-label="Media administration overview">
+          <div className="cms-media-overview-heading">
+            <div>
+              <h3>Media operations overview</h3>
+              <p>A consolidated snapshot of the currently loaded library and checks performed in this session.</p>
             </div>
-          )}
-          <small>This is a read-only, partial report until every batch is scanned. No objects are deleted or modified. Objects outside <code>cms/</code> are not included.</small>
+            <span>{media.length} loaded · maximum 300 records</span>
+          </div>
+          <div className="cms-media-overview-grid" aria-live="polite">
+            <article>
+              <strong>Storage health</strong>
+              <div className="cms-media-overview-values">
+                <span><b>{media.filter((item) => mediaStorageChecks[item.id]?.status === "available").length}</b> present</span>
+                <span><b>{media.filter((item) => mediaStorageChecks[item.id]?.status === "missing").length}</b> missing</span>
+                <span><b>{media.filter((item) => !["available", "missing"].includes(mediaStorageChecks[item.id]?.status)).length}</b> unchecked / unavailable</span>
+              </div>
+              <small>Only records checked with the on-demand R2 action are verified. Unchecked does not mean missing.</small>
+            </article>
+            <article>
+              <strong>Metadata integrity</strong>
+              <div className="cms-media-overview-values">
+                <span><b>{media.filter((item) => getMediaIntegrityPriority(item) === "critical").length}</b> critical</span>
+                <span><b>{media.filter((item) => getMediaIntegrityPriority(item) === "metadata").length}</b> metadata</span>
+                <span><b>{media.filter((item) => getMediaIntegrityPriority(item) === "descriptive").length}</b> descriptive</span>
+                <span><b>{media.filter((item) => getMediaIntegrityPriority(item) === "clean").length}</b> clean</span>
+              </div>
+              <small>Checks cover stored metadata and URL syntax, not public URL reachability.</small>
+            </article>
+            <article>
+              <strong>Archive and recovery</strong>
+              <div className="cms-media-overview-values">
+                <span><b>{media.filter((item) => !item.deleted_at).length}</b> active</span>
+                <span><b>{media.filter((item) => Boolean(item.deleted_at)).length}</b> archived in this view</span>
+              </div>
+              <small>Archived records remain recoverable through Restore on each archived media card, subject to the stored object being available.</small>
+            </article>
+            <article>
+              <strong>Orphan scan</strong>
+              <div className="cms-media-overview-values">
+                <span><b>{mediaOrphanReport ? mediaOrphanReport.scanned : "—"}</b> objects inspected</span>
+                <span><b>{mediaOrphanReport ? mediaOrphanReport.orphanObjects.length : "—"}</b> possible orphans</span>
+              </div>
+              <small>{mediaOrphanScanning ? "A Preview R2 scan is currently running." : !mediaOrphanReport ? "No scan has been run in this session." : mediaOrphanReport.truncated ? "Partial scan; more batches remain." : "The cms/ prefix scan reached its end."}</small>
+            </article>
+            <article>
+              <strong>Metadata change history</strong>
+              <div className="cms-media-overview-values">
+                <span><b>{mediaHistoryId ? mediaHistory.length : "—"}</b> events loaded</span>
+                <span><b>{mediaHistoryId ? "1" : "0"}</b> selected item</span>
+              </div>
+              <small>{mediaHistoryId ? "History shown for the selected media item only; maximum 50 events." : "Choose View change history on a media card to load that item's latest events."}</small>
+            </article>
+          </div>
+          <p className="cms-media-overview-scope">Scope note: library and integrity totals reflect only the records loaded in the current active / archived view (up to 300). Archive totals are not a complete archive inventory unless all relevant records are in this view. Orphan results are session-only and cover inspected batches under <code>cms/</code> only. No objects are deleted or modified by these reports.</p>
+          <div className="cms-media-report-actions">
+            <span>Export includes the records currently loaded here (maximum 300), including archived records only when “Show archived media” is enabled.</span>
+            <button type="button" className="admin-secondary-button" disabled={!media.length} onClick={exportMediaIntegrityReport}>Export metadata report (CSV)</button>
+          </div>
+          <section className="cms-media-orphan-report">
+            <div>
+              <strong>Orphaned R2 object review</strong>
+              <p>Inspect the Preview bucket's <code>cms/</code> upload prefix in batches of up to 100 objects. An orphan is an object key with no matching R2 media record in D1.</p>
+            </div>
+            <button className="admin-secondary-button" disabled={!storageReady || mediaOrphanScanning} onClick={() => scanMediaOrphans(false)}>
+              {mediaOrphanScanning ? "Scanning Preview R2…" : "Start read-only scan"}
+            </button>
+            {mediaOrphanReport && (
+              <div className="cms-media-orphan-results">
+                <p>{mediaOrphanReport.scanned} objects inspected across {mediaOrphanReport.batches} batch(es) · {mediaOrphanReport.orphanObjects.length} possible orphan(s)</p>
+                {mediaOrphanReport.orphanObjects.length === 0
+                  ? <small>No unreferenced objects were found in the batches inspected so far.</small>
+                  : mediaOrphanReport.orphanObjects.map((object) => (
+                    <div key={object.key}><strong>{object.key}</strong><small>{Math.round((object.size || 0) / 1024)} KB · {object.uploaded ? new Date(object.uploaded).toLocaleString() : "Upload time unavailable"}</small></div>
+                  ))}
+                {mediaOrphanReport.truncated
+                  ? <button className="admin-secondary-button" disabled={mediaOrphanScanning} onClick={() => scanMediaOrphans(true)}>{mediaOrphanScanning ? "Scanning…" : "Scan next batch"}</button>
+                  : <small>End of bucket prefix reached for this scan.</small>}
+              </div>
+            )}
+            <small>This is a read-only, partial report until every batch is scanned. No objects are deleted or modified. Objects outside <code>cms/</code> are not included.</small>
+          </section>
         </section>
         <div className="cms-media-integrity-filter">
           <label htmlFor="cms-media-integrity-filter">Prioritise media records</label>
