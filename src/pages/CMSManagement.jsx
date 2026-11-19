@@ -555,7 +555,7 @@ export default function CMSManagement() {
     if (!issues.length) return "clean";
     const critical = ["Unknown storage provider", "Missing object key", "R2 key is outside the CMS upload prefix", "Public URL is invalid", "Public URL is not HTTPS", "Public URL contains credentials"];
     if (issues.some((issue) => critical.includes(issue))) return "critical";
-    const descriptive = ["Missing original filename"];
+    const descriptive = ["Missing original filename", "Missing alt text"];
     if (issues.every((issue) => descriptive.includes(issue))) return "descriptive";
     return "metadata";
   }
@@ -577,6 +577,7 @@ export default function CMSManagement() {
       issues.push("Public URL is invalid");
     }
     if (!String(item.original_file_name || "").trim()) issues.push("Missing original filename");
+    if (!String(item.alt_text || "").trim()) issues.push("Missing alt text");
     if (!String(item.mime_type || "").startsWith("image/")) issues.push("MIME type is not an image");
     if (!Number.isFinite(Number(item.byte_size)) || Number(item.byte_size) <= 0) issues.push("Invalid file size");
     const width = item.width == null ? null : Number(item.width);
