@@ -347,7 +347,23 @@ export default function CMSDashboard({ onAdminLogout }) {
     };
   }, []);
 
+  function confirmDiscardPageEdits(action) {
+    if (!hasUnsavedChanges) return true;
+    return window.confirm(
+      "This page has unsaved or unapplied edits. Discard them and " + action + "?"
+    );
+  }
+
+  function confirmDiscardSectionJson() {
+    if (!hasUnappliedStructuredJson) return true;
+    return window.confirm(
+      "The selected section has unapplied JSON edits. Discard them and switch sections?"
+    );
+  }
+
   async function openPage(page) {
+    if (page.page_key === pageKey) return;
+    if (!confirmDiscardPageEdits("open another page")) return;
     setBusy(true);
     setError("");
     setNotice("");
@@ -394,6 +410,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function loadHomeTemplate() {
+    if (!confirmDiscardPageEdits("load the Home template")) return;
     const initial = JSON.parse(JSON.stringify(homeCmsTemplate));
     const firstSection = initial.sections[0];
 
@@ -415,6 +432,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   function createPage() {
+    if (!confirmDiscardPageEdits("start a new page")) return;
     const title = window.prompt("New page title");
     if (!title?.trim()) return;
 
@@ -974,7 +992,7 @@ export default function CMSDashboard({ onAdminLogout }) {
           <aside className="cms-pages-panel">
             <h2>Pages</h2>
             {pages.length === 0 && <p className="admin-empty">No CMS pages yet. Create a page draft to begin. Existing website pages are not changed automatically.</p>}
-            {pages.map((page) => <button key={page.id} type="button" className={pageKey === page.page_key ? "cms-page-link active" : "cms-page-link"} onClick={() => openPage(page)}>
+            {pages.map((page) => <button key={page.id} type="button" className={pageKey === page.page_key ? "cms-page-link active" : "cms-page-link"} onClick={() => openPage(page)} disabled={busy}>
               <strong>{page.title}</strong>
               <small>{page.route}</small>
               <span>
@@ -1031,6 +1049,7 @@ export default function CMSDashboard({ onAdminLogout }) {
                       selected={section.id === selectedSectionId}
                       design={homeDesign}
                       onClick={() => {
+                        if (!confirmDiscardSectionJson()) return;
                         setSelectedSectionId(section.id);
                         setStructuredJson(
                           JSON.stringify(section.content || {}, null, 2)
@@ -1232,6 +1251,7 @@ export default function CMSDashboard({ onAdminLogout }) {
                           className="cms-home-section-select"
                           aria-pressed={section.id === selectedSectionId}
                           onClick={() => {
+                            if (!confirmDiscardSectionJson()) return;
                             setSelectedSectionId(section.id);
                             setStructuredJson(
                               JSON.stringify(section.content || {}, null, 2)
