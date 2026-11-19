@@ -125,6 +125,21 @@ export async function onRequestGet(context) {
         "SELECT id, storage_provider, object_key, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at, deleted_at FROM cms_media WHERE id=? AND (? = 1 OR deleted_at IS NULL)"
       ).bind(requestedId, params.get("includeDeleted") === "1" ? 1 : 0).first();
       if (!media) return adminJson({ error: "Media item not found." }, 404);
+      let history = [];
+      if (params.get("history") === "1") {
+        const audit = await context.env.DB.prepare(`
+          SELECT id, actor_email, action, metadata_json, created_at
+          FROM cms_audit_log
+          WHERE entity_type = 'media' AND entity_id = ?
+          ORDER BY created_at DESC
+          LIMIT 50
+        `).bind(media.id).all();
+        history = (audit.results || []).map((entry) => {
+          let metadata = {};
+          try { metadata = JSON.parse(entry.metadata_json || "{}"); } catch {}
+          return { id: entry.id, actorEmail: entry.actor_email || null, action: entry.action, metadata, createdAt: entry.created_at };
+        });
+      }
       const usage = await getMediaUsage(context.env.DB, media);
       let storageCheck = null;
       if (params.get("checkStorage") === "1") {
@@ -144,7 +159,7 @@ export async function onRequestGet(context) {
           }
         }
       }
-      return adminJson({ ok: true, media, usage, storageCheck });
+      return adminJson({ ok: true, media, usage, storageCheck, ...(params.get("history") === "1" ? { history } : {}) });
     } catch (error) {
       console.error("CMS media usage lookup failed", error);
       return adminJson({ error: "Unable to load image usage information." }, 500);
@@ -301,17 +316,34 @@ export async function onRequestPatch(context) {
   }
   if (!updates.length) return adminJson({ error: "Provide at least one supported metadata field." }, 400);
   try {
-    const result = await env.DB.prepare(
-      `UPDATE cms_media SET ${updates.join(", ")} WHERE id=? AND deleted_at IS NULL`
-    ).bind(...values, id).run();
-    if (result?.meta?.changes === 0) {
-      const existing = await env.DB.prepare("SELECT id FROM cms_media WHERE id=? AND deleted_at IS NULL").bind(id).first();
-      if (!existing) return adminJson({ error: "Media item not found." }, 404);
+    const previous = await env.DB.prepare(
+      "SELECT id, original_file_name, alt_text FROM cms_media WHERE id=? AND deleted_at IS NULL"
+    ).bind(id).first();
+    if (!previous) return adminJson({ error: "Media item not found." }, 404);
+    const nextValues = {
+      original_file_name: Object.prototype.hasOwnProperty.call(body, "originalFileName") ? body.originalFileName.trim() : previous.original_file_name,
+      alt_text: Object.prototype.hasOwnProperty.call(body, "altText") ? body.altText.trim() : previous.alt_text,
+    };
+    const changes = {};
+    for (const field of ["original_file_name", "alt_text"]) {
+      if (previous[field] !== nextValues[field]) {
+        changes[field] = { before: previous[field], after: nextValues[field] };
+      }
+    }
+    if (Object.keys(changes).length) {
+      const statements = [
+        env.DB.prepare(`UPDATE cms_media SET ${updates.join(", ")} WHERE id=? AND deleted_at IS NULL`).bind(...values, id),
+        env.DB.prepare(`
+          INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
+          VALUES (?, ?, 'update_media_metadata', 'media', ?, ?)
+        `).bind(crypto.randomUUID(), auth.email || null, id, JSON.stringify({ changes })),
+      ];
+      await env.DB.batch(statements);
     }
     const media = await env.DB.prepare(
       "SELECT id, storage_provider, object_key, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at, deleted_at FROM cms_media WHERE id=? AND deleted_at IS NULL"
     ).bind(id).first();
-    return adminJson({ ok: true, media });
+    return adminJson({ ok: true, media, changed: Object.keys(changes).length > 0 });
   } catch (error) {
     console.error("CMS media metadata update failed", error);
     return adminJson({ error: "Unable to update image metadata." }, 500);
