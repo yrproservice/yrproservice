@@ -442,6 +442,7 @@ export default function CMSManagement() {
       } catch (refreshError) {
         setError(`Catalogue import stopped after ${importedCount} product(s), and the product list could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
       }
+      setBusy(false);
       return;
     }
 
