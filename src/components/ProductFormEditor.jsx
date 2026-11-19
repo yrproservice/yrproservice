@@ -192,7 +192,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
         <section className="cms-editor-field-wide cms-product-gallery-editor">
           <div>
             <h3>Product detail gallery</h3>
-            <p>Gallery images appear as selectable thumbnails on the product detail page. The primary product image remains separate. Choose Replace from library on an image, then select a catalogue or uploaded image below. Changes are saved with this product draft only.</p>
+            <p>Gallery images appear as selectable thumbnails on the product detail page. The primary product image remains separate. Choose Replace from library on an image, then select a catalogue or uploaded image below. The picker will identify the gallery image being replaced. Changes affect this product draft only; the published product remains unchanged until you explicitly publish to Preview.</p>
           </div>
           {(Array.isArray(product?.gallery) ? product.gallery : []).map((image, index) => (
             <article key={image?.url || index}>
@@ -219,11 +219,11 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
           <p>{(product?.gallery || []).length} of 24 gallery images</p>
         </section>
         <section className="cms-editor-field-wide cms-product-image-library">
-          <h3>Choose an existing catalogue image</h3>
-          <p>These are the original static website images. Selecting one changes only this product's image path; it does not copy, move, or delete the file.</p>
+          <h3>{galleryReplacementIndex === null ? "Choose a replacement for the primary product image" : `Choose a replacement for gallery image ${galleryReplacementIndex + 1}`}</h3>
+          <p>These are the original static website images. Selecting one changes only the indicated image field in this product draft; it does not copy, move, or delete the file. The published product is unchanged until you explicitly publish to Preview.</p>
           <div className="cms-product-media-picker-grid">
             {catalogMedia.map((item) => (
-              <article key={item.src} className={product?.img === item.src ? "selected" : ""}>
+              <article key={item.src} className={(galleryReplacementIndex !== null && product?.gallery?.[galleryReplacementIndex]?.url === item.src) || (galleryReplacementIndex === null && product?.img === item.src) ? "selected" : ""}>
                 <img src={item.src} alt={item.file} loading="lazy" />
                 <strong>{item.file}</strong>
                 <small>{item.brand} · {item.category}</small>
@@ -238,7 +238,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                     } else selectProductImage(item.src);
                   }}
                 >
-                  {product?.img === item.src ? "Selected" : "Use this image"}
+                  {galleryReplacementIndex !== null && product?.gallery?.[galleryReplacementIndex]?.url === item.src ? "Selected for this gallery image" : galleryReplacementIndex === null && product?.img === item.src ? "Current primary image" : galleryReplacementIndex === null ? "Replace primary image" : "Replace gallery image"}
                 </button>
                 <button type="button" className="admin-secondary-button" disabled={!product || (product?.gallery || []).length >= 24 || (product?.gallery || []).some((image) => image?.url === item.src)} onClick={() => addGalleryImage(item.src, item.file)}>
                   Add to gallery
@@ -250,7 +250,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
             <h3>Uploaded Preview media</h3>
             <div className="cms-product-media-picker-grid">
               {media.map((item) => (
-                <article key={item.id} className={product?.img === item.public_url ? "selected" : ""}>
+                <article key={item.id} className={(galleryReplacementIndex !== null && product?.gallery?.[galleryReplacementIndex]?.url === item.public_url) || (galleryReplacementIndex === null && product?.img === item.public_url) ? "selected" : ""}>
                   <img src={item.public_url} alt={item.alt_text || item.original_file_name} loading="lazy" />
                   <strong>{item.original_file_name}</strong>
                   <small>Preview upload</small>
@@ -265,9 +265,13 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                       } else selectProductImage(item.public_url);
                     }}
                   >
-                    {product?.img === item.public_url
-                      ? "Selected"
-                      : "Use this image"}
+                    {galleryReplacementIndex !== null && product?.gallery?.[galleryReplacementIndex]?.url === item.public_url
+                      ? "Selected for this gallery image"
+                      : galleryReplacementIndex === null && product?.img === item.public_url
+                        ? "Current primary image"
+                        : galleryReplacementIndex === null
+                          ? "Replace primary image"
+                          : "Replace gallery image"}
                   </button>
                   <button type="button" className="admin-secondary-button" disabled={!product || (product?.gallery || []).length >= 24 || (product?.gallery || []).some((image) => image?.url === item.public_url)} onClick={() => addGalleryImage(item.public_url, item.alt_text || item.original_file_name)}>
                     Add to gallery
