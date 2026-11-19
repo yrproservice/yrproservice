@@ -1332,6 +1332,7 @@ export default function CMSDashboard({ onAdminLogout }) {
                   }
                 />
               </label>
+              <label>Eyebrow / overline<input value={selectedSection.content?.eyebrow || ""} onChange={(event) => updateSection("eyebrow", event.target.value)} placeholder="SECTION LABEL" /></label>
               <label>Heading<input value={selectedSection.content?.heading || ""} onChange={(event) => updateSection("heading", event.target.value)} /></label>
               {selectedSection.type === "hero" && (
                 <label>
@@ -1347,8 +1348,22 @@ export default function CMSDashboard({ onAdminLogout }) {
               <label>Description<textarea rows="5" value={selectedSection.content?.description || ""} onChange={(event) => updateSection("description", event.target.value)} /></label>
               <label>Image URL<input value={selectedSection.content?.imageUrl || ""} onChange={(event) => updateSection("imageUrl", event.target.value)} placeholder="/assets/example.jpg" /></label>
               <label>Image alt text<input value={selectedSection.content?.imageAlt || ""} onChange={(event) => updateSection("imageAlt", event.target.value)} /></label>
+              {["editorial", "image-text", "services-banner"].includes(selectedSection.type) && (
+                <>
+                  <label>Image number / marker<input value={selectedSection.content?.imageNumber || ""} onChange={(event) => updateSection("imageNumber", event.target.value)} /></label>
+                  <label>Image title<input value={selectedSection.content?.imageTitle || ""} onChange={(event) => updateSection("imageTitle", event.target.value)} /></label>
+                  <label>Image caption<input value={selectedSection.content?.imageDescription || ""} onChange={(event) => updateSection("imageDescription", event.target.value)} /></label>
+                </>
+              )}
               <label>Button text<input value={selectedSection.content?.buttonText || ""} onChange={(event) => updateSection("buttonText", event.target.value)} /></label>
               <label>Button destination<input value={selectedSection.content?.buttonUrl || ""} onChange={(event) => updateSection("buttonUrl", event.target.value)} placeholder="/products" /></label>
+              {["hero", "editorial", "image-text", "services-banner", "cta"].includes(selectedSection.type) && (
+                <div className="cms-inspector-secondary-action">
+                  <strong>Secondary action</strong>
+                  <label>Button text<input value={selectedSection.content?.secondaryButtonText || ""} onChange={(event) => updateSection("secondaryButtonText", event.target.value)} /></label>
+                  <label>Button destination<input value={selectedSection.content?.secondaryButtonUrl || ""} onChange={(event) => updateSection("secondaryButtonUrl", event.target.value)} placeholder="/services" /></label>
+                </div>
+              )}
               {selectedSection.type === "product-grid" && (
                 <section className="cms-inspector-collection">
                   <div className="cms-inspector-collection-heading"><div><h3>Featured products</h3><p>Choose which catalogue products appear in this section.</p></div></div>
