@@ -496,9 +496,10 @@ export default function CMSManagement() {
   function getFilteredMediaHistory() {
     return mediaHistory.filter((entry) => {
       const changes = entry.metadata?.changes || {};
+      if (mediaHistoryFilter === "lifecycle") return ["archive_media", "restore_media"].includes(entry.action);
       if (mediaHistoryFilter === "filename") return Boolean(changes.original_file_name);
       if (mediaHistoryFilter === "alt") return Boolean(changes.alt_text);
-      return Object.keys(changes).length > 0;
+      return true;
     });
   }
 
@@ -508,9 +509,14 @@ export default function CMSManagement() {
       setError("There are no history entries in the selected filter to export.");
       return;
     }
-    const rows = [["media_id", "changed_at", "administrator", "field", "previous_value", "new_value"]];
+    const rows = [["media_id", "changed_at", "administrator", "event_or_field", "previous_value", "new_value_or_details"]];
     for (const entry of entries) {
-      for (const [field, change] of Object.entries(entry.metadata?.changes || {})) {
+      const changes = Object.entries(entry.metadata?.changes || {});
+      if (!changes.length) {
+        rows.push([mediaHistoryId, entry.createdAt || "", entry.actorEmail || "", entry.action || "media_event", "", JSON.stringify(entry.metadata || {})]);
+        continue;
+      }
+      for (const [field, change] of changes) {
         if (mediaHistoryFilter === "filename" && field !== "original_file_name") continue;
         if (mediaHistoryFilter === "alt" && field !== "alt_text") continue;
         rows.push([mediaHistoryId, entry.createdAt || "", entry.actorEmail || "", field, change.before ?? "", change.after ?? ""]);
@@ -1454,7 +1460,7 @@ export default function CMSManagement() {
               <small>{mediaOrphanScanning ? "A Preview R2 scan is currently running." : !mediaOrphanReport ? "No scan has been run in this session." : mediaOrphanReport.truncated ? "Partial scan; more batches remain." : "The cms/ prefix scan reached its end."}</small>
             </article>
             <article>
-              <strong>Metadata change history</strong>
+              <strong>Media activity history</strong>
               <div className="cms-media-overview-values">
                 <span><b>{mediaHistoryId ? mediaHistory.length : "—"}</b> events loaded</span>
                 <span><b>{mediaHistoryId ? "1" : "0"}</b> selected item</span>
@@ -1535,13 +1541,14 @@ export default function CMSManagement() {
               </button>
               {mediaHistoryId === item.id && (
                 <div className="cms-media-history">
-                  <strong>Metadata change history · {mediaHistory.length} recorded event(s), maximum 50</strong>
+                  <strong>Media activity history · {mediaHistory.length} recorded event(s), maximum 50</strong>
                   <div className="cms-media-history-tools">
                     <label>Show changes
                       <select value={mediaHistoryFilter} onChange={(event) => setMediaHistoryFilter(event.target.value)}>
-                        <option value="all">All metadata fields</option>
+                        <option value="all">All media activity</option>
                         <option value="filename">Filename changes</option>
                         <option value="alt">Alt-text changes</option>
+                        <option value="lifecycle">Archive / restore events</option>
                       </select>
                     </label>
                     <button className="admin-secondary-button" type="button" onClick={exportMediaHistoryReport} disabled={!getFilteredMediaHistory().length}>Export filtered history (CSV)</button>
