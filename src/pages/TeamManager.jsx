@@ -178,6 +178,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   async function saveDraft() {
+    if (busy) return;
     if (!contentReady) {
       setError("Wait for the current Team content and media to finish loading before editing or saving.");
       return;
@@ -201,6 +202,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   async function deleteDraft() {
+    if (busy) return;
     if (!contentReady || reloadRequired) {
       setError("Load the current Team content successfully before deleting its draft.");
       return;
@@ -236,6 +238,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   async function publishDraft() {
+    if (busy) return;
     if (!contentReady || reloadRequired) {
       setError("Load the current Team content successfully before publishing its draft.");
       return;
