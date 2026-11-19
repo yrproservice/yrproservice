@@ -25,7 +25,7 @@ async function readBody(request) {
   const type = request.headers.get("content-type") || "";
   if (!type.toLowerCase().includes("application/json")) return { error: "Submit JSON data.", status: 415 };
   const raw = await request.text();
-  if (raw.length > MAX_CONTENT_BYTES) return { error: "Page content is too large.", status: 413 };
+  if (new TextEncoder().encode(raw).byteLength > MAX_CONTENT_BYTES) return { error: "Page content is too large.", status: 413 };
   try {
     const body = JSON.parse(raw);
     if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error();
