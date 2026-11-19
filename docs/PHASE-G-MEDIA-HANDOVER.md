@@ -1083,3 +1083,18 @@ Findings retained without speculative edits:
 No additional source edits were justified by this pass. Some public route/cache behavior and full media lifecycle behavior still require final-stage runtime verification; this source review does not certify those behaviors.
 
 No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed. Phase G remains in progress. Phase H remains deferred.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (media picker and editor integration review)
+
+Source-only inspection extended to `ProductFormEditor.jsx`, `productEditorData.js`, `ServicesManager.jsx`, `TeamManager.jsx`, and `PageVisualDesignManager.jsx`.
+
+- Product image selection distinguishes static catalogue assets from uploaded Preview media, searches by descriptive/storage metadata, supports primary and gallery image selection, and keeps image selection in the product draft until an explicit save/publish action.
+- Existing product image preservation is handled by the shared product editor data helper; no change was made without testing its full merge/restore behavior.
+- Services and Team image pickers use the Preview media list while retaining support for existing website asset paths. Their save/delete/publish/reset handlers and pending-mutation guards were reviewed; no new issue was established by source inspection.
+- Visual Design Studio's image-fit control and draft/publish/reset guards were reviewed. No visual or browser verification was performed.
+- The Product Media Frame uses `object-fit: contain` behavior as documented in source, and provides a fallback when an image fails to load. This was not visually verified.
+
+No further source changes were justified by this pass. The remaining uncertainty is runtime and visual behavior, which is intentionally reserved for Phase H.
+
+No tests, builds, screenshots, image processing, visual checks, API requests, deployments, Preview publishing, migrations or Production changes were performed. Phase G remains in progress; Phase H remains deferred.
