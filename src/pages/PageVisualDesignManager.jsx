@@ -259,6 +259,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }
 
   function resetControls() {
+    if (busy) return;
     if (!settingsReady || settingsLoadFailed) {
       setError("Load the current design settings successfully before resetting the editor.");
       return;
