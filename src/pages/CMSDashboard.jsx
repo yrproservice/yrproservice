@@ -1453,7 +1453,8 @@ export default function CMSDashboard({ onAdminLogout }) {
               <label>Description<textarea rows="5" value={selectedSection.content?.description || ""} onChange={(event) => updateSection("description", event.target.value)} /></label>
               <label>Image URL<input value={selectedSection.content?.imageUrl || ""} onChange={(event) => updateSection("imageUrl", event.target.value)} placeholder="/assets/example.jpg" /></label>
               <div className="cms-section-media-picker">
-                <div className="cms-section-media-heading"><strong>Choose from media library</strong><span>{uploadedMedia.length} uploaded · {catalogMedia.length} catalogue assets</span></div>
+                <div className="cms-section-media-heading"><strong>Choose an image for this section draft</strong><span>{uploadedMedia.length} uploaded · {catalogMedia.length} catalogue assets</span></div>
+                <p className="cms-media-picker-note">Selecting an image changes this section's current draft only. The published page remains unchanged until you explicitly publish the page to Preview.</p>
                 {uploadedMedia.some((item) => item.public_url === selectedSection.content?.imageUrl) && (
                   <div className="cms-section-image-usage">
                     <button type="button" className="admin-secondary-button" disabled={sectionMediaUsageLoading} onClick={inspectSectionImageUsage}>
