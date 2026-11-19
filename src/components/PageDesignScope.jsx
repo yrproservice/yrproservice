@@ -39,14 +39,17 @@ export default function PageDesignScope({ pageKey, designOverride, children }) {
     fetch(`/api/cms/public/settings?key=${encodeURIComponent(`page-design.${pageKey}`)}`, { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
       .then((result) => {
-        if (active && result?.ok) setPublishedDesign(result.setting?.value || {});
+        if (active && result?.ok) setPublishedDesign({ pageKey, value: result.setting?.value || {} });
       })
       .catch(() => {});
     return () => { active = false; };
   }, [pageKey, designOverride]);
 
-  const design = mergePageDesign(designOverride || publishedDesign);
-  if (!pageKey || (!designOverride && !publishedDesign)) return children;
+  const pagePublishedDesign = publishedDesign?.pageKey === pageKey
+    ? publishedDesign.value
+    : null;
+  const design = mergePageDesign(designOverride || pagePublishedDesign);
+  if (!pageKey || (!designOverride && !pagePublishedDesign)) return children;
 
   const style = {
     "--page-design-bg": design.backgroundColor,
@@ -78,11 +81,3 @@ export default function PageDesignScope({ pageKey, designOverride, children }) {
       data-card-style={design.cardStyle}
       data-card-columns={design.cardColumns}
       data-image-fit={design.imageFit}
-      data-heading-align={design.headingAlign}
-      data-hero-layout={design.heroLayout}
-      style={style}
-    >
-      {children}
-    </div>
-  );
-}
