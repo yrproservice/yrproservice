@@ -30,8 +30,12 @@ export function mergePageDesign(value) {
 export default function PageDesignScope({ pageKey, designOverride, children }) {
   const [publishedDesign, setPublishedDesign] = useState(null);
   useEffect(() => {
-    if (!pageKey || designOverride) return undefined;
+    if (!pageKey || designOverride) {
+      setPublishedDesign(null);
+      return undefined;
+    }
     let active = true;
+    setPublishedDesign(null);
     fetch(`/api/cms/public/settings?key=${encodeURIComponent(`page-design.${pageKey}`)}`, { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
       .then((result) => {
