@@ -785,3 +785,15 @@ No product or settings records, media metadata, drafts, published content, datab
 - Production untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations.
 - Continue small source-only reviews; defer Phase H runtime and visual verification until the final stage.
 
+## Current interruption-safe checkpoint — 19 November 2026, 11:55 MYT
+
+- Repository: `yrproservice/yrproservice`
+- Active branch: `cms-development`
+- Source checkpoint before this handover update: `db7033b9de56604601edf5b25c71af96160275b2`.
+- Branch HEAD before this handover update: `fb3452da3079a5fdd633a8fd3fb30f1a06589033`.
+- PR #2 was rechecked: Open, Draft, unmerged, base `main`; PR head matched branch HEAD.
+- The latest CMS Management source review assertions passed for settings request sequencing, settings readiness invalidation, shared sequenced refresh use in product/settings draft deletion and settings revision restore, and settings publish/restore/delete readiness guards.
+- No tests, builds, screenshots, image processing, visual checks, deployments, Preview publishing or migrations were performed.
+- Production remains untouched. PR #2 must not be merged without explicit approval.
+- Resume with a fresh branch/PR check, then continue remaining Phase G source-only review in small batches. Do not start Phase H verification until the user requests or approves the final stage.
+
