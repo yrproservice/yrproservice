@@ -1095,7 +1095,7 @@ export default function CMSManagement() {
                   {mediaUsage.truncated && <small>Some results may be omitted; each group is limited to 50 revisions.</small>}
                   {["pages", "products", "settings"].map((group) => (
                     <div key={group}>
-                      <b>{group === "pages" ? "Pages" : group === "products" ? "Products" : "Settings"}</b>
+                      <b>{(group === "pages" ? "Pages" : group === "products" ? "Products" : "Settings") + " (" + (mediaUsage.counts?.[group] ?? mediaUsage.groups?.[group]?.length ?? 0) + ")"}</b>
                       {mediaUsage.groups?.[group]?.length ? (
                         <ul>{mediaUsage.groups[group].map((reference) => (
                           <li key={reference.key + "-" + reference.version + "-" + reference.state}>
