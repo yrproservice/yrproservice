@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { CartProvider, useCart } from "./components/CartContext";
-import { ChairRequestProvider } from "./components/ChairRequestContext";
+import { ChairRequestProvider, useChairRequests } from "./components/ChairRequestContext";
 import { SiteHeader, SiteFooter, Link } from "./components/Layout";
 // Load route modules on demand so the public entry bundle does not include
 // every customer page and the private Admin/CMS workspace.
@@ -61,6 +61,10 @@ function Router() {
     cartStorageError,
     retryCartPersistence,
   } = useCart();
+  const {
+    storageError: chairStorageError,
+    retryChairPersistence,
+  } = useChairRequests();
   const [path, setPath] = useState(window.location.pathname);
   const [cmsPage, setCmsPage] = useState(null);
   const [cmsPageLoading, setCmsPageLoading] = useState(false);
@@ -289,6 +293,12 @@ function Router() {
         <div className="container bp-chair-note" role="alert">
           <p>{cartStorageError}</p>
           <button type="button" onClick={retryCartPersistence}>Retry saving product cart</button>
+        </div>
+      )}
+      {path !== "/cart" && path !== "/dental-chair-request" && chairStorageError && (
+        <div className="container bp-chair-note" role="alert">
+          <p>{chairStorageError}</p>
+          <button type="button" onClick={retryChairPersistence}>Retry saving chair requests</button>
         </div>
       )}
       <main>
