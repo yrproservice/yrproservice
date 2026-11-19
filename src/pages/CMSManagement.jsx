@@ -90,6 +90,7 @@ export default function CMSManagement() {
   const [historyFailed, setHistoryFailed] = useState(false);
   const [media, setMedia] = useState([]);
   const [mediaReady, setMediaReady] = useState(false);
+  const [mediaLoading, setMediaLoading] = useState(false);
   const [mediaIncludeArchived, setMediaIncludeArchived] = useState(false);
   const mediaListRequestId = useRef(0);
   const [mediaIntegrityFilter, setMediaIntegrityFilter] = useState("all");
@@ -154,7 +155,10 @@ export default function CMSManagement() {
 
   async function refreshMedia(isActive = () => true) {
     const requestId = ++mediaListRequestId.current;
-    if (isActive()) setMediaReady(false);
+    if (isActive()) {
+      setMediaReady(false);
+      setMediaLoading(true);
+    }
     try {
       const data = await api("/api/cms/admin/media" + (mediaIncludeArchived ? "?includeDeleted=1" : ""));
       if (!isActive() || requestId !== mediaListRequestId.current) return;
@@ -165,6 +169,8 @@ export default function CMSManagement() {
     } catch (loadError) {
       if (isActive() && requestId === mediaListRequestId.current) setMediaReady(false);
       throw loadError;
+    } finally {
+      if (isActive() && requestId === mediaListRequestId.current) setMediaLoading(false);
     }
   }
 
@@ -903,7 +909,7 @@ export default function CMSManagement() {
   }
 
   async function checkMediaStorage(item) {
-    if (!item?.id || mediaStorageCheckingId) return;
+    if (!item?.id || mediaStorageCheckingId || !mediaReady) return;
     setMediaStorageCheckingId(item.id);
     setError("");
     try {
@@ -919,7 +925,7 @@ export default function CMSManagement() {
   }
 
   async function scanMediaOrphans(continueScan = false) {
-    if (mediaOrphanScanning || !storageReady) return;
+    if (mediaOrphanScanning || !mediaReady || !storageReady) return;
     setMediaOrphanScanning(true);
     setError("");
     try {
@@ -1731,7 +1737,7 @@ export default function CMSManagement() {
             <p>Preview-only uploads are stored in the CMS R2 bucket.</p>
           </div>
           <div className="cms-media-heading-actions">
-            <button type="button" className="admin-secondary-button" disabled={busy} onClick={() => refreshMedia().then(() => setNotice("Media Library refreshed.")).catch((loadError) => setError(loadError.message || "Unable to refresh the Media Library."))}>
+            <button type="button" className="admin-secondary-button" disabled={busy || mediaLoading} onClick={() => refreshMedia().then(() => setNotice("Media Library refreshed.")).catch((loadError) => setError(loadError.message || "Unable to refresh the Media Library."))}>
               Refresh library
             </button>
             <label className="admin-primary-button cms-upload-label">
@@ -1759,12 +1765,13 @@ export default function CMSManagement() {
             <input
               type="checkbox"
               checked={mediaIncludeArchived}
-              disabled={busy}
+              disabled={busy || mediaLoading}
               onChange={async (event) => {
                 const includeArchived = event.target.checked;
                 setMediaIncludeArchived(includeArchived);
                 const requestId = ++mediaListRequestId.current;
                 setMediaReady(false);
+                setMediaLoading(true);
                 mediaUsageRequestId.current += 1;
                 setMediaUsageLoading(false);
                 setMediaUsageId("");
@@ -1781,6 +1788,8 @@ export default function CMSManagement() {
                   setMediaIncludeArchived(!includeArchived);
                   setMediaReady(false);
                   setError(loadError.message || "Unable to change the archived-media view. Refresh the Media Library before continuing.");
+                } finally {
+                  if (requestId === mediaListRequestId.current) setMediaLoading(false);
                 }
               }}
             />
