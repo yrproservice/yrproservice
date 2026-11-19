@@ -17,7 +17,7 @@ export async function onRequestPost(context) {
   let body;
   try {
     const raw = await request.text();
-    if (raw.length > 4000) return adminJson({ error: "Submitted data is too large." }, 413);
+    if (new TextEncoder().encode(raw).byteLength > 4000) return adminJson({ error: "Submitted data is too large." }, 413);
     body = JSON.parse(raw);
   } catch { return adminJson({ error: "Invalid JSON body." }, 400); }
   if (!body || typeof body !== "object" || Array.isArray(body)) return adminJson({ error: "Invalid JSON body." }, 400);
