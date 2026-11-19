@@ -4017,6 +4017,8 @@ h6 {
 .cms-media-integrity-summary{display:grid;gap:3px;margin:0 0 14px;padding:10px 12px;border:1px solid #e7d8b7;border-radius:7px;background:#fffaf0}
 .cms-media-integrity-summary strong{color:#72531c;font-size:12px}
 .cms-media-integrity-summary span{color:#687280;font-size:11px;line-height:1.45}
+.cms-media-report-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:0 0 16px}
+.cms-media-report-actions>span{max-width:620px;color:#687280;font-size:11px;line-height:1.45}
 .cms-media-integrity-warnings{display:grid;gap:4px;padding:8px;border:1px solid #e7d8b7;border-radius:6px;background:#fffaf0}
 .cms-media-integrity-warnings strong{color:#72531c;font-size:11px}
 .cms-media-integrity-warnings ul{margin:0;padding-left:16px;color:#735c32;font-size:10px;line-height:1.5}
