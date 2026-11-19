@@ -39,20 +39,21 @@ Then add the token to GitHub:
 
 The previous attempt using `CLOUDFLARE_API_TOKEN` failed at the database identity check with Cloudflare authentication error 10000. The migration SQL did not run. The dedicated secret is intended to resolve that permission gap without broadening the existing deployment token.
 
-## Build, migration and Preview deployment workflow
+## Build-only, migration and Preview deployment workflow
 
-The `CMS Preview Build Check` workflow now runs on pushes to `cms-development` and remains manually dispatchable. It performs these steps in order:
+The `CMS Preview Build Check` workflow runs on pushes to `cms-development` and remains manually dispatchable. Its current build-only sequence is:
 
-1. Install the locked dependencies with `npm ci`.
-2. Run the non-image automated test files. The image-specific `image-validation.test.js` and `product-images.test.js` suites are excluded under the current no-image scope; they are not represented as passing.
-3. Build the Vite website with `npm run build`.
-4. Compile Cloudflare Pages Functions with `npx wrangler@4.157.0 pages functions build`.
-5. Verify that the Preview D1 database has the page-version `title` and `route` columns, the route/state index, and no null page metadata.
-6. Deploy the built output to the Preview branch only with `wrangler pages deploy dist --project-name=yrproservice --branch=cms-development`, attaching the Git commit SHA.
+1. Install locked dependencies with `npm ci`.
+2. Build the Vite website with `npm run build`.
+3. Compile Cloudflare Pages Functions with `npx wrangler@4.157.0 pages functions build`.
+4. Verify that the Preview D1 database has the page-version `title` and `route` columns, the route/state index, and no null page metadata.
+5. Deploy the built output to the Preview branch only with `wrangler pages deploy dist --project-name=yrproservice --branch=cms-development`, attaching the Git commit SHA when direct upload is configured.
 
-The Preview deploy step runs only after the non-image tests, Vite build, Pages Functions build, and Preview D1 schema check succeed. The branch argument is explicitly `cms-development`; the Production branch is not targeted. If a dedicated Pages token is unavailable, the workflow waits for the Git-integrated Preview branch and compares its hashed JavaScript/CSS asset references with the build output. It only accepts that fallback when the Preview is serving the same build assets.
+**Tests are intentionally not part of this workflow at the current user instruction.** Automated tests, screenshots and image processing are deferred. A successful build or deployment is not a test result. Do not add test execution back to this workflow until the user authorizes the final verification stage.
 
-The `Apply CMS Migration to Preview D1` workflow triggers when either `migrations/0002_create_cms.sql` or `migrations/0003_page_metadata_versions.sql` changes. It verifies the exact Preview database name and UUID before SQL execution. The page-metadata migration checks whether both columns exist, refuses a partially migrated schema, and verifies the columns, index and backfill after execution. Production D1 is not referenced by the workflow.
+The Preview deploy step runs only after dependency installation, Vite build, Pages Functions build and Preview D1 schema readiness succeed. The branch argument is explicitly `cms-development`; the Production branch is not targeted. If a dedicated Pages token is unavailable, the workflow waits for the Git-integrated Preview branch and compares its hashed JavaScript/CSS asset references with the build output. It only accepts that fallback when the Preview is serving the same build assets.
+
+The `Apply CMS Migration to Preview D1` workflow triggers when either `migrations/0002_create_cms.sql` or `migrations/0003_page_metadata_versions.sql` changes. It verifies the exact Preview database name and UUID before SQL execution. The page-metadata migration checks whether both columns exist, refuses a partially migrated schema, and verifies the columns, index and backfill after execution. **Do not change migration files casually:** doing so automatically triggers this workflow. No migration is required merely because the build workflow changed.
 
 ### Required GitHub secrets
 
@@ -63,13 +64,17 @@ The `Apply CMS Migration to Preview D1` workflow triggers when either `migration
 Keep the D1 token separate from the Pages deployment token. The existing `CLOUDFLARE_API_TOKEN` is not overwritten by this workflow. Never put token values in chat, source files or commits.
 
 Verify these separately:
-- GitHub Actions non-image checks and Vite build: successful for the latest commit.
-- Pages Functions build: successful for the latest commit.
-- Preview D1 migration: successful with the expected database identity and final schema verification.
+- Dependency installation, Vite build and Pages Functions build: successful for the exact latest commit.
+- Preview D1 schema readiness: successful against the expected Preview database identity and schema.
 - Cloudflare Pages Preview deployment: the `cms-development` branch serves the same hashed JS/CSS asset references as the verified build, and every referenced asset returns successfully. Direct upload additionally attaches the Git commit SHA when a Pages API token is configured.
 - Authenticated CMS runtime: save, preview, publish and restore operations work against Preview.
+- Automated tests, screenshots and image processing: deferred; do not imply these passed from a build-only workflow.
 
 No Production deployment, Production database migration, PR merge or Production binding change is part of this workflow.
+
+### Build-only workflow checkpoint — 19 November 2026
+
+Commit `9427614eea6594485cc10b19bfacb91ade277f06` removed the automated test step from `.github/workflows/cms-build-check.yml`. The file was re-fetched from `cms-development` and confirmed to contain no test execution command. This confirms the workflow source configuration only; it does not prove that GitHub Actions ran, that the build passed, or that Preview deployed this commit.
 
 
 ## Browser cart-storage migration recovery
