@@ -4434,6 +4434,11 @@ h6 {
 .cms-inspector-inline-item { display:flex; align-items:center; gap:8px; margin-top:7px; }
 .cms-inspector-inline-item input { flex:1; min-width:0; padding:8px; border:1px solid #d6e0e8; border-radius:5px; color:#1f2937; }
 @media (max-width:760px) {
+  .cms-preview-editorial,.cms-preview-services { grid-template-columns:minmax(0,1fr); }
+  .cms-preview-cta { align-items:flex-start; flex-direction:column; }
+  .cms-preview-cta .cms-preview-actions { width:100%; }
+}
+@media (max-width:760px) {
   .cms-inspector-item-fields { grid-template-columns:1fr; }
   .cms-inspector-collection-heading { flex-direction:column; }
 }
