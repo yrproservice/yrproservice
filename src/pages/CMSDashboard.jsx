@@ -190,6 +190,7 @@ function SectionPreview({ section, selected, onClick, design }) {
 export default function CMSDashboard({ onAdminLogout }) {
   const [pages, setPages] = useState([]);
   const [pagesReady, setPagesReady] = useState(false);
+  const pagesRequestId = useRef(0);
   const [uploadedMedia, setUploadedMedia] = useState([]);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [mediaError, setMediaError] = useState("");
@@ -327,6 +328,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   async function loadPages(isActive = () => true) {
+    const requestId = ++pagesRequestId.current;
     setError("");
     if (isActive()) setPagesReady(false);
 
@@ -341,12 +343,12 @@ export default function CMSDashboard({ onAdminLogout }) {
         throw new Error(result.error || "Unable to load CMS pages.");
       }
 
-      if (isActive()) {
+      if (isActive() && requestId === pagesRequestId.current) {
         setPages(result.pages || []);
         setPagesReady(true);
       }
     } catch (loadError) {
-      if (isActive()) {
+      if (isActive() && requestId === pagesRequestId.current) {
         setPagesReady(false);
         setError(loadError.message || "Unable to load CMS pages.");
       }
