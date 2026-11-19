@@ -1501,3 +1501,11 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - No additional confirmed source defect justified a code change. Admin workspace entry remains gated by the server-side Access session verification flow; Preview renderers use read-only endpoints and do not submit draft service requests. Product and service route transitions are keyed/remounted, and async loaders use cleanup guards where reviewed.
 - Confirmed source configuration still separates Production D1 (yr-proservice-db) from Preview D1 (yr-proservice-test-db) and Preview R2; no binding or environment configuration was changed.
 - No tests or test-file inspection, builds, browser/API requests, migrations, Preview operations, deployments, screenshots, PDFs, or image processing were performed. Continue to defer all verification and image work to Phase H.
+
+
+## UTF-8 payload limit correction — 19 November 2026
+
+- Source review found CMS request/value size limits were compared using JavaScript string `.length`, which counts UTF-16 code units rather than UTF-8 bytes. Non-ASCII text could therefore exceed the intended byte cap while passing the check.
+- Corrected byte-count checks with `TextEncoder` in `functions/api/cms/admin/pages.js` (100,000-byte page payload), `functions/api/cms/admin/products.js` (100,000-byte product payload), `functions/api/cms/admin/publish.js` (4,000-byte publish payload), and `functions/api/cms/admin/settings.js` (60,000-byte settings request and 50,000-byte serialized setting value).
+- Commits: `96299706ada5a390ecee7dc773992cdac2247902`, `2b6c00e080aa8fe7481517245d093700bbbea577`, `437501108ad17374b709078b8013f34af5d91246`, `de5a70ae89c286f7b978fae547719431585ea4b8`, `4fc32c4af8b1a6a4ca7a67776c8bbdfcb8f982ec`.
+- Re-fetched all four files and confirmed the new byte-count expressions are present. This is source verification only; no tests, builds, requests, database operations or Preview checks were run. Phase H should exercise boundary-sized ASCII and multibyte UTF-8 payloads, including the serialized settings value.
