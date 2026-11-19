@@ -495,6 +495,33 @@ export default function CMSManagement() {
     } catch (usageError) { setError(usageError.message); setMediaUsageId(""); }
     finally { setMediaUsageLoading(false); }
   }
+  function getMediaIntegrityIssues(item) {
+    const issues = [];
+    const provider = String(item.storage_provider || "").toLowerCase();
+    const objectKey = String(item.object_key || "");
+    const publicUrl = String(item.public_url || "");
+    if (!["r2", "static"].includes(provider)) issues.push("Unknown storage provider");
+    if (!objectKey.trim()) issues.push("Missing object key");
+    if (provider === "r2" && objectKey && !objectKey.startsWith("cms/")) issues.push("R2 key is outside the CMS upload prefix");
+    try {
+      const parsed = new URL(publicUrl);
+      if (parsed.protocol !== "https:") issues.push("Public URL is not HTTPS");
+      if (parsed.username || parsed.password) issues.push("Public URL contains credentials");
+      if (parsed.hash) issues.push("Public URL contains a fragment");
+    } catch {
+      issues.push("Public URL is invalid");
+    }
+    if (!String(item.original_file_name || "").trim()) issues.push("Missing original filename");
+    if (!String(item.mime_type || "").startsWith("image/")) issues.push("MIME type is not an image");
+    if (!Number.isFinite(Number(item.byte_size)) || Number(item.byte_size) <= 0) issues.push("Invalid file size");
+    const width = item.width == null ? null : Number(item.width);
+    const height = item.height == null ? null : Number(item.height);
+    if ((width == null) !== (height == null) || (width != null && (!Number.isFinite(width) || width <= 0 || !Number.isFinite(height) || height <= 0))) {
+      issues.push("Image dimensions are incomplete or invalid");
+    }
+    return issues;
+  }
+
   async function checkMediaStorage(item) {
     if (!item?.id || mediaStorageCheckingId) return;
     setMediaStorageCheckingId(item.id);
@@ -1182,6 +1209,10 @@ export default function CMSManagement() {
           <div><strong>{media.filter((item) => !mediaStorageChecks[item.id] || mediaStorageChecks[item.id]?.status === "unavailable").length}</strong><span>Not verified</span></div>
         </div>
         <p className="cms-media-health-note">Counts cover only the records currently loaded in this library view (up to 300). R2 status is based only on checks you have run; unverified does not mean missing. This is not a full-bucket inventory.</p>
+        <div className="cms-media-integrity-summary">
+          <strong>{media.filter((item) => getMediaIntegrityIssues(item).length > 0).length} record(s) with metadata warnings</strong>
+          <span>Checks cover the loaded records only. Warnings identify database metadata inconsistencies; they do not confirm whether an image URL is publicly reachable or whether an R2 object exists.</span>
+        </div>
         <section className="cms-media-orphan-report">
           <div>
             <strong>Orphaned R2 object review</strong>
@@ -1213,6 +1244,12 @@ export default function CMSManagement() {
               {item.deleted_at && <strong className="cms-media-archived-label">Archived · {item.deleted_at}</strong>}
               <strong>{item.original_file_name}</strong>
               <small>{Math.round(item.byte_size / 1024)} KB · {item.mime_type}</small>
+              {getMediaIntegrityIssues(item).length > 0 && (
+                <div className="cms-media-integrity-warnings">
+                  <strong>Metadata warnings ({getMediaIntegrityIssues(item).length})</strong>
+                  <ul>{getMediaIntegrityIssues(item).map((issue) => <li key={issue}>{issue}</li>)}</ul>
+                </div>
+              )}
               <button className="admin-secondary-button" disabled={Boolean(mediaStorageCheckingId)} onClick={() => checkMediaStorage(item)}>
                 {mediaStorageCheckingId === item.id ? "Checking R2…" : "Check storage"}
               </button>
