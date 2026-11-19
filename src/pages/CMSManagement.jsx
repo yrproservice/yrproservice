@@ -458,10 +458,9 @@ export default function CMSManagement() {
           (item) => item.setting_key === key
         );
 
-        if (settingRow) {
-          setSettingKey(key);
+        if (settingKey === key) {
           setSettingJson(
-            settingRow.draft_value || settingRow.published_value || "{}"
+            settingRow?.draft_value || settingRow?.published_value || "{}"
           );
         }
       }
