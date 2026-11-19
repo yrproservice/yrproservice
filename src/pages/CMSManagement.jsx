@@ -375,15 +375,25 @@ export default function CMSManagement() {
       setNotice(
         `Restored as draft V${data.version}. It has not been published.`
       );
-      await loadHistory(type, key);
 
       if (type === "product") {
-        await refreshProducts();
+        const refreshed = await api("/api/cms/admin/products");
+        const products = refreshed.products || [];
+        setItems(products);
+        const productRow = products.find(
+          (item) => item.product_slug === key
+        );
+        if (!productRow) {
+          throw new Error("The restored product draft could not be reloaded. Refresh the product list before editing.");
+        }
+        chooseProduct(productRow);
       }
 
       if (type === "setting") {
         await refreshSettings();
       }
+
+      await loadHistory(type, key);
     } catch (restoreError) {
       setError(restoreError.message);
     } finally {
