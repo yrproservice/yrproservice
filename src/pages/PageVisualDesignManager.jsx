@@ -161,6 +161,10 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
 
   async function publishToPreview() {
     if (!draftId) return;
+    if (hasUnsavedChanges) {
+      setError("Save the current design edits before publishing. The previously saved design draft has not been published.");
+      return;
+    }
     setBusy(true); setError(""); setNotice("");
     try {
       const result = await api("/api/cms/admin/publish", {
@@ -240,7 +244,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
         <div className="page-visual-manager-actions">
           <button type="button" className="admin-secondary-button" disabled={busy} onClick={resetControls}>Reset controls</button>
           <button type="button" className="admin-primary-button" disabled={busy} onClick={saveDraft}>Save design draft</button>
-          <button type="button" className="admin-secondary-button" disabled={busy || !draftId} onClick={publishToPreview}>Publish to Preview</button>
+          <button type="button" className="admin-secondary-button" disabled={busy || !draftId || hasUnsavedChanges} onClick={publishToPreview}>Publish to Preview</button>
           <button type="button" className="admin-secondary-button" disabled={busy || !draftId} onClick={deleteDraft}>Delete Draft</button>
           <button type="button" className="admin-secondary-button" disabled={busy || hasUnsavedChanges || (!draftId && !publishedVersion)} onClick={openPreview}>Preview page</button>
         </div>
