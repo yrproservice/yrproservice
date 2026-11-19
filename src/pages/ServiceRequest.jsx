@@ -51,6 +51,7 @@ export default function ServiceRequest({ navigate }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
     setError("");
 
     if (!service) {
@@ -83,13 +84,13 @@ export default function ServiceRequest({ navigate }) {
 
       const result = await response.json().catch(() => ({}));
 
-      if (!response.ok) {
+      if (!response.ok || !result.ok || !result.reference) {
         throw new Error(
           result.error || "Your service request could not be sent right now.",
         );
       }
 
-      setSubmittedReference(result.reference || "");
+      setSubmittedReference(result.reference);
       setConfirmationData({ ...payload, serviceTitle: selected?.title || service, reference: result.reference, submittedAt: new Date().toISOString() });
       setSent(true);
     } catch (submitError) {
