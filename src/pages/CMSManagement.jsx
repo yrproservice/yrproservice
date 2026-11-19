@@ -285,8 +285,11 @@ export default function CMSManagement() {
       return;
     }
 
+    const hasUnsavedProductEdits = selected.savedJson !== json;
     const confirmed = window.confirm(
-      "Archive this product? It will disappear from the public catalogue after its archive draft is published."
+      hasUnsavedProductEdits
+        ? "Archive this product and include the current unsaved product edits in its new archive draft? It will disappear from the public catalogue only after that draft is published to Preview."
+        : "Archive this product? It will disappear from the public catalogue only after its archive draft is published to Preview."
     );
     if (!confirmed) return;
 
