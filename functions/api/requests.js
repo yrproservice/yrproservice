@@ -126,8 +126,9 @@ export async function onRequest({ request, env }) {
   const timing = cleanString(body.timing, 160);
   const location = cleanString(body.location, 200);
   const productSelection = cleanString(body.product, 8000);
+  const submittedMessage = cleanString(body.message, 5000);
   const message =
-    cleanString(body.message, 5000) ||
+    submittedMessage ||
     (requestType === "quotation"
       ? "Quotation request submitted without additional message."
       : "");
@@ -145,13 +146,15 @@ export async function onRequest({ request, env }) {
     return json({ error: "Please select a valid service." }, 400);
   }
   if (
-    (requestType === "quotation" || requestType === "dental_chair") &&
-    !productSelection
+    (requestType === "dental_chair" && !productSelection) ||
+    (requestType === "quotation" && !productSelection && !submittedMessage)
   ) {
     return json(
       {
         error:
-          "Please include a product selection or describe your quotation requirements.",
+          requestType === "dental_chair"
+            ? "Please include at least one dental chair selection."
+            : "Please include a product selection or describe your quotation requirements.",
       },
       400,
     );
