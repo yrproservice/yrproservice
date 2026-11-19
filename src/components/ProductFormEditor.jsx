@@ -23,12 +23,20 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
   const [advancedJson, setAdvancedJson] = useState(json);
   const [advancedError, setAdvancedError] = useState("");
   const [galleryReplacementIndex, setGalleryReplacementIndex] = useState(null);
+  const [productMediaSearch, setProductMediaSearch] = useState("");
   const initialProduct = useRef(createProductSnapshot(json));
   const advancedEditing = useRef(false);
   const imageChanged = useRef(false);
   const originalProduct = initialProduct.current || {};
   const product = parseProductJson(json);
   const referencedUploadedMedia = media.filter((item) => product && JSON.stringify(product).includes(item.public_url));
+  const mediaSearchTerm = productMediaSearch.trim().toLowerCase();
+  const visibleCatalogMedia = mediaSearchTerm
+    ? catalogMedia.filter((item) => `${item.file} ${item.brand} ${item.category} ${item.folder}`.toLowerCase().includes(mediaSearchTerm))
+    : catalogMedia;
+  const visibleUploadedMedia = mediaSearchTerm
+    ? media.filter((item) => `${item.original_file_name} ${item.alt_text || ""} ${item.mime_type || ""} ${item.object_key || ""}`.toLowerCase().includes(mediaSearchTerm))
+    : media;
 
   function protectProduct(edited) {
     const protectedProduct = protectProductImage(originalProduct, edited, imageChanged.current);
@@ -221,8 +229,12 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
         <section className="cms-editor-field-wide cms-product-image-library">
           <h3>{galleryReplacementIndex === null ? "Choose a replacement for the primary product image" : `Choose a replacement for gallery image ${galleryReplacementIndex + 1}`}</h3>
           <p>These are the original static website images. Selecting one changes only the indicated image field in this product draft; it does not copy, move, or delete the file. The published product is unchanged until you explicitly publish to Preview.</p>
+          <label className="cms-product-media-search">Find an image
+            <input value={productMediaSearch} onChange={(event) => setProductMediaSearch(event.target.value)} placeholder="Search filename, brand, category or storage key" />
+          </label>
+          <small>{visibleCatalogMedia.length} catalogue image(s) and {visibleUploadedMedia.length} uploaded image(s) match{mediaSearchTerm ? " your search" : ""}.</small>
           <div className="cms-product-media-picker-grid">
-            {catalogMedia.map((item) => (
+            {visibleCatalogMedia.map((item) => (
               <article key={item.src} className={(galleryReplacementIndex !== null && product?.gallery?.[galleryReplacementIndex]?.url === item.src) || (galleryReplacementIndex === null && product?.img === item.src) ? "selected" : ""}>
                 <img src={item.src} alt={item.file} loading="lazy" />
                 <strong>{item.file}</strong>
@@ -246,10 +258,11 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
               </article>
             ))}
           </div>
+          {visibleCatalogMedia.length === 0 && <p className="cms-media-picker-note">No catalogue images match this search.</p>}
           {media.length > 0 && <>
-            <h3>Uploaded Preview media</h3>
+            <h3>Uploaded Preview media ({visibleUploadedMedia.length} matching · {media.length} loaded)</h3>
             <div className="cms-product-media-picker-grid">
-              {media.map((item) => (
+              {visibleUploadedMedia.map((item) => (
                 <article key={item.id} className={(galleryReplacementIndex !== null && product?.gallery?.[galleryReplacementIndex]?.url === item.public_url) || (galleryReplacementIndex === null && product?.img === item.public_url) ? "selected" : ""}>
                   <img src={item.public_url} alt={item.alt_text || item.original_file_name} loading="lazy" />
                   <strong>{item.original_file_name}</strong>
@@ -279,6 +292,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
                 </article>
               ))}
             </div>
+            {visibleUploadedMedia.length === 0 && <p className="cms-media-picker-note">No uploaded Preview images match this search.</p>}
           </>}
         </section>
       </div>
