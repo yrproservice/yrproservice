@@ -1541,9 +1541,9 @@ export default function CMSDashboard({ onAdminLogout }) {
                           <label>Brand logo<select value={typeof item === "string" ? item : ""} onChange={(event) => updateSectionItem(index, "", event.target.value)}>
                             <option value="">Choose an existing brand logo</option>
                             {typeof item === "string" && item && !BRAND_LOGO_FILES.includes(item) && <option value={item}>{item} · current custom filename</option>}
-                            {BRAND_LOGO_FILES.map((filename) => <option key={filename} value={filename}>{filename.replace(/\\.png$/i, "").toUpperCase()}</option>)}
+                            {BRAND_LOGO_FILES.map((filename) => <option key={filename} value={filename}>{filename.replace(/\.png$/i, "").toUpperCase()}</option>)}
                           </select></label>
-                          {typeof item === "string" && item && <img className="cms-brand-logo-inspector-preview" src={`/brand logo/fitted/${item.replace(/\\.png$/i, "")}.png`} alt={item.replace(/\\.png$/i, "")} />}
+                          {typeof item === "string" && item && <img className="cms-brand-logo-inspector-preview" src={`/brand logo/fitted/${item.replace(/\.png$/i, "")}.png`} alt={item.replace(/\.png$/i, "")} />}
                           <div className="cms-gallery-row-actions">
                             <button type="button" className="admin-secondary-button" disabled={index === 0 || busy} onClick={() => moveSectionItem(index, -1)}>Move up</button>
                             <button type="button" className="admin-secondary-button" disabled={index === (selectedSection.content?.items || []).length - 1 || busy} onClick={() => moveSectionItem(index, 1)}>Move down</button>
