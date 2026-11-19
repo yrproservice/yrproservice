@@ -1787,7 +1787,12 @@ const rawProducts = [
     summary: "Mocom M7 Stool operator stool for dental-clinic workspaces.",
     description:
       "Mocom's Stools catalogue describes the M7 as a dental operator stool with adjustable tilt, independent seat and backrest adjustment, and lumbar support to help the operator maintain posture.",
-    highlights: [],
+    highlights: [
+      "Lumbar support with independently adjustable backrest height.",
+      "Adjustable backrest tilt to suit the operator's working position.",
+      "Independent seat and backrest height adjustment.",
+      "Optional 10 cm height extension and optional footrest ring.",
+    ],
     specifications: [],
     docs: [],
     price: null,
@@ -1806,7 +1811,12 @@ const rawProducts = [
     summary: "Mocom M8 Stool operator stool for dental-clinic workspaces.",
     description:
       "Mocom's Stools catalogue describes the M8 as a dental operator stool with a 360-degree rotating armrest, circular seat, and adjustable armrest positioning for operator support.",
-    highlights: [],
+    highlights: [
+      "Circular seat with an independently rotating 360-degree armrest.",
+      "Armrest can be positioned centrally, to the left or to the right.",
+      "Rounded horizontal armrest with a non-slip support surface.",
+      "Optional 10 cm height extension and optional footrest ring.",
+    ],
     specifications: [],
     docs: [],
     price: null,
@@ -1825,7 +1835,12 @@ const rawProducts = [
     summary: "Mocom M9 Stool operator stool for dental-clinic workspaces.",
     description:
       "Mocom's Stools catalogue describes the M9 as a saddle-shaped dental operator stool designed to support an active working posture. The catalogue also lists a balance system and memory-foam upholstery option.",
-    highlights: [],
+    highlights: [
+      "Saddle-shaped seat designed for an active working posture and compact footprint.",
+      "Adjustable tilt mechanism can be locked in the preferred position.",
+      "Balance system is standard; Memory Foam padding is optional.",
+      "Optional 10 cm height extension and optional footrest ring.",
+    ],
     specifications: [],
     docs: [],
     price: null,
