@@ -677,3 +677,15 @@ Commit `5a9add5` changes only `src/style.css`. It connects the existing `--yr-in
 - The open PR #2 remains Draft. At the start of this audit, the GitHub compare view reported `cms-development` **413 commits ahead and 0 behind** `main`, with **84 changed files** in the returned file comparison; the PR description's older 315-commit figure is stale. Review the full history and intended merge scope before any merge. Do not treat CI success as merge approval.
 - No Production deployment, Production D1 migration, Production binding change, Preview content publication, or PR merge was performed as part of this checkpoint.
 
+
+
+## Build-only workflow and current operational checkpoint — 19 November 2026
+
+- Commit `9427614eea6594485cc10b19bfacb91ade277f06` removes automated test execution from `.github/workflows/cms-build-check.yml`. The committed file was re-fetched and confirmed to contain no test command.
+- The build-only workflow retains `npm ci`, `npm run build`, Cloudflare Pages Functions compilation, Preview D1 schema-readiness inspection, and deployment/asset-fingerprint verification for the `cms-development` Preview branch.
+- This is a workflow-source change only. No successful run, build, Pages Functions compilation, D1 check or Preview deployment has yet been confirmed for this commit in this session. The GitHub connector available here does not expose a general Actions-run listing/dispatch operation; the commit-associated workflow-run lookup returned no runs, and combined commit status returned no statuses. Treat execution as pending, not failed or passed.
+- Updated `docs/CMS-PREVIEW-OPERATIONS.md` in commit `19c1dffc1c688fab4bff55f09d613808720ea0f2` to document the build-only sequence and explicitly defer tests, screenshots and image processing.
+- The PR description contains older run/test figures from a previous HEAD. Those are historical results and must not be presented as evidence for the current commit.
+- Live compare at this checkpoint reports `cms-development` 963 commits ahead of `main`, 0 behind, with 98 changed files. This large branch delta remains a merge-review gate; no merge or Production release is authorized.
+- Preview migration 0002/0003 is not being rerun. Do not modify migration files unless an actual schema requirement is established and the guarded workflow is deliberately reviewed.
+- Production D1/R2, bindings, secrets and deployments remain outside scope and untouched.
