@@ -26,7 +26,7 @@ async function getMediaUsage(db, media) {
     `).bind(media.public_url).all(),
     db.prepare(`
       SELECT v.setting_key AS key, v.setting_key AS title,
-        v.version_number AS version, v.state, v.created_at
+        v.value_json, v.version_number AS version, v.state, v.created_at
       FROM cms_site_setting_versions v
       WHERE instr(v.value_json, ?) > 0
       ORDER BY v.created_at DESC LIMIT 50
@@ -75,10 +75,30 @@ async function getMediaUsage(db, media) {
     visit(page);
     return { ...row, content_json: undefined, references };
   });
+  const settingsWithImageLocations = (settings.results || []).map((row) => {
+    let value = null;
+    try { value = JSON.parse(row.value_json || "null"); } catch {}
+    const references = [];
+    const visit = (entry, path = "$") => {
+      if (typeof entry === "string") {
+        if (entry === media.public_url) references.push(path);
+        return;
+      }
+      if (Array.isArray(entry)) {
+        entry.forEach((child, index) => visit(child, path + "[" + index + "]"));
+        return;
+      }
+      if (entry && typeof entry === "object") {
+        Object.entries(entry).forEach(([key, child]) => visit(child, path + "." + key));
+      }
+    };
+    visit(value);
+    return { ...row, value_json: undefined, references };
+  });
   const groups = {
     pages: pagesWithImageLocations,
     products: productsWithImageLocations,
-    settings: settings.results || [],
+    settings: settingsWithImageLocations,
   };
   const counts = {
     pages: Number(pageCount?.total || 0),
