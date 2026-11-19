@@ -5,10 +5,63 @@ function safeName(value) {
   return String(value || "upload").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(-100) || "upload";
 }
 
+async function getMediaUsage(db, media) {
+  const [pages, products, settings] = await Promise.all([
+    db.prepare(`
+      SELECT p.page_key AS key, COALESCE(v.title, p.title) AS title,
+        v.version_number AS version, v.state, v.created_at
+      FROM cms_page_versions v
+      JOIN cms_pages p ON p.id = v.page_id
+      WHERE instr(v.content_json, ?) > 0
+      ORDER BY v.created_at DESC LIMIT 50
+    `).bind(media.public_url).all(),
+    db.prepare(`
+      SELECT p.product_slug AS key,
+        COALESCE(json_extract(v.product_json, '$.name'), p.product_slug) AS title,
+        v.version_number AS version, v.state, v.created_at
+      FROM cms_product_versions v
+      JOIN cms_products p ON p.id = v.product_id
+      WHERE instr(v.product_json, ?) > 0
+      ORDER BY v.created_at DESC LIMIT 50
+    `).bind(media.public_url).all(),
+    db.prepare(`
+      SELECT v.setting_key AS key, v.setting_key AS title,
+        v.version_number AS version, v.state, v.created_at
+      FROM cms_site_setting_versions v
+      WHERE instr(v.value_json, ?) > 0
+      ORDER BY v.created_at DESC LIMIT 50
+    `).bind(media.public_url).all(),
+  ]);
+  const groups = {
+    pages: pages.results || [],
+    products: products.results || [],
+    settings: settings.results || [],
+  };
+  return {
+    groups,
+    total: groups.pages.length + groups.products.length + groups.settings.length,
+    truncated: Object.values(groups).some((rows) => rows.length === 50),
+  };
+}
+
 export async function onRequestGet(context) {
   const auth = await requireAdmin(context);
   if (!auth.ok) return auth.response;
   if (!context.env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
+  const requestedId = new URL(context.request.url).searchParams.get("id");
+  if (requestedId) {
+    try {
+      const media = await context.env.DB.prepare(
+        "SELECT id, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at FROM cms_media WHERE id=? AND deleted_at IS NULL"
+      ).bind(requestedId).first();
+      if (!media) return adminJson({ error: "Media item not found." }, 404);
+      const usage = await getMediaUsage(context.env.DB, media);
+      return adminJson({ ok: true, media, usage });
+    } catch (error) {
+      console.error("CMS media usage lookup failed", error);
+      return adminJson({ error: "Unable to load image usage information." }, 500);
+    }
+  }
   try {
     const rows = await context.env.DB.prepare(`
       SELECT
