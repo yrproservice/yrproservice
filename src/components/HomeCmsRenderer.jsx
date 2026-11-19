@@ -19,7 +19,7 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
     : {};
   const items = Array.isArray(c.items)
     ? c.items.filter((item) => section.type === "brand-grid"
-      ? typeof item === "string"
+      ? typeof item === "string" || (item && typeof item === "object" && !Array.isArray(item) && typeof item.url === "string")
       : item && typeof item === "object" && !Array.isArray(item))
     : [];
   const proofItems = Array.isArray(c.proofItems) ? c.proofItems.filter((item) => typeof item === "string") : [];
@@ -224,15 +224,13 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
       return <section className="bp-brands home-cms-section" key={section.id} style={sectionStyle} data-card-columns={sectionDesign.cardColumns || "auto"}><div className="container">
         <div className="bp-section-head"><div><p className="bp-eyebrow">{c.eyebrow}</p><h2>{c.heading}</h2></div><p>{c.description}</p></div>
         <div className="yr-brand-grid">
-          {items.map((file) => {
-            const brandName = String(file).replace(/\.[^.]+$/, "");
-
+          {items.map((item, index) => {
+            const uploaded = item && typeof item === "object" && !Array.isArray(item);
+            const brandName = uploaded ? (item.name || item.alt || \`Brand \${index + 1}\`) : String(item).replace(/\.[^.]+$/, "");
+            const imageUrl = uploaded ? item.url : \`/brand logo/fitted/\${brandName}.png\`;
             return (
-              <div className="bp-brand-card" key={file}>
-                <img
-                  src={`/brand logo/fitted/${brandName}.png`}
-                  alt={brandName + " dental equipment brand"}
-                />
+              <div className="bp-brand-card" key={uploaded ? (item.mediaId || item.url || index) : item}>
+                <img src={imageUrl} alt={uploaded ? (item.alt || brandName + " dental equipment brand") : brandName + " dental equipment brand"} />
               </div>
             );
           })}
