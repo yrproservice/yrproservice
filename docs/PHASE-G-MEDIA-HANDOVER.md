@@ -123,6 +123,20 @@ Additional commits:
 - `125d31f68a5595c9e9aa56260602de1b09b5bd19` — guard visual design publishing against unsaved edits.
 - `ff045d8c4b02f1259fa71695aed6a98341396073` — keep gallery replacement target stable during edits.
 
+## Additional Phase G continuation — homepage publishing clarity (19 November 2026)
+
+A source review of the combined Visual Website Editor confirmed that it already blocks publishing while page edits or invalid structured JSON remain unsaved. However, its primary action was labelled only “Publish”, and its confirmation/notice copy referred to the “public website” without clearly identifying the environment.
+
+- The action now reads “Publish to Preview”.
+- The confirmation explicitly says the revision goes to the isolated Preview website only and Production will not be changed.
+- Save and publish notices explicitly identify Preview and Production boundaries.
+- No publishing API, database binding, data or deployment configuration was changed; this is UI wording only.
+
+Commit:
+- `66f91a6f9ebb7ad85e183b92933c4044b2310580` — label homepage publish action as Preview-only.
+
+The homepage Visual Editor already had a handler-level unsaved-change guard and disabled the publish action for unsaved/invalid edits; this review confirmed and retained that protection. Source-level review only; no tests, builds, screenshots or image processing were performed.
+
 ## Existing safeguards and limits retained
 
 - Media library list: maximum 300 loaded records.
