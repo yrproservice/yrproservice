@@ -441,3 +441,14 @@ Commit:
 
 This was a source-level review and targeted edit only. It did not change product content, product schemas, media metadata, R2 objects, API contracts, database schema, Preview published content, Production or deployment configuration. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 
+## Recovery checkpoint refresh — 19 November 2026 (latest)
+
+- Repository: yrproservice/yrproservice
+- Working branch: cms-development
+- Latest functional source commit: 2f8510862a472611663f39a4369159f598c6fef3 (conservative media metadata dirty-state retention when a draft's record is filtered, archived, or absent from the capped loaded result).
+- Latest branch head before this documentation refresh: c077a9e5b10eb653639cb617404f74fc2ab3d4ad.
+- PR #2: https://github.com/yrproservice/yrproservice/pull/2 — Open, Draft, unmerged; PR head matched cms-development; base main.
+- Source-level review covered CMS Management tab changes and whole-workspace exit, both Products render paths, product selection, Visual Website Editor exit, media metadata draft retention, and ProductFormEditor / productEditorData / SpecBuilder / DocumentManager shape-preservation paths.
+- No tests, builds, screenshots, visual checks, image processing, deployments or migrations were run. Production and Preview published content were not changed.
+- Resume on cms-development from the latest branch head. Continue source-only Phase G review in small batches; defer all runtime and image verification to Phase H.
+
