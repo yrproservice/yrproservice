@@ -63,6 +63,23 @@ function LayoutPresetPicker({ value, options, onChange }) {
 function SectionPreview({ section, selected, onClick, design }) {
   const content = section.content || {};
   const sectionDesign = design?.sections?.[section.id] || {};
+  const items = Array.isArray(content.items) ? content.items : [];
+  const proofItems = Array.isArray(content.proofItems) ? content.proofItems : [];
+  const selectedProducts = content.productSlugs?.length
+    ? catalogueProducts.filter((product) => content.productSlugs.includes(product.slug))
+    : catalogueProducts.slice(0, 3);
+  const renderActions = () => (
+    <span className="cms-preview-actions">
+      {content.buttonText && <span className="cms-preview-button">{content.buttonText} →</span>}
+      {content.secondaryButtonText && <span className="cms-preview-button cms-preview-button-secondary">{content.secondaryButtonText}</span>}
+    </span>
+  );
+  const renderEyebrow = () => content.eyebrow
+    ? <span className="cms-preview-eyebrow">{content.eyebrow}</span>
+    : null;
+  const renderImage = (className = "") => content.imageUrl
+    ? <img className={className} src={content.imageUrl} alt={content.imageAlt || ""} />
+    : <span className="cms-preview-image-placeholder">Image not selected</span>;
   const previewStyle = {
     backgroundColor: sectionDesign.backgroundColor || "#ffffff",
     color: sectionDesign.textColor || "#1f2937",
@@ -76,67 +93,82 @@ function SectionPreview({ section, selected, onClick, design }) {
     "--cms-home-heading-weight": Number(design?.global?.headingWeight || 700),
     "--cms-home-heading-letter-spacing": `${Number(design?.global?.headingLetterSpacing ?? -0.025)}em`
   };
+
   return (
-    <button type="button" className={`cms-preview-section ${selected ? "is-selected" : ""}`}
+    <button type="button" className={`cms-preview-section ${selected ? "is-selected" : ""} cms-preview-type-${section.type}`}
       style={previewStyle} onClick={onClick} aria-pressed={selected}>
       <span className="cms-preview-type">{SECTION_TYPES.find((item) => item.value === section.type)?.label || section.type}</span>
-      {section.type === "hero" ? <div className="cms-preview-hero">
-        <div><h1>{content.heading || "Your heading"}{content.headingHighlight && <><br /><span>{content.headingHighlight}</span></>}</h1><p>{content.description || "Your description"}</p>
-          {content.buttonText && <span className="cms-preview-button">{content.buttonText}</span>}</div>
-        {content.imageUrl && <img src={content.imageUrl} alt={content.imageAlt || ""} />}
-      </div> : section.type === "image-text" ? <div className="cms-preview-image-text">
-        {content.imageUrl && <img src={content.imageUrl} alt={content.imageAlt || ""} />}
-        <div><h2>{content.heading || "Section heading"}</h2><p>{content.description || "Section description"}</p></div>
-      </div> : section.type === "product-grid" ? <div className="cms-preview-content-grid">
-        <h2>{content.heading || "Featured Products"}</h2>
-        <div className="cms-preview-product-grid">
-          {(content.productSlugs?.length
-            ? catalogueProducts.filter((product) =>
-                content.productSlugs.includes(product.slug)
-              )
-            : catalogueProducts.slice(0, 3)
-          )
-            .slice(0, 3)
-            .map((product) => (
-              <article className="cms-preview-product-card" key={product.slug}>
-                <div>
-                  {product.img ? <img src={product.img} alt="" /> : <span>Product image</span>}
-                </div>
-                <small>{product.brand || "YR Proservice"}</small>
-                <strong>{product.name}</strong>
-                <span>View details →</span>
-              </article>
+      {section.type === "hero" ? (
+        <span className="cms-preview-hero">
+          <span className="cms-preview-copy">
+            {renderEyebrow()}
+            <strong className="cms-preview-hero-heading">{content.heading || "Your heading"}{content.headingHighlight && <><br /><span>{content.headingHighlight}</span></>}</strong>
+            <span className="cms-preview-description">{content.description || "Your description"}</span>
+            {renderActions()}
+            {proofItems.length > 0 && <span className="cms-preview-proof">{proofItems.slice(0, 4).map((item, index) => <span key={index}>{item}</span>)}</span>}
+          </span>
+          {content.imageUrl && renderImage()}
+        </span>
+      ) : section.type === "image-text" ? (
+        <span className="cms-preview-image-text">
+          {renderImage()}
+          <span className="cms-preview-copy">{renderEyebrow()}<strong>{content.heading || "Section heading"}</strong><span>{content.description || "Section description"}</span>{renderActions()}</span>
+        </span>
+      ) : section.type === "editorial" ? (
+        <span className="cms-preview-editorial">
+          <span className="cms-preview-copy">{renderEyebrow()}<strong>{content.heading || "Editorial heading"}</strong><span>{content.description || "Editorial description"}</span>{renderActions()}</span>
+          <span className="cms-preview-editorial-image">{renderImage()}<span className="cms-preview-image-caption"><b>{content.imageNumber || "01"}</b><strong>{content.imageTitle || "Image title"}</strong><span>{content.imageDescription || "Image caption"}</span></span></span>
+        </span>
+      ) : section.type === "services-banner" ? (
+        <span className="cms-preview-services">
+          {renderImage()}
+          <span className="cms-preview-copy">{renderEyebrow()}<strong>{content.heading || "Services banner"}</strong><span>{content.description || "Services introduction"}</span>{renderActions()}</span>
+        </span>
+      ) : section.type === "product-grid" ? (
+        <span className="cms-preview-content-grid">
+          {renderEyebrow()}<strong>{content.heading || "Featured Products"}</strong><span>{content.description}</span>
+          <span className="cms-preview-product-grid">
+            {selectedProducts.slice(0, 3).map((product) => (
+              <span className="cms-preview-product-card" key={product.slug}>
+                <span>{product.img ? <img src={product.img} alt="" /> : "Product image"}</span>
+                <small>{product.brand || "YR Proservice"}</small><b>{product.name}</b><span>View details →</span>
+              </span>
             ))}
-        </div>
-      </div> : section.type === "feature-grid" ? <div className="cms-preview-content-grid">
-        <h2>{content.heading || "What We Provide"}</h2><p>{content.description || "Feature cards"}</p>
-        <div className="cms-preview-feature-grid">
-          {(content.items || []).slice(0, 3).map((item, index) => (
-            <article key={item.number || item.heading || index}>
-              <span>{item.number || String(index + 1).padStart(2, "0")}</span>
-              <strong>{item.heading || "Feature title"}</strong>
-              <p>{item.description || "Feature description"}</p>
-            </article>
-          ))}
-        </div>
-      </div> : section.type === "brand-grid" ? <div className="cms-preview-content-grid">
-        <h2>{content.heading || "Trusted Brands We Carry"}</h2><p>{content.description || "Brand partners"}</p>
-        <div className="cms-preview-brand-grid">
-          {(content.items || []).slice(0, 5).map((file) => {
-            const brandName = String(file).replace(/\\.[^.]+$/, "");
-
-            return (
-              <div key={file}>
-                <img
-                  src={`/brand logo/fitted/${brandName}.png`}
-                  alt={brandName}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </div> : <div><h2>{content.heading || "Section heading"}</h2><p>{content.description || "Section description"}</p>
-          {content.buttonText && <span className="cms-preview-button">{content.buttonText}</span>}</div>}
+          </span>
+        </span>
+      ) : ["feature-grid", "benefits-grid"].includes(section.type) ? (
+        <span className="cms-preview-content-grid">
+          {renderEyebrow()}<strong>{content.heading || (section.type === "benefits-grid" ? "Why choose us" : "What We Provide")}</strong><span>{content.description || "Section introduction"}</span>
+          <span className="cms-preview-feature-grid">
+            {items.slice(0, 4).map((item, index) => (
+              <span key={item.id || item.number || item.heading || index}>
+                <small>{item.number || String(index + 1).padStart(2, "0")}</small><b>{item.heading || item.title || "Card heading"}</b><span>{item.description || "Card description"}</span>
+              </span>
+            ))}
+            {items.length === 0 && <span className="cms-preview-empty-item">Add items in the section inspector</span>}
+          </span>
+        </span>
+      ) : section.type === "brand-grid" ? (
+        <span className="cms-preview-content-grid">
+          {renderEyebrow()}<strong>{content.heading || "Trusted Brands We Carry"}</strong><span>{content.description || "Brand partners"}</span>
+          <span className="cms-preview-brand-grid">
+            {items.slice(0, 6).map((file, index) => {
+              const brandName = String(file).replace(/\.[^.]+$/, "");
+              return <span key={file || index}><img src={`/brand logo/fitted/${brandName}.png`} alt={brandName} /></span>;
+            })}
+            {items.length === 0 && <span className="cms-preview-empty-item">Add brand logo filenames in the section inspector</span>}
+          </span>
+        </span>
+      ) : section.type === "cta" ? (
+        <span className="cms-preview-cta">
+          <span className="cms-preview-copy">{renderEyebrow()}<strong>{content.heading || "Call to action"}</strong><span>{content.description || "Supporting call-to-action text"}</span></span>
+          {renderActions()}
+        </span>
+      ) : (
+        <span className="cms-preview-copy cms-preview-text-section">
+          {renderEyebrow()}<strong>{content.heading || "Section heading"}</strong><span>{content.description || "Section description"}</span>{renderActions()}
+        </span>
+      )}
     </button>
   );
 }
