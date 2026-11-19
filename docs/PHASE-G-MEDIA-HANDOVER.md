@@ -1033,3 +1033,12 @@ Resume by refreshing branch/PR state, then continue the bounded Phase G source-o
 - This supplements (rather than replaces) commit `005338e0ae620ed20eca2bb05374b6c919efc2ba`, which hardened the separate metadata-edit endpoint.
 - Settings request validation from `53d6f38e152d2707e895d9a137ee8ac4c85bc0f1` remains in place.
 - No tests, builds, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (media metadata request bounds)
+
+- Commit `8284eca42071cec21996d477e7c5efca0bb10b55` updates `functions/api/cms/admin/media.js`.
+- The Media Library metadata/restore PATCH handler now requires an `application/json` content type, reads a bounded raw request body (4,096 characters maximum) before parsing, and rejects malformed JSON, null/primitives and arrays.
+- This aligns the small metadata action endpoint with the bounded JSON request handling already applied to settings. It does not alter upload handling, media records, R2 objects or restore/archive state.
+- Source review only. No tests, builds, API requests, image processing, screenshots, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
+- Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged and continue Phase G source-only review in small batches; Phase H remains deferred.
