@@ -717,3 +717,15 @@ No product records, product drafts, published catalogue content, media, database
 - Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
 - Resume by reading this handover, checking branch/PR state, and continuing small source-only reviews. Phase H remains the final verification stage.
 
+## Latest recovery checkpoint — 19 November 2026
+
+- Repository: `yrproservice/yrproservice`
+- Working branch: `cms-development`
+- Product workflow source commit: `8713ca67ab37e0a6c19f1860eaf60dd0d9b5cf08`.
+- Latest recovery-document commit before this checkpoint refresh: `2a3b35cb572da922c27fcde483c63687386be7c3`.
+- PR #2: Open, Draft, unmerged, targeting `main`. Its head was verified to match the branch after the source and documentation changes.
+- Continue only on `cms-development`. Do not merge PR #2, deploy, publish content to Preview, change Production, or run migrations without explicit authorization.
+- Recent source-only safeguards now cover media mutation/refresh separation; Visual Editor page-list readiness and request sequencing; Services and Team initial-load readiness; and Product list readiness, refresh sequencing, revision actions and partial catalogue-import recovery.
+- No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were run in this continuation.
+- On resumption: read this handover, verify the current branch and PR head, then continue the remaining source-only CMS workflow review in small batches. Defer all runtime, image, responsive, accessibility, security and final Preview verification to Phase H.
+
