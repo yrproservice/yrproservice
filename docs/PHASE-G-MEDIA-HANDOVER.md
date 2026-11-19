@@ -1360,3 +1360,21 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - No source, configuration, database or media changes were made in this review.
 - No tests/builds, browser/API requests, D1 queries, migrations, R2 operations, image processing, screenshots, Preview publishing/deployment, or Production changes were performed.
 - PR #2 remains Open/Draft/unmerged, targeting `main`. The latest handover commit is the current branch checkpoint; ahead/behind counts are branch-history metadata only and do not imply merge approval. Continue Phase G source-only work on `cms-development`; Phase H remains deferred until explicit authorization.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (request confirmation PDF page-break fix)
+
+### Source review and targeted correction
+- Reviewed the cart and chair-request local-storage providers, application entry point, request-confirmation PDF generator, CMS settings validation, and CMS page/product draft/publish paths.
+- The cart migration was checked against the actual app entry point. React Strict Mode is not enabled in the current root render, so a suspected Strict Mode double-initializer duplication was not treated as a confirmed defect and no migration change was made.
+- Confirmed a page-break drawing defect in `src/utils/requestConfirmationPdf.js`: `field()` captured the previous page's canvas context before calling `ensureSpace()`, and `paragraph()` reused a context across line-level page breaks. When content overflowed, text could be drawn on a page already queued for output rather than the newly active page.
+- Fixed both paths to draw through the active `page.context` after each page-break check. The updated source was re-fetched and checked for the active-context pattern and removal of both stale-context drawing patterns.
+- Commit: `f4ed8a35feb2191564d9ddd15362d56082469858`.
+
+### Verification status and Phase H follow-up
+- This is source inspection only. No PDF was generated, opened, or visually inspected; no tests or builds were run. Phase H must verify a multi-page request with fields and paragraphs crossing page boundaries, plus a short single-page request.
+- Additional source-only observations: request cart and chair selections persist independently in local storage; current root entry does not wrap the app in React Strict Mode. CMS page/product saves and publishing validate the payload before persistence/publication; concurrent draft/version conflicts remain Phase H operational checks already recorded above.
+- No D1, R2, migration, Preview deployment, Production, or image operation was performed.
+
+### Resume point
+- Continue source-only Phase G review on `cms-development`. Keep PR #2 Open/Draft/unmerged and Production untouched. Keep all tests, builds, generated PDFs, screenshots and image processing deferred to the final Phase H stage, which requires explicit authorization.
