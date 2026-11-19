@@ -191,6 +191,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   async function saveDraft() {
+    if (busy) return;
     if (!contentReady) {
       setError("Wait for the current Services content and media to finish loading before editing or saving.");
       return;
@@ -214,6 +215,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   async function deleteDraft() {
+    if (busy) return;
     if (!contentReady || reloadRequired) {
       setError("Load the current Services content successfully before deleting its draft.");
       return;
@@ -249,6 +251,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   async function publishDraft() {
+    if (busy) return;
     if (!contentReady || reloadRequired) {
       setError("Load the current Services content successfully before publishing its draft.");
       return;
