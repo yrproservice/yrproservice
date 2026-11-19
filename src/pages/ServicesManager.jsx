@@ -62,6 +62,7 @@ function Field({ label, value, onChange, multiline = false, rows = 3, hint = "" 
 export default function ServicesManager({ onUnsavedChange }) {
   const [content, setContent] = useState(() => cloneTemplate());
   const [reloadRequired, setReloadRequired] = useState(false);
+  const [contentReady, setContentReady] = useState(false);
   const [savedContentJson, setSavedContentJson] = useState(() => JSON.stringify(cloneTemplate()));
   const [media, setMedia] = useState([]);
   const [draftId, setDraftId] = useState("");
@@ -89,6 +90,7 @@ export default function ServicesManager({ onUnsavedChange }) {
     ]).then(([page, mediaResult]) => {
       if (!active) return;
       setMedia(mediaResult.media || []);
+      setContentReady(true);
       if (page?.page?.content) {
         setContent(page.page.content);
         setSavedContentJson(JSON.stringify(page.page.content));
@@ -102,6 +104,7 @@ export default function ServicesManager({ onUnsavedChange }) {
     }).catch((err) => {
       if (active) {
         setReloadRequired(true);
+        setContentReady(false);
         setError(err.message || "Unable to load Services content. Reload this manager before saving.");
       }
     });
@@ -109,6 +112,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }, []);
 
   function update(group, field, value) {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => section.type !== "services-page" ? section : {
@@ -118,6 +122,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function updateService(index, field, value) {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => {
@@ -134,6 +139,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function updateStep(index, field, value) {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => {
@@ -146,6 +152,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function updateGlobalDesign(field, value) {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       design: { ...(current.design || {}), global: { ...(current.design?.global || {}), [field]: value } }
@@ -153,6 +160,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function updateSectionDesign(sectionKey, field, value) {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       design: {
@@ -166,6 +174,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function moveSection(from, to) {
+    if (!contentReady || reloadRequired) return;
     setContent((current) => {
       const order = [...(current.sectionOrder || defaultSectionOrder)];
       if (to < 0 || to >= order.length || from === to) return current;
@@ -182,6 +191,10 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   async function saveDraft() {
+    if (!contentReady) {
+      setError("Wait for the current Services content and media to finish loading before editing or saving.");
+      return;
+    }
     if (reloadRequired) {
       setError("Reload this manager to retrieve the published page content before saving. The deleted draft is no longer available.");
       return;
@@ -261,6 +274,10 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function resetToTemplate() {
+    if (!contentReady || reloadRequired) {
+      setError("Load the current Services content successfully before restoring the editor baseline.");
+      return;
+    }
     if (!window.confirm("Discard the current unsaved edits and reload the original Services content? This does not delete any saved draft.")) return;
     setContent(cloneTemplate());
     setError("");
@@ -284,14 +301,14 @@ export default function ServicesManager({ onUnsavedChange }) {
       {notice && <p className="admin-alert admin-alert-success" role="status">{notice}</p>}
 
       <div className="cms-services-toolbar">
-        <button type="button" className="admin-secondary-button" onClick={resetToTemplate} disabled={busy}>Restore original content in editor</button>
+        <button type="button" className="admin-secondary-button" onClick={resetToTemplate} disabled={busy || !contentReady || reloadRequired}>Restore original content in editor</button>
         <button type="button" className="admin-secondary-button" onClick={openPreview} disabled={busy || !draftId || hasUnsavedChanges}>Preview saved draft</button>
-        <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !draftId}>Publish to Preview</button>
+        <button type="button" className="admin-secondary-button" onClick={publishDraft} disabled={busy || !contentReady || reloadRequired || !draftId}>Publish to Preview</button>
         <button
           type="button"
           className="admin-secondary-button"
-          onClick={deleteDraft} disabled={busy || !draftId}>Delete Draft</button>
-        <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy}>{busy ? "Saving…" : "Save Services draft"}</button>
+          onClick={deleteDraft} disabled={busy || !contentReady || reloadRequired || !draftId}>Delete Draft</button>
+        <button type="button" className="admin-primary-button" onClick={saveDraft} disabled={busy || !contentReady || reloadRequired}>{busy ? "Saving…" : "Save Services draft"}</button>
       </div>
 
 
