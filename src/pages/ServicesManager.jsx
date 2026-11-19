@@ -59,7 +59,7 @@ function Field({ label, value, onChange, multiline = false, rows = 3, hint = "" 
   );
 }
 
-export default function ServicesManager() {
+export default function ServicesManager({ onUnsavedChange }) {
   const [content, setContent] = useState(() => cloneTemplate());
   const [savedContentJson, setSavedContentJson] = useState(() => JSON.stringify(cloneTemplate()));
   const [media, setMedia] = useState([]);
@@ -75,6 +75,10 @@ export default function ServicesManager() {
   const defaultSectionOrder = ["hero", "intro", "listing", "process", "cta"];
   const sectionOrder = content.sectionOrder || defaultSectionOrder;
   const hasUnsavedChanges = JSON.stringify(content) !== savedContentJson;
+
+  useEffect(() => {
+    onUnsavedChange?.(hasUnsavedChanges);
+  }, [hasUnsavedChanges, onUnsavedChange]);
 
   useEffect(() => {
     let active = true;
