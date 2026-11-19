@@ -247,6 +247,13 @@ export default function CMSDashboard({ onAdminLogout }) {
   }, []);
 
   useEffect(() => {
+    sectionMediaUsageRequestId.current += 1;
+    setSectionMediaUsage(null);
+    setSectionMediaUsageId("");
+    setSectionMediaUsageLoading(false);
+  }, [selectedSectionId]);
+
+  useEffect(() => {
     const snapshot = JSON.stringify(content);
     const history = historyRef.current;
     if (history.suppressNext) {
