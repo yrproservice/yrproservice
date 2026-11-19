@@ -138,6 +138,10 @@ export default function AdminDashboard({ onAuthenticated }) {
     }
   }
 
+  function handleAdminNavigation(event) {
+    if (saving) event.preventDefault();
+  }
+
   function openRequest(item) {
     setSelected(item);
     setDraftStatus(item.status);
@@ -158,8 +162,8 @@ export default function AdminDashboard({ onAuthenticated }) {
             </p>
           </div>
           <div className="admin-header-actions">
-            <a className="admin-public-link" href="/admin/cms">Open Visual CMS ↗</a>
-            <a className="admin-public-link" href="/">View public website ↗</a>
+            <a className="admin-public-link" href="/admin/cms" onClick={handleAdminNavigation}>Open Visual CMS ↗</a>
+            <a className="admin-public-link" href="/" onClick={handleAdminNavigation}>View public website ↗</a>
           </div>
         </header>
 
@@ -193,7 +197,7 @@ export default function AdminDashboard({ onAuthenticated }) {
               type="button"
               className="admin-secondary-button"
               onClick={loadRequests}
-              disabled={loading}
+              disabled={loading || saving}
             >
               {loading ? "Refreshing…" : "Refresh"}
             </button>
