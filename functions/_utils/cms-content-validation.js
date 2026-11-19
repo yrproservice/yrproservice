@@ -125,7 +125,7 @@ export function validatePageContent(value) {
             }
           }
         }
-
+      } else {
         for (let itemIndex = 0; itemIndex < content.items.length; itemIndex += 1) {
           const itemError = validateSectionItem(content.items[itemIndex], itemIndex);
           if (itemError) return label + ": " + itemError;
