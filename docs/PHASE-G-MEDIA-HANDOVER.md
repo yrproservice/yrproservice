@@ -7,7 +7,7 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest functional source checkpoint: `98ac30dca653c5957c7f2b8fe7b28bafcba69acf` (Services hero media picker). The branch tip may be newer because the recovery document is updated in separate commits.
+- Latest functional source checkpoint: `c845023346f9170a828c202a403ec74ac8d48ddc` (Team media picker search). The branch tip may be newer because the recovery document is updated in separate commits.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: Open, Draft, unmerged (must remain Draft and unmerged without explicit user approval).
 - Production: untouched; do not merge or deploy.
@@ -186,6 +186,21 @@ Commit:
 - `98ac30dca653c5957c7f2b8fe7b28bafcba69acf` — add searchable Preview media picker to Services editor.
 
 Source inspection only; no tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
+## Additional Phase G continuation — Team media picker search (19 November 2026)
+
+The Team manager already offered direct Preview Media Library selection, but it displayed every loaded item without search. Its picker now has the same search fields and no-match handling as the Services picker:
+
+- Search by original filename, alt text, MIME type and object key.
+- Preserve manual URL entry for existing website assets.
+- Identify the selected image with both visual selected styling and `aria-pressed`.
+- Lazy-load picker thumbnails.
+- Show a clear no-match message without removing the manual URL option.
+
+Commit:
+- `c845023346f9170a828c202a403ec74ac8d48ddc` — add searchable media library to Team image picker.
+
+No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 
 ## Existing safeguards and limits retained
 
