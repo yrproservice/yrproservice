@@ -1322,7 +1322,7 @@ export default function CMSManagement() {
           </div>
           <button
             className="admin-secondary-button"
-            disabled={busy}
+            disabled={busy || !productsReady}
             onClick={importCatalogue}
           >
             Import missing catalogue products
