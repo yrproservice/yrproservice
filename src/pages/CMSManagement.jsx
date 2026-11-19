@@ -435,10 +435,17 @@ export default function CMSManagement() {
           (item) => item.product_slug === key
         );
 
-        if (productRow) {
+        if (productRow?.draft_product || productRow?.published_product) {
           chooseProduct(productRow);
         } else {
           setSelected(null);
+          setJson(JSON.stringify(blankProduct(), null, 2));
+          historyRequestId.current += 1;
+          setHistory([]);
+          setHistoryLoaded(false);
+          setHistoryLoading(false);
+          setHistoryFailed(false);
+          setEditorSelection((value) => value + 1);
         }
       }
 
