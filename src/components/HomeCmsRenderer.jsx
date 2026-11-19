@@ -163,7 +163,8 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
             alt={c.imageAlt || ""}
             style={{
               objectPosition: c.imagePosition || "center",
-              height: c.imageHeight ? `${c.imageHeight}px` : undefined,
+              height: c.imageFit === "original" ? "auto" : c.imageHeight ? `${c.imageHeight}px` : undefined,
+              objectFit: c.imageFit === "contain" ? "contain" : c.imageFit === "original" ? "initial" : "cover",
             }}
           />
           <div>
@@ -253,7 +254,8 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
           alt={c.imageAlt || ""}
           style={{
             objectPosition: c.imagePosition || "center",
-            height: c.imageHeight ? `${c.imageHeight}px` : undefined,
+            height: c.imageFit === "original" ? "auto" : c.imageHeight ? `${c.imageHeight}px` : undefined,
+              objectFit: c.imageFit === "contain" ? "contain" : c.imageFit === "original" ? "initial" : "cover",
           }}
         />
         <div className="bp-services-copy">
