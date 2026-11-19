@@ -109,6 +109,7 @@ export default function CMSManagement() {
   const [mediaOrphanScanning, setMediaOrphanScanning] = useState(false);
   const [storageReady, setStorageReady] = useState(false);
   const [settings, setSettings] = useState([]);
+  const [settingsReady, setSettingsReady] = useState(false);
   const [settingKey, setSettingKey] = useState("site.navigation");
   const [settingJson, setSettingJson] = useState(
     JSON.stringify({
@@ -149,6 +150,7 @@ export default function CMSManagement() {
     const data = await api("/api/cms/admin/settings");
     if (isActive()) {
       setSettings(data.settings || []);
+      setSettingsReady(true);
     }
   }
 
@@ -981,6 +983,10 @@ export default function CMSManagement() {
   }
   async function saveSetting() {
     if (busy) return;
+    if (!settingsReady) {
+      setError("Load the current settings successfully before saving. Reload the CMS and try again; no settings draft has been changed.");
+      return;
+    }
 
     let value;
 
