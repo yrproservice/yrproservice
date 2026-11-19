@@ -969,6 +969,11 @@ export default function CMSManagement() {
   }
 
   async function uploadMedia(event) {
+    if (busy || !storageReady) {
+      setError("Wait for Preview storage to be available before uploading. No file has been uploaded.");
+      if (event?.target) event.target.value = "";
+      return;
+    }
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -1022,6 +1027,7 @@ export default function CMSManagement() {
     try { return JSON.parse(json).img || ""; } catch { return ""; }
   })();
   async function removeMedia(id) {
+    if (busy) return;
     const item = media.find((row) => row.id === id);
     if (!item) {
       setError("This media record is no longer in the loaded library. Refresh the Media Library before archiving it.");
