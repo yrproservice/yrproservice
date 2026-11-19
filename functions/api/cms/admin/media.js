@@ -237,13 +237,12 @@ export async function onRequestDelete(context) {
   try {
     const row = await env.DB.prepare("SELECT id, storage_provider, object_key, public_url FROM cms_media WHERE id=? AND deleted_at IS NULL").bind(id).first();
     if (!row) return adminJson({ error: "Media item not found." }, 404);
-    const references = await Promise.all([
-      env.DB.prepare("SELECT id FROM cms_product_versions WHERE instr(product_json, ?) > 0 LIMIT 1").bind(row.public_url).first(),
-      env.DB.prepare("SELECT id FROM cms_page_versions WHERE instr(content_json, ?) > 0 LIMIT 1").bind(row.public_url).first(),
-      env.DB.prepare("SELECT id FROM cms_site_setting_versions WHERE instr(value_json, ?) > 0 LIMIT 1").bind(row.public_url).first(),
-    ]);
-    if (references.some(Boolean)) {
-      return adminJson({ error: "This image is referenced by saved CMS content or revision history. Replace those references first; the media file has been kept." }, 409);
+    const usage = await getMediaUsage(env.DB, row);
+    if (usage.total > 0) {
+      return adminJson({
+        error: "This image is referenced by saved CMS content or revision history. Replace those references first; the media file has been kept.",
+        usage,
+      }, 409);
     }
     if (row.storage_provider === "r2" && !env.CMS_MEDIA) {
       return adminJson({ error: "Preview R2 storage is unavailable. The media record has been kept." }, 503);
