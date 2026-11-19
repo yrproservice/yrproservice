@@ -1258,3 +1258,26 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - README and Preview operations guide now accurately describe the build-check as manual-only during Phase G; the separate Preview migration workflow remains unchanged.
 - No tests/builds/browser checks, API requests, database queries, migrations, screenshots, image processing, Preview deployment, or Production operations were performed.
 - Continue source-only review. Phase H remains deferred until explicit user authorization.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (CMS publish, revisions, media lifecycle and auth)
+
+### Source-only review completed
+- Reviewed CMS publish, page/product/settings draft save, revision restore/delete, media metadata/archive/restore/orphan reconciliation, public published page/product reads, route-destination validation, CMS schema migrations 0002/0003, settings validation, admin session endpoints, and Cloudflare Access JWT verification.
+- The schema enforces one draft per entity with partial unique indexes, positive unique version numbers, valid JSON columns, allowed version states, and media storage-provider constraints. D1 batch calls group multi-row draft/publish changes; no migration was executed.
+- Publish validates the selected draft's state and entity ownership, revalidates content and destinations, checks page-route conflicts, then batches the previous-version archive, selected-version publication, entity pointer update, and audit insertion.
+- Draft restore validates archived JSON and destinations, checks page route conflicts, and creates a new draft rather than changing the archived revision. Draft deletion is scoped to the selected entity's draft.
+- Media archive is soft-delete only and blocks archive when its URL appears in saved content or revision history. Restore checks that an R2 object still exists before unarchiving. Orphan reconciliation is read-only, paginated, prefix-scoped to `cms/`, and checks database-known keys including archived media records.
+- Admin session and CMS endpoints require the same fail-closed Cloudflare Access JWT verification; the configured and token email must match the single approved account. Admin responses use no-store headers.
+
+### Phase H verification observations (not changed)
+- Publish validates a target revision, then later batches state/pointer updates. Confirm stale concurrent publish/draft requests cannot cause a last-writer-wins result that publishes a revision whose contents changed after validation. Consider conditional state/version guards and inspect D1 batch result metadata if needed.
+- Page/product draft saves and settings draft saves read draft/latest version before writing. The schema's unique draft/version indexes prevent duplicate persisted states, but simultaneous requests may return a conflict/error; verify UI retry messaging and concurrent editor behaviour.
+- Media archive/restore and metadata update are separate read-then-write sequences. Conditional updates guard the final state; verify concurrent archive/restore and metadata changes in Phase H.
+- Media usage detection uses string occurrence to find candidate JSON rows and exact recursive equality to report references. Verify URL encoding/canonicalization expectations for legacy/static paths and R2 public URLs.
+- Authentication retrieves Cloudflare Access signing keys on each validation path (with Cloudflare cache hints). Verify latency/cache behaviour and failure recovery in Preview; no auth request was made during this source review.
+
+### Work boundary
+- No additional source code changes were justified by this review. All findings above are verification questions, not confirmed runtime defects.
+- No tests, builds, browser/API requests, D1 queries, migrations, R2 operations, image processing, screenshots, Preview deployment, or Production changes were performed.
+- Continue Phase G source-only review. Phase H remains deferred until explicit user authorization.
