@@ -1033,11 +1033,20 @@ export default function CMSManagement() {
       row.setting_key === settingKey && row.draft_id
         && !areJsonValuesEqual(settingJson, row.draft_value || "{}")
     );
-  const hasUnsavedMediaMetadataChanges = media.some((item) =>
-    !item.deleted_at &&
-    ((mediaAltDrafts[item.id] ?? item.alt_text ?? "") !== (item.alt_text ?? "") ||
-      (mediaFilenameDrafts[item.id] ?? item.original_file_name ?? "") !== (item.original_file_name ?? ""))
-  );
+  const mediaMetadataDraftIds = new Set([
+    ...Object.keys(mediaAltDrafts),
+    ...Object.keys(mediaFilenameDrafts),
+  ]);
+  const hasUnsavedMediaMetadataChanges = [...mediaMetadataDraftIds].some((id) => {
+    const item = media.find((row) => row.id === id);
+    // Keep a conservative warning if a locally edited record is no longer in
+    // the currently loaded (capped or filtered) media result.
+    if (!item) return true;
+    return (
+      (mediaAltDrafts[id] ?? item.alt_text ?? "") !== (item.alt_text ?? "") ||
+      (mediaFilenameDrafts[id] ?? item.original_file_name ?? "") !== (item.original_file_name ?? "")
+    );
+  });
 
   const allowUnloadAfterConfirm = useRef(false);
   function confirmCurrentTabLeave() {
