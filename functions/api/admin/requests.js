@@ -116,9 +116,22 @@ export async function onRequestPatch(context) {
       .bind(reference)
       .first();
     if (!existing) return adminJson({ error: "Request not found." }, 404);
-    await env.DB.prepare("UPDATE requests SET status = ? WHERE reference = ?")
-      .bind(status, reference)
-      .run();
+    const changed = await env.DB.prepare(
+      "UPDATE requests SET status = ? WHERE reference = ? AND status = ?"
+    ).bind(status, reference, existing.status).run();
+    if (Number(changed?.meta?.changes || 0) !== 1) {
+      const current = await env.DB.prepare(
+        "SELECT reference, request_type, status, created_at FROM requests WHERE reference = ? LIMIT 1"
+      ).bind(reference).first();
+      if (!current) return adminJson({ error: "Request not found." }, 404);
+      if (current.status === status) {
+        return adminJson({ ok: true, alreadyApplied: true, request: current });
+      }
+      return adminJson({
+        error: "This request status changed in another session. Refresh the request before updating it.",
+        request: current,
+      }, 409);
+    }
     const updated = await env.DB.prepare(
       "SELECT reference, request_type, status, created_at FROM requests WHERE reference = ? LIMIT 1",
     )
