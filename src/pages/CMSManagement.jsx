@@ -688,7 +688,7 @@ export default function CMSManagement() {
         return;
       }
       if (hasUnsavedSettingChanges && !window.confirm("Discard the unsaved settings edits and open this referenced setting?")) return;
-      if (!changeManagerTab("settings")) return;
+      if (tab !== "settings" && !changeManagerTab("settings")) return;
       const nextJson = row.draft_value || row.published_value || "{}";
       settingBaseline.current = { key: row.setting_key, json: nextJson };
       setSettingKey(row.setting_key);
