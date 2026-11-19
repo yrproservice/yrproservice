@@ -269,6 +269,24 @@ Changes in `src/pages/CMSManagement.jsx`:
 
 This is a client-side navigation and draft-state safeguard only. It does not change API contracts, database schema, stored settings, published content, or historical revisions. No settings were edited or saved during this source change.
 
+## Additional Phase G continuation — Visual Website Editor navigation safeguards (19 November 2026)
+
+A source review identified that the Visual Website Editor could replace the current page draft when an administrator selected another page, loaded the Home template, or started a new page. The section inspector could also replace unapplied structured JSON edits when a different section was selected.
+
+Focused safeguards were added in `src/pages/CMSDashboard.jsx`:
+- Confirm before opening a different page when the current page contains unsaved or unapplied changes.
+- Confirm before loading the Home template or starting a new page when the current page contains unsaved or unapplied changes.
+- Confirm before switching the selected section when its structured JSON contains unapplied edits.
+- Ignore a click on the already selected page, avoiding an unnecessary reload.
+- Disable page-list navigation while a page request is busy.
+
+These changes only protect editor navigation state. They do not modify API contracts, stored page content, media objects, database schema, published Preview content, Production or deployment configuration. No page drafts were saved or published during this source change.
+
+Commit:
+- `c964818bedba334ec4ee6e668bebe63baa5aeab0` — protect unsaved page and section edits during editor navigation.
+
+Source review only. Runtime behaviour remains unverified and is deferred to Phase H.
+
 ## Verification boundary
 
 No tests, builds, screenshots, visual checks, image processing, deployments, or database migrations were run in this continuation. Source-level inspection only was performed after the edits.
