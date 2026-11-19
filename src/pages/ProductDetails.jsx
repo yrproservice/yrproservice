@@ -83,6 +83,7 @@ export default function ProductDetails({ product, navigate, previewMode = false 
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [tab, setTab] = useState("description");
+  const [activeProductImage, setActiveProductImage] = useState(product.img || "");
   const [catalogueProducts, setCatalogueProducts] = useState(products);
   useEffect(() => {
     let active = true;
@@ -117,6 +118,20 @@ export default function ProductDetails({ product, navigate, previewMode = false 
     ? product.specifications
     : Array.isArray(product.highlights) ? product.highlights : [];
   const documents = getProductDocuments(product.docs);
+  const galleryImages = [
+    ...(product.img ? [{ url: product.img, alt: product.name || "Product image", key: "primary" }] : []),
+    ...(Array.isArray(product.gallery) ? product.gallery : [])
+      .filter((image) => image && typeof image.url === "string" && image.url.trim())
+      .map((image, index) => ({
+        url: image.url.trim(),
+        alt: typeof image.alt === "string" && image.alt.trim() ? image.alt.trim() : product.name || "Product image",
+        key: "gallery-" + index,
+      })),
+  ].filter((image, index, all) => all.findIndex((candidate) => candidate.url === image.url) === index);
+  const displayedProductImage = galleryImages.some((image) => image.url === activeProductImage)
+    ? activeProductImage
+    : product.img || galleryImages[0]?.url || "";
+
   const manufacturerSource = safeHttpsUrl(product.manufacturerSource);
 
   return (
@@ -134,11 +149,27 @@ export default function ProductDetails({ product, navigate, previewMode = false 
         <div className="bp-detail-photo">
           <div className="bp-detail-photo-frame">
             <ProductMediaFrame
-              src={product.img}
-              alt={product.img ? product.name : `${product.name} image unavailable`}
+              src={displayedProductImage}
+              alt={displayedProductImage ? (galleryImages.find((image) => image.url === displayedProductImage)?.alt || product.name) : `${product.name} image unavailable`}
               variant="detail"
             />
           </div>
+          {galleryImages.length > 1 && (
+            <div className="bp-product-gallery-thumbnails" role="group" aria-label="Product image gallery">
+              {galleryImages.map((image, index) => (
+                <button
+                  type="button"
+                  key={image.key}
+                  className={displayedProductImage === image.url ? "active" : ""}
+                  aria-label={`Show product image ${index + 1}`}
+                  aria-pressed={displayedProductImage === image.url}
+                  onClick={() => setActiveProductImage(image.url)}
+                >
+                  <img src={image.url} alt={image.alt} loading="lazy" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="bp-detail-info">
           <p className="bp-eyebrow">{product.brand || "YR Proservice"}</p>
