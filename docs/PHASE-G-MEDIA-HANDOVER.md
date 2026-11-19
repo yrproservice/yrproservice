@@ -1517,3 +1517,12 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Updated `src/components/GenericCmsRenderer.jsx` to render both legacy string entries and validated object entries with image, alt text and optional name. Updated `src/style.css` with a bounded `object-fit: contain` logo rule (max 160 × 64 px) inside generic brand-grid cards.
 - Commits: renderer `20b1a1c257898d5bc66c02056ac966d77d68d50c`; targeted CSS `d1db474ef38e71424892e85268240197d2821f51`.
 - Re-fetched both files and confirmed object-entry rendering and the logo sizing rule are present. No tests, builds, screenshots, browser checks, image loading/processing or Preview requests were performed. Phase H should verify image and string brand-grid entries at desktop/mobile sizes and confirm logo containment.
+
+
+## Additional bounded source review and CMS design-review loading improvement — 19 November 2026
+
+- Reviewed the CMS content/settings validators, section recovery helpers, Home/Services/Team CMS templates, service draft preview, page/product draft previews, CMS design preview/review, application route dispatch, Admin entry/access choice, request dashboard, request tracking and HR Contact.
+- Confirmed the CMS design-review page creates 13 independent iframe previews and previously marked all of them `loading="eager"`, causing every page preview to begin loading immediately when the review page opens. Changed the iframe to native `loading="lazy"` so off-screen page previews are deferred until needed. Code commit: `0e3238648e1dc70f4ed3c297d0e950cc9507d974`.
+- Re-fetch and source inspection confirmed the lazy-loading attribute. No tests, builds, browser checks, Preview calls or image work were performed. Phase H should verify that all 13 previews eventually load when scrolled into view and that the first visible preview appears normally.
+- Team CMS template still references role-based image assets (`team-1.jpg` through `team-4.jpg`) rather than named employees. Do not substitute or generate people imagery; confirm the intended genuine company imagery/content in the final visual stage.
+- No further confirmed code defect was identified in this review pass. Existing follow-ups remain: runtime verification of async loading and error states, malformed legacy CMS data, and final responsive/accessibility review.
