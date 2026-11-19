@@ -285,6 +285,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function resetToTemplate() {
+    if (busy) return;
     if (!contentReady || reloadRequired) {
       setError("Load the current Services content successfully before restoring the editor baseline.");
       return;
