@@ -7,7 +7,7 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest functional source checkpoint: `f44156cb15c1cbd22afbd8a1f72d497d3d0b0e06` (product gallery replacement target safety). The branch tip may be newer because the recovery document is updated in separate commits.
+- Latest functional source checkpoint: `98ac30dca653c5957c7f2b8fe7b28bafcba69acf` (Services hero media picker). The branch tip may be newer because the recovery document is updated in separate commits.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: Open, Draft, unmerged (must remain Draft and unmerged without explicit user approval).
 - Production: untouched; do not merge or deploy.
@@ -169,6 +169,23 @@ Commit:
 - `f44156cb15c1cbd22afbd8a1f72d497d3d0b0e06` — reset gallery replacement target after product edits.
 
 This was a source-level review and implementation only. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
+## Additional Phase G continuation — Services hero media picker (19 November 2026)
+
+A review of the dedicated Services content manager found that its hero image accepted a manually entered URL but did not provide the same direct Preview Media Library selection available in the Team manager. The Services manager already loads the Preview media list, so no API or database change was needed.
+
+The Services hero image control now:
+- Keeps the editable image URL field, preserving support for existing website assets and manually supplied paths.
+- Provides a searchable Preview Media Library picker.
+- Searches uploaded filename, alt text, MIME type and object key.
+- Shows selected-media state and an empty/no-match message.
+- Uses the existing Team media-picker layout classes to avoid introducing a new visual pattern.
+- Continues to edit the Services draft only; publishing safeguards remain in place.
+
+Commit:
+- `98ac30dca653c5957c7f2b8fe7b28bafcba69acf` — add searchable Preview media picker to Services editor.
+
+Source inspection only; no tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 
 ## Existing safeguards and limits retained
 
