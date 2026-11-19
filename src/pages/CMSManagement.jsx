@@ -539,6 +539,8 @@ export default function CMSManagement() {
     }
   }
   async function saveSetting() {
+    if (busy) return;
+
     let value;
 
     try {
@@ -549,6 +551,8 @@ export default function CMSManagement() {
     }
 
     setBusy(true);
+    setError("");
+    setNotice("");
 
     try {
       const data = await api("/api/cms/admin/settings", {
