@@ -467,32 +467,35 @@ export default function CMSManagement() {
         `Restored as draft V${data.version}. It has not been published.`
       );
 
-      if (type === "product") {
-        const refreshed = await api("/api/cms/admin/products");
-        const products = refreshed.products || [];
-        setItems(products);
-        const productRow = products.find(
-          (item) => item.product_slug === key
-        );
-        if (!productRow) {
-          throw new Error("The restored product draft could not be reloaded. Refresh the product list before editing.");
+      try {
+        if (type === "product") {
+          const refreshed = await api("/api/cms/admin/products");
+          const products = refreshed.products || [];
+          setItems(products);
+          const productRow = products.find(
+            (item) => item.product_slug === key
+          );
+          if (!productRow) {
+            throw new Error("The restored product draft was created, but its row was not returned.");
+          }
+          chooseProduct(productRow, true);
         }
-        chooseProduct(productRow, true);
-      }
 
-      if (type === "setting") {
-        const refreshed = await api("/api/cms/admin/settings");
-        const savedSettings = refreshed.settings || [];
-        setSettings(savedSettings);
-        if (settingKey === key) {
-          const row = savedSettings.find((item) => item.setting_key === key);
-          const nextJson = row?.draft_value || row?.published_value || "{}";
-          settingBaseline.current = { key, json: nextJson };
-          setSettingJson(nextJson);
+        if (type === "setting") {
+          const refreshed = await api("/api/cms/admin/settings");
+          const savedSettings = refreshed.settings || [];
+          setSettings(savedSettings);
+          if (settingKey === key) {
+            const row = savedSettings.find((item) => item.setting_key === key);
+            const nextJson = row?.draft_value || row?.published_value || "{}";
+            settingBaseline.current = { key, json: nextJson };
+            setSettingJson(nextJson);
+          }
         }
+        await loadHistory(type, key);
+      } catch (refreshError) {
+        setError(`Revision V${id} was restored as draft V${data.version}, but the editor could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
       }
-
-      await loadHistory(type, key);
     } catch (restoreError) {
       setError(restoreError.message);
     } finally {
@@ -531,46 +534,59 @@ export default function CMSManagement() {
         `Draft V${data.deletedVersion} deleted. Published content and archived history were preserved.`
       );
 
-      if (type === "product") {
-        const refreshed = await api("/api/cms/admin/products");
-        const products = refreshed.products || [];
-        setItems(products);
-
-        const productRow = products.find(
-          (item) => item.product_slug === key
-        );
-
-        if (productRow?.draft_product || productRow?.published_product) {
-          chooseProduct(productRow, true);
-        } else {
-          setSelected(null);
-          setJson(JSON.stringify(blankProduct(), null, 2));
-          historyRequestId.current += 1;
-          setHistory([]);
-          setHistoryLoaded(false);
-          setHistoryLoading(false);
-          setHistoryFailed(false);
-          setEditorSelection((value) => value + 1);
-        }
+      if (type === "product" && selected?.slug === key) {
+        setSelected(null);
+        setJson(JSON.stringify(blankProduct(), null, 2));
+        historyRequestId.current += 1;
+        setHistory([]);
+        setHistoryLoaded(false);
+        setHistoryLoading(false);
+        setHistoryFailed(false);
+        setEditorSelection((value) => value + 1);
+      }
+      if (type === "setting" && settingKey === key) {
+        settingBaseline.current = { key, json: "" };
+        setSettingJson("");
+        setSettingsReady(false);
       }
 
-      if (type === "setting") {
-        const refreshed = await api("/api/cms/admin/settings");
-        const savedSettings = refreshed.settings || [];
-        setSettings(savedSettings);
-
-        const settingRow = savedSettings.find(
-          (item) => item.setting_key === key
-        );
-
-        if (settingKey === key) {
-          const nextJson = settingRow?.draft_value || settingRow?.published_value || "{}";
-          settingBaseline.current = { key, json: nextJson };
-          setSettingJson(nextJson);
+      try {
+        if (type === "product") {
+          const refreshed = await api("/api/cms/admin/products");
+          const products = refreshed.products || [];
+          setItems(products);
+          const productRow = products.find((item) => item.product_slug === key);
+          if (productRow?.draft_product || productRow?.published_product) {
+            if (selected?.slug !== key) chooseProduct(productRow, true);
+          } else if (selected?.slug !== key) {
+            setSelected(null);
+            setJson(JSON.stringify(blankProduct(), null, 2));
+            historyRequestId.current += 1;
+            setHistory([]);
+            setHistoryLoaded(false);
+            setHistoryLoading(false);
+            setHistoryFailed(false);
+            setEditorSelection((value) => value + 1);
+          }
         }
-      }
 
-      await loadHistory(type, key);
+        if (type === "setting") {
+          const refreshed = await api("/api/cms/admin/settings");
+          const savedSettings = refreshed.settings || [];
+          setSettings(savedSettings);
+          setSettingsReady(true);
+          const settingRow = savedSettings.find((item) => item.setting_key === key);
+          if (settingKey === key) {
+            const nextJson = settingRow?.draft_value || settingRow?.published_value || "{}";
+            settingBaseline.current = { key, json: nextJson };
+            setSettingJson(nextJson);
+          }
+        }
+        await loadHistory(type, key);
+      } catch (refreshError) {
+        if (type === "setting") setSettingsReady(false);
+        setError(`Draft V${data.deletedVersion} was deleted successfully, but the editor/list could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
+      }
     } catch (deleteError) {
       setError(deleteError.message);
     } finally {
