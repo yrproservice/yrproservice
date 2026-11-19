@@ -91,6 +91,17 @@ export function ChairRequestProvider({ children }) {
   }, [items, migrationReady, cartStorageReady, storageReady]);
 
   function retryChairPersistence() {
+    if (!storageReady) {
+      const refreshed = readChairState();
+      if (!refreshed.storageReady) {
+        setStorageError(refreshed.storageError);
+        return;
+      }
+      setItems(refreshed.items);
+      setStorageReady(true);
+      setStorageError("");
+      return;
+    }
     try {
       localStorage.setItem("yr-chair-requests", JSON.stringify(items));
       setStorageError("");
