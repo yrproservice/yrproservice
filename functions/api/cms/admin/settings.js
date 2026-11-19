@@ -42,7 +42,7 @@ export async function onRequestPost(context) {
   const validationError = validateSiteSetting(key, body.value);
   if (validationError) return adminJson({ error: validationError }, 400);
   const json = JSON.stringify(body.value);
-  if (json.length > 50000) return adminJson({ error: "Setting value is too large." }, 413);
+  if (new TextEncoder().encode(json).byteLength > 50000) return adminJson({ error: "Setting value is too large." }, 413);
   try {
     const db = context.env.DB, now = new Date().toISOString(), actor = auth.email || null;
     const draft = await db.prepare("SELECT id, version_number FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'").bind(key).first();
