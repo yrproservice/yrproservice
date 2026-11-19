@@ -1690,3 +1690,11 @@ The remaining significant verification gate is authenticated Preview CMS runtime
 - No Production deployment, migration, binding, secret or data changes.
 - Next operational action: inspect GitHub Actions for the push-triggered `CMS Preview Build Check` run on the latest branch HEAD. If no run was created, use GitHub Actions UI to dispatch the workflow on `cms-development` only after confirming the workflow file shown there matches the build-only version. Do not use the migration workflow.
 - If a run is available, review its job steps/logs for dependency install, Vite build, Pages Functions build, Preview D1 readiness and Preview deployment/asset fingerprint. Record the exact run ID and commit SHA. A build/deploy result is not a test result.
+
+
+## Cart/chair migration source recheck — 19 November 2026
+
+- Re-fetched current `CartContext.jsx`, `ChairRequestContext.jsx` and `cartMigration.js` from `cms-development`.
+- Confirmed source now gates normal-cart persistence until migration/storage readiness, catches storage exceptions, writes the dedicated chair store before rewriting the normal cart, and uses a migration quantity marker to make partial-success retries idempotent.
+- The earlier concern recorded in the Phase G source review is addressed in current source. Quota/security failure scenarios and retry UI still require the deferred final-stage tests/runtime verification; no tests were inspected or run in this pass.
+- Source-review note updated in commit `df27d67526ff79b5fdf03acd0556aa3254ab444c`.
