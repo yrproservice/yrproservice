@@ -288,11 +288,27 @@ export async function onRequestPatch(context) {
         const object = await env.CMS_MEDIA.head(row.object_key);
         if (!object) return adminJson({ error: "The stored image is missing from Preview R2. It cannot be restored." }, 409);
       }
+      const restoredAt = new Date().toISOString();
       const restored = await env.DB.prepare(
         "UPDATE cms_media SET deleted_at=NULL WHERE id=? AND deleted_at IS NOT NULL"
       ).bind(id).run();
       if (restored?.meta?.changes === 0) return adminJson({ error: "This media item is no longer archived." }, 409);
-      return adminJson({ ok: true, restored: true });
+      let auditRecorded = true;
+      try {
+        await env.DB.prepare(`
+          INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
+          VALUES (?, ?, 'restore_media', 'media', ?, ?)
+        `).bind(
+          crypto.randomUUID(),
+          auth.email || null,
+          id,
+          JSON.stringify({ objectKey: row.object_key, restoredAt })
+        ).run();
+      } catch (auditError) {
+        auditRecorded = false;
+        console.error("CMS media restore audit failed", auditError);
+      }
+      return adminJson({ ok: true, restored: true, auditRecorded });
     } catch (error) {
       console.error("CMS media restore failed", error);
       return adminJson({ error: "Unable to restore this media item." }, 500);
@@ -374,9 +390,24 @@ export async function onRequestDelete(context) {
     if (softDelete?.meta?.changes === 0) {
       return adminJson({ error: "This media item has already been removed." }, 409);
     }
+    let auditRecorded = true;
+    try {
+      await env.DB.prepare(`
+        INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
+        VALUES (?, ?, 'archive_media', 'media', ?, ?)
+      `).bind(
+        crypto.randomUUID(),
+        auth.email || null,
+        id,
+        JSON.stringify({ storageProvider: row.storage_provider, objectKey: row.object_key, publicUrl: row.public_url, archivedAt: deletedAt })
+      ).run();
+    } catch (auditError) {
+      auditRecorded = false;
+      console.error("CMS media archive audit failed", auditError);
+    }
     // Keep the R2 object during the recovery window. The database record is
     // hidden from the active library but can be restored without re-uploading.
-    return adminJson({ ok: true });
+    return adminJson({ ok: true, auditRecorded });
   } catch (error) {
     console.error("CMS media delete failed", error);
     return adminJson({ error: "Unable to remove this media item." }, 500);
