@@ -688,3 +688,32 @@ No Services or Team content, media, drafts, published pages, database schema, de
 - Production remains untouched. No Preview publishing, deployments, migrations or tests were performed.
 - Continue source-only Phase G review in small batches. Defer all runtime, responsive, accessibility, security and image verification to Phase H.
 
+## Additional Phase G continuation — product catalogue load readiness and import recovery (19 November 2026)
+
+A source review of CMS Management found that the Product tab initially displayed an empty product list while its first API request was still pending. If that request failed, the Add Product and catalogue import actions could still be attempted against an incomplete view of existing records.
+
+Updated `src/pages/CMSManagement.jsx`:
+- Added a product-list readiness state. Product selection, Add Product, Save, Archive, Publish, revision restore, product-draft deletion and catalogue import are guarded until the product list has loaded successfully.
+- The product list's refresh requests are sequenced. Older responses cannot overwrite newer product data or incorrectly restore readiness after a newer request.
+- A failed post-mutation refresh leaves product actions blocked until the list is successfully reloaded, avoiding further work against stale product rows.
+- Revision restore now uses the same sequenced product-list refresh before selecting the restored product draft.
+- Catalogue import now distinguishes a completed import from a failed list refresh. If the import stops partway through, it reports how many drafts were created and still attempts a refresh. If all imports succeed but the refresh fails, the UI reports that all drafts were created and requires a reload. The partial-import recovery path also releases the busy state.
+- Catalogue import is disabled while the list is unavailable or another CMS action is busy.
+
+Commits:
+- cfd46ce212272b8f0d78061ce143a1d3e0268dde — require a loaded product list before CMS product actions and sequence refresh requests.
+- e08673212c6f2646070b493023c7fa47eddda362 — distinguish catalogue import outcomes from list-refresh failures.
+- 2fc04e9eaaa8f4a6fc6873b957bc49e0b96f66d1 — ensure a partial import releases the busy state.
+- 8713ca67ab37e0a6c19f1860eaf60dd0d9b5cf08 — disable catalogue import until the product list is ready.
+
+No product records, product drafts, published catalogue content, media, database schema, deployment configuration or Production data were changed by these source edits. Source inspection only; no tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (product list readiness)
+
+- Working branch: `cms-development`
+- Latest product workflow source commit: `8713ca67ab37e0a6c19f1860eaf60dd0d9b5cf08`.
+- Product list readiness and refresh sequencing are now shared by normal product actions, revision restore and catalogue import.
+- PR #2 must remain Open, Draft and unmerged; confirm its head matches the branch after any interruption.
+- Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+- Resume by reading this handover, checking branch/PR state, and continuing small source-only reviews. Phase H remains the final verification stage.
+
