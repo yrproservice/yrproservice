@@ -99,7 +99,12 @@ export default function ServicesManager({ onUnsavedChange }) {
       } else {
         setNotice("Existing Services content is loaded as the starting point. Save to create the first Services draft.");
       }
-    }).catch((err) => { if (active) setError(err.message || "Unable to load Services content."); });
+    }).catch((err) => {
+      if (active) {
+        setReloadRequired(true);
+        setError(err.message || "Unable to load Services content. Reload this manager before saving.");
+      }
+    });
     return () => { active = false; };
   }, []);
 
