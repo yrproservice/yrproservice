@@ -59,9 +59,43 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      - name: Deploy to Cloudflare Pages Preview
+      - name: Deploy or verify Cloudflare Pages Preview
         if: success()
-        run: npx wrangler@4.157.0 pages deploy dist --project-name=yrproservice --branch=cms-development --commit-hash="$GITHUB_SHA"
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${CLOUDFLARE_PAGES_API_TOKEN:-}" ]; then
+            CLOUDFLARE_API_TOKEN="$CLOUDFLARE_PAGES_API_TOKEN" npx wrangler@4.157.0 pages deploy dist --project-name=yrproservice --branch=cms-development --commit-hash="$GITHUB_SHA"
+            exit 0
+          fi
+
+          echo "No dedicated Pages deployment token is configured; checking the Git-integrated Preview branch for this exact build."
+          for attempt in $(seq 1 18); do
+            if curl --fail --silent --show-error "https://cms-development.yrproservice.pages.dev/" --output preview-index.html; then
+              if node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const local = fs.readFileSync('dist/index.html', 'utf8');
+          const preview = fs.readFileSync('preview-index.html', 'utf8');
+          const assets = (html) => [...html.matchAll(/(?:src|href)="([^"]*\/assets\/[^"]+)"/g)]
+            .map((match) => match[1])
+            .sort();
+          const expected = assets(local);
+          const actual = assets(preview);
+          if (expected.length === 0 || expected.join("\n") !== actual.join("\n")) {
+            process.exit(1);
+          }
+          console.log('Preview branch is serving the same hashed JS/CSS assets as this build.');
+          NODE
+              then
+                exit 0
+              fi
+            fi
+            echo "Preview deployment not matched yet (attempt $attempt/18)."
+            sleep 10
+          done
+
+          echo "::error::Preview deployment could not be matched to this build. Add CLOUDFLARE_PAGES_API_TOKEN with Account Cloudflare Pages Edit and User Memberships Read to enable direct Preview upload."
+          exit 1
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_PAGES_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
