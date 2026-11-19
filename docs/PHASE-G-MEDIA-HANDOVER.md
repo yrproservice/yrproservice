@@ -1396,3 +1396,24 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 
 ### Resume point
 - Continue bounded source-only Phase G review on `cms-development`. Keep PR #2 Open/Draft/unmerged and Production untouched. Keep tests, builds, PDFs, screenshots and image processing deferred to the final Phase H stage, pending explicit authorization.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (cart quantity hydration)
+
+### Source review and targeted correction
+- Reviewed the product cart and dental-chair request pages and their local-storage context providers.
+- Found that persisted quantities were accepted without normalization. A legacy or malformed stored string such as `"2"` could concatenate during quantity increments and count reductions rather than behave as a number. The chair-request provider also trusted every stored object as a chair request.
+- `src/components/CartContext.jsx` now normalizes restored, migrated, added and updated quantities to positive safe integers (invalid values fall back to 1). Existing records read from the dedicated chair store are filtered through the same fixed dental-chair workflow rule before migration.
+- `src/components/ChairRequestContext.jsx` now restores only records classified by the dental-chair workflow, normalizes restored/added/updated quantities, rejects attempts to add non-chair products, and computes counts from normalized numeric quantities.
+- Both updated files were re-fetched from `cms-development`; source checks confirmed the normalization helper, hydration paths, add/update paths and chair-flow guard are present.
+- Commits:
+  - `c94b2f10e7941a05be93fa6220d8bae083c9a136` — normalize persisted product cart quantities.
+  - `b88acf55f9f1ea23ad5f170d2df0efe6b2260ea2` — normalize dental-chair request quantities and enforce the chair flow in its storage provider.
+
+### Verification status and Phase H follow-up
+- Source inspection only. No browser storage was modified and no cart/request was submitted. No tests, builds, screenshots, generated PDFs, image processing, API requests, D1/R2 operations, migrations, Preview deployment/publishing or Production changes were performed.
+- Phase H should verify migration of legacy chair entries, string/fractional/zero/negative/unsafe quantities, separate cart counts, add/remove/update/clear behavior, and rejection of non-chair entries in the chair-request store.
+- The local-storage migration's storage-quota/error recovery remains a separate review item; do not assume that failure mode is covered by these quantity changes.
+
+### Resume point
+- Continue bounded source-only Phase G review on `cms-development`. Recheck live branch HEAD and PR #2 before further edits. Keep PR #2 Open/Draft/unmerged and Production untouched. Keep tests, builds, PDFs, screenshots and image processing deferred to the final Phase H stage, pending explicit authorization.
