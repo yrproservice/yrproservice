@@ -872,3 +872,26 @@ No page content, drafts, published pages, media, settings, database schema, depl
 - Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
 - Continue remaining Phase G source-only review in small batches. Phase H remains the final runtime, image, responsive, accessibility, security and Preview verification stage.
 
+## Additional Phase G continuation — Media upload and archive handler guards (19 November 2026)
+
+A focused source review of `src/pages/CMSManagement.jsx` found that the media upload input was disabled while busy or when Preview storage was unavailable, but its handler did not independently enforce those conditions. The archive button was also disabled while busy, while its handler lacked the same duplicate-action guard.
+
+Updated `src/pages/CMSManagement.jsx`:
+- Media upload handler now refuses to start if another CMS action is busy or Preview storage is unavailable, reports that no file was uploaded, and clears the selected file input.
+- Media archive handler now exits immediately if another CMS action is busy, preventing rapid repeated archive requests before the disabled button rerenders.
+- Existing upload, archive confirmation, metadata-draft protection, reference checks, storage retention and post-mutation refresh handling remain unchanged.
+
+Commit:
+- cd36d7aca3622cad523d35d58b435be1028e110d — add handler-level guards to CMS media upload and archive.
+
+No media was uploaded, archived, restored or modified. No database records, storage objects, drafts, published content, deployment configuration or Production data were changed by this source edit. Source review only; no tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (media action guards)
+
+- Working branch: `cms-development`
+- Latest change: `cd36d7aca3622cad523d35d58b435be1028e110d`.
+- Earlier changes in this continuation: Visual Design Studio initial settings readiness (`b7a5f54ef0cdb18b2c8e31c8d209da38f87980ee`); Visual Website Editor page navigation readiness (`ef6483cb9c4936a1c4efd2fee3ea01e2cf778e93`); Home-template/New-page busy guards (`3b2b8dd512ff27154e2c487d7dd8b77b01c8b149`).
+- PR #2 must remain Open, Draft and unmerged; verify its head matches branch HEAD before resuming.
+- Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+- Continue remaining Phase G source-only review in small batches. Phase H remains the final runtime, image, responsive, accessibility, security and Preview verification stage.
+
