@@ -79,6 +79,8 @@ export default function CMSManagement() {
     setVisualDesignUnsaved((current) => current[key] === dirty ? current : { ...current, [key]: dirty });
   }, []);
   const [items, setItems] = useState([]);
+  const [productsReady, setProductsReady] = useState(false);
+  const productsListRequestId = useRef(0);
   const [selected, setSelected] = useState(null);
   const [json, setJson] = useState("{}");
   const [history, setHistory] = useState([]);
@@ -131,9 +133,20 @@ export default function CMSManagement() {
   const [historyKey, setHistoryKey] = useState("");
 
   async function refreshProducts(isActive = () => true) {
-    const data = await api("/api/cms/admin/products");
-    if (isActive()) {
-      setItems(data.products || []);
+    const requestId = ++productsListRequestId.current;
+    if (isActive()) setProductsReady(false);
+    try {
+      const data = await api("/api/cms/admin/products");
+      if (!isActive() || requestId !== productsListRequestId.current) return null;
+      const products = data.products || [];
+      setItems(products);
+      setProductsReady(true);
+      return products;
+    } catch (loadError) {
+      if (isActive() && requestId === productsListRequestId.current) {
+        setProductsReady(false);
+      }
+      throw loadError;
     }
   }
 
@@ -189,6 +202,10 @@ export default function CMSManagement() {
     };
   }, [tab]);
   function chooseProduct(row, confirmedDiscard = false) {
+    if (!productsReady && !confirmedDiscard) {
+      setError("Load the current product list successfully before opening or creating a product.");
+      return;
+    }
     const nextSlug = row?.product_slug || "";
     const sameSelection = selected && (
       selected.isNew ? !row : selected.slug === nextSlug
@@ -229,6 +246,10 @@ export default function CMSManagement() {
     setEditorSelection((value) => value + 1);
   }
   async function saveProduct() {
+    if (!productsReady) {
+      setError("Load the current product list successfully before saving. Reload the CMS and try again.");
+      return;
+    }
     let product;
 
     try {
@@ -281,6 +302,10 @@ export default function CMSManagement() {
     }
   }
   async function archiveProduct() {
+    if (!productsReady) {
+      setError("Load the current product list successfully before archiving a product.");
+      return;
+    }
     if (!selected?.slug) return;
 
     let product;
@@ -337,6 +362,10 @@ export default function CMSManagement() {
     }
   }
   async function publishProduct() {
+    if (!productsReady) {
+      setError("Load the current product list successfully before publishing a product.");
+      return;
+    }
     if (!selected?.draftId) return;
     if (selected.savedJson !== json) {
       setError("Save the current product edits before publishing. The previously saved draft has not been published.");
@@ -377,6 +406,10 @@ export default function CMSManagement() {
     }
   }
   async function importCatalogue() {
+    if (!productsReady) {
+      setError("Load the current product list successfully before importing catalogue products.");
+      return;
+    }
     const existingSlugs = new Set(items.map((item) => item.product_slug));
     const missingProducts = catalogue.filter(
       (product) => !existingSlugs.has(product.slug)
@@ -439,6 +472,10 @@ export default function CMSManagement() {
   }
   async function restoreRevision(type, key, id) {
     if (busy) return;
+    if (type === "product" && !productsReady) {
+      setError("Load the current product list successfully before restoring a product revision.");
+      return;
+    }
 
     const discardsSettingEdits = type === "setting" && key === settingKey && hasUnsavedSettingChanges;
     const discardsProductEdits = type === "product" && selected?.slug === key && selected.savedJson !== json;
@@ -469,9 +506,8 @@ export default function CMSManagement() {
 
       try {
         if (type === "product") {
-          const refreshed = await api("/api/cms/admin/products");
-          const products = refreshed.products || [];
-          setItems(products);
+          const products = await refreshProducts();
+          if (!products) throw new Error("The product list refresh was superseded. Reload the CMS before continuing.");
           const productRow = products.find(
             (item) => item.product_slug === key
           );
@@ -509,6 +545,10 @@ export default function CMSManagement() {
   }
   async function deleteDraft(type, key, id) {
     if (!id || busy) return;
+    if (type === "product" && !productsReady) {
+      setError("Load the current product list successfully before deleting a product draft.");
+      return;
+    }
 
     const discardsSettingEdits = type === "setting" && key === settingKey && hasUnsavedSettingChanges;
     const discardsProductEdits = type === "product" && selected?.slug === key && selected.savedJson !== json;
@@ -1287,6 +1327,7 @@ export default function CMSManagement() {
               <button
                 key={row.id}
                 className={selected?.slug === row.product_slug ? "active" : ""}
+                disabled={!productsReady || busy}
                 onClick={() => chooseProduct(row)}
               >
                 <strong>{product.name || row.product_slug}</strong>
@@ -1304,15 +1345,15 @@ export default function CMSManagement() {
             );
           })}
         </div>
-        <button className="admin-secondary-button" onClick={()=>chooseProduct(null)}>＋ Add product</button>
+        <button className="admin-secondary-button" onClick={()=>chooseProduct(null)} disabled={!productsReady || busy}>＋ Add product</button>
       </section>
       <section className="cms-manager-panel">
         <h2>{selected?.slug?"Edit product":"Product editor"}</h2>
         <p>Structured fields edit only the chosen values. Specifications, documents, image paths, and unexposed product metadata are preserved when saving. {selected?.draftId ? `You are editing draft V${selected.version}; published content remains unchanged until you publish to Preview.` : selected?.slug ? "No saved draft is loaded. The editor starts from the published product; save your changes as a new draft before publishing to Preview." : "New product content remains a draft until you explicitly publish it to Preview."}</p>
         <ProductFormEditor key={editorSelection} json={json} onJsonChange={setJson} slugLocked={Boolean(selected&&!selected.isNew)} media={media} onInspectMedia={(item) => { if (changeManagerTab("media")) inspectMediaUsage(item, true); }}/>
         <div className="cms-manager-actions">
-          <button className="admin-primary-button" disabled={busy||!selected} onClick={saveProduct}>Save product draft</button>
-          <button className="admin-secondary-button" disabled={busy||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button>
+          <button className="admin-primary-button" disabled={busy||!productsReady||!selected} onClick={saveProduct}>Save product draft</button>
+          <button className="admin-secondary-button" disabled={busy||!productsReady||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button>
           <button
             className="admin-secondary-button"
             disabled={!selected?.slug}
