@@ -18,7 +18,7 @@ async function getMediaUsage(db, media) {
     db.prepare(`
       SELECT p.product_slug AS key,
         COALESCE(json_extract(v.product_json, '$.name'), p.product_slug) AS title,
-        v.version_number AS version, v.state, v.created_at
+        v.product_json, v.version_number AS version, v.state, v.created_at
       FROM cms_product_versions v
       JOIN cms_products p ON p.id = v.product_id
       WHERE instr(v.product_json, ?) > 0
@@ -35,9 +35,29 @@ async function getMediaUsage(db, media) {
     db.prepare("SELECT COUNT(*) AS total FROM cms_product_versions WHERE instr(product_json, ?) > 0").bind(media.public_url).first(),
     db.prepare("SELECT COUNT(*) AS total FROM cms_site_setting_versions WHERE instr(value_json, ?) > 0").bind(media.public_url).first(),
   ]);
+  const productsWithImageLocations = (products.results || []).map((row) => {
+    let product = null;
+    try { product = JSON.parse(row.product_json || "{}"); } catch {}
+    const references = [];
+    const visit = (value, path = "$") => {
+      if (typeof value === "string") {
+        if (value === media.public_url) references.push(path);
+        return;
+      }
+      if (Array.isArray(value)) {
+        value.forEach((entry, index) => visit(entry, path + "[" + index + "]"));
+        return;
+      }
+      if (value && typeof value === "object") {
+        Object.entries(value).forEach(([key, entry]) => visit(entry, path + "." + key));
+      }
+    };
+    visit(product);
+    return { ...row, product_json: undefined, references };
+  });
   const groups = {
     pages: pages.results || [],
-    products: products.results || [],
+    products: productsWithImageLocations,
     settings: settings.results || [],
   };
   const counts = {
