@@ -301,8 +301,13 @@ for (const entityType of ["page", "product", "setting"]) {
     assert.deepEqual(batch[0].values, ["previous-version"]);
     assert.ok(batch[1].sql.includes("SET state = 'published'"));
     assert.equal(batch[1].values[1], "draft-version");
-    assert.ok(batch[2].sql.includes("SET published_version_id = ?"));
-    assert.equal(batch[2].values[0], "draft-version");
+    if (entityType === "page") {
+      assert.ok(batch[2].sql.includes("SET title = ?, route = ?, published_version_id = ?"));
+      assert.equal(batch[2].values[2], "draft-version");
+    } else {
+      assert.ok(batch[2].sql.includes("SET published_version_id = ?"));
+      assert.equal(batch[2].values[0], "draft-version");
+    }
     assert.ok(batch[3].sql.includes("INSERT INTO cms_audit_log"));
     assert.equal(batch[3].values[2], entityType);
     assert.deepEqual(JSON.parse(batch[3].values[4]), { version: 4 });
