@@ -522,7 +522,7 @@ export default function CMSManagement() {
         );
 
         if (productRow?.draft_product || productRow?.published_product) {
-          chooseProduct(productRow);
+          chooseProduct(productRow, true);
         } else {
           setSelected(null);
           setJson(JSON.stringify(blankProduct(), null, 2));
