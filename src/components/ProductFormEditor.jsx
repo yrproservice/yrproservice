@@ -123,6 +123,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
     if (!product || !Array.isArray(product.gallery)) return;
     const target = index + offset;
     if (target < 0 || target >= product.gallery.length) return;
+    setGalleryReplacementIndex(null);
     const gallery = product.gallery.slice();
     [gallery[index], gallery[target]] = [gallery[target], gallery[index]];
     updateField("gallery", gallery);
@@ -130,6 +131,7 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
 
   function removeGalleryImage(index) {
     if (!product || !Array.isArray(product.gallery)) return;
+    setGalleryReplacementIndex(null);
     updateField("gallery", product.gallery.filter((_, imageIndex) => imageIndex !== index));
   }
 
