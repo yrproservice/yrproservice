@@ -239,6 +239,10 @@ export async function onRequestPost(context) {
   if (!file || typeof file.arrayBuffer !== "function") return adminJson({ error: "Choose an image file." }, 400);
   if (file.size <= 0) return adminJson({ error: "The selected image is empty." }, 400);
   if (file.size > 12 * 1024 * 1024) return adminJson({ error: "Image must be 12 MB or smaller." }, 413);
+  const originalFileName = String(file.name || "").trim();
+  if (!originalFileName || originalFileName.length > 255 || /[\/\\\x00-\x1f\x7f]/.test(originalFileName)) {
+    return adminJson({ error: "Original filename must be 1–255 characters and cannot contain path separators or control characters." }, 400);
+  }
   let bytes;
   try { bytes = new Uint8Array(await file.arrayBuffer()); }
   catch { return adminJson({ error: "Unable to read the selected image." }, 400); }
@@ -249,7 +253,7 @@ export async function onRequestPost(context) {
   if (declaredType && declaredType !== contentType && !(declaredType === "image/jpg" && contentType === "image/jpeg")) {
     return adminJson({ error: "The file contents do not match the selected image type." }, 415);
   }
-  const id = crypto.randomUUID(), key = `cms/${new Date().toISOString().slice(0,10)}/${id}-${safeName(file.name)}`;
+  const id = crypto.randomUUID(), key = `cms/${new Date().toISOString().slice(0,10)}/${id}-${safeName(originalFileName)}`;
   try {
     await env.CMS_MEDIA.put(key, bytes, { httpMetadata: { contentType, cacheControl: "public, max-age=31536000, immutable" } });
     const publicBase = String(env.CMS_MEDIA_PUBLIC_BASE || "").replace(/\/$/, "");
@@ -260,8 +264,8 @@ export async function onRequestPost(context) {
     const url = `${publicBase}/${key.split("/").map(encodeURIComponent).join("/")}`;
     const alt = String(form.get("altText") || "").slice(0,300);
     await env.DB.prepare("INSERT INTO cms_media (id,storage_provider,object_key,public_url,original_file_name,mime_type,byte_size,width,height,alt_text,uploaded_by) VALUES (?,'r2',?,?,?,?,?,?,?,?,?)")
-      .bind(id,key,url,file.name,contentType,file.size,dimensions?.width || null,dimensions?.height || null,alt,auth.email || null).run();
-    return adminJson({ ok: true, media: { id, object_key:key, public_url:url, original_file_name:file.name, mime_type:contentType, byte_size:file.size, width:dimensions?.width || null, height:dimensions?.height || null, alt_text:alt } }, 201);
+      .bind(id,key,url,originalFileName,contentType,file.size,dimensions?.width || null,dimensions?.height || null,alt,auth.email || null).run();
+    return adminJson({ ok: true, media: { id, object_key:key, public_url:url, original_file_name:originalFileName, mime_type:contentType, byte_size:file.size, width:dimensions?.width || null, height:dimensions?.height || null, alt_text:alt } }, 201);
   } catch (error) {
     console.error("CMS media upload failed", error);
     try { await env.CMS_MEDIA.delete(key); } catch {}
