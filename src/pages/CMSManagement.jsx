@@ -540,9 +540,8 @@ export default function CMSManagement() {
         }
 
         if (type === "setting") {
-          const refreshed = await api("/api/cms/admin/settings");
-          const savedSettings = refreshed.settings || [];
-          setSettings(savedSettings);
+          const savedSettings = await refreshSettings();
+          if (!savedSettings) throw new Error("The settings refresh was superseded. Reload the CMS before continuing.");
           if (settingKey === key) {
             const row = savedSettings.find((item) => item.setting_key === key);
             const nextJson = row?.draft_value || row?.published_value || "{}";
@@ -619,9 +618,8 @@ export default function CMSManagement() {
 
       try {
         if (type === "product") {
-          const refreshed = await api("/api/cms/admin/products");
-          const products = refreshed.products || [];
-          setItems(products);
+          const products = await refreshProducts();
+          if (!products) throw new Error("The product list refresh was superseded. Reload the CMS before continuing.");
           const productRow = products.find((item) => item.product_slug === key);
           if (productRow?.draft_product || productRow?.published_product) {
             chooseProduct(productRow, true);
@@ -638,10 +636,8 @@ export default function CMSManagement() {
         }
 
         if (type === "setting") {
-          const refreshed = await api("/api/cms/admin/settings");
-          const savedSettings = refreshed.settings || [];
-          setSettings(savedSettings);
-          setSettingsReady(true);
+          const savedSettings = await refreshSettings();
+          if (!savedSettings) throw new Error("The settings refresh was superseded. Reload the CMS before continuing.");
           const settingRow = savedSettings.find((item) => item.setting_key === key);
           if (settingKey === key) {
             const nextJson = settingRow?.draft_value || settingRow?.published_value || "{}";
