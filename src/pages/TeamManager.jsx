@@ -110,7 +110,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }, []);
 
   function update(group, field, value) {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => section.type !== "team-page" ? section : {
@@ -120,7 +120,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   function updateItem(group, index, field, value, arrayKey = "items") {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => {
@@ -133,7 +133,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   function updateGlobalDesign(field, value) {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => section.type !== "team-page" ? section : {
@@ -144,7 +144,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   function updateSectionDesign(sectionKey, field, value) {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => section.type !== "team-page" ? section : {
@@ -161,7 +161,7 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   function moveSection(from, to) {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => {
       const order = [...(current.sectionOrder || ["hero", "story", "process", "capabilities", "people", "cta"])];
       if (to < 0 || to >= order.length || from === to) return current;
