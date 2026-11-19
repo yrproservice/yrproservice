@@ -1148,6 +1148,15 @@ export default function CMSManagement() {
             Show archived media
           </label>
         </div>
+        <div className="cms-media-health" aria-live="polite">
+          <div><strong>{media.length}</strong><span>Loaded records</span></div>
+          <div><strong>{media.filter((item) => !item.deleted_at).length}</strong><span>Active</span></div>
+          <div><strong>{media.filter((item) => Boolean(item.deleted_at)).length}</strong><span>Archived</span></div>
+          <div><strong>{media.filter((item) => mediaStorageChecks[item.id]?.status === "available").length}</strong><span>R2 objects present</span></div>
+          <div><strong>{media.filter((item) => mediaStorageChecks[item.id]?.status === "missing").length}</strong><span>Missing objects</span></div>
+          <div><strong>{media.filter((item) => !mediaStorageChecks[item.id] || mediaStorageChecks[item.id]?.status === "unavailable").length}</strong><span>Not verified</span></div>
+        </div>
+        <p className="cms-media-health-note">Counts cover only the records currently loaded in this library view (up to 300). R2 status is based only on checks you have run; unverified does not mean missing. This is not a full-bucket inventory.</p>
         <h3>{mediaIncludeArchived ? "Preview media · Active and archived" : "Uploaded Preview media"}</h3>
         <div className="cms-media-grid">
           {media.map((item) => (
