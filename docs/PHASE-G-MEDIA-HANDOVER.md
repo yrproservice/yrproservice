@@ -1473,3 +1473,10 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Document/specification editors preserve legacy row shapes and block mutation while disabled. Product editor resets gallery replacement index when JSON changes, prevents accidental image replacement through advanced JSON edits, limits gallery additions, and preserves chair workflow/locked slug invariants. Product media frame resets failure state when source changes and displays an unavailable placeholder rather than substituting a different image.
 - Added a request-generation guard to the design preview's product selector loader. A response may update product/error/loading state only if it belongs to the most recently initiated selection. This is defensive concurrency hardening; the selector is also disabled while a product is loading. Code commit: `13e77844f9a7b7d3a1c0b8854f74b83c4d4abd4f`.
 - No tests/builds or runtime requests were run. Phase H should verify rapid selection changes, failed product preview fetches, and fallback behavior, as well as the legacy document/specification editing paths.
+
+
+## CMS product-selection malformed-data safeguard — 19 November 2026
+
+- Review of the structured product editor found `chooseProduct` parsed saved draft/published JSON without a local error boundary. A malformed JSON value, JSON `null`, primitive, or array could throw during selection and disrupt the editor.
+- Added guarded parsing and product-object shape validation. On malformed stored data, the CMS now reports a recovery-oriented error and keeps the current editor selection unchanged rather than crashing or silently replacing data. Commit: `bfba6dabc32a29ebfe344d5e0f7707b940e3a452`.
+- Re-fetched the modified source and confirmed the guard. No tests, builds, Preview/API requests, or database access performed. Phase H should exercise malformed draft JSON, malformed published JSON, null/primitive/array values, and valid archived revision recovery.
