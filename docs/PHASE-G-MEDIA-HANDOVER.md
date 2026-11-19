@@ -1108,3 +1108,15 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Rationale: a pending network mutation should not allow additional editor changes to slip into the same in-memory draft state while the operation is in flight. This complements the existing save/publish guards without changing page data, API contracts or publication behavior.
 - No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
 - Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged; continue Phase G source-only review. Phase H remains deferred.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (Management Centre pending-mutation guards)
+
+- Commit `7c890bc344fd58943c2a0f68edb989b13c2c2e74` updates `src/pages/CMSManagement.jsx`.
+- Product structured-editor updates are now ignored while a management mutation is pending; this includes the ProductFormEditor JSON callback and raw JSON editor.
+- Product image apply/clear handlers now refuse changes during a pending mutation.
+- Settings JSON edits and media filename/alt-text draft inputs now refuse edits while a mutation is pending, avoiding edits racing against saves, archive/restore, publish or other shared busy operations.
+- Source review confirmed these handler guards are present. The ProductFormEditor component itself was not changed; the parent callback protects the canonical product JSON state.
+- This complements the Visual Website Editor busy guards recorded above. No product, setting or media data was changed by this source update.
+- No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
+- Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged; continue Phase G source-only review. Phase H remains deferred.
