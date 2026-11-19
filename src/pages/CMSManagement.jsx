@@ -1114,6 +1114,9 @@ export default function CMSManagement() {
                           <li key={reference.key + "-" + reference.version + "-" + reference.state}>
                             <span>{reference.title || reference.key}</span>
                             <small>{reference.key} · V{reference.version} · {reference.state}</small>
+                            {group === "products" && reference.references?.length > 0 && (
+                              <small className="cms-media-reference-paths">Image field{reference.references.length === 1 ? "" : "s"}: {reference.references.join(", ")}</small>
+                            )}
                           </li>
                         ))}</ul>
                       ) : <small>None found</small>}
