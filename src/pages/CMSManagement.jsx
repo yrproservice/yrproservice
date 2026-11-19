@@ -102,6 +102,7 @@ export default function CMSManagement() {
       ],
     })
   );
+  const settingBaseline = useRef({ key: "site.navigation", json: settingJson });
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -935,6 +936,7 @@ export default function CMSManagement() {
         }),
       });
 
+      settingBaseline.current = { key: settingKey, json: settingJson };
       setNotice(`Settings draft V${data.version} saved.`);
       await refreshSettings();
     } catch (saveError) {
@@ -980,10 +982,13 @@ export default function CMSManagement() {
     return matchesIntegrity && (!mediaSearchTerm || searchable.includes(mediaSearchTerm));
   });
   const settingImageReferences = media.filter((item) => settingJson.includes(item.public_url));
-  const hasUnsavedSettingChanges = settings.some((row) =>
-    row.setting_key === settingKey && row.draft_id
-      && !areJsonValuesEqual(settingJson, row.draft_value || "{}")
-  );
+  const hasUnsavedSettingChanges =
+    settingKey !== settingBaseline.current.key ||
+    !areJsonValuesEqual(settingJson, settingBaseline.current.json) ||
+    settings.some((row) =>
+      row.setting_key === settingKey && row.draft_id
+        && !areJsonValuesEqual(settingJson, row.draft_value || "{}")
+    );
   const historyOptions = historyType==="page"
     ? pages.map(row=>({key:row.page_key,label:`${row.title} · ${row.route}`}))
     : historyType==="product"
@@ -1756,8 +1761,13 @@ export default function CMSManagement() {
                 <button
                   className="admin-secondary-button"
                   onClick={() => {
+                    if (hasUnsavedSettingChanges && !window.confirm("Discard the unsaved settings edits and open this saved setting?")) return;
+                    const nextJson = row.draft_value || row.published_value || "{}";
+                    settingBaseline.current = { key: row.setting_key, json: nextJson };
                     setSettingKey(row.setting_key);
-                    setSettingJson(row.draft_value || row.published_value || "{}");
+                    setSettingJson(nextJson);
+                    setError("");
+                    setNotice("");
                   }}
                 >
                   Edit
@@ -1778,6 +1788,7 @@ export default function CMSManagement() {
             <label>
               Setting key
               <input value={settingKey} onChange={(event) => setSettingKey(event.target.value)} />
+              <small>Changing the key is an unsaved editor change. Save creates a draft under the new key.</small>
             </label>
             <textarea
               className="cms-json-editor"
