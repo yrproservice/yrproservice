@@ -107,22 +107,76 @@ export async function onRequestPost(context) {
 
     const now = new Date().toISOString();
     const batch = [];
-    if (entity.published_version_id) {
-      batch.push(env.DB.prepare(`UPDATE ${config.versions} SET state = 'archived' WHERE id = ? AND state = 'published'`).bind(entity.published_version_id));
+    const entityKeyColumn = entityType === "setting" ? "setting_key" : "id";
+    const expectedPublishedId = entity.published_version_id || null;
+
+    // Make the first write conditional on the published pointer still matching
+    // the revision read above. D1 batches are transactional and execute in order:
+    // if another publish wins first, this UPDATE changes zero rows and all
+    // following statements remain guarded by the target's published state.
+    batch.push(
+      env.DB.prepare(`
+        UPDATE ${config.versions}
+        SET state = 'published', published_at = ?
+        WHERE id = ? AND ${config.foreignKey} = ? AND state = 'draft'
+          AND EXISTS (
+            SELECT 1 FROM ${config.table}
+            WHERE ${entityKeyColumn} = ? AND published_version_id IS ?
+          )
+      `).bind(now, versionId, entity.id, entity.id, expectedPublishedId)
+    );
+    if (expectedPublishedId) {
+      batch.push(
+        env.DB.prepare(`
+          UPDATE ${config.versions}
+          SET state = 'archived'
+          WHERE id = ? AND state = 'published'
+            AND EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'published')
+        `).bind(expectedPublishedId, versionId)
+      );
     }
-    batch.push(env.DB.prepare(`UPDATE ${config.versions} SET state = 'published', published_at = ? WHERE id = ? AND ${config.foreignKey} = ?`)
-      .bind(now, versionId, entity.id));
     if (entityType === "setting") {
-      batch.push(env.DB.prepare(`UPDATE ${config.table} SET published_version_id = ?, updated_at = ? WHERE setting_key = ?`).bind(versionId, now, entity.id));
+      batch.push(env.DB.prepare(`
+        UPDATE ${config.table} SET published_version_id = ?, updated_at = ?
+        WHERE setting_key = ? AND published_version_id IS ?
+          AND EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'published')
+      `).bind(versionId, now, entity.id, expectedPublishedId, versionId));
     } else if (entityType === "page") {
-      batch.push(env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, published_version_id = ?, updated_at = ? WHERE id = ?")
-        .bind(target.title, target.route, versionId, now, entity.id));
+      batch.push(env.DB.prepare(`
+        UPDATE cms_pages SET title = ?, route = ?, published_version_id = ?, updated_at = ?
+        WHERE id = ? AND published_version_id IS ?
+          AND EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'published')
+      `).bind(target.title, target.route, versionId, now, entity.id, expectedPublishedId, versionId));
     } else {
-      batch.push(env.DB.prepare(`UPDATE ${config.table} SET published_version_id = ?, updated_at = ? WHERE id = ?`).bind(versionId, now, entity.id));
+      batch.push(env.DB.prepare(`
+        UPDATE ${config.table} SET published_version_id = ?, updated_at = ?
+        WHERE id = ? AND published_version_id IS ?
+          AND EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'published')
+      `).bind(versionId, now, entity.id, expectedPublishedId, versionId));
     }
-    batch.push(env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'publish', ?, ?, ?)")
-      .bind(crypto.randomUUID(), auth.email || null, entityType, entity.id, JSON.stringify({ version: target.version_number })));
-    await env.DB.batch(batch);
+    batch.push(env.DB.prepare(`
+      INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
+      SELECT ?, ?, 'publish', ?, ?, ?
+      WHERE EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'published')
+        AND EXISTS (SELECT 1 FROM ${config.table}
+          WHERE ${entityKeyColumn} = ? AND published_version_id = ?)
+    `).bind(
+      crypto.randomUUID(), auth.email || null, entityType, entity.id,
+      JSON.stringify({ version: target.version_number }), versionId, entity.id, versionId
+    ));
+
+    const results = await env.DB.batch(batch);
+    if (Number(results?.[0]?.meta?.changes || 0) !== 1) {
+      const current = await env.DB.prepare(
+        `SELECT published_version_id FROM ${config.table} WHERE ${entityKeyColumn} = ? LIMIT 1`
+      ).bind(entity.id).first();
+      if (current?.published_version_id === versionId) {
+        return adminJson({ ok: true, alreadyPublished: true, version: target.version_number });
+      }
+      return adminJson({
+        error: "This draft or published version changed while publishing. Refresh the item and try again."
+      }, 409);
+    }
     return adminJson({ ok: true, entityType, entityKey, version: target.version_number, publishedAt: now });
   } catch (error) {
     console.error("CMS publish failed", error);
