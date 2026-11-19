@@ -12,6 +12,12 @@ export default function DentalChairRequest({ navigate }) {
     updateChairQuantity,
     modelCount,
     count,
+    migrationReady,
+    migrationError,
+    retryLegacyChairMigration,
+    storageReady,
+    storageError,
+    retryChairPersistence,
   } = useChairRequests();
   const { cartCount } = useCart();
   const [sent, setSent] = useState(false);
@@ -133,6 +139,18 @@ export default function DentalChairRequest({ navigate }) {
             Dental Chair Requests <span>{count}</span>
           </Link>
         </div>
+        {(!migrationReady || migrationError) && (
+          <div className="bp-chair-note" role="alert">
+            <p>{migrationError || "The saved chair requests are being moved into this separate list. Changes are paused until this finishes."}</p>
+            <button type="button" onClick={retryLegacyChairMigration}>Retry safe storage migration</button>
+          </div>
+        )}
+        {storageError && (
+          <div className="bp-chair-note" role="alert">
+            <p>{storageError}</p>
+            <button type="button" onClick={retryChairPersistence}>Retry saving chair requests</button>
+          </div>
+        )}
         {!items.length ? (
           <div className="chair-request-empty">
             <h2>No dental chairs selected</h2>
@@ -168,6 +186,7 @@ export default function DentalChairRequest({ navigate }) {
                     <div className="quantity-control">
                       <button
                         type="button"
+                        disabled={!migrationReady || !storageReady}
                         onClick={() =>
                           updateChairQuantity(item.slug, item.quantity - 1)
                         }
@@ -177,6 +196,7 @@ export default function DentalChairRequest({ navigate }) {
                       <span>{item.quantity}</span>
                       <button
                         type="button"
+                        disabled={!migrationReady || !storageReady}
                         onClick={() =>
                           updateChairQuantity(item.slug, item.quantity + 1)
                         }
@@ -187,6 +207,7 @@ export default function DentalChairRequest({ navigate }) {
                   </div>
                   <button
                     className="text-button request-remove"
+                    disabled={!migrationReady || !storageReady}
                     onClick={() => removeChair(item.slug)}
                   >
                     Remove
@@ -196,6 +217,7 @@ export default function DentalChairRequest({ navigate }) {
               <div className="request-actions">
                 <button
                   className="text-button clear-action"
+                  disabled={!migrationReady || !storageReady}
                   onClick={clearChairs}
                 >
                   Clear Chair Requests
@@ -269,7 +291,7 @@ export default function DentalChairRequest({ navigate }) {
                 <button
                   className="bp-btn bp-btn-primary"
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !migrationReady || !storageReady}
                 >
                   {isSubmitting
                     ? "Submitting Request…"
