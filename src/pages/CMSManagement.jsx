@@ -565,6 +565,40 @@ export default function CMSManagement() {
     } catch (usageError) { setError(usageError.message); setMediaUsageId(""); }
     finally { setMediaUsageLoading(false); }
   }
+
+  function openMediaReferenceEditor(group, reference) {
+    if (!reference?.key) return;
+
+    if (group === "products") {
+      const row = items.find((item) => item.product_slug === reference.key);
+      if (!row) {
+        setError(`Product "${reference.key}" is not in the currently loaded product list. Refresh the CMS before editing it.`);
+        return;
+      }
+      chooseProduct(row);
+      setTab("products");
+      setNotice(`Opened the current editor for ${reference.title || reference.key}. This does not rewrite historical revisions.`);
+      return;
+    }
+
+    if (group === "settings") {
+      const row = settings.find((item) => item.setting_key === reference.key);
+      if (!row) {
+        setError(`Setting "${reference.key}" is not in the currently loaded settings list. Refresh the CMS before editing it.`);
+        return;
+      }
+      setSettingKey(row.setting_key);
+      setSettingJson(row.draft_value || row.published_value || "{}");
+      setTab("settings");
+      setNotice(`Opened the current editor for ${reference.key}. This does not rewrite historical revisions.`);
+      return;
+    }
+
+    if (group === "pages") {
+      window.open("/admin/cms", "_blank", "noopener,noreferrer");
+      setNotice(`Opened the Visual Editor. Select page "${reference.title || reference.key}" to review its current content. Historical revisions are not changed.`);
+    }
+  }
   function exportMediaIntegrityReport() {
     if (!media.length) {
       setError("There are no loaded media records to export.");
@@ -1544,17 +1578,33 @@ export default function CMSManagement() {
                       {mediaUsage.groups?.[group]?.length ? (
                         <ul>{mediaUsage.groups[group].map((reference) => (
                           <li key={reference.key + "-" + reference.version + "-" + reference.state}>
-                            <span>{reference.title || reference.key}</span>
-                            <small>{reference.key} · V{reference.version} · {reference.state}</small>
+                            <div className="cms-media-reference-heading">
+                              <span>{reference.title || reference.key}</span>
+                              <small>{reference.key} · V{reference.version} · Saved revision: {reference.state}</small>
+                            </div>
                             {reference.references?.length > 0 && (
-                              <small className="cms-media-reference-paths">{group === "pages" ? "Content field" : group === "products" ? "Image field" : "Setting field"}{reference.references.length === 1 ? "" : "s"}: {reference.references.join(", ")}</small>
+                              <small className="cms-media-reference-paths">{group === "pages" ? "Content field" : group === "products" ? "Content field" : "Setting field"}{reference.references.length === 1 ? "" : "s"}: {reference.references.join(", ")}</small>
                             )}
+                            <button
+                              type="button"
+                              className="admin-secondary-button cms-media-reference-open"
+                              onClick={() => openMediaReferenceEditor(group, reference)}
+                            >
+                              {group === "pages" ? "Open Visual Editor" : group === "products" ? "Open current product editor" : "Open current setting editor"}
+                            </button>
                           </li>
                         ))}</ul>
                       ) : <small>None found</small>}
                     </div>
                   ))}
-                  {mediaUsage.total > 0 && <small>Replace these references in their editors before attempting removal. Historical revisions are included.</small>}
+                  {mediaUsage.total > 0 && (
+                    <div className="cms-media-reference-safety">
+                      <strong>Replacement guidance</strong>
+                      <small>Use the editor link beside a reference to review the current draft or published content. Select a replacement image there, then save a new draft and publish to Preview only when ready.</small>
+                      <small>Each result is a saved revision, not necessarily the current live record. Opening an editor does not edit that exact historical revision. Historical references remain protected and will continue to block archiving while they exist.</small>
+                      <small>{mediaUsage.truncated ? "The report is a partial sample: up to 50 revisions per content group are displayed, while the counts above include all matching saved revisions." : "All matching saved revisions are represented in this report."}</small>
+                    </div>
+                  )}
                 </div>
               )}
               <button
