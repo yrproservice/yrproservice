@@ -7,7 +7,7 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest functional source checkpoint reviewed in this continuation: `6b3b3261aec5886c46854d12a02110b86d435ef3` (Settings tab navigation safeguards). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
+- Latest functional source checkpoint reviewed in this continuation: `5bbd1f2022a7e735effe79196cb620b45ab86c9d` (Settings, Services and Team tab navigation safeguards). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: verified 19 November 2026 as Open, Draft, and unmerged, targeting `main`. The PR tracks `cms-development`; this handover refresh is committed to that branch. It must remain Draft and unmerged without explicit user approval.
 - Production: untouched; do not merge or deploy.
@@ -303,6 +303,24 @@ These changes are client-side editor safeguards only. No settings, product conte
 Commits:
 - `15e926ef5f03ebea4463d537997ace5dffd2f2b4` — confirm unsaved settings before leaving CMS tab.
 - `6b3b3261aec5886c46854d12a02110b86d435ef3` — confirm settings navigation before changing product selection.
+
+Source review only. Runtime behaviour remains unverified and is deferred to Phase H.
+
+## Additional Phase G continuation — Services and Team tab navigation protection (19 November 2026)
+
+The Settings tab guard exposed the same class of potential data loss in the Services and Team editors: both components already track whether the current content differs from the saved draft, but their local state is discarded when the parent CMS switches tabs.
+
+Focused parent/child state reporting was added:
+- `ServicesManager` reports its current unsaved state to the CMS parent.
+- `TeamManager` reports its current unsaved state to the CMS parent.
+- The central CMS tab-navigation guard asks for confirmation before leaving Services or Team when unsaved edits are present.
+- The existing draft-save and publish safeguards remain in place; this change only adds navigation protection.
+- No content, media, API contracts, database schema, Preview published content, Production or deployment configuration was changed.
+
+Commits:
+- `31cef90439311f7481318f670cb45bae52fb20ef` — report unsaved Services edits to CMS navigation.
+- `4f2a85a623b52e725ad2f307d6988cefafe969d9` — report unsaved Team edits to CMS navigation.
+- `5bbd1f2022a7e735effe79196cb620b45ab86c9d` — protect unsaved Services and Team edits during tab navigation.
 
 Source review only. Runtime behaviour remains unverified and is deferred to Phase H.
 
