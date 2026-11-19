@@ -59,6 +59,7 @@ export default function CMSManagement() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyFailed, setHistoryFailed] = useState(false);
   const [media, setMedia] = useState([]);
+  const [mediaAltDrafts, setMediaAltDrafts] = useState({});
   const [storageReady, setStorageReady] = useState(false);
   const [settings, setSettings] = useState([]);
   const [settingKey, setSettingKey] = useState("site.navigation");
@@ -472,6 +473,27 @@ export default function CMSManagement() {
       setBusy(false);
     }
   }
+  async function saveMediaAltText(item) {
+    if (!item?.id || busy) return;
+    const altText = mediaAltDrafts[item.id] ?? item.alt_text ?? "";
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const data = await api(`/api/cms/admin/media?id=${encodeURIComponent(item.id)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ altText }),
+      });
+      setMedia((current) => current.map((row) => row.id === item.id ? data.media : row));
+      setMediaAltDrafts((current) => { const next = { ...current }; delete next[item.id]; return next; });
+      setNotice("Image alt text saved.");
+    } catch (saveError) {
+      setError(saveError.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function uploadMedia(event) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -1038,6 +1060,19 @@ export default function CMSManagement() {
               <img src={item.public_url} alt={item.alt_text || item.original_file_name} />
               <strong>{item.original_file_name}</strong>
               <small>{Math.round(item.byte_size / 1024)} KB · {item.mime_type}</small>
+              <label className="cms-media-alt-editor">Alt text
+                <input
+                  maxLength={300}
+                  value={mediaAltDrafts[item.id] ?? item.alt_text ?? ""}
+                  onChange={(event) => setMediaAltDrafts((current) => ({ ...current, [item.id]: event.target.value }))}
+                  placeholder="Describe the image for accessibility"
+                />
+              </label>
+              <button
+                className="admin-secondary-button"
+                disabled={busy || (mediaAltDrafts[item.id] ?? item.alt_text ?? "") === (item.alt_text ?? "")}
+                onClick={() => saveMediaAltText(item)}
+              >Save alt text</button>
               <button
                 className="admin-secondary-button"
                 onClick={() => navigator.clipboard?.writeText(item.public_url)}
