@@ -825,3 +825,27 @@ No design values, settings records, drafts, published content, media, database s
 - Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
 - Continue remaining Phase G source-only CMS review in small batches. Keep Phase H for final runtime, image, responsive, accessibility, security and Preview verification.
 
+## Additional Phase G continuation — Visual Website Editor page navigation readiness (19 November 2026)
+
+A focused review of the Visual Website Editor found that the page list correctly tracked loading/readiness for create, save and publish actions, but existing page buttons remained enabled after a refresh began or failed. The page-opening handler also did not independently verify that the page list was current.
+
+Updated `src/pages/CMSDashboard.jsx`:
+- Existing page navigation buttons are disabled while the page list is loading or unavailable.
+- `openPage` now has a handler-level readiness and busy guard, and rejects missing page keys before fetching page content.
+- This prevents stale page-list rows from being used to initiate navigation after a failed post-save/publish refresh.
+
+Commit:
+- ef6483cb9c4936a1c4efd2fee3ea01e2cf778e93 — block page navigation while the CMS page list is stale or loading.
+
+No page content, drafts, published pages, media, settings, database schema, deployment configuration or Production data were changed by this source edit. Source review only; no tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (Visual Website Editor navigation)
+
+- Working branch: `cms-development`
+- Latest source changes in this continuation:
+  - `b7a5f54ef0cdb18b2c8e31c8d209da38f87980ee` — Visual Design Studio initial settings readiness.
+  - `ef6483cb9c4936a1c4efd2fee3ea01e2cf778e93` — Visual Website Editor page navigation readiness.
+- PR #2 must remain Open, Draft and unmerged; verify its head matches branch HEAD before resuming.
+- Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+- Continue remaining Phase G source-only reviews in small batches. Phase H remains the final runtime, image, responsive, accessibility, security and Preview verification stage.
+
