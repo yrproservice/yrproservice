@@ -11,9 +11,9 @@
 
 ## Preview D1 migration workflow
 
-The workflow is `Apply CMS Migration to Preview D1` in GitHub Actions. It applies only `migrations/0002_create_cms.sql` to `yr-proservice-test-db`, then lists the CMS tables for verification. It can be started manually with workflow_dispatch. It also runs when the Preview CMS migration SQL file changes.
+The workflow is `Apply CMS Migration to Preview D1` in GitHub Actions. It applies `migrations/0002_create_cms.sql` to `yr-proservice-test-db`, verifies the CMS tables, then applies the guarded `migrations/0003_page_metadata_versions.sql` migration. It can be started manually with workflow_dispatch and also runs when either migration file changes.
 
-The schema uses `CREATE TABLE IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS`, so rerunning this specific migration is idempotent. Review future migrations before treating them as safe to rerun.
+Migration 0002 uses `CREATE TABLE IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS`. Migration 0003 adds page-version metadata columns and backfills existing revisions; those `ALTER TABLE` statements are not rerunnable as-is. The workflow checks both columns before applying it, refuses a partially migrated schema, and when both columns already exist only completes the null backfill and index creation. Review future migrations before treating them as safe to rerun.
 
 ### Dedicated GitHub secret
 
@@ -66,7 +66,7 @@ Verify these separately:
 - GitHub Actions non-image checks and Vite build: successful for the latest commit.
 - Pages Functions build: successful for the latest commit.
 - Preview D1 migration: successful with the expected database identity and final schema verification.
-- Cloudflare Pages Preview deployment: the deployed branch and commit SHA match `cms-development` HEAD.
+- Cloudflare Pages Preview deployment: the `cms-development` branch serves the same hashed JS/CSS asset references as the verified build, and every referenced asset returns successfully. Direct upload additionally attaches the Git commit SHA when a Pages API token is configured.
 - Authenticated CMS runtime: save, preview, publish and restore operations work against Preview.
 
 No Production deployment, Production database migration, PR merge or Production binding change is part of this workflow.
