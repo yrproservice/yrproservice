@@ -620,3 +620,16 @@ Commits:
 - `8df6ead3f1b34a770985df8ce3df896a1cd29e13` — block stale product/settings editors after revision restore refresh failures.
 
 Source-level review only. No tests, builds, screenshots, image processing, visual checks, deployments, migrations or data changes were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (latest continuation)
+
+- Repository: `yrproservice/yrproservice`
+- Working branch: `cms-development`
+- Latest functional source commit in this continuation: `8df6ead3f1b34a770985df8ce3df896a1cd29e13`.
+- Latest documentation commit before this checkpoint refresh: `df442914fe42c38f834485ad7658a80980929db9`.
+- PR #2 was checked after the source changes: Open, Draft, unmerged; base `main`; head `cms-development`. PR head matched `df442914fe42c38f834485ad7658a80980929b9` at the time of that check.
+- Production remains untouched. No merge, deployment, Preview publish or migration was performed.
+- Current continuation addressed: Visual Design Studio save/publish/delete refresh-failure handling; CMS Management product save/archive/publish and settings save/publish refresh-failure messaging; revision restore/delete stale-editor recovery.
+- Source assertions confirmed the targeted guards and messages are present. This is not runtime verification.
+- No tests, builds, screenshots, image processing, visual checks or deployments were run, as requested.
+- If interrupted, resume by confirming the current branch head and PR #2 state, then read this handover. Continue source-only inspection in small batches; do not begin Phase H verification until the final stage.
