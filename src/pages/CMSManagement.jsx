@@ -60,6 +60,9 @@ export default function CMSManagement() {
   const [historyFailed, setHistoryFailed] = useState(false);
   const [media, setMedia] = useState([]);
   const [mediaAltDrafts, setMediaAltDrafts] = useState({});
+  const [mediaUsage, setMediaUsage] = useState(null);
+  const [mediaUsageId, setMediaUsageId] = useState("");
+  const [mediaUsageLoading, setMediaUsageLoading] = useState(false);
   const [storageReady, setStorageReady] = useState(false);
   const [settings, setSettings] = useState([]);
   const [settingKey, setSettingKey] = useState("site.navigation");
@@ -473,6 +476,16 @@ export default function CMSManagement() {
       setBusy(false);
     }
   }
+  async function inspectMediaUsage(item) {
+    if (!item?.id) return;
+    if (mediaUsageId === item.id && mediaUsage) { setMediaUsage(null); setMediaUsageId(""); return; }
+    setMediaUsageId(item.id); setMediaUsage(null); setMediaUsageLoading(true);
+    try {
+      const data = await api("/api/cms/admin/media?id=" + encodeURIComponent(item.id));
+      setMediaUsage(data.usage || { groups: { pages: [], products: [], settings: [] }, total: 0 });
+    } catch (usageError) { setError(usageError.message); setMediaUsageId(""); }
+    finally { setMediaUsageLoading(false); }
+  }
   async function saveMediaAltText(item) {
     if (!item?.id || busy) return;
     const altText = mediaAltDrafts[item.id] ?? item.alt_text ?? "";
@@ -545,7 +558,7 @@ export default function CMSManagement() {
   })();
   async function removeMedia(id) {
     const confirmed = window.confirm(
-      "Remove this media file? Any pages using its URL may show a broken image."
+      "Remove this media file? The server will refuse deletion while any saved page, product, setting or revision still references it."
     );
     if (!confirmed) return;
 
@@ -1073,6 +1086,29 @@ export default function CMSManagement() {
                 disabled={busy || (mediaAltDrafts[item.id] ?? item.alt_text ?? "") === (item.alt_text ?? "")}
                 onClick={() => saveMediaAltText(item)}
               >Save alt text</button>
+              <button className="admin-secondary-button" disabled={mediaUsageLoading && mediaUsageId === item.id} onClick={() => inspectMediaUsage(item)}>
+                {mediaUsageLoading && mediaUsageId === item.id ? "Checking usage…" : mediaUsageId === item.id && mediaUsage ? "Hide usage" : "View usage"}
+              </button>
+              {mediaUsageId === item.id && mediaUsage && (
+                <div className="cms-media-usage">
+                  <strong>{mediaUsage.total ? "Referenced in " + mediaUsage.total + " saved record(s)" : "No saved CMS references found"}</strong>
+                  {mediaUsage.truncated && <small>Some results may be omitted; each group is limited to 50 revisions.</small>}
+                  {["pages", "products", "settings"].map((group) => (
+                    <div key={group}>
+                      <b>{group === "pages" ? "Pages" : group === "products" ? "Products" : "Settings"}</b>
+                      {mediaUsage.groups?.[group]?.length ? (
+                        <ul>{mediaUsage.groups[group].map((reference) => (
+                          <li key={reference.key + "-" + reference.version + "-" + reference.state}>
+                            <span>{reference.title || reference.key}</span>
+                            <small>{reference.key} · V{reference.version} · {reference.state}</small>
+                          </li>
+                        ))}</ul>
+                      ) : <small>None found</small>}
+                    </div>
+                  ))}
+                  {mediaUsage.total > 0 && <small>Replace these references in their editors before attempting removal. Historical revisions are included.</small>}
+                </div>
+              )}
               <button
                 className="admin-secondary-button"
                 onClick={() => navigator.clipboard?.writeText(item.public_url)}
