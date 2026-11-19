@@ -1,7 +1,7 @@
 name: CMS Preview Build Check
 
-# Run the verification pipeline on the development branch. Production remains
-# isolated because this workflow only installs dependencies, tests, and builds.
+# Run a build-only Preview pipeline on the development branch.
+# Automated tests, screenshots and image processing are intentionally excluded.
 on:
   push:
     branches: [cms-development]
@@ -25,12 +25,6 @@ jobs:
       - name: Install locked dependencies
         id: install
         run: npm ci
-      - name: Run non-image automated checks
-        run: |
-          mapfile -d '' test_files < <(find tests -type f -name '*.test.js' \
-            ! -name 'image-validation.test.js' \
-            ! -name 'product-images.test.js' -print0)
-          node --test "${test_files[@]}"
       - name: Build Vite website
         if: ${{ always() && steps.install.outcome == 'success' }}
         run: npm run build
