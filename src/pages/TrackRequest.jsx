@@ -84,6 +84,7 @@ export default function TrackRequest() {
               name="reference"
               value={reference}
               onChange={(event) => setReference(event.target.value)}
+              disabled={loading}
               maxLength={40}
               autoCapitalize="characters"
               autoComplete="off"
@@ -98,6 +99,7 @@ export default function TrackRequest() {
               name="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              disabled={loading}
               maxLength={254}
               autoComplete="email"
               placeholder="name@example.com"
