@@ -529,3 +529,20 @@ Source review only. No tests, builds, screenshots, image processing, visual chec
 - Production remains untouched. Do not merge, deploy, or run migrations.
 - Continue source-only Phase G review in small batches. Phase H remains the point for tests, builds, responsive/accessibility checks, screenshots, image processing and final Preview verification.
 - If interrupted, resume by reading this handover first, confirming the current branch head and PR state, then inspect the next unreviewed CMS workflow before editing.
+
+## Additional Phase G continuation — safe recovery after Services/Team draft deletion (19 November 2026)
+
+A source review of the Services and Team managers found that, after a successful draft deletion, a failed follow-up request to reload the published page was silently treated as a reason to replace the editor with the original template. That could make a template look like the published baseline and invite an administrator to save unintended content.
+
+Both managers now:
+- Clear the deleted draft identifier immediately after the delete API confirms success.
+- Reload the published page content explicitly and use it as the new editor baseline only when the response contains page content.
+- If that reload fails or returns no page content, preserve the current editor contents, mark the manager as requiring a reload, and block further draft saves until the manager is reloaded.
+- Show a clear message that the draft deletion succeeded but the published content could not be reloaded.
+- Do not silently substitute the template after a successful deletion when the published-content refresh is unavailable.
+
+Commits:
+- `8b41b9f94cf36f0659da71d553007b847931ff02` — protect Services editor when deleted draft content cannot be reloaded.
+- `636454fc3f57b812c305ad20101210caa3d23a37` — protect Team editor when deleted draft content cannot be reloaded.
+
+Source-level inspection only. No tests, builds, screenshots, image processing, visual checks, deployments, migrations or data changes were performed.
