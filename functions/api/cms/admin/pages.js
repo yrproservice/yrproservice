@@ -104,17 +104,20 @@ export async function onRequestPost(context) {
       return adminJson({ ok: true, pageId: id, draftId: versionId, version: 1 }, 201);
     }
 
-    const draft = await env.DB.prepare("SELECT id, version_number FROM cms_page_versions WHERE page_id = ? AND state = 'draft' LIMIT 1")
+    const draft = await env.DB.prepare("SELECT id, version_number, created_at, content_json FROM cms_page_versions WHERE page_id = ? AND state = 'draft' LIMIT 1")
       .bind(page.id).first();
     if (draft) {
-      await env.DB.batch([
-        env.DB.prepare("UPDATE cms_page_versions SET title = ?, route = ?, content_json = ?, change_note = ?, created_by = ?, created_at = ? WHERE id = ? AND state = 'draft'")
-          .bind(title, route, content, clean(body.changeNote, 240) || "Updated draft", actor, now, draft.id),
-        env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ?")
-          .bind(title, route, now, page.id),
-        env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'update_draft', 'page', ?, ?)")
-          .bind(crypto.randomUUID(), actor, page.id, JSON.stringify({ version: draft.version_number }))
+      const results = await env.DB.batch([
+        env.DB.prepare("UPDATE cms_page_versions SET title = ?, route = ?, content_json = ?, change_note = ?, created_by = ?, created_at = ? WHERE id = ? AND state = 'draft' AND created_at = ? AND content_json = ?")
+          .bind(title, route, content, clean(body.changeNote, 240) || "Updated draft", actor, now, draft.id, draft.created_at, draft.content_json),
+        env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ? AND EXISTS (SELECT 1 FROM cms_page_versions WHERE id = ? AND state = 'draft' AND created_at = ? AND content_json = ?)")
+          .bind(title, route, now, page.id, draft.id, now, content),
+        env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) SELECT ?, ?, 'update_draft', 'page', ?, ? WHERE EXISTS (SELECT 1 FROM cms_page_versions WHERE id = ? AND state = 'draft' AND created_at = ? AND content_json = ?)")
+          .bind(crypto.randomUUID(), actor, page.id, JSON.stringify({ version: draft.version_number }), draft.id, now, content)
       ]);
+      if (Number(results?.[0]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "This page draft changed in another session. Reload it before saving again." }, 409);
+      }
       return adminJson({ ok: true, pageId: page.id, draftId: draft.id, version: draft.version_number });
     }
 
