@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { homeCmsTemplate } from "../data/homeCmsTemplate";
 import { products as catalogueProducts } from "../data/products";
 import { catalogMedia } from "../data/catalogMedia";
@@ -229,6 +229,17 @@ export default function CMSDashboard({ onAdminLogout }) {
   })();
   const currentSnapshot = JSON.stringify({ pageKey, pageTitle, route, content });
   const hasUnsavedChanges = Boolean(pageKey) && (hasUnappliedStructuredJson || savedSnapshot !== currentSnapshot);
+  const allowUnloadAfterConfirm = useRef(false);
+  useEffect(() => {
+    if (!hasUnsavedChanges) return undefined;
+    const warnBeforeUnload = (event) => {
+      if (allowUnloadAfterConfirm.current) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [hasUnsavedChanges]);
   const canUndo = historyRef.current.past.length > 0;
   const canRedo = historyRef.current.future.length > 0;
 
@@ -359,6 +370,14 @@ export default function CMSDashboard({ onAdminLogout }) {
     return window.confirm(
       "The selected section has unapplied JSON edits. Discard them and switch sections?"
     );
+  }
+
+  function handleEditorExit(event) {
+    if (!confirmDiscardPageEdits("leave the Visual Website Editor")) {
+      event.preventDefault();
+      return;
+    }
+    allowUnloadAfterConfirm.current = true;
   }
 
   async function openPage(page) {
@@ -939,10 +958,10 @@ export default function CMSDashboard({ onAdminLogout }) {
           <div><p className="eyebrow">YR Proservice · Content Management</p><h1>Visual Website Editor</h1>
             <p>Edit page sections in the preview and manage their content in the inspector. Changes remain drafts until published.</p></div>
           <div className="cms-header-links">
-            <a className="admin-public-link" href="/admin/cms/manage">
+            <a className="admin-public-link" href="/admin/cms/manage" onClick={handleEditorExit}>
               Management Centre →
             </a>
-            <a className="admin-public-link" href="/admin">
+            <a className="admin-public-link" href="/admin" onClick={handleEditorExit}>
               ← Request Dashboard
             </a>
           </div>
