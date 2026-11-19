@@ -214,6 +214,10 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   async function deleteDraft() {
+    if (!contentReady || reloadRequired) {
+      setError("Load the current Services content successfully before deleting its draft.");
+      return;
+    }
     if (!draftId) return;
     if (!window.confirm(hasUnsavedChanges
       ? "Delete the saved Services draft and discard the current unsaved Services edits? The published page and archived revision history will remain unchanged. The saved draft cannot be recovered."
@@ -245,6 +249,10 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   async function publishDraft() {
+    if (!contentReady || reloadRequired) {
+      setError("Load the current Services content successfully before publishing its draft.");
+      return;
+    }
     if (!draftId) return;
     if (hasUnsavedChanges) {
       setError("Save the current edits before publishing. The previously saved draft has not been published.");
