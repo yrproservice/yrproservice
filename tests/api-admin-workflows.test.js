@@ -132,7 +132,7 @@ function makeCmsDb({
     ? "home"
     : entityType === "product"
       ? "chair-model"
-      : "site-settings";
+      : "site.navigation";
   const entityId = entityType === "setting" ? entityKey : `${entityType}-id`;
   const entityTable = entityType === "page"
     ? "cms_pages"
@@ -174,13 +174,19 @@ function makeCmsDb({
         },
         async first() {
           calls.push(this);
-          if (sql.includes(`FROM ${entityTable} WHERE ${entityKeyColumn} = ?`)) {
+          const normalizedSql = sql.replace(/\\s+/g, " ");
+          if (normalizedSql.includes(`FROM ${entityTable} WHERE ${entityKeyColumn} = ?`)) {
             if (!entityExists) return null;
             return { id: entityId, published_version_id: publishedVersionId };
           }
-          if (sql.includes(`FROM ${versionTable} WHERE id = ? AND ${foreignKey} = ?`)) {
+          if (normalizedSql.includes(`FROM ${versionTable} WHERE id = ? AND ${foreignKey} = ?`)) {
             if (!targetExists) return null;
-            return { id: this.values[0], version_number: 4, state: targetState };
+            const draftContent = entityType === "page"
+              ? { value_json: JSON.stringify({ sections: [] }), title: "Home", route: "/" }
+              : entityType === "product"
+                ? { value_json: JSON.stringify({ slug: "chair-model", name: "Chair model", purchaseType: "cart" }) }
+                : { value_json: JSON.stringify({ items: [{ label: "Products", url: "/products" }] }) };
+            return { id: this.values[0], version_number: 4, state: targetState, ...draftContent };
           }
           return null;
         },
@@ -278,7 +284,7 @@ for (const entityType of ["page", "product", "setting"]) {
     const db = makeCmsDb({ entityType });
     const response = await publishCms(adminContext(
       "/api/cms/admin/publish",
-      { entityType, entityKey: entityType === "page" ? "home" : entityType === "product" ? "chair-model" : "site-settings", versionId: "draft-version" },
+      { entityType, entityKey: entityType === "page" ? "home" : entityType === "product" ? "chair-model" : "site.navigation", versionId: "draft-version" },
       { ...adminConfig, DB: db },
     ));
     const result = await response.json();
