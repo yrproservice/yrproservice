@@ -1179,3 +1179,23 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Latest recovery doc update is this checkpoint commit; re-read the live file and branch before continuing.
 - No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed in this pass.
 - Phase G remains in progress. Phase H checklist is prepared but must remain deferred until the user explicitly authorizes the final stage.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (repository scope and CMS versioning review)
+
+### Live repository scope
+- Reconfirmed PR #2 is Open, Draft, unmerged, and targets `main`; head branch is `cms-development` at the checkpoint SHA recorded in PR metadata before this handover update.
+- GitHub compare metadata reports `cms-development` is 856 commits ahead of `main`, 0 behind, with 95 changed files. This replaces the older PR-body figures (315 commits / 78 files); the PR description is being corrected to match the live compare result.
+- The build-check workflow remains manual-dispatch-only. Its locked install, automated test and Vite build steps are preserved for Phase H.
+
+### Additional source-only versioning review
+- Reviewed CMS page/product draft creation and update handlers, settings draft creation, publish, revision restore, draft deletion, preview reads, and migration `0002_create_cms.sql`.
+- The migration defines partial unique indexes enforcing at most one `draft` revision per page, product, and setting. Version numbers are unique per entity. The publish path validates entity ownership, draft state and content before writing the published pointer; archived revisions must be restored as a new draft before publication.
+- Page save/publish/restore paths check route collisions against the current entity records and published/draft page revisions. The page route uniqueness constraint also protects the canonical page table.
+- No source change was justified by this review. The concurrency and lifecycle behaviours still require the deferred Phase H database/browser verification; source inspection is not a substitute for those checks.
+- No test/build, API request, D1 query, migration, screenshot, image processing, deployment, Preview publish, or Production operation was performed.
+
+### Resume point
+- Continue bounded Phase G source-only review on `cms-development`; inspect the current branch and PR before every write.
+- Preserve PR #2 as Open/Draft/unmerged. Do not merge, deploy, run migrations, or alter Production.
+- Phase H remains deferred until explicit user authorization. Its checklist above remains the final verification plan.
