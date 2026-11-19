@@ -7,7 +7,7 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest functional source checkpoint: `a06b2bbb5cdd94b76bb1a6f08867531924a356dd` (page media usage request sequencing). The branch tip may be newer because the recovery document is updated in separate commits.
+- Latest functional source checkpoint: `f44156cb15c1cbd22afbd8a1f72d497d3d0b0e06` (product gallery replacement target safety). The branch tip may be newer because the recovery document is updated in separate commits.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: Open, Draft, unmerged (must remain Draft and unmerged without explicit user approval).
 - Production: untouched; do not merge or deploy.
@@ -155,6 +155,20 @@ Commits:
 - `a06b2bbb5cdd94b76bb1a6f08867531924a356dd` — invalidate page media usage when the selected section changes.
 
 Source-level checks confirmed request sequencing, invalidation on section/image changes, expanded search fields and the no-match state. No runtime tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
+## Additional Phase G continuation — product gallery replacement target safety (19 November 2026)
+
+A focused review of the structured product editor found that gallery replacement is index-based. Normal gallery move/remove controls already clear the target, but editing product JSON through another field or the advanced JSON editor could change the gallery while leaving the previous index selected. That could make the picker appear to target a different gallery image.
+
+The editor now:
+- Clears the pending gallery replacement target whenever the product JSON changes, so the target cannot silently carry over to a changed gallery.
+- Validates the gallery index before applying a gallery-image update, rejecting negative, non-integer or out-of-range targets.
+- Keeps primary-image editing separate from gallery-image replacement.
+
+Commit:
+- `f44156cb15c1cbd22afbd8a1f72d497d3d0b0e06` — reset gallery replacement target after product edits.
+
+This was a source-level review and implementation only. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 
 ## Existing safeguards and limits retained
 
