@@ -1,4 +1,5 @@
 -- Preserve page metadata in each immutable content revision.
+-- Apply through the guarded Preview-only migration workflow; never run on Production.
 -- Existing revisions inherit the page's current metadata because older
 -- title/route values were not stored historically.
 ALTER TABLE cms_page_versions ADD COLUMN title TEXT;
