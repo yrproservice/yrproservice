@@ -296,6 +296,11 @@ export default function CMSManagement() {
       return;
     }
 
+    if (!product || typeof product !== "object" || Array.isArray(product)) {
+      setError("Product data must be a JSON object.");
+      return;
+    }
+
     if (!product.slug || !product.name) {
       setError("Product slug and name are required.");
       return;
