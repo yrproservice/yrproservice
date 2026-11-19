@@ -498,6 +498,10 @@ export default function CMSManagement() {
       setError("Load the current product list successfully before restoring a product revision.");
       return;
     }
+    if (type === "setting" && !settingsReady) {
+      setError("Load the current settings successfully before restoring a settings revision.");
+      return;
+    }
 
     const discardsSettingEdits = type === "setting" && key === settingKey && hasUnsavedSettingChanges;
     const discardsProductEdits = type === "product" && selected?.slug === key && selected.savedJson !== json;
@@ -568,6 +572,10 @@ export default function CMSManagement() {
     if (!id || busy) return;
     if (type === "product" && !productsReady) {
       setError("Load the current product list successfully before deleting a product draft.");
+      return;
+    }
+    if (type === "setting" && !settingsReady) {
+      setError("Load the current settings successfully before deleting a settings draft.");
       return;
     }
 
@@ -1129,6 +1137,10 @@ export default function CMSManagement() {
   }
   async function publishSetting(row) {
     if (!row?.setting_key || !row?.draft_id || busy) return;
+    if (!settingsReady) {
+      setError("Load the current settings successfully before publishing a settings draft.");
+      return;
+    }
     if (row.setting_key === settingKey && !areJsonValuesEqual(settingJson, row.draft_value || "{}")) {
       setError("Save the current settings edits before publishing. The previously saved draft has not been published.");
       return;
