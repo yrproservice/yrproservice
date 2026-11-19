@@ -122,11 +122,29 @@ export async function onRequestGet(context) {
   if (requestedId) {
     try {
       const media = await context.env.DB.prepare(
-        "SELECT id, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at, deleted_at FROM cms_media WHERE id=? AND (? = 1 OR deleted_at IS NULL)"
+        "SELECT id, storage_provider, object_key, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at, deleted_at FROM cms_media WHERE id=? AND (? = 1 OR deleted_at IS NULL)"
       ).bind(requestedId, params.get("includeDeleted") === "1" ? 1 : 0).first();
       if (!media) return adminJson({ error: "Media item not found." }, 404);
       const usage = await getMediaUsage(context.env.DB, media);
-      return adminJson({ ok: true, media, usage });
+      let storageCheck = null;
+      if (params.get("checkStorage") === "1") {
+        if (media.storage_provider !== "r2") {
+          storageCheck = { status: "not-managed", checkedAt: new Date().toISOString(), detail: "This record is not stored in the Preview R2 bucket." };
+        } else if (!context.env.CMS_MEDIA) {
+          storageCheck = { status: "unavailable", checkedAt: new Date().toISOString(), detail: "The Preview R2 binding is not available; object existence could not be checked." };
+        } else {
+          try {
+            const object = await context.env.CMS_MEDIA.head(media.object_key);
+            storageCheck = object
+              ? { status: "available", checkedAt: new Date().toISOString(), size: object.size, etag: object.etag || null }
+              : { status: "missing", checkedAt: new Date().toISOString(), detail: "No object exists at the recorded R2 key." };
+          } catch (storageError) {
+            console.error("CMS media storage check failed", storageError);
+            storageCheck = { status: "unavailable", checkedAt: new Date().toISOString(), detail: "Preview R2 could not confirm this object's status." };
+          }
+        }
+      }
+      return adminJson({ ok: true, media, usage, storageCheck });
     } catch (error) {
       console.error("CMS media usage lookup failed", error);
       return adminJson({ error: "Unable to load image usage information." }, 500);
