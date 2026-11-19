@@ -4,6 +4,8 @@ import { products as catalogueProducts } from "../data/products";
 import { catalogMedia } from "../data/catalogMedia";
 import { removeSectionFromContent, restoreSectionToContent } from "../utils/sectionRecovery";
 
+const BRAND_LOGO_FILES = ["baolai.png", "cattani.png", "cingol.png", "durr.png", "ems.png", "fussen.png", "melag.png", "mocom.png", "morita.png", "nishika.png", "vrn.png", "westcode.png", "xline.png"];
+
 const SECTION_TYPES = [
   { value: "hero", label: "Hero section" },
   { value: "text", label: "Text section" },
@@ -514,6 +516,16 @@ export default function CMSDashboard({ onAdminLogout }) {
     if (!selectedSection) return;
     const currentItems = Array.isArray(selectedSection.content?.items) ? selectedSection.content.items : [];
     updateSection("items", currentItems.filter((_, itemIndex) => itemIndex !== index));
+  }
+
+  function moveSectionItem(index, offset) {
+    if (!selectedSection) return;
+    const currentItems = Array.isArray(selectedSection.content?.items) ? selectedSection.content.items : [];
+    const target = index + offset;
+    if (target < 0 || target >= currentItems.length) return;
+    const nextItems = currentItems.slice();
+    [nextItems[index], nextItems[target]] = [nextItems[target], nextItems[index]];
+    updateSection("items", nextItems);
   }
 
   function toggleFeaturedProduct(slug, checked) {
@@ -1525,7 +1537,18 @@ export default function CMSDashboard({ onAdminLogout }) {
                     <article className="cms-inspector-collection-item" key={item?.id || item?.slug || index}>
                       <div className="cms-inspector-collection-item-heading"><strong>{selectedSection.type === "brand-grid" ? `Brand ${index + 1}` : `Item ${index + 1}`}</strong><button type="button" className="cms-recovery-discard" onClick={() => removeSectionItem(index)} disabled={busy}>Remove</button></div>
                       {selectedSection.type === "brand-grid" ? (
-                        <label>Image filename<input value={typeof item === "string" ? item : ""} onChange={(event) => updateSectionItem(index, "", event.target.value)} placeholder="manufacturer-logo.png" /></label>
+                        <>
+                          <label>Brand logo<select value={typeof item === "string" ? item : ""} onChange={(event) => updateSectionItem(index, "", event.target.value)}>
+                            <option value="">Choose an existing brand logo</option>
+                            {typeof item === "string" && item && !BRAND_LOGO_FILES.includes(item) && <option value={item}>{item} · current custom filename</option>}
+                            {BRAND_LOGO_FILES.map((filename) => <option key={filename} value={filename}>{filename.replace(/\\.png$/i, "").toUpperCase()}</option>)}
+                          </select></label>
+                          {typeof item === "string" && item && <img className="cms-brand-logo-inspector-preview" src={`/brand logo/fitted/${item.replace(/\\.png$/i, "")}.png`} alt={item.replace(/\\.png$/i, "")} />}
+                          <div className="cms-gallery-row-actions">
+                            <button type="button" className="admin-secondary-button" disabled={index === 0 || busy} onClick={() => moveSectionItem(index, -1)}>Move up</button>
+                            <button type="button" className="admin-secondary-button" disabled={index === (selectedSection.content?.items || []).length - 1 || busy} onClick={() => moveSectionItem(index, 1)}>Move down</button>
+                          </div>
+                        </>
                       ) : (
                         <>
                           <div className="cms-inspector-item-fields">
