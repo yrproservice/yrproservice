@@ -557,8 +557,8 @@ export default function CMSManagement() {
           setItems(products);
           const productRow = products.find((item) => item.product_slug === key);
           if (productRow?.draft_product || productRow?.published_product) {
-            if (selected?.slug !== key) chooseProduct(productRow, true);
-          } else if (selected?.slug !== key) {
+            chooseProduct(productRow, true);
+          } else {
             setSelected(null);
             setJson(JSON.stringify(blankProduct(), null, 2));
             historyRequestId.current += 1;
