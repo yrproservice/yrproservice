@@ -410,3 +410,23 @@ Source inspection and targeted source edit only. No tests, builds, screenshots, 
 - No tests, builds, screenshots, visual checks, image processing, deployments or migrations were run. No Production settings or content were changed.
 - Resume by reviewing remaining source-only CMS workflows in small batches. Defer all runtime verification and image work until Phase H.
 
+## Additional Phase G continuation — editor exit and product selection safeguards (19 November 2026)
+
+A source-only review found several remaining ways to discard in-progress edits without changing CMS tabs:
+
+- The Products workspace has two render paths (selected-product editor and catalogue workspace). The fallback catalogue workspace's Products listing and Product details Visual Design Studio instances were not wired to the parent dirty-state callback. Both now report their dirty state, so the existing Products tab guard covers either render path.
+- Switching the selected product or starting a new product could replace the current product JSON draft without a confirmation. Product selection now no-ops when the same item is selected and asks before replacing a different product when the current JSON differs from its saved snapshot.
+- Leaving CMS Management through its header links or browser navigation could unmount an editor without using the tab guard. The existing dirty-state checks are now shared through a current-tab leave confirmation, applied to both header exit links, and supplemented with a browser before-unload warning for unsaved changes in the active workspace. The static page-design key map is module-scoped so the effect does not depend on a newly allocated map each render.
+- The Visual Website Editor had the same whole-workspace exit gap. Its Management Centre and Request Dashboard links now confirm against the existing page dirty-state check, and a before-unload warning covers browser navigation, reload or closing while page content or unapplied section JSON is dirty.
+
+Commits:
+- dc2835acba6f70ca1521b156485d104e6c636ca2 — keep product design dirty-state guard active in both editor layouts.
+- 17efdf2915003fb71de762f175909a132279f6e8 — protect unsaved CMS edits when leaving the management workspace.
+- e5ea4dd0d272c6ce13ffbfcc0ea7906b0d37f22a — protect unsaved product content when switching catalogue items.
+- ade2a8b8997ac125818747bea14dddedef5ffb39 — keep CMS navigation dirty-state map stable outside component renders.
+- efaf10d6ead3c55f9e01715c90e86737f72b7ea0 — protect unsaved visual editor changes when leaving the workspace.
+
+Source-level checks confirmed the two Products editor render paths both report both page-design keys, CMS Management has its active-tab confirmation and browser-unload guard, product selection checks the saved JSON snapshot, and Visual Website Editor exit links and browser navigation use the page dirty-state guard. These are source checks only; no runtime behaviour has been verified.
+
+No product content was changed or published. No media objects, database schema, API contracts, Preview published content, Production settings or deployment configuration were changed. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
