@@ -1337,7 +1337,8 @@ export default function CMSDashboard({ onAdminLogout }) {
                           type="button"
                           className="cms-home-visibility-toggle"
                           aria-label={`${section.visible === false ? "Show" : "Hide"} ${section.content?.heading || section.type}`}
-                          onClick={() =>
+                          onClick={() => {
+                            if (busy) return;
                             setContent((current) => ({
                               ...current,
                               sections: current.sections.map((item) =>
@@ -1345,8 +1346,8 @@ export default function CMSDashboard({ onAdminLogout }) {
                                   ? { ...item, visible: item.visible === false }
                                   : item
                               ),
-                            }))
-                          }
+                            }));
+                          }}
                         >
                           {section.visible === false ? "Show" : "Hide"}
                         </button>
@@ -1522,7 +1523,8 @@ export default function CMSDashboard({ onAdminLogout }) {
                 <input
                   type="checkbox"
                   checked={selectedSection.visible !== false}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    if (busy) return;
                     setContent((current) => ({
                       ...current,
                       sections: current.sections.map((item) =>
@@ -1530,15 +1532,16 @@ export default function CMSDashboard({ onAdminLogout }) {
                           ? { ...item, visible: event.target.checked }
                           : item
                       ),
-                    }))
-                  }
+                    }));
+                  }}
                 />
               </label>
               <label>
                 Layout variant
                 <input
                   value={selectedSection.layout?.variant || "standard"}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    if (busy) return;
                     setContent((current) => ({
                       ...current,
                       sections: current.sections.map((item) =>
@@ -1552,8 +1555,8 @@ export default function CMSDashboard({ onAdminLogout }) {
                             }
                           : item
                       ),
-                    }))
-                  }
+                    }));
+                  }}
                 />
               </label>
               <label>Eyebrow / overline<input value={selectedSection.content?.eyebrow || ""} onChange={(event) => updateSection("eyebrow", event.target.value)} placeholder="SECTION LABEL" /></label>
@@ -1729,6 +1732,7 @@ export default function CMSDashboard({ onAdminLogout }) {
                     value={structuredJson}
                     onChange={(event) => { if (!busy) setStructuredJson(event.target.value); }}
                     onBlur={() => {
+                      if (busy) return;
                       try {
                         const parsed = JSON.parse(structuredJson);
 
