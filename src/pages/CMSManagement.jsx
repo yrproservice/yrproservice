@@ -269,7 +269,11 @@ export default function CMSManagement() {
         savedJson: JSON.stringify(product, null, 2),
       });
       setNotice(`Product draft V${data.version} saved.`);
-      await refreshProducts();
+      try {
+        await refreshProducts();
+      } catch (refreshError) {
+        setError(`Product draft V${data.version} was saved successfully, but the product list could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
+      }
     } catch (saveError) {
       setError(saveError.message);
     } finally {
@@ -321,7 +325,11 @@ export default function CMSManagement() {
       setNotice(
         "Archive draft saved. The public catalogue is unchanged until you publish to Preview."
       );
-      await refreshProducts();
+      try {
+        await refreshProducts();
+      } catch (refreshError) {
+        setError(`Archive draft V${data.version} was saved successfully, but the product list could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
+      }
     } catch (saveError) {
       setError(saveError.message);
     } finally {
@@ -357,7 +365,11 @@ export default function CMSManagement() {
         `Product revision V${data.version} published to this Preview environment.`
       );
       setSelected(null);
-      await refreshProducts();
+      try {
+        await refreshProducts();
+      } catch (refreshError) {
+        setError(`Product revision V${data.version} was published to Preview successfully, but the product list could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
+      }
     } catch (publishError) {
       setError(publishError.message);
     } finally {
@@ -1012,7 +1024,12 @@ export default function CMSManagement() {
 
       settingBaseline.current = { key: settingKey, json: settingJson };
       setNotice(`Settings draft V${data.version} saved.`);
-      await refreshSettings();
+      try {
+        await refreshSettings();
+      } catch (refreshError) {
+        setSettingsReady(false);
+        setError(`Settings draft V${data.version} was saved successfully, but the settings list could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
+      }
     } catch (saveError) {
       setError(saveError.message);
     } finally {
@@ -1041,7 +1058,12 @@ export default function CMSManagement() {
       });
 
       setNotice(`Setting "${row.setting_key}" published to Preview.`);
-      await refreshSettings();
+      try {
+        await refreshSettings();
+      } catch (refreshError) {
+        setSettingsReady(false);
+        setError(`Setting "${row.setting_key}" was published to Preview successfully, but the settings list could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
+      }
     } catch (publishError) {
       setError(publishError.message);
     } finally {
