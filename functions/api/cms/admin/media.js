@@ -268,9 +268,6 @@ export async function onRequestDelete(context) {
         usage,
       }, 409);
     }
-    if (row.storage_provider === "r2" && !env.CMS_MEDIA) {
-      return adminJson({ error: "Preview R2 storage is unavailable. The media record has been kept." }, 503);
-    }
     const deletedAt = new Date().toISOString();
     const softDelete = await env.DB.prepare(
       "UPDATE cms_media SET deleted_at=? WHERE id=? AND deleted_at IS NULL"
