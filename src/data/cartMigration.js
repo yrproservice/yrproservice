@@ -1,4 +1,4 @@
-import { isDentalChairProduct } from "./productWorkflow";
+import { isDentalChairProduct } from "./productWorkflow.js";
 
 export function normalizeStoredQuantity(value) {
   const quantity = Number(value);
