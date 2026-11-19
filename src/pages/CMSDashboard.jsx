@@ -212,6 +212,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [removedSections, setRemovedSections] = useState([]);
   const [structuredJson, setStructuredJson] = useState("{}");
   const dragSectionId = React.useRef(null);
+  const sectionMediaUsageRequestId = React.useRef(0);
   const historyRef = React.useRef({ past: [], future: [], previous: JSON.stringify({ sections: [] }), suppressNext: false });
   const [, setHistoryRevision] = useState(0);
   const homeDesign = content.design || {};
@@ -439,23 +440,42 @@ export default function CMSDashboard({ onAdminLogout }) {
     setNotice("New page started. Save it as a draft when ready.");
   }
 
+  function clearSectionMediaUsage() {
+    sectionMediaUsageRequestId.current += 1;
+    setSectionMediaUsage(null);
+    setSectionMediaUsageId("");
+    setSectionMediaUsageLoading(false);
+  }
+
   async function inspectSectionImageUsage() {
     const currentImage = selectedSection?.content?.imageUrl || "";
     const mediaItem = uploadedMedia.find((item) => item.public_url === currentImage);
     if (!mediaItem) return;
-    if (sectionMediaUsageId === mediaItem.id && sectionMediaUsage) { setSectionMediaUsage(null); setSectionMediaUsageId(""); return; }
-    setSectionMediaUsageId(mediaItem.id); setSectionMediaUsage(null); setSectionMediaUsageLoading(true);
+    if (sectionMediaUsageId === mediaItem.id && sectionMediaUsage) {
+      clearSectionMediaUsage();
+      return;
+    }
+    const requestId = ++sectionMediaUsageRequestId.current;
+    setSectionMediaUsageId(mediaItem.id);
+    setSectionMediaUsage(null);
+    setSectionMediaUsageLoading(true);
     try {
       const response = await fetch("/api/cms/admin/media?id=" + encodeURIComponent(mediaItem.id), { headers: { Accept: "application/json" }, cache: "no-store" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.ok === false) throw new Error(data.error || "Unable to load image references.");
-      setSectionMediaUsage(data.usage || null);
-    } catch (usageError) { setMediaError(usageError.message); setSectionMediaUsageId(""); }
-    finally { setSectionMediaUsageLoading(false); }
+      if (requestId === sectionMediaUsageRequestId.current) setSectionMediaUsage(data.usage || null);
+    } catch (usageError) {
+      if (requestId === sectionMediaUsageRequestId.current) {
+        setMediaError(usageError.message);
+        setSectionMediaUsageId("");
+      }
+    } finally {
+      if (requestId === sectionMediaUsageRequestId.current) setSectionMediaUsageLoading(false);
+    }
   }
   function updateSectionFields(patch) {
     if (!selectedSection || !patch || typeof patch !== "object") return;
-    if (Object.prototype.hasOwnProperty.call(patch, "imageUrl")) { setSectionMediaUsage(null); setSectionMediaUsageId(""); }
+    if (Object.prototype.hasOwnProperty.call(patch, "imageUrl")) clearSectionMediaUsage();
     const nextSectionContent = { ...(selectedSection.content || {}), ...patch };
     setContent((current) => ({
       ...current,
@@ -468,7 +488,7 @@ export default function CMSDashboard({ onAdminLogout }) {
 
   function updateSection(field, value) {
     if (!selectedSection) return;
-    if (field === "imageUrl") { setSectionMediaUsage(null); setSectionMediaUsageId(""); }
+    if (field === "imageUrl") clearSectionMediaUsage();
 
     setContent((current) => ({
       ...current,
@@ -1477,17 +1497,18 @@ export default function CMSDashboard({ onAdminLogout }) {
                   </div>
                 )}
 
-                <input aria-label="Search media library" value={mediaSearch} onChange={(event) => setMediaSearch(event.target.value)} placeholder="Search filename, brand or category" />
+                <input aria-label="Search media library" value={mediaSearch} onChange={(event) => setMediaSearch(event.target.value)} placeholder="Search filename, alt text or storage key" />
                 {mediaError && <p className="cms-media-picker-error">{mediaError} You can still enter an image path manually.</p>}
                 {mediaLoading && <p className="cms-media-picker-note">Loading uploaded media…</p>}
                 <details className="cms-section-media-group">
                   <summary>Uploaded Preview media ({uploadedMedia.length})</summary>
                   {uploadedMedia.length ? <div className="cms-section-media-grid">
-                    {uploadedMedia.filter((item) => `${item.original_file_name} ${item.mime_type}`.toLowerCase().includes(mediaSearch.toLowerCase())).map((item) => (
+                    {uploadedMedia.filter((item) => `${item.original_file_name} ${item.alt_text || ""} ${item.mime_type} ${item.object_key || ""}`.toLowerCase().includes(mediaSearch.toLowerCase())).map((item) => (
                       <button type="button" key={item.id} className={selectedSection.content?.imageUrl === item.public_url ? "is-selected" : ""} onClick={() => updateSectionFields({ imageUrl: item.public_url, imageAlt: item.alt_text || "" })}>
                         <img src={item.public_url} alt="" loading="lazy" /><span>{item.original_file_name}</span><small>{item.width && item.height ? `${item.width} × ${item.height} · ` : ""}{Math.round(item.byte_size / 1024)} KB</small>
                       </button>
                     ))}
+                    {uploadedMedia.filter((item) => `${item.original_file_name} ${item.alt_text || ""} ${item.mime_type} ${item.object_key || ""}`.toLowerCase().includes(mediaSearch.toLowerCase())).length === 0 && <p className="cms-media-picker-note">No uploaded Preview images match this search.</p>}
                   </div> : <p className="cms-media-picker-note">No uploaded Preview images are available.</p>}
                 </details>
                 <details className="cms-section-media-group">
