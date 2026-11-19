@@ -1451,3 +1451,13 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 
 ### Resume point
 - Continue bounded source-only Phase G review on `cms-development`. Recheck branch HEAD, PR #2 and compare counts before any further edits. Keep PR #2 Open/Draft/unmerged and Production untouched. Keep tests, builds, generated PDFs, screenshots and all image work deferred to the final Phase H stage, pending explicit authorization.
+
+
+## Bounded source review checkpoint — 19 November 2026 (continued)
+
+- Reviewed `src/utils/sectionRecovery.js`, `src/components/PageDesignScope.jsx`, `ServiceCmsDraftPreview.jsx`, `HomeCmsRenderer.jsx`, `src/data/catalogMedia.js`, `functions/_utils/cms-content-validation.js`, and `cms-settings-validation.js`.
+- Confirmed section recovery preserves original index and page key, refuses duplicate restore, and recalculates order. Page design settings are allowlisted and validated server-side. CMS content validation bounds section counts, text, route and image destinations, product slugs, and section items.
+- Concrete fix: `src/components/PageDesignScope.jsx` now clears previously loaded published design when the page key changes or an override takes control, before loading the next page's setting. This prevents a previous page's design from leaking onto a different page during loading or after a failed fetch.
+- Commit: `0892d6ae2bf0e5258b8f2a8aa9e9273338d9bb2f`.
+- This was source-reviewed only. No tests/builds, browser/API requests, Preview checks, screenshots, PDF generation, or image work performed. Phase H must verify page-to-page design switching, slow/failing settings responses, and design override transitions.
+- Other reviewed areas had no sufficiently confirmed defect to justify a code change. Existing Phase H visual confirmation for Team role-card imagery remains open.
