@@ -1465,3 +1465,11 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Follow-up hardening: published design state is now tagged with its `pageKey`, and rendering only applies a loaded value when its key matches the current page. This closes the brief pre-effect render window as well as delayed/failing request carryover. Commit: `1d297d8bd65d54e2af7a33e281c5ec21dfd61328`.
 
 - CSS review found the Visual Design Studio's image-fit setting was validated and exposed as `data-image-fit`, while the service/detail image CSS reads `--page-design-image-fit`; the custom property was not supplied. Added `--page-design-image-fit: design.imageFit` to the shared scope style so the existing validated contain/cover control reaches its CSS consumer. Product catalogue photography remains explicitly forced to `contain` by its separate rule. Commit: `e14e3cdf9a401e9e07dfba09fa1ae1e1dca0e7d4`. Phase H should verify service/detail editorial images for both settings while confirming product images remain fully contained.
+
+
+## Bounded CMS design preview/editor source review — 19 November 2026
+
+- Reviewed `src/components/DocumentManager.jsx`, `SpecBuilder.jsx`, `ProductFormEditor.jsx`, `productEditorData.js`, `ProductMediaFrame.jsx`, `src/pages/CMSDesignPreview.jsx`, and `CMSDesignReview.jsx`.
+- Document/specification editors preserve legacy row shapes and block mutation while disabled. Product editor resets gallery replacement index when JSON changes, prevents accidental image replacement through advanced JSON edits, limits gallery additions, and preserves chair workflow/locked slug invariants. Product media frame resets failure state when source changes and displays an unavailable placeholder rather than substituting a different image.
+- Added a request-generation guard to the design preview's product selector loader. A response may update product/error/loading state only if it belongs to the most recently initiated selection. This is defensive concurrency hardening; the selector is also disabled while a product is loading. Code commit: `13e77844f9a7b7d3a1c0b8854f74b83c4d4abd4f`.
+- No tests/builds or runtime requests were run. Phase H should verify rapid selection changes, failed product preview fetches, and fallback behavior, as well as the legacy document/specification editing paths.
