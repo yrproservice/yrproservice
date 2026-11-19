@@ -51,6 +51,14 @@ const blankProduct = () => ({
   reviewStatus: "No customer reviews published yet.",
 });
 
+function areJsonValuesEqual(left, right) {
+  try {
+    return JSON.stringify(JSON.parse(left)) === JSON.stringify(JSON.parse(right));
+  } catch {
+    return false;
+  }
+}
+
 export default function CMSManagement() {
   const [tab, setTab] = useState("products");
   const [items, setItems] = useState([]);
@@ -931,6 +939,10 @@ export default function CMSManagement() {
   }
   async function publishSetting(row) {
     if (!row?.setting_key || !row?.draft_id || busy) return;
+    if (row.setting_key === settingKey && !areJsonValuesEqual(settingJson, row.draft_value || "{}")) {
+      setError("Save the current settings edits before publishing. The previously saved draft has not been published.");
+      return;
+    }
 
     setBusy(true);
     setError("");
@@ -962,6 +974,10 @@ export default function CMSManagement() {
     return matchesIntegrity && (!mediaSearchTerm || searchable.includes(mediaSearchTerm));
   });
   const settingImageReferences = media.filter((item) => settingJson.includes(item.public_url));
+  const hasUnsavedSettingChanges = settings.some((row) =>
+    row.setting_key === settingKey && row.draft_id
+      && !areJsonValuesEqual(settingJson, row.draft_value || "{}")
+  );
   const historyOptions = historyType==="page"
     ? pages.map(row=>({key:row.page_key,label:`${row.title} · ${row.route}`}))
     : historyType==="product"
@@ -1717,7 +1733,7 @@ export default function CMSManagement() {
                   <>
                     <button
                       className="admin-secondary-button"
-                      disabled={busy}
+                      disabled={busy || (row.setting_key === settingKey && hasUnsavedSettingChanges)}
                       onClick={() => publishSetting(row)}
                     >
                       Publish to Preview
@@ -1763,6 +1779,11 @@ export default function CMSManagement() {
               value={settingJson}
               onChange={(event) => setSettingJson(event.target.value)}
             />
+            {hasUnsavedSettingChanges && (
+              <p className="admin-alert admin-alert-warning" role="status">
+                Unsaved settings edits · save a new draft before publishing this setting.
+              </p>
+            )}
             {settingImageReferences.length > 0 && (
               <section className="cms-setting-image-references">
                 <strong>Uploaded images referenced by this setting ({settingImageReferences.length})</strong>
