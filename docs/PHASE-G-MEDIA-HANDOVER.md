@@ -1378,3 +1378,21 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 
 ### Resume point
 - Continue source-only Phase G review on `cms-development`. Keep PR #2 Open/Draft/unmerged and Production untouched. Keep all tests, builds, generated PDFs, screenshots and image processing deferred to the final Phase H stage, which requires explicit authorization.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (customer request form state)
+
+### Source review and targeted correction
+- Reviewed `Cart.jsx`, `Quote.jsx`, `DentalChairRequest.jsx`, `ServiceRequest.jsx`, `functions/api/requests.js`, `services.js`, `servicesCmsTemplate.js`, and `ServicesManager.jsx`.
+- Confirmed the eight existing Services entries use the same fixed slugs accepted by the public request API. The Services manager edits service titles/copy/points but deliberately locks route slugs, so the current server allowlist is consistent with the current manager UI.
+- Found a service-selection race in `ServiceRequest.jsx`: the query-string selection was re-applied whenever the asynchronous CMS service list changed. A customer who selected a fallback service before that request completed could have their selection reset.
+- Changed the initial `service` state to read the query parameter once during component initialization and removed the effect that reset the selection on every services-list update. The CMS list fetch remains unchanged. Re-fetched the file and confirmed the query initializer, removal of the resetting effect, and continued presence of the asynchronous service fetch.
+- Commit: `c68684cc98fa035263f7216da39ced39610752a9`.
+
+### Phase H follow-ups
+- Verify service preselection from a service detail page, manual selection before/after CMS list loading, and invalid/retired query slugs in the browser.
+- Verify the confirmation PDF with both one-page and multi-page submissions after the pagination correction recorded above.
+- No form submission, PDF generation, browser/API request, automated test, build, screenshot, D1 query, migration, R2 operation, image processing, Preview deployment, or Production change was performed.
+
+### Resume point
+- Continue bounded source-only Phase G review on `cms-development`. Keep PR #2 Open/Draft/unmerged and Production untouched. Keep tests, builds, PDFs, screenshots and image processing deferred to the final Phase H stage, pending explicit authorization.
