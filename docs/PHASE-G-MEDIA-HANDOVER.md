@@ -1536,3 +1536,12 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - No additional source defect was confirmed in this documentation/configuration pass. No tests, test-file inspection, builds, browser/API requests, Preview operations, migrations, deployments, screenshots, PDFs or image processing were performed.
 - Detailed review note: `docs/PHASE-G-19-NOV-SOURCE-REVIEW.md` (commit `73c8998e48c4201f24cfaf9b358e9e6768776729`).
 - Current Phase G remains source-only on `cms-development`; defer all verification and image/PDF work to Phase H after explicit authorization.
+
+
+## Cart migration persistence failure-path checkpoint — 19 November 2026
+
+- Re-reviewed the complete cart and dental-chair request context providers and confirmed a recoverability risk: if writing the migrated legacy chair entries to `yr-chair-requests` throws (e.g. storage quota/security failure), the Cart initializer's outer catch returns an empty list, after which the persistence effect may overwrite the original `yr-cart` data. The providers' storage persistence effects also do not currently guard storage exceptions.
+- No partial code patch was made because safe recovery requires coordinated migration readiness/retry and user-visible error handling; a catch-only change could still lose legacy chair entries or leave them in the wrong flow.
+- Follow-up: implement a coordinated, non-destructive migration state that preserves both stores when storage writes fail, then test quota/security exceptions and normal migration in Phase H. No local storage was accessed or modified in this source review.
+- Detailed note: `docs/PHASE-G-19-NOV-SOURCE-REVIEW.md` (commit `9c9c728dec7c26f544638ec95e1aea7cf2e83d7c`).
+- No tests/builds, browser/API requests, Preview operations, migrations, deployments, screenshots, PDFs or image processing were performed.
