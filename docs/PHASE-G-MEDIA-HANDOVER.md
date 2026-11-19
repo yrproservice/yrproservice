@@ -948,3 +948,42 @@ No product data, drafts, published catalogue entries, media, settings, database 
 - Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
 - Continue remaining Phase G source-only review in small batches. Phase H remains the final runtime, image, responsive, accessibility, security and Preview verification stage.
 
+## Recovery checkpoint refresh — 19 November 2026 (continued source-only safeguards)
+
+- Repository: `yrproservice/yrproservice`
+- Active branch: `cms-development`
+- Latest verified branch HEAD: `7d6af561968e7d4435dc5ce57d7d858b087ef8b5`.
+- PR #2 was rechecked after the source commits: Open, Draft, unmerged, targeting `main`, with its head matching the branch. Keep it Draft and do not merge without explicit user approval.
+- Production remains untouched. No tests, builds, screenshots, image processing, visual checks, deployments, Preview publishing or migrations were run.
+
+### Source-only fixes in this continuation
+
+1. `04b875a8f862af0bac5ac5ee235fbc7c3bd293bc` — `src/pages/CMSManagement.jsx`
+   - Corrected CSV export newline and UTF-8 BOM escapes for media history and integrity reports.
+   - Corrected both CSV formula-injection guards so leading whitespace is recognised before formula-leading characters.
+   - Source assertions confirmed the corrected patterns and absence of the previous double-escaped forms. No CSV was generated or runtime-tested.
+
+2. `005338e0ae620ed20eca2bb05374b6c919efc2ba` — `functions/api/cms/admin/media.js`
+   - Corrected server-side original-filename validation to reject slash/backslash path separators and ASCII control characters (including DEL).
+   - This is validation-only; no media metadata or storage objects were changed.
+
+3. `ea3c0507372b17a970b43298632b0f1963701bc0` — `src/pages/ServicesManager.jsx`
+   - Added handler-level busy guards to save, delete and publish actions.
+
+4. `c522f44a690172f4aedc805613fb64739d8f8055` — `src/pages/TeamManager.jsx`
+   - Added handler-level busy guards to save, delete and publish actions.
+
+5. `a0b7eb5ebc0b8e90e6e3f3b816105e30841f90f8` — `src/pages/PageVisualDesignManager.jsx`
+   - Added busy guards to design field updates and save, delete and Preview-publish handlers.
+
+6. `7d6af561968e7d4435dc5ce57d7d858b087ef8b5` — `src/pages/CMSDashboard.jsx`
+   - Added handler-level busy guards to Visual Website Editor save and Preview-publish actions.
+
+### Recovery instructions
+
+- On resumption, recheck branch HEAD and PR #2 before editing; do not assume this checkpoint is still current.
+- Continue source-only review in small, bounded batches. Inspect current source before every edit and keep commits narrowly scoped.
+- Do not run tests/builds or image/visual work until the final Phase H stage.
+- Do not deploy, publish to Preview, run migrations, change bindings, or touch Production.
+- Remaining Phase G work is a source review of other CMS handler/readiness/recovery paths; this checkpoint does not claim Phase G is complete.
+- Phase H remains the final verification stage: tests/builds, authenticated Preview checks, responsive/accessibility/security review, image work and screenshots, followed by explicit release-gate review. Do not start Phase H until the user authorizes that final stage.
