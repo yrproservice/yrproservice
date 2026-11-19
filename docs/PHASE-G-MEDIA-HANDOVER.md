@@ -430,3 +430,14 @@ Source-level checks confirmed the two Products editor render paths both report b
 
 No product content was changed or published. No media objects, database schema, API contracts, Preview published content, Production settings or deployment configuration were changed. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 
+## Additional Phase G continuation — media draft retention and product-content source review (19 November 2026)
+
+A further source review examined ProductFormEditor, productEditorData, SpecBuilder and DocumentManager. The current structured editors use the existing product JSON as their source, preserve unexposed product properties through the merge helper, retain existing specification/document object key names and additional object properties, and restrict raw-row edits to the existing JSON value type. Array order/removal/addition remains explicit editor behaviour. Product image edits remain routed through the existing image-protection helper and the separate Preview draft workflow. No product content or catalogue data was modified in this review.
+
+The media metadata dirty-state calculation was strengthened: it now evaluates the union of IDs with local filename/alt-text draft values, rather than only the currently loaded active media records. If a locally edited record is filtered out, archived, or absent from the capped loaded result, the CMS conservatively continues to treat its draft as unsaved and protects it during navigation. Saving metadata still clears that record's local draft entries.
+
+Commit:
+- 2f8510862a472611663f39a4369159f598c6fef3 — retain media metadata dirty-state protection for filtered records.
+
+This was a source-level review and targeted edit only. It did not change product content, product schemas, media metadata, R2 objects, API contracts, database schema, Preview published content, Production or deployment configuration. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
