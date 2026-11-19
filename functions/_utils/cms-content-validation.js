@@ -113,10 +113,19 @@ export function validatePageContent(value) {
         return label + " items must be an array with no more than 100 entries.";
       }
       if (section.type === "brand-grid") {
-        if (!content.items.every((item) => typeof item === "string" && item.length <= 200)) {
-          return label + " brand items must be text values.";
+        for (let itemIndex = 0; itemIndex < content.items.length; itemIndex += 1) {
+          const item = content.items[itemIndex];
+          if (typeof item === "string" && item.length <= 200) continue;
+          if (!isRecord(item) || typeof item.url !== "string" || item.url.length > 1000 || !validImageUrl(item.url)) {
+            return label + " brand item " + (itemIndex + 1) + " must be a logo filename or a valid HTTPS image URL.";
+          }
+          for (const field of ["mediaId", "alt", "name"]) {
+            if (item[field] !== undefined && (typeof item[field] !== "string" || item[field].length > 300)) {
+              return label + " brand item " + (itemIndex + 1) + " has invalid " + field + " metadata.";
+            }
+          }
         }
-      } else {
+
         for (let itemIndex = 0; itemIndex < content.items.length; itemIndex += 1) {
           const itemError = validateSectionItem(content.items[itemIndex], itemIndex);
           if (itemError) return label + ": " + itemError;
