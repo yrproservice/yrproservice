@@ -1315,3 +1315,27 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 ### Current restrictions
 - No tests, builds, browser checks, API calls, D1 operations, migrations, screenshots, image processing, Preview deployment, or Production changes were performed.
 - Continue source-only Phase G work on `cms-development`. PR #2 remains Open/Draft/unmerged and must target `main`. Do not deploy, migrate, or touch Production. Phase H remains deferred until explicit authorization.
+
+
+
+## Recovery checkpoint refresh — 19 November 2026 (admin session, settings and preview read paths)
+
+### Source-only review completed
+- Reviewed `src/pages/AdminEntry.jsx`, `src/pages/AccessChoice.jsx`, `functions/api/admin/session.js`, `functions/_utils/admin-auth.js`, `functions/api/cms/admin/settings.js`, `functions/api/cms/admin/preview.js`, and `functions/api/cms/admin/product-preview.js`.
+- Admin entry checks access with a no-store session request and only transitions to the dashboard after a successful response. Network/transport failures return through the Cloudflare Access entry path; explicit authorization/configuration failures remain visible to the user.
+- The shared admin guard validates Cloudflare Access JWT issuer, audience, expiry/not-before, RS256 signature and key ID, then checks the single approved administrator email. It fails closed when the Access configuration or signing-key retrieval is unavailable. Admin JSON responses are no-store and carry nosniff/no-referrer headers.
+- Admin session GET/POST/PATCH are authorization checks; DELETE clears the session cookie only after the request has passed the same Access guard. The helper does not treat that cookie as an authentication credential.
+- Settings saves validate the setting schema, create immutable numbered drafts, archive an existing draft within the same D1 batch, and write an audit event. The current version number is read before the batch; simultaneous saves can still conflict with the unique draft/version constraints and should be checked for understandable recovery messaging.
+- Page and product preview endpoints are read-only, administrator-protected and return the saved draft in preference to the published version. They parse stored JSON but do not repeat the content validation used by save/publish. Normal save/publish paths validate the content; Phase H should check how the preview UI surfaces malformed legacy/corrupt stored JSON (the endpoint currently returns a generic 500 on parse failure).
+- No source change was justified: these are either existing fail-closed controls or operational/compatibility checks that need authenticated Preview verification rather than speculative changes.
+
+### Phase H follow-ups
+- Verify Admin entry for valid Access, denied account, expired token, and temporary signing-key/network failure. Confirm the session-clear UX when the Cloudflare Access assertion has expired, because the DELETE route itself requires a valid assertion.
+- Verify settings concurrent-save conflict messaging and confirm the surviving draft/version/audit state in Preview.
+- Verify page/product preview behaviour for valid draft, no draft with published baseline, malformed stored JSON, and missing CMS data. Do not modify stored data merely to exercise these cases.
+- Confirm the admin session cookie's intended role and expiry/heartbeat behaviour in the browser; the shared JWT guard is the authorization boundary, not the cookie.
+
+### Work boundary and resume point
+- No source code, database, or configuration changes were made in this review.
+- No tests/builds, browser/API requests, D1 queries, migrations, R2 operations, image processing, screenshots, Preview publishing/deployment, or Production changes were performed.
+- Continue bounded source-only Phase G review on `cms-development`. Keep PR #2 Open/Draft/unmerged and Production untouched. Phase H remains deferred until explicit user authorization.
