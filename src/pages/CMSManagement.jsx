@@ -334,6 +334,8 @@ export default function CMSManagement() {
     }
   }
   async function restoreRevision(type, key, id) {
+    if (busy) return;
+
     const confirmed = window.confirm(
       "Restore this revision as a new draft? The current published version will remain live."
     );
@@ -370,7 +372,7 @@ export default function CMSManagement() {
     }
   }
   async function deleteDraft(type, key, id) {
-    if (!id) return;
+    if (!id || busy) return;
 
     const confirmed = window.confirm(
       "Delete this unpublished draft? Published content and archived revision history will remain unchanged. This draft cannot be recovered."
@@ -667,7 +669,7 @@ export default function CMSManagement() {
           {selected?.slug&&<button className="admin-secondary-button" onClick={()=>loadHistory("product",selected.slug)}>View revisions</button>}
           {selected?.draftId&&<button className="admin-secondary-button" disabled={busy} onClick={()=>deleteDraft("product",selected.slug,selected.draftId)}>Delete Draft</button>}
         </div>
-        {history.length>0&&<RevisionList history={history} onRestore={id=>restoreRevision("product",selected.slug,id)} onDeleteDraft={id=>deleteDraft("product",selected.slug,id)}/>}
+        {history.length>0&&<RevisionList history={history} busy={busy} onRestore={id=>restoreRevision("product",selected.slug,id)} onDeleteDraft={id=>deleteDraft("product",selected.slug,id)}/>}
       </section>
     </div>
     <section className="cms-manager-panel cms-page-editor-design">
@@ -898,7 +900,7 @@ export default function CMSManagement() {
             </div>
             {history.length > 0 && (
               <RevisionList
-                history={history}
+                history={history} busy={busy}
                 onRestore={(id) => restoreRevision("product", selected.slug, id)}
               />
             )}
@@ -1143,7 +1145,7 @@ export default function CMSManagement() {
           </button>
         </div>
         <RevisionList
-          history={history}
+          history={history} busy={busy}
           onRestore={(id) => restoreRevision(historyType, historyKey, id)}
           onDeleteDraft={(id) => deleteDraft(historyType, historyKey, id)}
         />
@@ -1218,7 +1220,7 @@ export default function CMSManagement() {
     )}
   </div></section>;
 }
-function RevisionList({ history, onRestore, onDeleteDraft }) {
+function RevisionList({ history, onRestore, onDeleteDraft, busy = false }) {
   return (
     <div className="cms-revision-list">
       {history.map((revision) => (
@@ -1235,6 +1237,7 @@ function RevisionList({ history, onRestore, onDeleteDraft }) {
           {revision.state !== "draft" && (
             <button
               className="admin-secondary-button"
+              disabled={busy}
               onClick={() => onRestore(revision.id)}
             >
               Restore as draft
@@ -1244,6 +1247,7 @@ function RevisionList({ history, onRestore, onDeleteDraft }) {
           {revision.state === "draft" && onDeleteDraft && (
             <button
               className="admin-secondary-button"
+              disabled={busy}
               onClick={() => onDeleteDraft(revision.id)}
             >
               Delete Draft
