@@ -637,7 +637,7 @@ export default function CMSManagement() {
         return;
       }
       chooseProduct(row);
-      setTab("products");
+      if (!changeManagerTab("products")) return;
       setNotice(`Opened the current editor for ${reference.title || reference.key}. This does not rewrite historical revisions.`);
       return;
     }
@@ -653,7 +653,7 @@ export default function CMSManagement() {
       settingBaseline.current = { key: row.setting_key, json: nextJson };
       setSettingKey(row.setting_key);
       setSettingJson(nextJson);
-      setTab("settings");
+      if (!changeManagerTab("settings")) return;
       setNotice(`Opened the current editor for ${reference.key}. This does not rewrite historical revisions.`);
       return;
     }
@@ -824,7 +824,7 @@ export default function CMSManagement() {
   async function inspectCurrentProductImageUsage() {
     const item = media.find((row) => row.public_url === currentProductImage);
     if (!item) return;
-    setTab("media");
+    if (!changeManagerTab("media")) return;
     await inspectMediaUsage(item, true);
   }
 
@@ -1006,6 +1006,17 @@ export default function CMSManagement() {
       row.setting_key === settingKey && row.draft_id
         && !areJsonValuesEqual(settingJson, row.draft_value || "{}")
     );
+
+  function changeManagerTab(nextTab) {
+    if (nextTab === tab) return true;
+    if (
+      tab === "settings" &&
+      hasUnsavedSettingChanges &&
+      !window.confirm("Discard the unsaved settings edits and leave the Settings editor?")
+    ) return false;
+    setTab(nextTab);
+    return true;
+  }
   const historyOptions = historyType==="page"
     ? pages.map(row=>({key:row.page_key,label:`${row.title} · ${row.route}`}))
     : historyType==="product"
@@ -1047,7 +1058,7 @@ export default function CMSManagement() {
           key={id}
           className={tab === id ? "active" : ""}
           onClick={() => {
-            setTab(id);
+            if (!changeManagerTab(id)) return;
             setError("");
             setNotice("");
           }}
@@ -1105,7 +1116,7 @@ export default function CMSManagement() {
       <section className="cms-manager-panel">
         <h2>{selected?.slug?"Edit product":"Product editor"}</h2>
         <p>Structured fields edit only the chosen values. Specifications, documents, image paths, and unexposed product metadata are preserved when saving. {selected?.draftId ? `You are editing draft V${selected.version}; published content remains unchanged until you publish to Preview.` : selected?.slug ? "No saved draft is loaded. The editor starts from the published product; save your changes as a new draft before publishing to Preview." : "New product content remains a draft until you explicitly publish it to Preview."}</p>
-        <ProductFormEditor key={editorSelection} json={json} onJsonChange={setJson} slugLocked={Boolean(selected&&!selected.isNew)} media={media} onInspectMedia={(item) => { setTab("media"); inspectMediaUsage(item, true); }}/>
+        <ProductFormEditor key={editorSelection} json={json} onJsonChange={setJson} slugLocked={Boolean(selected&&!selected.isNew)} media={media} onInspectMedia={(item) => { if (changeManagerTab("media")) inspectMediaUsage(item, true); }}/>
         <div className="cms-manager-actions">
           <button className="admin-primary-button" disabled={busy||!selected} onClick={saveProduct}>Save product draft</button>
           <button className="admin-secondary-button" disabled={busy||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button>
@@ -1192,7 +1203,7 @@ export default function CMSManagement() {
           key={id}
           className={tab === id ? "active" : ""}
           onClick={() => {
-            setTab(id);
+            if (!changeManagerTab(id)) return;
             setError("");
             setNotice("");
           }}
@@ -1273,7 +1284,7 @@ export default function CMSManagement() {
                   type="button"
                   className="admin-secondary-button"
                   disabled={!selected?.slug}
-                  onClick={() => setTab("media")}
+                  onClick={() => changeManagerTab("media")}
                 >
                   Open Media Library
                 </button>
@@ -1829,7 +1840,7 @@ export default function CMSManagement() {
                     <button
                       type="button"
                       className="admin-secondary-button"
-                      onClick={() => { setTab("media"); inspectMediaUsage(item, true); }}
+                      onClick={() => { if (changeManagerTab("media")) inspectMediaUsage(item, true); }}
                     >
                       Inspect references
                     </button>
