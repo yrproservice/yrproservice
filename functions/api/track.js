@@ -43,19 +43,49 @@ async function checkTrackingRateLimit(db, request, email) {
   await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_tracking_email_time ON request_tracking_attempts(email_hash, created_at)").run();
   await db.prepare("DELETE FROM request_tracking_attempts WHERE created_at < ?").bind(now - 86400).run();
 
-  const [ipCount, emailCount] = await Promise.all([
-    ipHash
-      ? db.prepare("SELECT COUNT(*) AS count FROM request_tracking_attempts WHERE ip_hash = ? AND created_at > ?").bind(ipHash, windowStart).first()
-      : Promise.resolve({ count: 0 }),
-    emailHash
-      ? db.prepare("SELECT COUNT(*) AS count FROM request_tracking_attempts WHERE email_hash = ? AND created_at > ?").bind(emailHash, windowStart).first()
-      : Promise.resolve({ count: 0 }),
-  ]);
-  if ((ipCount?.count || 0) >= 30 || (emailCount?.count || 0) >= 10) return false;
+  if (!ipHash && !emailHash) return true;
 
-  await db.prepare("INSERT INTO request_tracking_attempts (id, ip_hash, email_hash, created_at) VALUES (?, ?, ?, ?)")
-    .bind(crypto.randomUUID(), ipHash || null, emailHash || null, now).run();
-  return true;
+  const insertSql = ipHash && emailHash
+    ? `
+      INSERT INTO request_tracking_attempts (id, ip_hash, email_hash, created_at)
+      SELECT ?, ?, ?, ?
+      WHERE
+        (SELECT COUNT(*) FROM request_tracking_attempts
+          WHERE ip_hash = ? AND created_at > ?) < 30
+        AND
+        (SELECT COUNT(*) FROM request_tracking_attempts
+          WHERE email_hash = ? AND created_at > ?) < 10
+    `
+    : ipHash
+      ? `
+        INSERT INTO request_tracking_attempts (id, ip_hash, email_hash, created_at)
+        SELECT ?, ?, NULL, ?
+        WHERE (SELECT COUNT(*) FROM request_tracking_attempts
+          WHERE ip_hash = ? AND created_at > ?) < 30
+      `
+      : `
+        INSERT INTO request_tracking_attempts (id, ip_hash, email_hash, created_at)
+        SELECT ?, NULL, ?, ?
+        WHERE (SELECT COUNT(*) FROM request_tracking_attempts
+          WHERE email_hash = ? AND created_at > ?) < 10
+      `;
+  const statement = db.prepare(insertSql);
+  const result = ipHash && emailHash
+    ? await statement.bind(
+        crypto.randomUUID(), ipHash, emailHash, now,
+        ipHash, windowStart, emailHash, windowStart,
+      ).run()
+    : ipHash
+      ? await statement.bind(
+          crypto.randomUUID(), ipHash, now, ipHash, windowStart,
+        ).run()
+      : await statement.bind(
+          crypto.randomUUID(), emailHash, now, emailHash, windowStart,
+        ).run();
+
+  // The limit checks and attempt insertion share one SQLite statement, so
+  // overlapping requests cannot all pass a stale pre-insert count.
+  return Number(result.meta?.changes) === 1;
 }
 
 export async function onRequest({ request, env }) {
