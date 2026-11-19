@@ -3834,7 +3834,7 @@ h6 {
 
 .cms-preview-copy { display:grid; align-content:center; justify-items:start; gap:9px; min-width:0; }
 .cms-preview-copy > strong { display:block; color:var(--cms-home-heading-color,#0b4a88); font-size:clamp(18px,2.2vw,27px); line-height:1.2; font-weight:var(--cms-home-heading-weight,700); }
-.cms-preview-copy > span:not(.cms-preview-actions):not(.cms-preview-eyebrow) { color:#687280; font-size:12px; line-height:1.55; }
+.cms-preview-copy > span:not(.cms-preview-actions):not(.cms-preview-eyebrow) { color:var(--cms-home-section-text,#687280); font-size:12px; line-height:1.55; }
 .cms-preview-eyebrow { color:var(--cms-home-accent-color,#1e7ed8); font-size:9px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
 .cms-preview-hero-heading { display:block; color:var(--cms-home-heading-color,#0b4a88); font-size:clamp(23px,3vw,38px); line-height:1.08; font-weight:var(--cms-home-heading-weight,700); }
 .cms-preview-hero-heading > span { color:var(--cms-home-accent-color,#1e7ed8); }
