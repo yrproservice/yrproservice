@@ -494,6 +494,11 @@ export default function CMSManagement() {
         }
         await loadHistory(type, key);
       } catch (refreshError) {
+        if (type === "product" && selected?.slug === key) {
+          setSelected(null);
+          setJson(JSON.stringify(blankProduct(), null, 2));
+        }
+        if (type === "setting") setSettingsReady(false);
         setError(`Revision V${id} was restored as draft V${data.version}, but the editor could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
       }
     } catch (restoreError) {
