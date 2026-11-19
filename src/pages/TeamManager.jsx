@@ -57,7 +57,7 @@ function MediaPicker({ media, value, onSelect, label }) {
   );
 }
 
-export default function TeamManager() {
+export default function TeamManager({ onUnsavedChange }) {
   const [content, setContent] = useState(() => cloneTemplate());
   const [savedContentJson, setSavedContentJson] = useState(() => JSON.stringify(cloneTemplate()));
   const [media, setMedia] = useState([]);
@@ -73,6 +73,10 @@ export default function TeamManager() {
   const design = teamSection.design || {};
   const sectionOrder = content.sectionOrder || ["hero", "story", "process", "capabilities", "people", "cta"];
   const hasUnsavedChanges = JSON.stringify(content) !== savedContentJson;
+
+  useEffect(() => {
+    onUnsavedChange?.(hasUnsavedChanges);
+  }, [hasUnsavedChanges, onUnsavedChange]);
 
   useEffect(() => {
     let active = true;
