@@ -67,3 +67,11 @@ The main running handover remains `docs/PHASE-G-MEDIA-HANDOVER.md`. This checkpo
 - Confirmed save/publish handlers check busy/readiness state, validate unique section IDs, block publishing while unsaved edits exist, require Preview confirmation, and report Preview-only outcomes. Media-usage inspection uses a request-generation guard so stale responses do not replace the current selection.
 - Section recovery is guarded against wrong-page restores and duplicate section IDs; permanent discard requires confirmation. No additional confirmed defect warranted a code change in this pass.
 - No tests, builds, test-file inspection, browser/API requests, Preview operations, images, screenshots or PDFs were performed. Recovery and media behaviours remain part of final-stage verification.
+
+
+## Cart/chair migration follow-up source recheck — 19 November 2026
+
+- Re-fetched the current `CartContext.jsx`, `ChairRequestContext.jsx` and `cartMigration.js` from `cms-development` after the earlier failure-path concern.
+- The current implementation now gates normal-cart persistence until migration and cart storage are ready; storage read/write exceptions are caught and surfaced; chair migration writes the destination chair store before rewriting the normal cart; and the migration quantity marker supports idempotent retry if the destination write succeeds but the source rewrite fails.
+- The previous source-review concern about an initializer silently replacing the original cart is therefore addressed in the current source. This is a source-level confirmation only; quota/security failure scenarios and UI retry behaviour still require the deferred final-stage tests/runtime checks. No test files were inspected or executed.
+- No code change made in this follow-up.
