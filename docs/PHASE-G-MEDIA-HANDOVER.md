@@ -470,3 +470,14 @@ Commits:
 
 Source-level checks confirmed all three conditional delete warnings, pre-request product restore/delete confirmations, deliberate refreshed-product reload after confirmation, and safe settings-reference navigation ordering. No live draft or published record was modified by this work. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 
+## Recovery checkpoint refresh — 19 November 2026 (destructive draft safeguards)
+
+- Repository: yrproservice/yrproservice
+- Working branch: cms-development
+- Latest functional source checkpoint: c84cefba523bd073782cdff5d2c5cdc9add75ea0 (product reload after confirmed revision restore or draft deletion; includes conditional unsaved-edit warnings for Services, Team and Visual Design Studio draft deletion, and coordinated CMS product/settings revision actions).
+- Branch head before this recovery-document refresh: 9c1e80671236eb5e3d5624ffdec9fe9079b62fa8.
+- PR #2: https://github.com/yrproservice/yrproservice/pull/2 — Open, Draft, unmerged; PR head matched cms-development; base main.
+- Source-level checks passed for the new destructive-action warnings, pre-request product confirmation, confirmed product reload without a second prompt, and settings-reference navigation order.
+- No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed. Production and Preview published content remain untouched.
+- Resume on cms-development from the branch head. Continue small source-only Phase G reviews; reserve runtime and image verification for Phase H.
+
