@@ -1417,3 +1417,20 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 
 ### Resume point
 - Continue bounded source-only Phase G review on `cms-development`. Recheck live branch HEAD and PR #2 before further edits. Keep PR #2 Open/Draft/unmerged and Production untouched. Keep tests, builds, PDFs, screenshots and image processing deferred to the final Phase H stage, pending explicit authorization.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (quotation freeform validation)
+
+### Source review and targeted correction
+- Compared the quotation form's client-side requirement with the public request API validation.
+- The quotation form explicitly allows either a selected product or a written requirements message. The API previously rejected all quotation submissions without a product selection, even when the customer supplied a message; this made the supported message-only path fail at submission.
+- `functions/api/requests.js` now retains the separately cleaned submitted message and accepts a quotation when either product selection or a non-empty message is present. Dental-chair requests still require a selected chair product. Service-request validation is unchanged.
+- Re-fetched the API and quotation form and confirmed the client-side either/or guard and the server-side quotation/chair conditions are aligned.
+- Commit: `74c8a19691688e6b816bc7b802cbd3a46308443b`.
+
+### Verification status and Phase H follow-up
+- Source inspection only; no request was submitted and no database was accessed. Phase H should verify product-only quotation, message-only quotation, empty quotation rejection, chair request with/without selection, and unchanged service-request validation.
+- No tests, builds, browser/API requests, screenshots, generated PDFs, image processing, D1/R2 operations, migrations, Preview deployment/publishing or Production changes were performed.
+
+### Resume point
+- Continue bounded source-only Phase G review on `cms-development`. Recheck live branch HEAD and PR #2 before further edits. Keep PR #2 Open/Draft/unmerged and Production untouched. Keep tests, builds, PDFs, screenshots and image processing deferred to the final Phase H stage, pending explicit authorization.
