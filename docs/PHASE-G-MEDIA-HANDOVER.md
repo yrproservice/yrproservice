@@ -1298,3 +1298,20 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 ### Resume point
 - Continue source-only Phase G review on `cms-development`; re-check the live PR/head and this handover before further writes.
 - PR #2 must remain Open/Draft/unmerged, target `main`. Do not deploy, migrate, or touch Production. Phase H remains deferred until explicit user authorization.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (request dashboard save navigation)
+
+### Request workflow source review
+- Re-read `functions/api/requests.js`, `functions/api/track.js`, `functions/api/admin/requests.js`, `src/pages/AdminDashboard.jsx`, and `src/pages/TrackRequest.jsx` on `cms-development`.
+- Public submission validates request type, service allowlist, required fields, email, selected product requirements, bounded JSON input, and applies hashed-IP/email rate limits before inserting. Tracking requires matching reference plus normalized email, limits attempts, returns only status metadata, and uses no-store/no-referrer response headers. Admin request listing and status changes are protected by the shared admin authorization helper, allowlisted filters/statuses, bound SQL parameters, and a 200-row result cap.
+- Existing operational follow-ups remain for Phase H: rate-limit schema/index/pruning work is performed from request handlers; count-then-insert rate limiting is not atomic under concurrent bursts; request status changes are not recorded in a dedicated request-status audit trail. No database or API operation was run.
+
+### Targeted admin dashboard fix
+- The request dashboard already disabled filters, record selection, detail close, and status controls while a status save was pending, but the manual Refresh control and top-bar navigation links remained active.
+- Updated `src/pages/AdminDashboard.jsx`: manual Refresh is disabled during status saves, and both dashboard exit links now prevent navigation while `saving` is true.
+- Re-fetched the file and confirmed the handler, both link guards, and refresh disabled condition. This is source inspection only; runtime behaviour is unverified until Phase H.
+
+### Current restrictions
+- No tests, builds, browser checks, API calls, D1 operations, migrations, screenshots, image processing, Preview deployment, or Production changes were performed.
+- Continue source-only Phase G work on `cms-development`. PR #2 remains Open/Draft/unmerged and must target `main`. Do not deploy, migrate, or touch Production. Phase H remains deferred until explicit authorization.
