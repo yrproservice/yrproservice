@@ -189,7 +189,7 @@ export default function CMSManagement() {
     const sameSelection = selected && (
       selected.isNew ? !row : selected.slug === nextSlug
     );
-    if (sameSelection) return;
+    if (sameSelection && !confirmedDiscard) return;
     if (
       !confirmedDiscard &&
       selected &&
