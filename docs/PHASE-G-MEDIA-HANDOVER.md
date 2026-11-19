@@ -1339,3 +1339,24 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - No source code, database, or configuration changes were made in this review.
 - No tests/builds, browser/API requests, D1 queries, migrations, R2 operations, image processing, screenshots, Preview publishing/deployment, or Production changes were performed.
 - Continue bounded source-only Phase G review on `cms-development`. Keep PR #2 Open/Draft/unmerged and Production untouched. Phase H remains deferred until explicit user authorization.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (public navigation and catalogue fallback)
+
+### Source-only review completed
+- Reviewed `functions/_utils/cms-route-validation.js`, `functions/api/cms/public/settings.js`, `functions/api/cms/public/products.js`, `src/components/Layout.jsx`, `src/data/productWorkflow.js`, and `src/data/publishedCatalogue.js`.
+- CMS page and navigation/footer destinations are collected and checked against built-in routes or published CMS page routes before publishing. Public navigation independently renders only safe internal paths; external/protocol-relative destinations are not accepted as navigation targets. If the published navigation setting cannot be loaded, the header retains its built-in navigation.
+- The product workflow keeps the 11 confirmed dental-chair slugs on the dedicated Dental Chair Request path regardless of editable CMS metadata. Non-chair legacy quote products remain on general quotation; ordinary cart products remain on Product Cart.
+- Public product reads expose only published versions. Archived products are excluded from the returned catalogue and listed separately so the client merge can remove them from the static baseline. The public catalogue falls back to the static catalogue if the CMS request fails; this is intentional availability behaviour but means a transient API failure can temporarily restore static catalogue entries until the request succeeds again.
+- The public products endpoint parses every published product JSON row within one request. A malformed stored row currently causes the whole catalogue response to fail and the client to use its static fallback. Published data is validated before normal publication, so this is a data-corruption/legacy recovery scenario for Phase H rather than a confirmed normal-path defect.
+- No code change was justified. Existing route allowlists and chair workflow invariants should not be relaxed as a convenience fix.
+
+### Phase H follow-ups
+- Verify published navigation/footer routes with built-in, published custom, unpublished custom, and malformed destinations; confirm the built-in header fallback is usable.
+- Verify catalogue behaviour for archived products, newly published products, API outage, and malformed stored JSON. Confirm whether the static fallback should be supplemented by a stale-last-known-good catalogue strategy in a later design decision; do not change fallback policy during this source-only pass.
+- Confirm the 60-second public product response cache and stale-while-revalidate behaviour after Preview publishing. No live request or cache test was performed.
+
+### Work boundary and resume point
+- No source, configuration, database or media changes were made in this review.
+- No tests/builds, browser/API requests, D1 queries, migrations, R2 operations, image processing, screenshots, Preview publishing/deployment, or Production changes were performed.
+- PR #2 remains Open/Draft/unmerged, targeting `main`. The latest handover commit is the current branch checkpoint; ahead/behind counts are branch-history metadata only and do not imply merge approval. Continue Phase G source-only work on `cms-development`; Phase H remains deferred until explicit authorization.
