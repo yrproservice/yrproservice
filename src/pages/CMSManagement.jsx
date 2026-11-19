@@ -432,16 +432,26 @@ export default function CMSManagement() {
         });
         importedCount += 1;
       }
-
-      setNotice(
-        `Imported ${importedCount} catalogue products as unpublished drafts. Existing public catalogue remains unchanged.`
-      );
-      await refreshProducts();
     } catch (importError) {
-      setError(
-        `Imported ${importedCount} products before stopping: ${importError.message}`
+      setNotice(
+        `Imported ${importedCount} catalogue product(s) as unpublished drafts before the import stopped. Existing public catalogue remains unchanged.`
       );
+      setError(`Catalogue import stopped after ${importedCount} product(s): ${importError.message}`);
+      try {
+        await refreshProducts();
+      } catch (refreshError) {
+        setError(`Catalogue import stopped after ${importedCount} product(s), and the product list could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
+      }
+      return;
+    }
+
+    setNotice(
+      `Imported ${importedCount} catalogue products as unpublished drafts. Existing public catalogue remains unchanged.`
+    );
+    try {
       await refreshProducts();
+    } catch (refreshError) {
+      setError(`All ${importedCount} catalogue products were imported successfully, but the product list could not be refreshed (${refreshError.message}). Reload the CMS before continuing.`);
     } finally {
       setBusy(false);
     }
