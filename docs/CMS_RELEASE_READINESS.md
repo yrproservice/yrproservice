@@ -1,11 +1,36 @@
 # YR Proservice CMS — Release Readiness Audit
 
-**Current status update: 16 November 2026**  
+**Current status update: 19 November 2026**  
 **Verified branch:** `cms-development`  
-**Latest verified commit:** `41cb8c4996f145c14e840b204d04e64b6e52d42f`  
+**Latest verified commit:** `5108aa3a3520fd0a969cf39544d7ef7fb17bd867`  
 **Production status:** unchanged; release not approved
 
-## Latest Preview verification
+## Latest Preview verification — 19 November 2026
+
+The following operational verification was completed on `cms-development` without image generation, image processing or screenshots:
+
+- GitHub Actions run [#44496823224](https://github.com/yrproservice/yrproservice/actions/runs/44496823224) passed for commit `5108aa3a3520fd0a969cf39544d7ef7fb17bd867`.
+- Non-image automated tests: **66 passed, 0 failed**. The image-specific `tests/image-validation.test.js` and `tests/product-images.test.js` suites were intentionally excluded and remain unverified.
+- Vite production build passed. Main entry bundle: **255.10 kB minified (78.57 kB gzip)**; no 500 kB chunk-size warning was emitted.
+- Cloudflare Pages Functions build passed using Wrangler 4.157.0.
+- Preview D1 schema-readiness check passed: `title_column=1`, `route_column=1`, `route_index=1`, `null_metadata=0`.
+- Preview branch `https://cms-development.yrproservice.pages.dev` served the same hashed JS/CSS asset references as the verified build, and all four referenced assets returned successful HTTP responses. This verifies the deployed static bundle, not authenticated CMS runtime behaviour.
+- Preview D1 migration run [#44494472823](https://github.com/yrproservice/yrproservice/actions/runs/44494472823) succeeded after confirming database `yr-proservice-test-db` / `7fca4ad0-3baa-4148-ad28-bfd2ef416c16`. Migration 0003 added and verified the page-version title/route columns, route-state index and null backfill.
+- Legacy chair-cart storage migration was made retry-safe. Destination storage is written before the source cart is rewritten; a per-item migration marker prevents duplicate quantities after partial success. Storage errors are caught and surfaced with retry controls. Tests simulate both destination-write and source-cart rewrite failures.
+- PR #2 remains Open, Draft and unmerged. GitHub reports `cms-development` 954 commits ahead of `main`, 0 behind, with 98 changed files.
+- Production website, Production D1/R2, Production bindings and Production secrets remain untouched.
+
+### Current remaining release gates
+
+1. Authenticated Preview CMS runtime verification is still required for save, preview, publish, restore, Admin session, media protections and customer request workflows. The static asset fingerprint is not a substitute for those checks.
+2. Image-specific tests, screenshots, catalogue-image matching and all image processing remain deferred under the current instruction.
+3. Six legacy Mocom Silent Power non-Evo variants still lack exact-model manufacturer specifications. The official Mocom 2025 handpieces brochure covers the Silent Power Evo range; do not copy EVO values to the older non-Evo models.
+4. The current product catalogue contains 26 records with empty specification arrays. Continue only when exact-model official manufacturer pages, catalogues or manuals are available; do not invent values. The Fussen F200 record already has an official manufacturer source and model-specific specification list.
+5. Product pricing/stock remains business data pending YR Proservice confirmation. The HR contact destination still requires confirmation.
+6. Direct Wrangler Pages upload requires optional `CLOUDFLARE_PAGES_API_TOKEN` with Account → Cloudflare Pages → Edit and User → Memberships → Read. The existing token was not changed; Git-integrated Preview asset verification succeeded without it.
+7. PR #2 must remain Draft and unmerged until explicit approval. Production deployment or migration remains a separate approval gate.
+
+## Historical Preview verification — 16 November 2026
 
 The following work was completed on `cms-development` after the historical 13 November audit entries below:
 
@@ -24,7 +49,7 @@ The current `wrangler.toml` deliberately defines:
 - Production D1 binding `DB` → `yr-proservice-db`, with no Production `CMS_MEDIA` R2 binding or `CMS_MEDIA_PUBLIC_BASE` variable.
 - Preview D1 binding `DB` → `yr-proservice-test-db`, plus Preview R2 binding `CMS_MEDIA` → `yrproservice-cms-preview` and its public media base.
 
-Migration `0002_create_cms.sql` explicitly directs application to Preview first and requires a separate approved Production release step. Do not add Production CMS bindings, apply the CMS migration to Production, merge the draft PR, or deploy Production without explicit user approval.
+Migrations `0002_create_cms.sql` and `0003_page_metadata_versions.sql` are applied and verified on Preview only; Production application requires a separate explicitly approved release step. Do not add Production CMS bindings, apply the CMS migration to Production, merge the draft PR, or deploy Production without explicit user approval.
 
 The historical audit details below remain useful as product-content and media provenance records. Their old references to pending Preview browser verification are superseded only for the specific Admin sign-in/dashboard/logout paths listed above; the other listed Preview content, accessibility, performance, abuse-control and recovery checks remain open unless separately verified.
 
