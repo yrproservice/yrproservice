@@ -226,8 +226,8 @@ function HomeCmsSection({ section, navigate, design, catalogueProducts }) {
         <div className="yr-brand-grid">
           {items.map((item, index) => {
             const uploaded = item && typeof item === "object" && !Array.isArray(item);
-            const brandName = uploaded ? (item.name || item.alt || \`Brand \${index + 1}\`) : String(item).replace(/\.[^.]+$/, "");
-            const imageUrl = uploaded ? item.url : \`/brand logo/fitted/\${brandName}.png\`;
+            const brandName = uploaded ? (item.name || item.alt || `Brand \${index + 1}`) : String(item).replace(/\.[^.]+$/, "");
+            const imageUrl = uploaded ? item.url : `/brand logo/fitted/\${brandName}.png`;
             return (
               <div className="bp-brand-card" key={uploaded ? (item.mediaId || item.url || index) : item}>
                 <img src={imageUrl} alt={uploaded ? (item.alt || brandName + " dental equipment brand") : brandName + " dental equipment brand"} />
