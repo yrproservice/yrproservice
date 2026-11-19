@@ -1694,6 +1694,7 @@ export default function CMSDashboard({ onAdminLogout }) {
                           {typeof item === "string" && item && <img className="cms-brand-logo-inspector-preview" src={`/brand logo/fitted/${item.replace(/\.png$/i, "")}.png`} alt={item.replace(/\.png$/i, "")} />}
                           {item && typeof item === "object" && item.url && <img className="cms-brand-logo-inspector-preview" src={item.url} alt={item.alt || item.name || "Uploaded brand logo"} />}
 
+                           <div className="cms-inspector-collection-item-heading">
                             <button type="button" className="admin-secondary-button" disabled={index === 0 || busy} onClick={() => moveSectionItem(index, -1)}>Move up</button>
                             <button type="button" className="admin-secondary-button" disabled={index === (selectedSection.content?.items || []).length - 1 || busy} onClick={() => moveSectionItem(index, 1)}>Move down</button>
                           </div>
