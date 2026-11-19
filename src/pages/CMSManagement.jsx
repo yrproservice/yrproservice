@@ -841,14 +841,17 @@ export default function CMSManagement() {
     setError("");
     setNotice("");
     try {
-      await api(
+      const data = await api(
         `/api/cms/admin/media?id=${encodeURIComponent(id)}`,
         { method: "DELETE" }
       );
       await refreshMedia();
+      mediaUsageRequestId.current += 1;
       setMediaUsageId("");
       setMediaUsage(null);
-      setNotice("Media archived. Its stored image is retained and can be restored.");
+      setNotice(data.auditRecorded === false
+        ? "Media archived and retained for recovery, but its archive event could not be added to the audit history."
+        : "Media archived. Its stored image is retained and the archive event was recorded.");
     } catch (removeError) {
       if (removeError.status === 409 && removeError.data?.usage) {
         setMediaUsageId(id);
@@ -866,12 +869,14 @@ export default function CMSManagement() {
     setError("");
     setNotice("");
     try {
-      await api(`/api/cms/admin/media?id=${encodeURIComponent(id)}`, {
+      const data = await api(`/api/cms/admin/media?id=${encodeURIComponent(id)}`, {
         method: "PATCH",
         body: JSON.stringify({ action: "restore" }),
       });
       await refreshMedia();
-      setNotice("Media restored to the active library.");
+      setNotice(data.auditRecorded === false
+        ? "Media restored to the active library, but its recovery event could not be added to the audit history."
+        : "Media restored to the active library and the recovery event was recorded.");
     } catch (restoreError) {
       setError(restoreError.message);
     } finally {
@@ -1392,6 +1397,8 @@ export default function CMSManagement() {
               disabled={busy}
               onChange={async (event) => {
                 setMediaIncludeArchived(event.target.checked);
+                mediaUsageRequestId.current += 1;
+                setMediaUsageLoading(false);
                 setMediaUsageId("");
                 setMediaUsage(null);
                 const data = await api("/api/cms/admin/media" + (event.target.checked ? "?includeDeleted=1" : ""));
@@ -1542,7 +1549,7 @@ export default function CMSManagement() {
                   <small>{getFilteredMediaHistory().length} event(s) match this filter. Events are listed newest first.</small>
                   {getFilteredMediaHistory().length ? getFilteredMediaHistory().map((entry) => (
                     <article key={entry.id}>
-                      <small>{entry.createdAt ? new Date(entry.createdAt).toLocaleString() : "Time unavailable"} · {entry.actorEmail || "Administrator identity unavailable"}</small>
+                      <small>{entry.createdAt ? new Date(entry.createdAt).toLocaleString() : "Time unavailable"} · {entry.actorEmail || "Administrator identity unavailable"} · {(entry.action || "media change").replace(/_/g, " ")}</small>
                       {Object.entries(entry.metadata?.changes || {}).map(([field, change]) => (
                         <p key={field}><b>{field === "original_file_name" ? "Original filename" : field === "alt_text" ? "Alt text" : field}</b><span>Before: {change.before || "—"}</span><span>After: {change.after || "—"}</span></p>
                       ))}
