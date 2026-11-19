@@ -7,7 +7,7 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest functional source checkpoint reviewed in this continuation: `5bbd1f2022a7e735effe79196cb620b45ab86c9d` (Settings, Services and Team tab navigation safeguards). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
+- Latest functional source checkpoint reviewed in this continuation: `82f8638d1d1d589e581e7a2e197db2d4d52eb33b` (Product, Settings, Services and Team tab navigation safeguards). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: verified 19 November 2026 as Open, Draft, and unmerged, targeting `main`. The PR tracks `cms-development`; this handover refresh is committed to that branch. It must remain Draft and unmerged without explicit user approval.
 - Production: untouched; do not merge or deploy.
@@ -321,6 +321,17 @@ Commits:
 - `31cef90439311f7481318f670cb45bae52fb20ef` — report unsaved Services edits to CMS navigation.
 - `4f2a85a623b52e725ad2f307d6988cefafe969d9` — report unsaved Team edits to CMS navigation.
 - `5bbd1f2022a7e735effe79196cb620b45ab86c9d` — protect unsaved Services and Team edits during tab navigation.
+
+Source review only. Runtime behaviour remains unverified and is deferred to Phase H.
+
+## Additional Phase G continuation — Product tab navigation protection (19 November 2026)
+
+The central CMS tab guard was extended to the product editor. It compares the current product JSON with the exact saved JSON snapshot already maintained by the product manager. When the Product tab has a selected product and the JSON differs from its saved snapshot, leaving the tab now requires explicit discard confirmation.
+
+This is client-side navigation protection only. It does not change product data, save or publish anything, or modify API contracts, database schema, media objects, Preview published content, Production or deployment configuration.
+
+Commit:
+- `82f8638d1d1d589e581e7a2e197db2d4d52eb33b` — protect unsaved product edits during CMS tab navigation.
 
 Source review only. Runtime behaviour remains unverified and is deferred to Phase H.
 
