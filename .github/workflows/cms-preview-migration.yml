@@ -149,8 +149,23 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Verify page metadata migration in Preview database
+        shell: bash
         run: |
-          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT (SELECT COUNT(*) FROM pragma_table_info('cms_page_versions') WHERE name = 'title') AS title_column, (SELECT COUNT(*) FROM pragma_table_info('cms_page_versions') WHERE name = 'route') AS route_column, (SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'idx_cms_page_versions_route_state') AS route_index, (SELECT COUNT(*) FROM cms_page_versions WHERE title IS NULL OR route IS NULL) AS null_metadata;"
+          set -euo pipefail
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT (SELECT COUNT(*) FROM pragma_table_info('cms_page_versions') WHERE name = 'title') AS title_column, (SELECT COUNT(*) FROM pragma_table_info('cms_page_versions') WHERE name = 'route') AS route_column, (SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'idx_cms_page_versions_route_state') AS route_index, (SELECT COUNT(*) FROM cms_page_versions WHERE title IS NULL OR route IS NULL) AS null_metadata;" --json > page-metadata-verification.json
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const parsed = JSON.parse(fs.readFileSync('page-metadata-verification.json', 'utf8'));
+          const resultSets = Array.isArray(parsed) ? parsed : [parsed];
+          const rows = resultSets.flatMap((result) => Array.isArray(result?.results) ? result.results : []);
+          if (rows.length !== 1) throw new Error('Preview page metadata verification returned an unexpected result.');
+          const row = rows[0];
+          if (Number(row.title_column) !== 1 || Number(row.route_column) !== 1 ||
+              Number(row.route_index) !== 1 || Number(row.null_metadata) !== 0) {
+            throw new Error('Preview page metadata migration verification failed: ' + JSON.stringify(row));
+          }
+          console.log('Verified Preview page metadata columns, index and backfill:', row);
+          NODE
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
