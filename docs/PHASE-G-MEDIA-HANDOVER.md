@@ -255,6 +255,19 @@ Current repository checkpoint was refreshed from GitHub:
 - PR #2: Open, Draft, unmerged; head matches the branch head; base is `main`
 - Production and deployment state were not changed.
 
+## Additional Phase G continuation — Settings editor navigation safeguards (19 November 2026)
+
+A narrow source change closes a draft-navigation gap in the Site Settings editor.
+
+Changes in `src/pages/CMSManagement.jsx`:
+- Track the baseline setting key and JSON value currently loaded into the editor.
+- Treat either changing the setting key or editing its JSON as unsaved work, even when the newly typed key has no existing draft row.
+- Warn and require confirmation before the saved-settings list or a media-reference shortcut replaces unsaved editor content.
+- Keep the editor baseline aligned after saving a setting draft, restoring a setting revision, or deleting a setting draft and reloading the selected setting.
+- Explain beside the setting-key field that changing the key is an unsaved edit and saving creates a draft under the new key.
+
+This is a client-side navigation and draft-state safeguard only. It does not change API contracts, database schema, stored settings, published content, or historical revisions. No settings were edited or saved during this source change.
+
 ## Verification boundary
 
 No tests, builds, screenshots, visual checks, image processing, deployments, or database migrations were run in this continuation. Source-level inspection only was performed after the edits.
