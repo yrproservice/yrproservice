@@ -738,7 +738,7 @@ export default function CMSManagement() {
       <section className="cms-manager-panel">
         <h2>{selected?.slug?"Edit product":"Product editor"}</h2>
         <p>Structured fields edit only the chosen values. Specifications, documents, image paths, and unexposed product metadata are preserved when saving.</p>
-        <ProductFormEditor key={editorSelection} json={json} onJsonChange={setJson} slugLocked={Boolean(selected&&!selected.isNew)} media={media}/>
+        <ProductFormEditor key={editorSelection} json={json} onJsonChange={setJson} slugLocked={Boolean(selected&&!selected.isNew)} media={media} onInspectMedia={(item) => { setTab("media"); inspectMediaUsage(item, true); }}/>
         <div className="cms-manager-actions">
           <button className="admin-primary-button" disabled={busy||!selected} onClick={saveProduct}>Save product draft</button>
           <button className="admin-secondary-button" disabled={busy||!selected?.draftId} onClick={publishProduct}>Publish to Preview</button>
