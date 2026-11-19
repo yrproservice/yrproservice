@@ -44,7 +44,7 @@ function readValue(value) {
   }
 }
 
-export default function PageVisualDesignManager({ pageKey: initialPageKey = "products" }) {
+export default function PageVisualDesignManager({ pageKey: initialPageKey = "products", onUnsavedChange }) {
   const pageKey = initialPageKey;
   const pageLabel = PAGE_OPTIONS.find(([id]) => id === pageKey)?.[1] || pageKey;
   const [design, setDesign] = useState(DEFAULTS);
@@ -56,6 +56,10 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  useEffect(() => {
+    onUnsavedChange?.(pageKey, hasUnsavedChanges);
+  }, [pageKey, hasUnsavedChanges, onUnsavedChange]);
 
   async function loadSettings() {
     const result = await api("/api/cms/admin/settings");
