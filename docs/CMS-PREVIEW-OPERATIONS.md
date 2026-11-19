@@ -39,14 +39,34 @@ Then add the token to GitHub:
 
 The previous attempt using `CLOUDFLARE_API_TOKEN` failed at the database identity check with Cloudflare authentication error 10000. The migration SQL did not run. The dedicated secret is intended to resolve that permission gap without broadening the existing deployment token.
 
-## Build checks and deployment distinction
+## Build, migration and Preview deployment workflow
 
-The `CMS Preview Build Check` workflow is currently manual-dispatch-only during Phase G. It retains `npm ci`, `npm test`, and `npm run build` for the final Phase H verification and does not automatically run for intermediate commits. A successful build confirms the source compiles; it does not by itself prove that Cloudflare Pages has deployed the commit or that the Preview D1 migration has completed.
+The `CMS Preview Build Check` workflow now runs on pushes to `cms-development` and remains manually dispatchable. It performs these steps in order:
+
+1. Install the locked dependencies with `npm ci`.
+2. Run the non-image automated test files. The image-specific `image-validation.test.js` and `product-images.test.js` suites are excluded under the current no-image scope; they are not represented as passing.
+3. Build the Vite website with `npm run build`.
+4. Compile Cloudflare Pages Functions with `npx wrangler@4.157.0 pages functions build`.
+5. Verify that the Preview D1 database has the page-version `title` and `route` columns, the route/state index, and no null page metadata.
+6. Deploy the built output to the Preview branch only with `wrangler pages deploy dist --project-name=yrproservice --branch=cms-development`, attaching the Git commit SHA.
+
+The Preview deploy step runs only after the non-image tests, Vite build, Pages Functions build, and Preview D1 schema check succeed. The branch argument is explicitly `cms-development`; the Production branch is not targeted.
+
+The `Apply CMS Migration to Preview D1` workflow triggers when either `migrations/0002_create_cms.sql` or `migrations/0003_page_metadata_versions.sql` changes. It verifies the exact Preview database name and UUID before SQL execution. The page-metadata migration checks whether both columns exist, refuses a partially migrated schema, and verifies the columns, index and backfill after execution. Production D1 is not referenced by the workflow.
+
+### Required GitHub secrets
+
+- `CLOUDFLARE_D1_API_TOKEN`: Preview D1 read/edit access, used only by the guarded migration and schema-verification steps.
+- `CLOUDFLARE_API_TOKEN`: Cloudflare Pages edit access, used by the Preview deployment step.
+- `CLOUDFLARE_ACCOUNT_ID`: the YR Proservice Cloudflare account identifier.
+
+Keep the D1 token separate from the Pages deployment token. Never put token values in chat, source files or commits.
 
 Verify these separately:
-- GitHub Actions build check: successful for the latest commit.
-- Cloudflare Pages Preview deployment: deployed commit matches the branch HEAD.
-- D1 migration workflow: all three migration steps successful.
+- GitHub Actions non-image checks and Vite build: successful for the latest commit.
+- Pages Functions build: successful for the latest commit.
+- Preview D1 migration: successful with the expected database identity and final schema verification.
+- Cloudflare Pages Preview deployment: the deployed branch and commit SHA match `cms-development` HEAD.
 - Authenticated CMS runtime: save, preview, publish and restore operations work against Preview.
 
-No Production deployment or Production database migration is part of this workflow.
+No Production deployment, Production database migration, PR merge or Production binding change is part of this workflow.
