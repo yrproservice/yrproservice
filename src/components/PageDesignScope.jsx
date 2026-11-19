@@ -82,3 +82,11 @@ export default function PageDesignScope({ pageKey, designOverride, children }) {
       data-card-style={design.cardStyle}
       data-card-columns={design.cardColumns}
       data-image-fit={design.imageFit}
+      data-heading-align={design.headingAlign}
+      data-hero-layout={design.heroLayout}
+      style={style}
+    >
+      {children}
+    </div>
+  );
+}
