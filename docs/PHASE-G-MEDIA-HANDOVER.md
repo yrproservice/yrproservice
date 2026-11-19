@@ -7,13 +7,13 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Prior checkpoint before this continuation: `b6ac454ecd4bfb0871c1b6247613376ab977cbbe`.
-- Latest source checkpoint recorded below: `e90acbd7746d9527a97ef7f8c29e51123503debb` (visual design and gallery safeguards). The handover document itself is updated in commit `0ff6e7d51b3d958d0cb9cdb7e0925811d0bc3654`.
+- Latest source checkpoint recorded below: `e90acbd7746d9527a97ef7f8c29e51123503debb` (visual design and gallery safeguards). Subsequent commits on `cms-development` update this recovery document and branch metadata.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: Open, Draft, unmerged (must remain Draft and unmerged without explicit user approval).
 - Production: untouched; do not merge or deploy.
 - Preview-only D1/R2 CMS workflow remains the intended target.
 
-GitHub compare after this continuation reports `cms-development` as 694 commits ahead of `main`, 0 behind. This count is a branch-history comparison only, not merge approval. Review the full branch history and PR diff before any future merge; do not infer that the branch is safe to merge from a mergeable flag alone.
+The latest GitHub compare showed `cms-development` ahead of `main` and 0 commits behind. The ahead count changes as recovery-document commits are added; it is a branch-history comparison only, not merge approval. Review the full branch history and PR diff before any future merge; do not infer that the branch is safe to merge from a mergeable flag alone.
 
 ## Phase G media work completed in this continuation
 
