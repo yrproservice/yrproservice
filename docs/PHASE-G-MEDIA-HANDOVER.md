@@ -661,3 +661,30 @@ No media objects, media metadata, product/page content, published content, datab
 - Source-only review; no tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 - Resume by confirming the branch head and PR state, then continue small source-only reviews of remaining CMS workflows. Keep Phase H as the final stage for runtime, image and visual verification.
 
+## Additional Phase G continuation — Services and Team initial-loading interaction guards (19 November 2026)
+
+A follow-up review found a narrow timing gap in the Services and Team managers. Their initial page-content and media requests already entered a reload-required state after a failure, but the editor controls were still interactive while those requests were pending. An administrator could edit the in-memory template before the real page content arrived, only for the successful initial response to replace those edits.
+
+Both managers now:
+- Track whether the current page content and media have completed their initial load.
+- Ignore structured content and design updates until the load succeeds; a failed load remains blocked by the existing reload-required state.
+- Disable Save, Publish, Delete Draft, and Restore Original Content actions until the editor is ready.
+- Guard the save, publish, delete and reset handlers themselves, rather than relying only on disabled buttons.
+- Continue to allow the established first-draft path when the server genuinely reports that the page does not yet exist and the media load succeeds.
+
+Commits:
+- f75c8eac77eccbff23a513ba5956c8e27a8cceee — prevent Services edits and draft actions before initial content/media load completes.
+- 4f1b530568374095ed2cd53336de26affde42588 — prevent Team edits and draft actions before initial content/media load completes.
+- 46ce784ed3f5a52b80a5f2046934e5ed498f3ed3 — add Services handler-level publish/delete readiness guards.
+- 80fbdb2b5494e3a92b2d012cfc069a6951e7130f — add Team handler-level publish/delete readiness guards.
+
+No Services or Team content, media, drafts, published pages, database schema, deployment configuration or Production data were changed by these source edits. Source inspection only; no tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (Services and Team load readiness)
+
+- Working branch: `cms-development`
+- Latest source work: Services and Team editors now block user edits and draft actions until the initial content/media load has completed successfully.
+- PR #2 must remain Open, Draft and unmerged. Verify its head matches the branch before resuming.
+- Production remains untouched. No Preview publishing, deployments, migrations or tests were performed.
+- Continue source-only Phase G review in small batches. Defer all runtime, responsive, accessibility, security and image verification to Phase H.
+
