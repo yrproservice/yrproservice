@@ -174,6 +174,7 @@ export default function CMSManagement() {
       draftId: row?.draft_id || "",
       version: row?.draft_version || null,
       isNew: !row,
+      savedJson: JSON.stringify(product, null, 2),
     });
     setJson(JSON.stringify(product, null, 2));
     historyRequestId.current += 1;
@@ -223,6 +224,7 @@ export default function CMSManagement() {
         draftId: data.draftId,
         version: data.version,
         isNew: false,
+        savedJson: JSON.stringify(product, null, 2),
       });
       setNotice(`Product draft V${data.version} saved.`);
       await refreshProducts();
@@ -269,6 +271,7 @@ export default function CMSManagement() {
         draftId: data.draftId,
         version: data.version,
         isNew: false,
+        savedJson: JSON.stringify(product, null, 2),
       });
       setNotice(
         "Archive draft saved. The public catalogue is unchanged until you publish to Preview."
@@ -282,6 +285,10 @@ export default function CMSManagement() {
   }
   async function publishProduct() {
     if (!selected?.draftId) return;
+    if (selected.savedJson !== json) {
+      setError("Save the current product edits before publishing. The previously saved draft has not been published.");
+      return;
+    }
 
     setBusy(true);
     setError("");
@@ -1301,7 +1308,7 @@ export default function CMSManagement() {
               </button>
               <button
                 className="admin-secondary-button"
-                disabled={busy || !selected?.draftId}
+                disabled={busy || !selected?.draftId || selected.savedJson !== json}
                 onClick={publishProduct}
               >
                 Publish to Preview
