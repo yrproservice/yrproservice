@@ -987,3 +987,20 @@ No product data, drafts, published catalogue entries, media, settings, database 
 - Do not deploy, publish to Preview, run migrations, change bindings, or touch Production.
 - Remaining Phase G work is a source review of other CMS handler/readiness/recovery paths; this checkpoint does not claim Phase G is complete.
 - Phase H remains the final verification stage: tests/builds, authenticated Preview checks, responsive/accessibility/security review, image work and screenshots, followed by explicit release-gate review. Do not start Phase H until the user authorizes that final stage.
+
+## Recovery checkpoint refresh — 19 November 2026 (editor mutation-state protection)
+
+- Latest source checkpoint before this note: `dff8aa3d3490d7681ff2a02dee37809c60946445`.
+- PR #2 was rechecked: Open, Draft, unmerged, targeting `main`; its head matched `cms-development`. Keep it Draft and unmerged.
+- Production remains untouched. No tests, builds, screenshots, image processing, visual checks, deployments, Preview publishing or migrations were run.
+
+Additional source-only safeguards:
+- `23ca1714cf82daae85b8100065f6608719df64cd` — Services editor field/section updates and section movement now ignore edits while a mutation is pending.
+- `7c59d1ccff789df470ab8d3beaf54173e77b0666` — same pending-mutation edit guards for Team.
+- `39a03e81a08b094b7a9ede056fe7808370e3c46d` — Services baseline reset blocked while a mutation is pending.
+- `ad6f85cffab5fe04861f8bd5af6faab4ab9e9f54` — Team baseline reset blocked while a mutation is pending.
+- `dff8aa3d3490d7681ff2a02dee37809c60946445` — Visual Design Studio reset controls blocked while a mutation is pending.
+
+These changes complement the save/delete/publish handler guards recorded in the previous checkpoint. They only protect editor state during in-flight mutations; no content, drafts, settings, media or published records were changed.
+
+Resume by refreshing branch/PR state, then continue the bounded Phase G source-only review. Phase H remains deferred until the final stage and explicit user direction.
