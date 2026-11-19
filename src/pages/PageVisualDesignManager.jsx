@@ -144,7 +144,9 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   async function deleteDraft() {
     if (!draftId) return;
     const confirmed = window.confirm(
-      "Delete this saved design draft? The published design and archived revision history will remain unchanged. This draft cannot be recovered."
+      hasUnsavedChanges
+        ? "Delete this saved design draft and discard the current unsaved design edits? The published design and archived revision history will remain unchanged. The saved draft cannot be recovered."
+        : "Delete this saved design draft? The published design and archived revision history will remain unchanged. This draft cannot be recovered."
     );
     if (!confirmed) return;
     setBusy(true); setError(""); setNotice("");
