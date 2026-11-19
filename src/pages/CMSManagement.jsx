@@ -184,13 +184,14 @@ export default function CMSManagement() {
       active = false;
     };
   }, [tab]);
-  function chooseProduct(row) {
+  function chooseProduct(row, confirmedDiscard = false) {
     const nextSlug = row?.product_slug || "";
     const sameSelection = selected && (
       selected.isNew ? !row : selected.slug === nextSlug
     );
     if (sameSelection) return;
     if (
+      !confirmedDiscard &&
       selected &&
       selected.savedJson !== json &&
       !window.confirm("Discard the unsaved edits to the current product and open another product?")
@@ -421,11 +422,14 @@ export default function CMSManagement() {
     if (busy) return;
 
     const discardsSettingEdits = type === "setting" && key === settingKey && hasUnsavedSettingChanges;
-    const confirmed = window.confirm(
-      discardsSettingEdits
-        ? "Restore this revision as a new draft and discard the unsaved settings editor changes? The current published version will remain live."
-        : "Restore this revision as a new draft? The current published version will remain live."
-    );
+    const discardsProductEdits = type === "product" && selected?.slug === key && selected.savedJson !== json;
+    const confirmationMessage = [
+      "Restore this revision as a new draft?",
+      discardsProductEdits ? "The current unsaved product editor changes will also be discarded." : "",
+      discardsSettingEdits ? "The current unsaved settings editor changes will also be discarded." : "",
+      "The current published version will remain live.",
+    ].filter(Boolean).join(" ");
+    const confirmed = window.confirm(confirmationMessage);
     if (!confirmed) return;
 
     setBusy(true);
@@ -454,7 +458,7 @@ export default function CMSManagement() {
         if (!productRow) {
           throw new Error("The restored product draft could not be reloaded. Refresh the product list before editing.");
         }
-        chooseProduct(productRow);
+        chooseProduct(productRow, true);
       }
 
       if (type === "setting") {
@@ -480,11 +484,14 @@ export default function CMSManagement() {
     if (!id || busy) return;
 
     const discardsSettingEdits = type === "setting" && key === settingKey && hasUnsavedSettingChanges;
-    const confirmed = window.confirm(
-      discardsSettingEdits
-        ? "Delete this unpublished draft and discard the unsaved settings editor changes? Published content and archived revision history will remain unchanged. The draft cannot be recovered."
-        : "Delete this unpublished draft? Published content and archived revision history will remain unchanged. This draft cannot be recovered."
-    );
+    const discardsProductEdits = type === "product" && selected?.slug === key && selected.savedJson !== json;
+    const confirmationMessage = [
+      "Delete this unpublished draft?",
+      discardsProductEdits ? "The current unsaved product editor changes will also be discarded." : "",
+      discardsSettingEdits ? "The current unsaved settings editor changes will also be discarded." : "",
+      "Published content and archived revision history will remain unchanged. The draft cannot be recovered.",
+    ].filter(Boolean).join(" ");
+    const confirmed = window.confirm(confirmationMessage);
     if (!confirmed) return;
 
     setBusy(true);
@@ -676,11 +683,11 @@ export default function CMSManagement() {
         return;
       }
       if (hasUnsavedSettingChanges && !window.confirm("Discard the unsaved settings edits and open this referenced setting?")) return;
+      if (!changeManagerTab("settings")) return;
       const nextJson = row.draft_value || row.published_value || "{}";
       settingBaseline.current = { key: row.setting_key, json: nextJson };
       setSettingKey(row.setting_key);
       setSettingJson(nextJson);
-      if (!changeManagerTab("settings")) return;
       setNotice(`Opened the current editor for ${reference.key}. This does not rewrite historical revisions.`);
       return;
     }
