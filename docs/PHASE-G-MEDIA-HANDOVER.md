@@ -1726,3 +1726,11 @@ The remaining significant verification gate is authenticated Preview CMS runtime
 - Exact-commit GitHub Actions run [#44499322422](https://github.com/yrproservice/yrproservice/actions/runs/44499322422) succeeded: locked dependency install, Vite build, Cloudflare Pages Functions compilation, Preview D1 schema readiness and Git-integrated Preview asset fingerprint check all passed. All four referenced JS/CSS assets returned successfully.
 - The observed job had no test step; no tests, screenshots or image processing were performed. This is build/Preview asset verification, not authenticated CMS concurrency runtime verification. Final-stage runtime/concurrency verification remains deferred.
 - No migration was needed or run. Production remains untouched. PR #2 remains Open, Draft and unmerged.
+
+## Admin session concurrency model — release-readiness discrepancy (19 November 2026)
+
+- Re-read `functions/_utils/admin-auth.js`, `functions/api/admin/session.js`, `src/pages/AdminEntry.jsx` and the access-mode logic in `src/main.jsx`.
+- Current server authorization is stateless Cloudflare Access JWT verification against the configured single email. The source comment explicitly says multiple authorized staff may use the shared account concurrently. The browser's `sessionStorage` value only controls the UI access mode; it is not a server-side session lock or revocation registry.
+- `ADMIN_SESSION_COOKIE` is only cleared on the logout response; the inspected code does not issue or validate that cookie. The logout handler clears the local UI mode, but it does not itself revoke the Cloudflare Access identity session.
+- This does not substantiate a server-enforced single-device/one-active-session lock. Do not describe the current implementation as providing that guarantee. A strict single-active-device lock and a shared-account multi-staff model are different policies; do not add a database/session design until the intended policy is confirmed.
+- No code change or migration was made for this discrepancy. Final-stage authentication/session verification remains deferred; Production untouched.
