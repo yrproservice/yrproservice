@@ -67,6 +67,7 @@ export default function CMSManagement() {
   const [mediaHistoryId, setMediaHistoryId] = useState("");
   const [mediaHistory, setMediaHistory] = useState([]);
   const [mediaHistoryLoading, setMediaHistoryLoading] = useState(false);
+  const [mediaHistoryFilter, setMediaHistoryFilter] = useState("all");
   const [mediaAltDrafts, setMediaAltDrafts] = useState({});
   const [mediaFilenameDrafts, setMediaFilenameDrafts] = useState({});
   const [mediaUsage, setMediaUsage] = useState(null);
@@ -490,6 +491,47 @@ export default function CMSManagement() {
       setBusy(false);
     }
   }
+  function getFilteredMediaHistory() {
+    return mediaHistory.filter((entry) => {
+      const changes = entry.metadata?.changes || {};
+      if (mediaHistoryFilter === "filename") return Boolean(changes.original_file_name);
+      if (mediaHistoryFilter === "alt") return Boolean(changes.alt_text);
+      return Object.keys(changes).length > 0;
+    });
+  }
+
+  function exportMediaHistoryReport() {
+    const entries = getFilteredMediaHistory();
+    if (!entries.length) {
+      setError("There are no history entries in the selected filter to export.");
+      return;
+    }
+    const rows = [["media_id", "changed_at", "administrator", "field", "previous_value", "new_value"]];
+    for (const entry of entries) {
+      for (const [field, change] of Object.entries(entry.metadata?.changes || {})) {
+        if (mediaHistoryFilter === "filename" && field !== "original_file_name") continue;
+        if (mediaHistoryFilter === "alt" && field !== "alt_text") continue;
+        rows.push([mediaHistoryId, entry.createdAt || "", entry.actorEmail || "", field, change.before ?? "", change.after ?? ""]);
+      }
+    }
+    const cell = (value) => {
+      let text = value == null ? "" : String(value);
+      if (/^\\s*[=+@-]/.test(text)) text = "'" + text;
+      return '"' + text.replace(/"/g, '""') + '"';
+    };
+    const csv = rows.map((row) => row.map(cell).join(",")).join("\\r\\n");
+    const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `yr-proservice-media-history-${mediaHistoryId}-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setNotice(`Exported ${rows.length - 1} metadata change row(s) for this media item.`);
+  }
+
   async function inspectMediaHistory(item) {
     if (!item?.id) return;
     if (mediaHistoryId === item.id) {
@@ -1369,15 +1411,26 @@ export default function CMSManagement() {
               </button>
               {mediaHistoryId === item.id && (
                 <div className="cms-media-history">
-                  <strong>Metadata change history</strong>
-                  {mediaHistory.length ? mediaHistory.map((entry) => (
+                  <strong>Metadata change history · {mediaHistory.length} recorded event(s), maximum 50</strong>
+                  <div className="cms-media-history-tools">
+                    <label>Show changes
+                      <select value={mediaHistoryFilter} onChange={(event) => setMediaHistoryFilter(event.target.value)}>
+                        <option value="all">All metadata fields</option>
+                        <option value="filename">Filename changes</option>
+                        <option value="alt">Alt-text changes</option>
+                      </select>
+                    </label>
+                    <button className="admin-secondary-button" type="button" onClick={exportMediaHistoryReport} disabled={!getFilteredMediaHistory().length}>Export filtered history (CSV)</button>
+                  </div>
+                  <small>{getFilteredMediaHistory().length} event(s) match this filter. Events are listed newest first.</small>
+                  {getFilteredMediaHistory().length ? getFilteredMediaHistory().map((entry) => (
                     <article key={entry.id}>
                       <small>{entry.createdAt ? new Date(entry.createdAt).toLocaleString() : "Time unavailable"} · {entry.actorEmail || "Administrator identity unavailable"}</small>
                       {Object.entries(entry.metadata?.changes || {}).map(([field, change]) => (
                         <p key={field}><b>{field === "original_file_name" ? "Original filename" : field === "alt_text" ? "Alt text" : field}</b><span>Before: {change.before || "—"}</span><span>After: {change.after || "—"}</span></p>
                       ))}
                     </article>
-                  )) : <small>No recorded metadata changes for this media item.</small>}
+                  )) : <small>No recorded metadata changes match this filter for this media item.</small>}
                   <small>History is read-only. It does not include changes made before audit logging was introduced.</small>
                 </div>
               )}
