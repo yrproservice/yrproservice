@@ -64,6 +64,7 @@ export default function CMSManagement() {
   const [media, setMedia] = useState([]);
   const [mediaIncludeArchived, setMediaIncludeArchived] = useState(false);
   const [mediaAltDrafts, setMediaAltDrafts] = useState({});
+  const [mediaFilenameDrafts, setMediaFilenameDrafts] = useState({});
   const [mediaUsage, setMediaUsage] = useState(null);
   const [mediaUsageId, setMediaUsageId] = useState("");
   const [mediaUsageLoading, setMediaUsageLoading] = useState(false);
@@ -560,20 +561,26 @@ export default function CMSManagement() {
     }
   }
 
-  async function saveMediaAltText(item) {
-    if (!item?.id || busy) return;
+  async function saveMediaDescriptiveMetadata(item) {
+    if (!item?.id || busy || item.deleted_at) return;
     const altText = mediaAltDrafts[item.id] ?? item.alt_text ?? "";
+    const originalFileName = mediaFilenameDrafts[item.id] ?? item.original_file_name ?? "";
+    if (!originalFileName.trim()) {
+      setError("Enter an original filename before saving.");
+      return;
+    }
     setBusy(true);
     setError("");
     setNotice("");
     try {
       const data = await api(`/api/cms/admin/media?id=${encodeURIComponent(item.id)}`, {
         method: "PATCH",
-        body: JSON.stringify({ altText }),
+        body: JSON.stringify({ altText, originalFileName }),
       });
       setMedia((current) => current.map((row) => row.id === item.id ? data.media : row));
       setMediaAltDrafts((current) => { const next = { ...current }; delete next[item.id]; return next; });
-      setNotice("Image alt text saved.");
+      setMediaFilenameDrafts((current) => { const next = { ...current }; delete next[item.id]; return next; });
+      setNotice("Filename and alt text saved. Storage identifiers and content references were not changed.");
     } catch (saveError) {
       setError(saveError.message);
     } finally {
@@ -1260,19 +1267,29 @@ export default function CMSManagement() {
                   {mediaStorageChecks[item.id].detail ? ` · ${mediaStorageChecks[item.id].detail}` : ""}
                 </small>
               )}
-              {!item.deleted_at && <label className="cms-media-alt-editor">Alt text
-                <input
-                  maxLength={300}
-                  value={mediaAltDrafts[item.id] ?? item.alt_text ?? ""}
-                  onChange={(event) => setMediaAltDrafts((current) => ({ ...current, [item.id]: event.target.value }))}
-                  placeholder="Describe the image for accessibility"
-                />
-              </label>}
-              {!item.deleted_at && <button
-                className="admin-secondary-button"
-                disabled={busy || (mediaAltDrafts[item.id] ?? item.alt_text ?? "") === (item.alt_text ?? "")}
-                onClick={() => saveMediaAltText(item)}
-              >Save alt text</button>}
+              {!item.deleted_at && <div className="cms-media-descriptive-editor">
+                <label>Original filename
+                  <input
+                    maxLength={255}
+                    value={mediaFilenameDrafts[item.id] ?? item.original_file_name ?? ""}
+                    onChange={(event) => setMediaFilenameDrafts((current) => ({ ...current, [item.id]: event.target.value }))}
+                    placeholder="Enter the correct filename"
+                  />
+                </label>
+                <label className="cms-media-alt-editor">Alt text
+                  <input
+                    maxLength={300}
+                    value={mediaAltDrafts[item.id] ?? item.alt_text ?? ""}
+                    onChange={(event) => setMediaAltDrafts((current) => ({ ...current, [item.id]: event.target.value }))}
+                    placeholder="Describe the image for accessibility"
+                  />
+                </label>
+                <button
+                  className="admin-secondary-button"
+                  disabled={busy || ((mediaAltDrafts[item.id] ?? item.alt_text ?? "") === (item.alt_text ?? "") && (mediaFilenameDrafts[item.id] ?? item.original_file_name ?? "") === (item.original_file_name ?? ""))}
+                  onClick={() => saveMediaDescriptiveMetadata(item)}
+                >Save descriptive metadata</button>
+              </div>}
               <button className="admin-secondary-button" disabled={mediaUsageLoading && mediaUsageId === item.id} onClick={() => inspectMediaUsage(item)}>
                 {mediaUsageLoading && mediaUsageId === item.id ? "Checking usage…" : mediaUsageId === item.id && mediaUsage ? "Hide usage" : "View usage"}
               </button>
