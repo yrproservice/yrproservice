@@ -546,3 +546,12 @@ Commits:
 - `636454fc3f57b812c305ad20101210caa3d23a37` — protect Team editor when deleted draft content cannot be reloaded.
 
 Source-level inspection only. No tests, builds, screenshots, image processing, visual checks, deployments, migrations or data changes were performed.
+
+A follow-up check extended the same save protection to initial content loading:
+
+- If the Services or Team manager cannot load its starting content, it now enters the same reload-required state and blocks draft saves.
+- A genuine “Page not found” response remains an allowed first-draft path; other load failures cannot leave the template accidentally saveable over existing content.
+
+Commits:
+- `b2c0669f4ffe1e202549fbc75c75852e5fc6fac2` — block Services draft saves when initial content loading fails.
+- `cbe455cfa9215f00e725c9f04b0c607be8ebb5ab` — block Team draft saves when initial content loading fails.
