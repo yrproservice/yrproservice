@@ -1306,6 +1306,10 @@ export default function CMSManagement() {
   ]);
 
   function handleManagerExit(event) {
+    if (busy) {
+      event.preventDefault();
+      return;
+    }
     if (!confirmCurrentTabLeave()) {
       event.preventDefault();
       return;
@@ -1314,6 +1318,7 @@ export default function CMSManagement() {
   }
 
   function changeManagerTab(nextTab) {
+    if (busy) return false;
     if (nextTab === tab) return true;
     if (!confirmCurrentTabLeave()) return false;
     setTab(nextTab);
@@ -1359,6 +1364,7 @@ export default function CMSManagement() {
         <button
           key={id}
           className={tab === id ? "active" : ""}
+          disabled={busy}
           onClick={() => {
             if (!changeManagerTab(id)) return;
             setError("");
