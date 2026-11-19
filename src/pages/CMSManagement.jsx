@@ -69,6 +69,9 @@ export default function CMSManagement() {
   const [mediaUsageLoading, setMediaUsageLoading] = useState(false);
   const [mediaStorageChecks, setMediaStorageChecks] = useState({});
   const [mediaStorageCheckingId, setMediaStorageCheckingId] = useState("");
+  const [mediaOrphanReport, setMediaOrphanReport] = useState(null);
+  const [mediaOrphanCursor, setMediaOrphanCursor] = useState("");
+  const [mediaOrphanScanning, setMediaOrphanScanning] = useState(false);
   const [storageReady, setStorageReady] = useState(false);
   const [settings, setSettings] = useState([]);
   const [settingKey, setSettingKey] = useState("site.navigation");
@@ -505,6 +508,28 @@ export default function CMSManagement() {
       setError(checkError.message);
     } finally {
       setMediaStorageCheckingId("");
+    }
+  }
+
+  async function scanMediaOrphans(continueScan = false) {
+    if (mediaOrphanScanning || !storageReady) return;
+    setMediaOrphanScanning(true);
+    setError("");
+    try {
+      const cursor = continueScan ? mediaOrphanCursor : "";
+      const suffix = cursor ? `&cursor=${encodeURIComponent(cursor)}` : "";
+      const data = await api(`/api/cms/admin/media?reconcileOrphans=1${suffix}`);
+      setMediaOrphanReport((current) => ({
+        scanned: (continueScan ? current?.scanned || 0 : 0) + Number(data.scanned || 0),
+        batches: (continueScan ? current?.batches || 0 : 0) + 1,
+        orphanObjects: [...(continueScan ? current?.orphanObjects || [] : []), ...(data.orphanObjects || [])],
+        truncated: Boolean(data.truncated),
+      }));
+      setMediaOrphanCursor(data.nextCursor || "");
+    } catch (scanError) {
+      setError(scanError.message);
+    } finally {
+      setMediaOrphanScanning(false);
     }
   }
 
@@ -1157,6 +1182,29 @@ export default function CMSManagement() {
           <div><strong>{media.filter((item) => !mediaStorageChecks[item.id] || mediaStorageChecks[item.id]?.status === "unavailable").length}</strong><span>Not verified</span></div>
         </div>
         <p className="cms-media-health-note">Counts cover only the records currently loaded in this library view (up to 300). R2 status is based only on checks you have run; unverified does not mean missing. This is not a full-bucket inventory.</p>
+        <section className="cms-media-orphan-report">
+          <div>
+            <strong>Orphaned R2 object review</strong>
+            <p>Inspect the Preview bucket's <code>cms/</code> upload prefix in batches of up to 100 objects. An orphan is an object key with no matching R2 media record in D1.</p>
+          </div>
+          <button className="admin-secondary-button" disabled={!storageReady || mediaOrphanScanning} onClick={() => scanMediaOrphans(false)}>
+            {mediaOrphanScanning ? "Scanning Preview R2…" : "Start read-only scan"}
+          </button>
+          {mediaOrphanReport && (
+            <div className="cms-media-orphan-results">
+              <p>{mediaOrphanReport.scanned} objects inspected across {mediaOrphanReport.batches} batch(es) · {mediaOrphanReport.orphanObjects.length} possible orphan(s)</p>
+              {mediaOrphanReport.orphanObjects.length === 0
+                ? <small>No unreferenced objects were found in the batches inspected so far.</small>
+                : mediaOrphanReport.orphanObjects.map((object) => (
+                  <div key={object.key}><strong>{object.key}</strong><small>{Math.round((object.size || 0) / 1024)} KB · {object.uploaded ? new Date(object.uploaded).toLocaleString() : "Upload time unavailable"}</small></div>
+                ))}
+              {mediaOrphanReport.truncated
+                ? <button className="admin-secondary-button" disabled={mediaOrphanScanning} onClick={() => scanMediaOrphans(true)}>{mediaOrphanScanning ? "Scanning…" : "Scan next batch"}</button>
+                : <small>End of bucket prefix reached for this scan.</small>}
+            </div>
+          )}
+          <small>This is a read-only, partial report until every batch is scanned. No objects are deleted or modified. Objects outside <code>cms/</code> are not included.</small>
+        </section>
         <h3>{mediaIncludeArchived ? "Preview media · Active and archived" : "Uploaded Preview media"}</h3>
         <div className="cms-media-grid">
           {media.map((item) => (
