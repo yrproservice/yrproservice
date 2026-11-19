@@ -45,9 +45,19 @@ export async function onRequestPost(context) {
   if (!auth.ok) return auth.response;
   const { env, request } = context;
   if (!env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
+  if (!(request.headers.get("content-type") || "").toLowerCase().includes("application/json")) {
+    return adminJson({ error: "Submit JSON data." }, 415);
+  }
   let body;
-  try { body = await request.json(); } catch { return adminJson({ error: "Submit valid JSON." }, 400); }
-  const type = clean(body?.entityType, 20), key = clean(body?.entityKey, 100), versionId = clean(body?.versionId, 80);
+  try {
+    const raw = await request.text();
+    if (raw.length > 4096) return adminJson({ error: "Revision restore request is too large." }, 413);
+    body = JSON.parse(raw);
+  } catch { return adminJson({ error: "Submit valid JSON." }, 400); }
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return adminJson({ error: "Submit a valid revision restore object." }, 400);
+  }
+  const type = clean(body.entityType, 20), key = clean(body.entityKey, 100), versionId = clean(body.versionId, 80);
   const config = CONFIG[type];
   if (!config || !key || !versionId) return adminJson({ error: "A valid entityType, entityKey and versionId are required." }, 400);
   try {
