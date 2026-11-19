@@ -1199,3 +1199,25 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Continue bounded Phase G source-only review on `cms-development`; inspect the current branch and PR before every write.
 - Preserve PR #2 as Open/Draft/unmerged. Do not merge, deploy, run migrations, or alter Production.
 - Phase H remains deferred until explicit user authorization. Its checklist above remains the final verification plan.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (request API and validation review)
+
+### Source-only review completed
+- Reviewed public request submission, request tracking, authenticated admin request listing/status updates, admin session endpoints, CMS content/route/settings validators, product preview, and the page metadata migration.
+- Public request submission enforces JSON/object shape, bounded body size, request-type/service allowlists, required fields, email format, product selection for quotation/chair requests, and per-IP/per-email rate limits. Database write failures do not return a success reference.
+- Public tracking requires reference plus valid email, applies per-IP/per-email rate limits, queries by both reference and normalized email, and returns only request type/status/reference/date. Responses are no-store and use no-referrer.
+- Admin request listing and status changes require Cloudflare Access admin authorization; filters and status values are allowlisted, searches use bound parameters, and result count is capped at 200.
+- CMS content validators bound page sections, product specs/gallery/docs, field lengths, supported section types, image sources, and internal destinations. Page route validation rejects reserved/system routes. Product image validation restricts sources to approved catalog paths or HTTPS R2 URLs.
+- Migration `0003_page_metadata_versions.sql` adds title/route to page revisions, backfills existing rows from the page record, and adds a route/state index. No migration was run.
+
+### Phase H observations to verify (not changed in Phase G)
+- Request and tracking rate-limit helpers currently create their attempt tables/indexes and prune old rows from within request handling. Confirm the deployed D1 operational cost/behaviour during Phase H; do not run DDL or migrations as part of this source-only pass.
+- Rate-limit counting and attempt insertion are separate operations. Review concurrent burst behaviour during Phase H before considering any redesign; no concurrency test was run and no claim of atomic enforcement is made.
+- Tracking attempts are rate-limited before reference/email validation. Confirm the intended user experience for repeated malformed lookups in Phase H; no policy change was made.
+- Admin request status updates do not write to the CMS revision audit log. Confirm whether a separate request-status audit trail is required before expanding this workflow; no schema change was made.
+
+### Safety and resume point
+- No source code change was justified by this review. Do not infer runtime correctness from static inspection.
+- No tests/builds, API calls, D1 queries, migration execution, screenshots, image processing, visual checks, Preview publishing/deployment, or Production changes were performed.
+- Continue Phase G only with bounded source review and handover updates. Phase H remains deferred until the user explicitly authorizes final verification.
