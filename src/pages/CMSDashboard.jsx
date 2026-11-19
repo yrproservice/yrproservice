@@ -864,6 +864,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   async function saveDraft() {
+    if (busy) return;
     if (!pagesReady) {
       setError("Load the current CMS page list successfully before saving. Reload the Visual Website Editor and try again.");
       return;
@@ -930,6 +931,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   }
 
   async function publishDraft() {
+    if (busy) return;
     if (!pagesReady) {
       setError("Load the current CMS page list successfully before publishing. Reload the Visual Website Editor and try again.");
       return;
