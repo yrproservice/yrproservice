@@ -34,3 +34,34 @@ jobs:
       - name: Build Vite website
         if: ${{ always() && steps.install.outcome == 'success' }}
         run: npm run build
+      - name: Build Cloudflare Pages Functions
+        if: success()
+        run: npx wrangler@4.157.0 pages functions build
+      - name: Verify Preview D1 schema readiness
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT (SELECT COUNT(*) FROM pragma_table_info('cms_page_versions') WHERE name = 'title') AS title_column, (SELECT COUNT(*) FROM pragma_table_info('cms_page_versions') WHERE name = 'route') AS route_column, (SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'idx_cms_page_versions_route_state') AS route_index, (SELECT COUNT(*) FROM cms_page_versions WHERE title IS NULL OR route IS NULL) AS null_metadata;" --json > preview-schema.json
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const parsed = JSON.parse(fs.readFileSync('preview-schema.json', 'utf8'));
+          const resultSets = Array.isArray(parsed) ? parsed : [parsed];
+          const rows = resultSets.flatMap((result) => Array.isArray(result?.results) ? result.results : []);
+          if (rows.length !== 1) throw new Error('Preview schema check returned an unexpected result.');
+          const row = rows[0];
+          if (Number(row.title_column) !== 1 || Number(row.route_column) !== 1 ||
+              Number(row.route_index) !== 1 || Number(row.null_metadata) !== 0) {
+            throw new Error('Preview D1 is not release-ready: ' + JSON.stringify(row));
+          }
+          console.log('Preview D1 schema is ready:', row);
+          NODE
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Deploy to Cloudflare Pages Preview
+        if: success()
+        run: npx wrangler@4.157.0 pages deploy dist --project-name=yrproservice --branch=cms-development --commit-hash="$GITHUB_SHA"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
