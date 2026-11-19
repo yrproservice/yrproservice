@@ -1717,3 +1717,12 @@ The remaining significant verification gate is authenticated Preview CMS runtime
 - Exact current branch commit `c24603870c31386911092d5dd2ef23ec417241fa` completed GitHub Actions run [#44498558369](https://github.com/yrproservice/yrproservice/actions/runs/44498558369): locked dependency install, Vite build (255.10 kB JS / 78.58 kB gzip; 146.25 kB CSS / 25.90 kB gzip), Wrangler Pages Functions build, Preview D1 schema readiness (title/route/index present, zero null metadata), and Git-integrated Preview asset verification (same hashed references, all four assets HTTP-successful).
 - No test step ran. This is build and static Preview deployment verification only; rate-limit concurrency and authenticated CMS runtime checks remain deferred to final-stage verification.
 - No migration, screenshot, image processing or Production operation was performed.
+
+## CMS publish concurrency guard — 19 November 2026
+
+- Source review found that the publish endpoint read the current published-version pointer before its write batch, but did not make the write conditional on that pointer remaining current. Two overlapping publish requests could therefore leave multiple revisions marked `published` even though only the last pointer was publicly selected.
+- Fixed in `functions/api/cms/admin/publish.js`, commit `0f025553f4adbbbe25ce45bd80f4d4ac1a3c7528`. The first write now requires the target to remain a draft and the entity pointer to match the pre-read value. Subsequent archive, pointer and audit writes are guarded by the target's published state. A stale request returns HTTP 409, or an idempotent success if the same target is already current.
+- Re-fetched source after commit and confirmed the guarded transition and zero-row conflict path.
+- Exact-commit GitHub Actions run [#44499322422](https://github.com/yrproservice/yrproservice/actions/runs/44499322422) succeeded: locked dependency install, Vite build, Cloudflare Pages Functions compilation, Preview D1 schema readiness and Git-integrated Preview asset fingerprint check all passed. All four referenced JS/CSS assets returned successfully.
+- The observed job had no test step; no tests, screenshots or image processing were performed. This is build/Preview asset verification, not authenticated CMS concurrency runtime verification. Final-stage runtime/concurrency verification remains deferred.
+- No migration was needed or run. Production remains untouched. PR #2 remains Open, Draft and unmerged.
