@@ -283,19 +283,33 @@ export async function onRequestPatch(context) {
       return adminJson({ error: "Unable to restore this media item." }, 500);
     }
   }
-  if (typeof body.altText !== "string" || body.altText.length > 300) {
-    return adminJson({ error: "Alt text must be a string of 300 characters or fewer." }, 400);
+  const updates = [];
+  const values = [];
+  if (Object.prototype.hasOwnProperty.call(body, "altText")) {
+    if (typeof body.altText !== "string" || body.altText.length > 300) {
+      return adminJson({ error: "Alt text must be a string of 300 characters or fewer." }, 400);
+    }
+    updates.push("alt_text=?");
+    values.push(body.altText.trim());
   }
+  if (Object.prototype.hasOwnProperty.call(body, "originalFileName")) {
+    if (typeof body.originalFileName !== "string" || !body.originalFileName.trim() || body.originalFileName.length > 255 || /[\\/\\u0000-\\u001f\\u007f]/.test(body.originalFileName)) {
+      return adminJson({ error: "Original filename must be 1–255 characters and cannot contain path separators or control characters." }, 400);
+    }
+    updates.push("original_file_name=?");
+    values.push(body.originalFileName.trim());
+  }
+  if (!updates.length) return adminJson({ error: "Provide at least one supported metadata field." }, 400);
   try {
     const result = await env.DB.prepare(
-      "UPDATE cms_media SET alt_text=? WHERE id=? AND deleted_at IS NULL"
-    ).bind(body.altText.trim(), id).run();
+      `UPDATE cms_media SET ${updates.join(", ")} WHERE id=? AND deleted_at IS NULL`
+    ).bind(...values, id).run();
     if (result?.meta?.changes === 0) {
       const existing = await env.DB.prepare("SELECT id FROM cms_media WHERE id=? AND deleted_at IS NULL").bind(id).first();
       if (!existing) return adminJson({ error: "Media item not found." }, 404);
     }
     const media = await env.DB.prepare(
-      "SELECT id, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at FROM cms_media WHERE id=? AND deleted_at IS NULL"
+      "SELECT id, storage_provider, object_key, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at, deleted_at FROM cms_media WHERE id=? AND deleted_at IS NULL"
     ).bind(id).first();
     return adminJson({ ok: true, media });
   } catch (error) {
