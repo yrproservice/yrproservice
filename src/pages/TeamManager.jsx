@@ -180,7 +180,9 @@ export default function TeamManager({ onUnsavedChange }) {
 
   async function deleteDraft() {
     if (!draftId) return;
-    if (!window.confirm("Delete the saved Team draft? The published page and archived revision history will remain unchanged. This draft cannot be recovered.")) return;
+    if (!window.confirm(hasUnsavedChanges
+      ? "Delete the saved Team draft and discard the current unsaved Team edits? The published page and archived revision history will remain unchanged. The saved draft cannot be recovered."
+      : "Delete the saved Team draft? The published page and archived revision history will remain unchanged. This draft cannot be recovered.")) return;
     setBusy(true); setError(""); setNotice("");
     try {
       const result = await request("/api/cms/admin/draft", {
