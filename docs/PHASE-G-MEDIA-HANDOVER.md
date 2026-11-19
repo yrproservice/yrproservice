@@ -555,3 +555,21 @@ A follow-up check extended the same save protection to initial content loading:
 Commits:
 - `b2c0669f4ffe1e202549fbc75c75852e5fc6fac2` — block Services draft saves when initial content loading fails.
 - `cbe455cfa9215f00e725c9f04b0c607be8ebb5ab` — block Team draft saves when initial content loading fails.
+
+## Additional Phase G continuation — prevent saving fallback templates after content-load failures (19 November 2026)
+
+A further source-only review found that some managers could still expose Save while their initial data request had failed, leaving only an in-memory template/default value in the editor. Saving at that point could create a draft from fallback content instead of the current saved content.
+
+Safeguards added:
+- Services and Team now enter a reload-required state if their initial content/media loading sequence fails. Draft saving is blocked until the manager is reloaded. A genuine “Page not found” response remains a supported first-draft path.
+- The Page Visual Design Studio tracks whether its initial settings load failed and blocks saving default design values until settings can be loaded successfully.
+- CMS Management now requires a successful initial settings load before saving a setting draft. This prevents the default navigation JSON from being saved over existing settings when the initial settings request has not succeeded.
+- These guards do not change existing published content or create drafts.
+
+Commits:
+- `b2c0669f4ffe1e202549fbc75c75852e5fc6fac2` — Services initial content-load failure guard.
+- `cbe455cfa9215f00e725c9f04b0c607be8ebb5ab` — Team initial content-load failure guard.
+- `bf957faabc2b7128637334b168d1513bd52ec059` — Visual Design Studio settings-load save guard.
+- `e5f1a420791fdebe97205705a6bbb4712adbf662` — CMS setting save requires loaded settings.
+
+Source-level review only. No tests, builds, screenshots, image processing, visual checks, deployments, migrations or data changes were performed.
