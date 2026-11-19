@@ -481,3 +481,18 @@ Source-level checks confirmed all three conditional delete warnings, pre-request
 - No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed. Production and Preview published content remain untouched.
 - Resume on cms-development from the branch head. Continue small source-only Phase G reviews; reserve runtime and image verification for Phase H.
 
+## Additional Phase G continuation — media lifecycle and product archive safeguards (19 November 2026)
+
+A source review of the Media Library lifecycle found two draft-safety and request-state edges. First, an active image could be archived while its filename or alt-text editor contained unsaved local changes. The archive handler now refuses to start until those metadata edits are saved or reverted, and also reports if the selected media record is no longer in the loaded library. This avoids moving a record out of the active list while leaving its descriptive edits stranded in a local draft.
+
+Second, the Show archived media toggle previously made a direct asynchronous request without handling failure or distinguishing overlapping requests. The media list now uses a monotonically increasing request ID shared by normal refreshes and the archive-view toggle. Stale responses are ignored; if the current toggle request fails, the checkbox is restored to its previous value and an error is shown while the already loaded list remains intact.
+
+The product archive confirmation now explicitly states when the current unsaved product edits will be included in the newly created archive draft. The archive remains a draft operation: the product is removed from the public catalogue only after that archive draft is separately published to Preview.
+
+Commits:
+- a0fad029bbcbfd600df8b80ded88fb6925c25ba9 — prevent archiving media with unsaved descriptive metadata.
+- 3c7026b8b4ff2f3092de5f1b67cb2e627f60cc71 — guard media archive view against stale and failed requests.
+- aeda44741a638a0f87c75313b36d00000dbadb9b — clarify unsaved product edits included in archive draft.
+
+Source-level assertions confirmed the media archive block, request identity checks, failure recovery for the archive toggle, and product archive confirmation. These checks do not establish runtime behaviour. No media records, product records, R2 objects or published content were changed. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
