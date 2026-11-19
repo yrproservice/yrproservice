@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PageDesignScope from "../components/PageDesignScope";
 import Home from "./Home";
 import Products from "./Products";
@@ -43,6 +43,7 @@ export default function CMSDesignPreview() {
   const [selectedProductSlug, setSelectedProductSlug] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productLoading, setProductLoading] = useState(false);
+  const productPreviewRequest = useRef(0);
   const navigatePreview = (to) => { window.location.href = to; };
 
   useEffect(() => {
@@ -126,23 +127,25 @@ export default function CMSDesignPreview() {
   }, []);
 
   async function changePreviewProduct(slug) {
+    const requestId = ++productPreviewRequest.current;
     setSelectedProductSlug(slug);
     setProductLoading(true);
     setSelectedProduct(null);
+    setError("");
     try {
       const response = await fetch("/api/cms/admin/product-preview?slug=" + encodeURIComponent(slug), { headers: { Accept: "application/json" }, cache: "no-store" });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok || !result.product) {
         const staticProduct = products.find((item) => item.slug === slug);
         if (!staticProduct) throw new Error(result.error || "Unable to load this product preview.");
-        setSelectedProduct(staticProduct);
-      } else {
+        if (requestId === productPreviewRequest.current) setSelectedProduct(staticProduct);
+      } else if (requestId === productPreviewRequest.current) {
         setSelectedProduct(mergePublishedProduct(products.find((item) => item.slug === slug), result.product));
       }
     } catch (err) {
-      setError(err.message || "Unable to load this product preview.");
+      if (requestId === productPreviewRequest.current) setError(err.message || "Unable to load this product preview.");
     } finally {
-      setProductLoading(false);
+      if (requestId === productPreviewRequest.current) setProductLoading(false);
     }
   }
 
@@ -153,54 +156,3 @@ export default function CMSDesignPreview() {
     case "products": page = <Products navigate={navigatePreview} />; break;
     case "product-detail": page = selectedProduct ? <ProductDetails product={selectedProduct} navigate={navigatePreview} previewMode /> : null; break;
     case "services": page = <Services navigate={navigatePreview} />; break;
-    case "service-detail": page = <ServiceDetails service={services[0]} navigate={navigatePreview} />; break;
-    case "team": page = <Team navigate={navigatePreview} />; break;
-    case "cart": page = <Cart navigate={navigatePreview} />; break;
-    case "dental-chair-request": page = <DentalChairRequest navigate={navigatePreview} />; break;
-    case "quote": page = <Quote navigate={navigatePreview} />; break;
-    case "service-request": page = <ServiceRequest navigate={navigatePreview} />; break;
-    case "track-request": page = <TrackRequest />; break;
-    case "contact": page = <Contact navigate={navigatePreview} />; break;
-    default: page = null;
-  }
-
-  return (
-    <div className="cms-full-preview cms-design-preview">
-      <div className="cms-full-preview-bar">
-        <div>
-          <strong>{PAGE_LABELS[pageKey] || "Page design preview"}</strong>
-          <span>{versionStatus} · Public website unchanged</span>
-        </div>
-        <div className="cms-design-preview-tools">
-          {pageKey === "product-detail" && (
-            <label className="cms-design-preview-product-select">
-              Preview product
-              <select value={selectedProductSlug} onChange={(event) => changePreviewProduct(event.target.value)} disabled={productLoading}>
-                {productChoices.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
-              </select>
-            </label>
-          )}
-          <button type="button" className="admin-secondary-button" onClick={() => window.close()}>Close preview</button>
-        </div>
-      </div>
-      {loading ? <div className="cms-full-preview-message">Loading saved design…</div>
-        : error ? <div className="cms-full-preview-message">{error}</div>
-        : productLoading ? <div className="cms-full-preview-message">Loading selected product…</div>
-        : design && page ? (
-          <div
-            className="cms-design-preview-content"
-            onClickCapture={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-            }}
-            onSubmitCapture={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-            }}
-          >
-            <PageDesignScope pageKey={pageKey} designOverride={design}>{page}</PageDesignScope>
-          </div>
-        ) : <div className="cms-full-preview-message">This page preview could not be rendered.</div>}
-    </div>
-  );
-}
