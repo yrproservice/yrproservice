@@ -393,8 +393,11 @@ export default function CMSManagement() {
   async function restoreRevision(type, key, id) {
     if (busy) return;
 
+    const discardsSettingEdits = type === "setting" && key === settingKey && hasUnsavedSettingChanges;
     const confirmed = window.confirm(
-      "Restore this revision as a new draft? The current published version will remain live."
+      discardsSettingEdits
+        ? "Restore this revision as a new draft and discard the unsaved settings editor changes? The current published version will remain live."
+        : "Restore this revision as a new draft? The current published version will remain live."
     );
     if (!confirmed) return;
 
@@ -449,8 +452,11 @@ export default function CMSManagement() {
   async function deleteDraft(type, key, id) {
     if (!id || busy) return;
 
+    const discardsSettingEdits = type === "setting" && key === settingKey && hasUnsavedSettingChanges;
     const confirmed = window.confirm(
-      "Delete this unpublished draft? Published content and archived revision history will remain unchanged. This draft cannot be recovered."
+      discardsSettingEdits
+        ? "Delete this unpublished draft and discard the unsaved settings editor changes? Published content and archived revision history will remain unchanged. The draft cannot be recovered."
+        : "Delete this unpublished draft? Published content and archived revision history will remain unchanged. This draft cannot be recovered."
     );
     if (!confirmed) return;
 
