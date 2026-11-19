@@ -6,7 +6,8 @@ Updated: 19 November 2026
 
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
-- Latest checkpoint at handover: `cb23e9058c277da470d414e0c139bc1238aaf017` (CSS); the handover document itself is updated in a subsequent commit.
+- Latest source checkpoint before this continuation: `b6ac454ecd4bfb0871c1b6247613376ab977cbbe`.
+- Latest Phase G continuation checkpoint recorded below: `95f21b245b177b4917b81be1f7c10471c43c8cad` (product stale-draft publish guard); this handover update will be committed immediately after it.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: Open, Draft, unmerged (must remain Draft and unmerged without explicit user approval).
 - Production: untouched; do not merge or deploy.
@@ -73,6 +74,26 @@ Relevant commits:
 - `cb23e9058c277da470d414e0c139bc1238aaf017` — style searchable product media picker.
 
 These are source-level changes only. Do not treat them as visually or functionally verified until Phase H.
+
+## Additional Phase G continuation — structured editor publish safeguards (19 November 2026)
+
+A source review of the Services, Team and product managers found a draft-state edge case: Services and Team only marked changes as unsaved after a draft already existed, and their publish handlers did not reject unsaved editor changes. The product manager also allowed the saved draft to be published while the JSON editor contained newer unsaved edits.
+
+Focused safeguards added:
+
+- Services Manager initializes its saved-content comparison from the original content baseline, so first-time edits are detected before the first draft exists.
+- Team Manager applies the same baseline comparison.
+- Both Services and Team publish handlers now reject publishing when the current editor content differs from the saved draft, and the existing saved-draft preview remains unavailable while edits are unsaved.
+- Product Manager records the exact JSON snapshot associated with the loaded/saved draft. Publishing is blocked in both the handler and button state while the editor JSON differs from that snapshot.
+- Product save and archive-draft save both refresh the product's saved snapshot. Loading a product establishes the comparison baseline.
+- These safeguards do not alter published content, page templates, product data, media objects, database schema or Production.
+
+Commits:
+- `696ecf011a89d9023c1847d99271223fe63950d5` — guard Services publishing against unsaved edits.
+- `a194b28919feca75eaa39c42a93f9d94fd71890b` — guard Team publishing against unsaved edits.
+- `95f21b245b177b4917b81be1f7c10471c43c8cad` — prevent publishing stale product drafts.
+
+Source review only; no runtime tests were performed. The next review should cover the Settings editor's saved-draft baseline and the remaining structured content managers before Phase H.
 
 ## Existing safeguards and limits retained
 
