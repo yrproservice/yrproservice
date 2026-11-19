@@ -918,7 +918,11 @@ export default function CMSManagement() {
         body: form,
       });
       setNotice("Media uploaded to Preview storage.");
-      await refreshMedia();
+      try {
+        await refreshMedia();
+      } catch (refreshError) {
+        setError(`Media uploaded successfully, but the library could not be refreshed (${refreshError.message}). Reload the Media Library before continuing.`);
+      }
     } catch (uploadError) {
       setError(uploadError.message);
     } finally {
@@ -976,13 +980,17 @@ export default function CMSManagement() {
         `/api/cms/admin/media?id=${encodeURIComponent(id)}`,
         { method: "DELETE" }
       );
-      await refreshMedia();
       mediaUsageRequestId.current += 1;
       setMediaUsageId("");
       setMediaUsage(null);
       setNotice(data.auditRecorded === false
         ? "Media archived and retained for recovery, but its archive event could not be added to the audit history."
         : "Media archived. Its stored image is retained and the archive event was recorded.");
+      try {
+        await refreshMedia();
+      } catch (refreshError) {
+        setError(`Media was archived successfully, but the library could not be refreshed (${refreshError.message}). Reload the Media Library before continuing.`);
+      }
     } catch (removeError) {
       if (removeError.status === 409 && removeError.data?.usage) {
         setMediaUsageId(id);
@@ -1004,10 +1012,14 @@ export default function CMSManagement() {
         method: "PATCH",
         body: JSON.stringify({ action: "restore" }),
       });
-      await refreshMedia();
       setNotice(data.auditRecorded === false
         ? "Media restored to the active library, but its recovery event could not be added to the audit history."
         : "Media restored to the active library and the recovery event was recorded.");
+      try {
+        await refreshMedia();
+      } catch (refreshError) {
+        setError(`Media was restored successfully, but the library could not be refreshed (${refreshError.message}). Reload the Media Library before continuing.`);
+      }
     } catch (restoreError) {
       setError(restoreError.message);
     } finally {
