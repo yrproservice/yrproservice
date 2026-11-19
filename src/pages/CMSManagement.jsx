@@ -1114,8 +1114,8 @@ export default function CMSManagement() {
                           <li key={reference.key + "-" + reference.version + "-" + reference.state}>
                             <span>{reference.title || reference.key}</span>
                             <small>{reference.key} · V{reference.version} · {reference.state}</small>
-                            {["pages", "products"].includes(group) && reference.references?.length > 0 && (
-                              <small className="cms-media-reference-paths">{group === "pages" ? "Content field" : "Image field"}{reference.references.length === 1 ? "" : "s"}: {reference.references.join(", ")}</small>
+                            {reference.references?.length > 0 && (
+                              <small className="cms-media-reference-paths">{group === "pages" ? "Content field" : group === "products" ? "Image field" : "Setting field"}{reference.references.length === 1 ? "" : "s"}: {reference.references.join(", ")}</small>
                             )}
                           </li>
                         ))}</ul>
