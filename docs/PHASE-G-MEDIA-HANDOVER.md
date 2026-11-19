@@ -1151,3 +1151,31 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - The Admin dashboard and customer tracking pending-state protections are recorded in the preceding checkpoint.
 - No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
 - Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged; continue remaining Phase G source-only review. Phase H remains deferred.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (Preview safety review and Phase H gate)
+
+### Additional preview and access review
+- Source-only review covered `CMSPagePreview.jsx`, `CMSProductPreview.jsx`, `CMSDesignPreview.jsx`, `CMSDesignReview.jsx`, `PageDesignScope.jsx`, `DocumentManager.jsx`, `admin-auth.js` and `cms-route-validation.js`.
+- The full design preview wraps the rendered page with capture handlers that prevent click and submit propagation/default behavior, so its embedded request forms do not invoke the real customer submission handlers. Product details also receive `previewMode`. This is source inspection only; the interaction behavior still requires Phase H browser verification.
+- Cloudflare Access JWT validation remains fail-closed: configured single authorized account, RS256 signature verification against Access certificates, issuer/audience/expiry/not-before checks and exact authorized email comparison. No authentication policy or secret was changed.
+- CMS page/product previews use authenticated admin preview endpoints and no-store requests. The page design preview uses the admin settings/products/product-preview APIs. No API endpoint was called in this pass.
+- DocumentManager remains a controlled editor component; its parent ProductFormEditor callback is guarded during pending mutations as recorded above. No document content was edited.
+
+### Consolidated Phase H final verification checklist — do not start until explicitly authorized
+1. **Repository and workflow gate:** confirm branch `cms-development`, PR #2 Open/Draft/unmerged and target `main`; review final diff/commit history; confirm build workflow remains manual-only until Phase H; do not merge.
+2. **Automated verification:** manually dispatch the preserved GitHub build workflow; run locked dependency installation, all automated tests and Vite build; record exact commit, workflow run, test totals, warnings and artifacts. Do not treat prior historical CI results as current validation.
+3. **Preview deployment gate:** only after approval, confirm Cloudflare Pages Preview is deployed from the intended commit; verify Preview D1 and R2 bindings only; do not run a migration unless separately approved and the Preview database identity is verified.
+4. **Admin authentication and access:** verify Cloudflare Access gate, authorized account, Admin session entry, dashboard, CMS routes, logout and session release. Verify unauthorized access is denied.
+5. **CMS lifecycle:** verify page/product/settings save, draft, preview, publish, revision history, restore, delete/archive protections, busy-state controls, failure/retry behavior and concurrent editor handling.
+6. **Media lifecycle:** only in final stage, inspect actual product and CMS images; verify exact model/image matching, whole-product visibility, aspect-ratio preservation, no cropping/distortion, upload validation, alt text, metadata edits, archive/reference protection, restore and read-only orphan reconciliation.
+7. **Customer workflows:** verify service, quotation, dental-chair submission, duplicate-submit protection, confirmation/reference generation, PDF confirmation, tracking by matching reference/email, and Admin status updates. Confirm the 11 fixed chair models remain outside the standard cart.
+8. **Visual and responsive review:** inspect V10 layout at desktop/tablet/mobile; review every major route, typography/contrast, spacing, page-specific identity, image fit, navigation/footer and CMS design preview. Do not replace V10 design with older layouts.
+9. **Accessibility/security/performance:** keyboard and screen-reader review, labels/focus/errors, contrast, route/API security checks, rate limits, cache behavior, large-bundle/code-splitting assessment and backup/recovery drill. External penetration testing remains separate unless arranged.
+10. **Release decision:** document unresolved product image/specification/pricing/stock/HR contact gaps; obtain explicit user acceptance for remaining gaps and separate explicit approval before any merge or Production deployment.
+
+### Current Phase G limits and resume point
+- Latest work in this continuation: service request submission safeguard commit `d9f5141b323a278c40d1309f4820a5659e433574`; Admin dashboard pending-save guard `fa8a978783e14aec6fac10a2258b96346ad46839`; customer tracking pending-lookup guard `843839aa13627c67056d9565940a57646afeb762`.
+- Latest recovery doc update is this checkpoint commit; re-read the live file and branch before continuing.
+- No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed in this pass.
+- Phase G remains in progress. Phase H checklist is prepared but must remain deferred until the user explicitly authorizes the final stage.
