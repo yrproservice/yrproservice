@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { products as catalogue } from "../data/products";
 import ServicesManager from "./ServicesManager";
 import TeamManager from "./TeamManager";
@@ -64,6 +64,9 @@ export default function CMSManagement() {
   const [servicesHaveUnsavedChanges, setServicesHaveUnsavedChanges] = useState(false);
   const [teamHaveUnsavedChanges, setTeamHaveUnsavedChanges] = useState(false);
   const [visualDesignUnsaved, setVisualDesignUnsaved] = useState({});
+  const reportVisualDesignUnsaved = useCallback((key, dirty) => {
+    setVisualDesignUnsaved((current) => current[key] === dirty ? current : { ...current, [key]: dirty });
+  }, []);
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
   const [json, setJson] = useState("{}");
@@ -1187,11 +1190,11 @@ export default function CMSManagement() {
       <p>Product listing and product detail templates keep separate visual settings.</p>
       <details className="cms-page-design-accordion" open>
         <summary>Products listing · Visual Design Studio</summary>
-        <PageVisualDesignManager key="products" pageKey="products" onUnsavedChange={(key, dirty) => setVisualDesignUnsaved((current) => ({ ...current, [key]: dirty }))} />
+        <PageVisualDesignManager key="products" pageKey="products" onUnsavedChange={reportVisualDesignUnsaved} />
       </details>
       <details className="cms-page-design-accordion">
         <summary>Product details · Visual Design Studio</summary>
-        <PageVisualDesignManager key="product-detail" pageKey="product-detail" onUnsavedChange={(key, dirty) => setVisualDesignUnsaved((current) => ({ ...current, [key]: dirty }))} />
+        <PageVisualDesignManager key="product-detail" pageKey="product-detail" onUnsavedChange={reportVisualDesignUnsaved} />
       </details>
     </section>
   </div></section>;
@@ -1457,7 +1460,7 @@ export default function CMSManagement() {
         <ServicesManager onUnsavedChange={setServicesHaveUnsavedChanges} />
         <details className="cms-page-design-accordion">
           <summary>Service details page · Visual Design Studio</summary>
-          <PageVisualDesignManager key="service-detail" pageKey="service-detail" onUnsavedChange={(key, dirty) => setVisualDesignUnsaved((current) => ({ ...current, [key]: dirty }))} />
+          <PageVisualDesignManager key="service-detail" pageKey="service-detail" onUnsavedChange={reportVisualDesignUnsaved} />
         </details>
       </section>
     )}
