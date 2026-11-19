@@ -216,6 +216,15 @@ Commit:
 
 Source-level review only. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 
+## Additional Phase G continuation — homepage media search clarity (19 November 2026)
+
+The Homepage Visual Editor's uploaded-media search already filters by filename, alt text, MIME type and storage key. Its placeholder previously named only filename, alt text and storage key. The placeholder now also names file type, so the visible guidance matches the existing search behavior. No search logic, data loading, API or storage behavior changed.
+
+Commit:
+- `7f3dd0b3e916c99c0217a07b28bd8c03f1a1c6eb` — clarify homepage media search fields.
+
+Source-level review only; runtime verification remains deferred to Phase H.
+
 ## Existing safeguards and limits retained
 
 - Media library list: maximum 300 loaded records.
