@@ -111,7 +111,7 @@ export async function onRequestPatch(context) {
 
   try {
     const existing = await env.DB.prepare(
-      "SELECT reference FROM requests WHERE reference = ? LIMIT 1",
+      "SELECT reference, status FROM requests WHERE reference = ? LIMIT 1",
     )
       .bind(reference)
       .first();
