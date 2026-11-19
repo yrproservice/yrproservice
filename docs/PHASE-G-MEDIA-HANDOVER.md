@@ -399,3 +399,14 @@ Commit:
 
 Source inspection and targeted source edit only. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed. Runtime behaviour remains deferred to Phase H.
 
+## Recovery checkpoint refresh — 19 November 2026
+
+- Repository: yrproservice/yrproservice
+- Working branch: cms-development
+- Source implementation checkpoint: 975caec5b59e489a65cb401d08bf81db68f3ebea (media metadata navigation guard; includes the preceding page-design workspace safeguards).
+- Branch head immediately before this documentation refresh: a438759ab6168226a8a47291566c3dffd591b1d0.
+- PR #2: https://github.com/yrproservice/yrproservice/pull/2 — Open, Draft, unmerged; head matched cms-development; base main.
+- Latest source-level review confirmed the six additional page-design callbacks and workspace-key guard, plus the Media Library filename/alt-text dirty-state guard.
+- No tests, builds, screenshots, visual checks, image processing, deployments or migrations were run. No Production settings or content were changed.
+- Resume by reviewing remaining source-only CMS workflows in small batches. Defer all runtime verification and image work until Phase H.
+
