@@ -4021,6 +4021,7 @@ h6 {
 .cms-section-media-grid img{width:100%;height:82px;object-fit:contain;background:#f5f7fa;border-radius:4px}
 .cms-section-media-grid button>span{overflow-wrap:anywhere;color:#24384b;font-size:10px;font-weight:700;line-height:1.35}
 .cms-section-media-grid button>small{color:#687280;font-size:9px;line-height:1.35}
+.cms-media-alt-editor{display:grid;gap:5px;margin:8px 0;color:#34495e;font-size:11px;font-weight:600}.cms-media-alt-editor input{width:100%;min-height:34px;padding:7px 9px;border:1px solid #cad6e1;border-radius:6px;background:#fff;color:#1f2937;font:inherit;font-weight:400}
 .cms-media-picker-error{margin:0;color:#a52b2b;font-size:11px;line-height:1.45}
 
 .cms-media-grid article{display:grid;gap:7px;align-content:start;border:1px solid #e1e8ef;border-radius:8px;padding:10px;min-width:0}
