@@ -54,17 +54,38 @@ async function checkSubmissionRateLimit(db, request, email) {
   await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_submission_email_time ON request_submission_attempts(email_hash, created_at)").run();
   await db.prepare("DELETE FROM request_submission_attempts WHERE created_at < ?").bind(now - 86400).run();
 
-  const [ipCount, emailCount] = await Promise.all([
-    ipHash
-      ? db.prepare("SELECT COUNT(*) AS count FROM request_submission_attempts WHERE ip_hash = ? AND created_at > ?").bind(ipHash, windowStart).first()
-      : Promise.resolve({ count: 0 }),
-    db.prepare("SELECT COUNT(*) AS count FROM request_submission_attempts WHERE email_hash = ? AND created_at > ?").bind(emailHash, windowStart).first(),
-  ]);
-  if ((ipCount?.count || 0) >= 20 || (emailCount?.count || 0) >= 5) return false;
+  // Keep the limit check and attempt insertion in one SQLite statement.
+  // Separate SELECT/INSERT calls allow concurrent requests to pass the same
+  // count before either request records its attempt.
+  const insertSql = ipHash
+    ? `
+      INSERT INTO request_submission_attempts (id, ip_hash, email_hash, created_at)
+      SELECT ?, ?, ?, ?
+      WHERE
+        (SELECT COUNT(*) FROM request_submission_attempts
+          WHERE email_hash = ? AND created_at > ?) < 5
+        AND
+        (SELECT COUNT(*) FROM request_submission_attempts
+          WHERE ip_hash = ? AND created_at > ?) < 20
+    `
+    : `
+      INSERT INTO request_submission_attempts (id, ip_hash, email_hash, created_at)
+      SELECT ?, NULL, ?, ?
+      WHERE
+        (SELECT COUNT(*) FROM request_submission_attempts
+          WHERE email_hash = ? AND created_at > ?) < 5
+    `;
+  const statement = db.prepare(insertSql);
+  const result = ipHash
+    ? await statement.bind(
+        crypto.randomUUID(), ipHash, emailHash, now,
+        emailHash, windowStart, ipHash, windowStart,
+      ).run()
+    : await statement.bind(
+        crypto.randomUUID(), emailHash, now, emailHash, windowStart,
+      ).run();
 
-  await db.prepare("INSERT INTO request_submission_attempts (id, ip_hash, email_hash, created_at) VALUES (?, ?, ?, ?)")
-    .bind(crypto.randomUUID(), ipHash || null, emailHash, now).run();
-  return true;
+  return Number(result.meta?.changes) === 1;
 }
 
 export async function onRequest({ request, env }) {
