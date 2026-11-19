@@ -202,6 +202,20 @@ Commit:
 
 No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
 
+## Additional Phase G continuation — media history request sequencing (19 November 2026)
+
+A focused source review found that opening one media item's activity history and then selecting another could allow the earlier network response to replace the newer selection's history. The history inspector now uses a monotonically increasing request ID:
+
+- Selecting a different media item starts a new request generation.
+- Only the latest request can update the displayed history, report an error, or clear the loading state.
+- Closing the currently open history panel invalidates its pending request and clears its loading state.
+- The change is limited to client-side request state; it does not modify media metadata, audit events, archived objects, or historical revisions.
+
+Commit:
+- `03bc16022be14b7015f0efe8f2016b0bb4cc72f6` — prevent stale media history responses.
+
+Source-level review only. No tests, builds, screenshots, visual checks, image processing, deployments or migrations were performed.
+
 ## Existing safeguards and limits retained
 
 - Media library list: maximum 300 loaded records.
