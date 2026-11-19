@@ -84,6 +84,7 @@ export default function ProductDetails({ product, navigate, previewMode = false 
   const [added, setAdded] = useState(false);
   const [tab, setTab] = useState("description");
   const [activeProductImage, setActiveProductImage] = useState(product.img || "");
+  useEffect(() => { setActiveProductImage(product.img || ""); }, [product.slug, product.img]);
   const [catalogueProducts, setCatalogueProducts] = useState(products);
   useEffect(() => {
     let active = true;
