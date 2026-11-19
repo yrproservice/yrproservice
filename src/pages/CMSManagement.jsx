@@ -155,7 +155,11 @@ export default function CMSManagement() {
       isNew: !row,
     });
     setJson(JSON.stringify(product, null, 2));
+    historyRequestId.current += 1;
     setHistory([]);
+    setHistoryLoaded(false);
+    setHistoryLoading(false);
+    setHistoryFailed(false);
     setError("");
     setNotice("");
     setEditorSelection((value) => value + 1);
@@ -666,10 +670,23 @@ export default function CMSManagement() {
             Preview Product
           </button>
           <button className="admin-secondary-button" disabled={busy||!selected?.slug} onClick={archiveProduct}>Archive product</button>
-          {selected?.slug&&<button className="admin-secondary-button" onClick={()=>loadHistory("product",selected.slug)}>View revisions</button>}
+          {selected?.slug&&<button className="admin-secondary-button" disabled={historyLoading} onClick={()=>loadHistory("product",selected.slug)}>{historyLoading ? "Loading…" : "View revisions"}</button>}
           {selected?.draftId&&<button className="admin-secondary-button" disabled={busy} onClick={()=>deleteDraft("product",selected.slug,selected.draftId)}>Delete Draft</button>}
         </div>
-        {history.length>0&&<RevisionList history={history} busy={busy} onRestore={id=>restoreRevision("product",selected.slug,id)} onDeleteDraft={id=>deleteDraft("product",selected.slug,id)}/>}
+        {(history.length > 0 || historyLoading || historyLoaded || historyFailed) && (
+          <>
+            {history.length > 0 && <RevisionList history={history} busy={busy} onRestore={id=>restoreRevision("product",selected.slug,id)} onDeleteDraft={id=>deleteDraft("product",selected.slug,id)}/>}
+            {historyLoading && (
+          <p className="cms-history-empty" role="status" aria-live="polite">Loading revision history…</p>
+        )}
+        {!historyLoading && historyLoaded && history.length === 0 && (
+          <p className="cms-history-empty" role="status">No revisions found for this product.</p>
+        )}
+        {!historyLoading && historyFailed && (
+          <p className="cms-history-empty" role="status">Product revision history could not be loaded. Check the error message above and try again.</p>
+        )}
+          </>
+        )}
       </section>
     </div>
     <section className="cms-manager-panel cms-page-editor-design">
@@ -892,17 +909,31 @@ export default function CMSManagement() {
               {selected?.slug && (
                 <button
                   className="admin-secondary-button"
+                  disabled={historyLoading}
                   onClick={() => loadHistory("product", selected.slug)}
                 >
-                  View revisions
+                  {historyLoading ? "Loading…" : "View revisions"}
                 </button>
               )}
             </div>
-            {history.length > 0 && (
-              <RevisionList
-                history={history} busy={busy}
-                onRestore={(id) => restoreRevision("product", selected.slug, id)}
-              />
+            {(history.length > 0 || historyLoading || historyLoaded || historyFailed) && (
+              <>
+                {history.length > 0 && (
+                  <RevisionList
+                    history={history} busy={busy}
+                    onRestore={(id) => restoreRevision("product", selected.slug, id)}
+                  />
+                )}
+                {historyLoading && (
+          <p className="cms-history-empty" role="status" aria-live="polite">Loading revision history…</p>
+        )}
+        {!historyLoading && historyLoaded && history.length === 0 && (
+          <p className="cms-history-empty" role="status">No revisions found for this product.</p>
+        )}
+        {!historyLoading && historyFailed && (
+          <p className="cms-history-empty" role="status">Product revision history could not be loaded. Check the error message above and try again.</p>
+        )}
+              </>
             )}
           </section>
         </div>
