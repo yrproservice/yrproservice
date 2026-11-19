@@ -117,12 +117,13 @@ export async function onRequestGet(context) {
   const auth = await requireAdmin(context);
   if (!auth.ok) return auth.response;
   if (!context.env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
-  const requestedId = new URL(context.request.url).searchParams.get("id");
+  const params = new URL(context.request.url).searchParams;
+  const requestedId = params.get("id");
   if (requestedId) {
     try {
       const media = await context.env.DB.prepare(
-        "SELECT id, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at FROM cms_media WHERE id=? AND deleted_at IS NULL"
-      ).bind(requestedId).first();
+        "SELECT id, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at, deleted_at FROM cms_media WHERE id=? AND (? = 1 OR deleted_at IS NULL)"
+      ).bind(requestedId, params.get("includeDeleted") === "1" ? 1 : 0).first();
       if (!media) return adminJson({ error: "Media item not found." }, 404);
       const usage = await getMediaUsage(context.env.DB, media);
       return adminJson({ ok: true, media, usage });
@@ -132,6 +133,7 @@ export async function onRequestGet(context) {
     }
   }
   try {
+    const includeDeleted = params.get("includeDeleted") === "1";
     const rows = await context.env.DB.prepare(`
       SELECT
         id,
@@ -144,12 +146,13 @@ export async function onRequestGet(context) {
         width,
         height,
         alt_text,
-        created_at
+        created_at,
+        deleted_at
       FROM cms_media
-      WHERE deleted_at IS NULL
-      ORDER BY created_at DESC
+      WHERE (? = 1 OR deleted_at IS NULL)
+      ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC
       LIMIT 300
-    `).all();
+    `).bind(includeDeleted ? 1 : 0).all();
     return adminJson({ ok: true, media: rows.results || [], storageReady: Boolean(context.env.CMS_MEDIA) });
   } catch (error) {
     console.error("CMS media list failed", error);
@@ -206,6 +209,27 @@ export async function onRequestPatch(context) {
   if (!id) return adminJson({ error: "Media ID is required." }, 400);
   let body;
   try { body = await request.json(); } catch { return adminJson({ error: "Send valid JSON." }, 400); }
+  if (body.action === "restore") {
+    try {
+      const row = await env.DB.prepare(
+        "SELECT id, storage_provider, object_key FROM cms_media WHERE id=? AND deleted_at IS NOT NULL"
+      ).bind(id).first();
+      if (!row) return adminJson({ error: "Archived media item not found." }, 404);
+      if (row.storage_provider === "r2") {
+        if (!env.CMS_MEDIA) return adminJson({ error: "Preview R2 storage is unavailable. The media item remains archived." }, 503);
+        const object = await env.CMS_MEDIA.head(row.object_key);
+        if (!object) return adminJson({ error: "The stored image is missing from Preview R2. It cannot be restored." }, 409);
+      }
+      const restored = await env.DB.prepare(
+        "UPDATE cms_media SET deleted_at=NULL WHERE id=? AND deleted_at IS NOT NULL"
+      ).bind(id).run();
+      if (restored?.meta?.changes === 0) return adminJson({ error: "This media item is no longer archived." }, 409);
+      return adminJson({ ok: true, restored: true });
+    } catch (error) {
+      console.error("CMS media restore failed", error);
+      return adminJson({ error: "Unable to restore this media item." }, 500);
+    }
+  }
   if (typeof body.altText !== "string" || body.altText.length > 300) {
     return adminJson({ error: "Alt text must be a string of 300 characters or fewer." }, 400);
   }
@@ -254,20 +278,8 @@ export async function onRequestDelete(context) {
     if (softDelete?.meta?.changes === 0) {
       return adminJson({ error: "This media item has already been removed." }, 409);
     }
-    if (row.storage_provider === "r2") {
-      try {
-        await env.CMS_MEDIA.delete(row.object_key);
-      } catch (storageError) {
-        try {
-          await env.DB.prepare(
-            "UPDATE cms_media SET deleted_at=NULL WHERE id=? AND deleted_at=?"
-          ).bind(id, deletedAt).run();
-        } catch (rollbackError) {
-          console.error("CMS media delete rollback failed; record remains soft-deleted", rollbackError);
-        }
-        throw storageError;
-      }
-    }
+    // Keep the R2 object during the recovery window. The database record is
+    // hidden from the active library but can be restored without re-uploading.
     return adminJson({ ok: true });
   } catch (error) {
     console.error("CMS media delete failed", error);
