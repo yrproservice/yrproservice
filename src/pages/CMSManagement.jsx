@@ -1018,8 +1018,19 @@ export default function CMSManagement() {
       (mediaFilenameDrafts[item.id] ?? item.original_file_name ?? "") !== (item.original_file_name ?? ""))
   );
 
-  function changeManagerTab(nextTab) {
-    if (nextTab === tab) return true;
+  const allowUnloadAfterConfirm = useRef(false);
+  const visualDesignKeysByTab = {
+    products: ["products", "product-detail"],
+    services: ["service-detail"],
+    settings: ["site-chrome"],
+    cart: ["cart"],
+    "dental-chair-request": ["dental-chair-request"],
+    quote: ["quote"],
+    "service-request": ["service-request"],
+    "track-request": ["track-request"],
+  };
+
+  function confirmCurrentTabLeave() {
     if (
       tab === "settings" &&
       hasUnsavedSettingChanges &&
@@ -1036,16 +1047,6 @@ export default function CMSManagement() {
       selected.savedJson !== json &&
       !window.confirm("Discard the unsaved product edits and leave the Product editor?")
     ) return false;
-    const visualDesignKeysByTab = {
-      products: ["products", "product-detail"],
-      services: ["service-detail"],
-      settings: ["site-chrome"],
-      cart: ["cart"],
-      "dental-chair-request": ["dental-chair-request"],
-      quote: ["quote"],
-      "service-request": ["service-request"],
-      "track-request": ["track-request"],
-    };
     const activeDesignKeys = visualDesignKeysByTab[tab] || [];
     if (
       activeDesignKeys.some((key) => visualDesignUnsaved[key]) &&
@@ -1061,6 +1062,47 @@ export default function CMSManagement() {
       teamHaveUnsavedChanges &&
       !window.confirm("Discard the unsaved Team edits and leave the Team editor?")
     ) return false;
+    return true;
+  }
+
+  useEffect(() => {
+    const hasUnsavedCurrentTabChanges =
+      (tab === "settings" && hasUnsavedSettingChanges) ||
+      (tab === "media" && hasUnsavedMediaMetadataChanges) ||
+      (tab === "products" && Boolean(selected) && selected.savedJson !== json) ||
+      (visualDesignKeysByTab[tab] || []).some((key) => visualDesignUnsaved[key]) ||
+      (tab === "services" && servicesHaveUnsavedChanges) ||
+      (tab === "team" && teamHaveUnsavedChanges);
+    if (!hasUnsavedCurrentTabChanges) return undefined;
+    const warnBeforeUnload = (event) => {
+      if (allowUnloadAfterConfirm.current) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [
+    tab,
+    hasUnsavedSettingChanges,
+    hasUnsavedMediaMetadataChanges,
+    selected?.savedJson,
+    json,
+    visualDesignUnsaved,
+    servicesHaveUnsavedChanges,
+    teamHaveUnsavedChanges,
+  ]);
+
+  function handleManagerExit(event) {
+    if (!confirmCurrentTabLeave()) {
+      event.preventDefault();
+      return;
+    }
+    allowUnloadAfterConfirm.current = true;
+  }
+
+  function changeManagerTab(nextTab) {
+    if (nextTab === tab) return true;
+    if (!confirmCurrentTabLeave()) return false;
     setTab(nextTab);
     return true;
   }
@@ -1080,10 +1122,10 @@ export default function CMSManagement() {
         </p>
       </div>
       <div className="cms-manager-header-actions">
-        <a className="admin-secondary-button" href="/admin/cms/design-review">
+        <a className="admin-secondary-button" href="/admin/cms/design-review" onClick={handleManagerExit}>
           Review all pages together
         </a>
-        <a className="admin-public-link" href="/admin/cms">← Visual Editor</a>
+        <a className="admin-public-link" href="/admin/cms" onClick={handleManagerExit}>← Visual Editor</a>
       </div>
     </header>
     {error&&<p className="admin-alert admin-alert-error" role="alert">{error}</p>}{notice&&<p className="admin-alert admin-alert-success" role="status">{notice}</p>}
