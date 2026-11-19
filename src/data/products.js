@@ -368,7 +368,13 @@ const fussenImagingProducts = [
       "Fussen F200 digital dental imaging plate scanner for intraoral radiography.",
     description:
       "The Fussen F200 is an imaging plate system for intraoral radiography. The manufacturer identifies the model as the F200 Image Plate System and describes a pallet-type PSP scanning method with automatic plate-size recognition and image optimisation.",
-    highlights: [],
+    highlights: [
+      "Four imaging plate sizes for different intraoral applications.",
+      "Ultra-thin 0.1 mm imaging plates can bend up to 270 degrees.",
+      "Automatic plate-size detection and image contrast/brightness optimisation.",
+      "Automatic plate erasure and smart standby functions.",
+      "Manufacturer states imaging plates can be used over 20 times.",
+    ],
     specifications: [
       "Model: F200 Image Plate System",
       "Theoretical resolution: 12 lp/mm",
@@ -376,6 +382,11 @@ const fussenImagingProducts = [
       "Pixel size: 35 μm",
       "PSP scanning method: Pallet type",
       "Scan time: Under 20 seconds",
+      "Imaging plate sizes: 22 × 31 mm (Size 0), 24 × 40 mm (Size 1), 31 × 41 mm (Size 2), 27 × 54 mm (Size 3)",
+      "Imaging plate thickness: 0.1 mm",
+      "Imaging plate flexibility: Bends up to 270 degrees",
+      "Imaging plate reuse: Over 20 uses (manufacturer statement)",
+      "Automatic functions: Plate-size detection, contrast/brightness optimisation, standby and erasure",
       "Dimensions: 260 × 167 × 325 mm",
       "Weight: 5.2 kg",
       "Connection: USB 2.0",
