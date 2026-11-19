@@ -849,3 +849,26 @@ No page content, drafts, published pages, media, settings, database schema, depl
 - Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
 - Continue remaining Phase G source-only reviews in small batches. Phase H remains the final runtime, image, responsive, accessibility, security and Preview verification stage.
 
+## Additional Phase G continuation — Visual Website Editor creation-action busy guards (19 November 2026)
+
+A source-only review found that the Home-template and New-page controls were disabled while the editor was busy, and both handlers already checked page-list readiness, but the handlers did not independently reject a busy state.
+
+Updated `src/pages/CMSDashboard.jsx`:
+- `loadHomeTemplate` now rejects calls while another editor operation is busy or the page list is not ready.
+- `createPage` now applies the same handler-level busy/readiness guard.
+- Existing confirmation prompts and V10 page-template/content behaviour are unchanged.
+
+Commit:
+- 3b2b8dd512ff27154e2c487d7dd8b77b01c8b149 — guard page creation actions while Visual Website Editor is busy.
+
+No page content, drafts, published pages, media, settings, database schema, deployment configuration or Production data were changed by this source edit. Source review only; no tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (page creation busy guards)
+
+- Working branch: `cms-development`
+- Latest change: `3b2b8dd512ff27154e2c487d7dd8b77b01c8b149`.
+- Earlier continuation changes remain in branch history: Visual Design Studio initial settings readiness (`b7a5f54ef0cdb18b2c8e31c8d209da38f87980ee`) and Visual Website Editor page navigation readiness (`ef6483cb9c4936a1c4efd2fee3ea01e2cf778e93`).
+- PR #2 must remain Open, Draft and unmerged; verify its head matches branch HEAD before resuming.
+- Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+- Continue remaining Phase G source-only review in small batches. Phase H remains the final runtime, image, responsive, accessibility, security and Preview verification stage.
+
