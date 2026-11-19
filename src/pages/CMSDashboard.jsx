@@ -189,6 +189,9 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [mediaLoading, setMediaLoading] = useState(false);
   const [mediaError, setMediaError] = useState("");
   const [mediaSearch, setMediaSearch] = useState("");
+  const [sectionMediaUsage, setSectionMediaUsage] = useState(null);
+  const [sectionMediaUsageId, setSectionMediaUsageId] = useState("");
+  const [sectionMediaUsageLoading, setSectionMediaUsageLoading] = useState(false);
   const [pageKey, setPageKey] = useState("");
   const [pageTitle, setPageTitle] = useState("");
   const [route, setRoute] = useState("/");
@@ -432,6 +435,20 @@ export default function CMSDashboard({ onAdminLogout }) {
     setNotice("New page started. Save it as a draft when ready.");
   }
 
+  async function inspectSectionImageUsage() {
+    const currentImage = selectedSection?.content?.imageUrl || "";
+    const mediaItem = uploadedMedia.find((item) => item.public_url === currentImage);
+    if (!mediaItem) return;
+    if (sectionMediaUsageId === mediaItem.id && sectionMediaUsage) { setSectionMediaUsage(null); setSectionMediaUsageId(""); return; }
+    setSectionMediaUsageId(mediaItem.id); setSectionMediaUsage(null); setSectionMediaUsageLoading(true);
+    try {
+      const response = await fetch("/api/cms/admin/media?id=" + encodeURIComponent(mediaItem.id), { headers: { Accept: "application/json" }, cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok === false) throw new Error(data.error || "Unable to load image references.");
+      setSectionMediaUsage(data.usage || null);
+    } catch (usageError) { setMediaError(usageError.message); setSectionMediaUsageId(""); }
+    finally { setSectionMediaUsageLoading(false); }
+  }
   function updateSectionFields(patch) {
     if (!selectedSection || !patch || typeof patch !== "object") return;
     const nextSectionContent = { ...(selectedSection.content || {}), ...patch };
@@ -1421,6 +1438,28 @@ export default function CMSDashboard({ onAdminLogout }) {
               <label>Image URL<input value={selectedSection.content?.imageUrl || ""} onChange={(event) => updateSection("imageUrl", event.target.value)} placeholder="/assets/example.jpg" /></label>
               <div className="cms-section-media-picker">
                 <div className="cms-section-media-heading"><strong>Choose from media library</strong><span>{uploadedMedia.length} uploaded · {catalogMedia.length} catalogue assets</span></div>
+                {uploadedMedia.some((item) => item.public_url === selectedSection.content?.imageUrl) && (
+                  <div className="cms-section-image-usage">
+                    <button type="button" className="admin-secondary-button" disabled={sectionMediaUsageLoading} onClick={inspectSectionImageUsage}>
+                      {sectionMediaUsageLoading ? "Checking saved references…" : sectionMediaUsage ? "Hide image references" : "Where is this image used?"}
+                    </button>
+                    {sectionMediaUsage && (
+                      <div>
+                        <strong>{sectionMediaUsage.total || 0} saved revision reference(s)</strong>
+                        {["pages", "products", "settings"].map((group) => (
+                          <section key={group}>
+                            <b>{group === "pages" ? "Pages" : group === "products" ? "Products" : "Settings"} ({sectionMediaUsage.counts?.[group] || 0})</b>
+                            {(sectionMediaUsage.groups?.[group] || []).map((reference) => (
+                              <p key={reference.key + "-" + reference.version + "-" + reference.state}>{reference.title || reference.key} · V{reference.version} · {reference.state}</p>
+                            ))}
+                          </section>
+                        ))}
+                        <small>Choose a replacement below, then save this page as a draft. Other pages, products and historical revisions are not changed automatically.</small>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <input aria-label="Search media library" value={mediaSearch} onChange={(event) => setMediaSearch(event.target.value)} placeholder="Search filename, brand or category" />
                 {mediaError && <p className="cms-media-picker-error">{mediaError} You can still enter an image path manually.</p>}
                 {mediaLoading && <p className="cms-media-picker-note">Loading uploaded media…</p>}
