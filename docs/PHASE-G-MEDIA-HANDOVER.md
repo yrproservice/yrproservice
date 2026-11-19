@@ -1221,3 +1221,24 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - No source code change was justified by this review. Do not infer runtime correctness from static inspection.
 - No tests/builds, API calls, D1 queries, migration execution, screenshots, image processing, visual checks, Preview publishing/deployment, or Production changes were performed.
 - Continue Phase G only with bounded source review and handover updates. Phase H remains deferred until the user explicitly authorizes final verification.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (product editor lock and documentation alignment)
+
+### Additional source review and targeted fix
+- Reviewed the customer-facing Contact, Service Details, Quote, Product Cart, Dental Chair Request and Product Details pages, plus the request-confirmation PDF generator. The HR Contact page remains HR-only; quotation and dental-chair submissions have handler-level duplicate-submit guards and require a successful response with a reference before showing confirmation.
+- Reviewed the product editor's pending-mutation boundary. The parent CMS callback rejected product JSON updates while a save/publish/archive mutation was pending, but the child editor's local advanced-JSON state and nested specification/document/gallery controls were not all disabled. This could leave an editable-looking child UI during a parent mutation.
+- Fixed this by passing the parent `busy` state into `ProductFormEditor`, adding native disabled states to its editable controls, and propagating the disabled state to `SpecBuilder` and `DocumentManager`. Added a handler-level guard to the product editor's commit and advanced-JSON paths. The canonical parent JSON callback guard remains in place.
+- Source files updated: `src/components/ProductFormEditor.jsx`, `src/components/SpecBuilder.jsx`, `src/components/DocumentManager.jsx`, and `src/pages/CMSManagement.jsx`. Changes were committed individually on `cms-development`.
+
+### Documentation consistency correction
+- The README previously said the CMS build-check workflow ran on pushes, which no longer matched its Phase G manual-only trigger.
+- Corrected `README.md` and `docs/CMS-PREVIEW-OPERATIONS.md`: the build-check is manual-dispatch-only during Phase G, and retains locked install, tests, and build for Phase H. The Preview migration workflow remains separately scoped to Preview D1 and was not changed.
+
+### Verification boundary
+- Re-fetched all six changed files after updates and confirmed the pending-state prop/disabled guards and manual-only documentation wording are present in source.
+- This was source inspection only. No tests, builds, browser interactions, API requests, database queries, migrations, image processing, screenshots, Preview deployments, or Production changes were performed. Runtime behaviour remains unverified until Phase H.
+
+### Resume point
+- Continue bounded source-only review on `cms-development`. Check the live PR/head and this handover before each subsequent write.
+- Keep PR #2 Open/Draft/unmerged; do not deploy, migrate, or touch Production. Phase H remains deferred until explicit user authorization.
