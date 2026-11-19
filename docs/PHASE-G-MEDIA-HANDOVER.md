@@ -1130,3 +1130,13 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - This trigger change is intentional deferral, not a passed/failed test result. Do not manually dispatch the build workflow until the user authorizes Phase H.
 - No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed by this continuation.
 - Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged; continue Phase G source-only review. Phase H remains deferred.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (Request dashboard and tracking pending-state guards)
+
+- Commit `fa8a978783e14aec6fac10a2258b96346ad46839` updates `src/pages/AdminDashboard.jsx`. While a request status update is saving, staff can no longer change filters, select a different request, close the active detail panel, or change the pending status selection. This prevents a response for request A from being applied to request B's currently selected detail view.
+- Commit `843839aa13627c67056d9565940a57646afeb762` updates `src/pages/TrackRequest.jsx`. The reference and email inputs are disabled during a lookup so the displayed result cannot be confused with newly edited input values while the previous lookup is still pending.
+- These are client-side pending-state protections only. No request status, customer record, or tracking record was changed. No API behavior was changed.
+- Source review of `AdminDashboard.jsx`, `TrackRequest.jsx`, `functions/api/admin/requests.js`, `functions/api/track.js`, `functions/api/admin/session.js`, cart/chair request contexts, product workflow routing and published-product image merge logic was completed. Existing server validation and the fixed 11-model chair routing rule were retained.
+- No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed.
+- Resume by rechecking live branch HEAD and PR #2. Keep PR #2 Open/Draft/unmerged; continue remaining Phase G source-only review. Phase H remains deferred.
