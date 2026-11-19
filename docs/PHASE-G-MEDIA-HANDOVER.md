@@ -573,3 +573,15 @@ Commits:
 - `e5f1a420791fdebe97205705a6bbb4712adbf662` — CMS setting save requires loaded settings.
 
 Source-level review only. No tests, builds, screenshots, image processing, visual checks, deployments, migrations or data changes were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (continued)
+
+- Repository: `yrproservice/yrproservice`
+- Working branch: `cms-development`
+- Latest functional source commit in this continuation: `e5f1a420791fdebe97205705a6bbb4712adbf662`.
+- Latest branch head before this checkpoint refresh: `5e9d1fa52bb9152b151378cc3c3b76bb69adbc8a`.
+- PR #2: Open, Draft, unmerged; base `main`; head `cms-development`. The latest PR head was verified to match the branch before this documentation-only checkpoint update.
+- Production remains untouched. No merge, deployment, migration or Preview publish was performed.
+- Work completed in this continuation: removed duplicate Settings-reference discard prompts; prevented Services/Team draft deletion recovery from silently substituting templates when published content cannot be reloaded; blocked Services/Team saves after initial load failures; blocked Visual Design Studio saves if settings failed to load; required successfully loaded settings before saving CMS setting drafts.
+- Source-only review and source assertions were performed. No tests, builds, screenshots, image processing, visual checks or runtime verification were performed.
+- Resume by confirming branch head and PR state, reading this handover, then reviewing remaining unreviewed CMS data-loss paths. Keep changes small and targeted. Phase H remains the only stage for tests/builds/images/visual verification.
