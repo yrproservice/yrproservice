@@ -43,3 +43,11 @@ The main running handover remains `docs/PHASE-G-MEDIA-HANDOVER.md`. This checkpo
 - The release-readiness document's header still identifies the 16 November audit commit as its latest verified commit. Its dated audit sections are historical records, not evidence that the current 19 November HEAD has been built or browser-verified. The README likewise describes the earlier 47-test/build and Preview checks as dated historical evidence; do not treat these as verification of the current HEAD.
 - The Phase 5 setup guide contains historical Production configuration instructions. They are not authorization to change Production; current Phase G work remains source-only on `cms-development`, and Production stays untouched.
 - No source defect was confirmed in this documentation/configuration pass. No tests, builds, test-file inspection, browser/API requests, Preview operations, migrations, deployments, screenshots, PDFs, or image processing were performed.
+
+
+## Cart persistence and legacy chair-migration failure-path review — 19 November 2026
+
+- Re-read the complete Cart and Dental Chair request context providers plus the application provider order. Confirmed that legacy chair migration writes to `yr-chair-requests` during the Cart provider initializer, while the subsequent cart persistence effect writes `yr-cart`.
+- Failure-path concern: if the chair-store write throws (for example, browser storage quota/security failure), the outer initializer catch returns an empty cart; the normal persistence effect can then overwrite the original `yr-cart` data. Storage writes in both providers' persistence effects are also not guarded. This is a genuine recovery/data-preservation risk, but a safe fix needs coordinated migration state and retry/error UX so it does not either lose legacy chair entries or put chairs back into the normal cart.
+- No code change made in this pass because a partial catch-only patch would risk masking the error while still losing chair entries. Keep this as a Phase G follow-up candidate for a complete, coordinated migration-recovery implementation; Phase H must test quota/security exceptions and verify both stores preserve all items.
+- No local storage was accessed or changed. No tests, builds, browser/API calls, Preview operations or image/PDF work were performed.
