@@ -19,7 +19,7 @@ const PRODUCT_FIELDS = [
   ["reviewStatus", "Review status"],
 ];
 
-export default function ProductFormEditor({ json, onJsonChange, slugLocked = false, media = [] }) {
+export default function ProductFormEditor({ json, onJsonChange, slugLocked = false, media = [], onInspectMedia }) {
   const [advancedJson, setAdvancedJson] = useState(json);
   const [advancedError, setAdvancedError] = useState("");
   const initialProduct = useRef(createProductSnapshot(json));
@@ -143,6 +143,21 @@ export default function ProductFormEditor({ json, onJsonChange, slugLocked = fal
             <span>Image shown at full aspect ratio · contain fit</span>
           </div>
         </div>}
+        {referencedUploadedMedia.length > 0 && (
+          <section className="cms-editor-field-wide cms-product-image-references">
+            <strong>Uploaded images referenced by this product ({referencedUploadedMedia.length})</strong>
+            <p>References are detected throughout the product JSON, not only the primary image field. This includes nested image arrays or gallery data if present. Use the advanced JSON editor to manage fields that do not have a dedicated structured editor.</p>
+            {referencedUploadedMedia.map((item) => (
+              <div key={item.id}>
+                <img src={item.public_url} alt={item.alt_text || item.original_file_name} />
+                <span>{item.original_file_name}</span>
+                <button type="button" className="admin-secondary-button" onClick={() => onInspectMedia?.(item)}>
+                  Inspect saved references
+                </button>
+              </div>
+            ))}
+          </section>
+        )}
         <section className="cms-editor-field-wide cms-product-image-library">
           <h3>Choose an existing catalogue image</h3>
           <p>These are the original static website images. Selecting one changes only this product's image path; it does not copy, move, or delete the file.</p>
