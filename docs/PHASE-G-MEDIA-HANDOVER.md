@@ -7,7 +7,7 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest functional source checkpoint reviewed in this continuation: `d4b363ddaa86f844bb8e7030065b648fb56dc69e` (Product, Settings, Services, Team and Visual Design Studio tab navigation safeguards). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
+- Latest functional source checkpoint reviewed in this continuation: `747d536c53f1086687e6e0156e61e31db84e6ea6` (Product, Settings, Services, Team and Visual Design Studio tab navigation safeguards, with stable dirty-state reporting). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: verified 19 November 2026 as Open, Draft, and unmerged, targeting `main`. The PR tracks `cms-development`; this handover refresh is committed to that branch. It must remain Draft and unmerged without explicit user approval.
 - Production: untouched; do not merge or deploy.
@@ -350,6 +350,9 @@ Commits:
 - `d4b363ddaa86f844bb8e7030065b648fb56dc69e` — protect unsaved visual design edits during CMS tab navigation.
 
 Source review only. Runtime behaviour remains unverified and is deferred to Phase H.
+
+Additional implementation detail:
+- The parent callback is memoized with `useCallback`, and the dirty-state setter returns the existing state object when the reported value is unchanged. This avoids repeated parent updates caused by recreating inline callbacks during rendering.
 
 ## Verification boundary
 
