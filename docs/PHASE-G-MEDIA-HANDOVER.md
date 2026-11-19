@@ -895,3 +895,32 @@ No media was uploaded, archived, restored or modified. No database records, stor
 - Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
 - Continue remaining Phase G source-only review in small batches. Phase H remains the final runtime, image, responsive, accessibility, security and Preview verification stage.
 
+## Additional Phase G continuation — Media Library readiness and retry path (19 November 2026)
+
+A source-only review found that after a media mutation succeeded but the follow-up library refresh failed, the previous list remained visible. Some media handlers could still act on those stale rows. The Media tab also lacked a dedicated retry action after an initial or later list-load failure.
+
+Updated `src/pages/CMSManagement.jsx`:
+- Added explicit `mediaReady` and `mediaLoading` state.
+- Shared `refreshMedia` now marks the library unavailable while loading, marks it ready only after the current request succeeds, and leaves it unavailable after a current-request failure.
+- Added a manual “Refresh library” action; it is disabled while another refresh is in progress.
+- Archived/active view switching now marks the library unavailable while its request is pending, restores readiness only on success, and leaves actions blocked after failure.
+- Upload, metadata save, archive, restore, per-item storage checks and orphan scans now have readiness guards where applicable.
+- Upload remains separately dependent on Preview R2 storage availability; database-backed media listing and storage configuration are not conflated.
+
+Commit:
+- 67d428d5e65b7f1a0701f0af9c080d04cd8fc843 — guard CMS media actions until library refresh succeeds.
+- 9516b31559770325073f5e74d1c39b4d2d36d664 — sequence Media Library loading and prevent overlapping refreshes.
+
+No media was uploaded, archived, restored or modified. No database records, storage objects, drafts, published content, deployment configuration or Production data were changed by these source edits. Source review only; no tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (Media Library readiness)
+
+- Working branch: `cms-development`
+- Latest media changes:
+  - `67d428d5e65b7f1a0701f0af9c080d04cd8fc843` — Media Library readiness, manual retry and action guards.
+  - `9516b31559770325073f5e74d1c39b4d2d36d664` — refresh sequencing and overlapping-refresh prevention.
+- Other changes in this continuation: `b7a5f54ef0cdb18b2c8e31c8d209da38f87980ee`, `ef6483cb9c4936a1c4efd2fee3ea01e2cf778e93`, `3b2b8dd512ff27154e2c487d7dd8b77b01c8b149`, and `cd36d7aca3622cad523d35d58b435be1028e110d`.
+- PR #2 must remain Open, Draft and unmerged; verify its head matches branch HEAD before resuming.
+- Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+- Continue remaining Phase G source-only review in small batches. Phase H remains the final runtime, image, responsive, accessibility, security and Preview verification stage.
+
