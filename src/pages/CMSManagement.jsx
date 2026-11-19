@@ -174,6 +174,16 @@ export default function CMSManagement() {
     };
   }, [tab]);
   function chooseProduct(row) {
+    const nextSlug = row?.product_slug || "";
+    const sameSelection = selected && (
+      selected.isNew ? !row : selected.slug === nextSlug
+    );
+    if (sameSelection) return;
+    if (
+      selected &&
+      selected.savedJson !== json &&
+      !window.confirm("Discard the unsaved edits to the current product and open another product?")
+    ) return;
     const rawProduct = row
       ? JSON.parse(row.draft_product || row.published_product || "{}")
       : blankProduct();
