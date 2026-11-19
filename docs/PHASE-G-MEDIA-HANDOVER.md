@@ -1281,3 +1281,20 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - No additional source code changes were justified by this review. All findings above are verification questions, not confirmed runtime defects.
 - No tests, builds, browser/API requests, D1 queries, migrations, R2 operations, image processing, screenshots, Preview deployment, or Production changes were performed.
 - Continue Phase G source-only review. Phase H remains deferred until explicit user authorization.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (CMS workspace navigation lock)
+
+### Targeted source fix
+- Reviewed the CMS Management Centre's unsaved-change protection and navigation while save/publish/archive/restore operations are pending.
+- Found that workspace tab buttons remained clickable during a pending mutation, and the manager's exit links only checked unsaved edits—not the shared mutation-busy state. This allowed a workspace switch or navigation attempt while an operation was in flight.
+- Updated `src/pages/CMSManagement.jsx`: `changeManagerTab` now rejects navigation while busy, tab buttons receive native `disabled={busy}`, and `handleManagerExit` prevents navigation while a mutation is pending. Existing unsaved-change confirmation remains in place after the busy check.
+- The change is handler-level plus native control state. It does not change page design, request data, published content, or database state.
+
+### Source-only verification
+- Re-fetched the updated CMS Management Centre source and confirmed all three guards are present.
+- No tests, builds, browser checks, API requests, database operations, migrations, screenshots, image processing, Preview deployment, or Production changes were performed. Runtime behaviour remains unverified until Phase H.
+
+### Resume point
+- Continue source-only Phase G review on `cms-development`; re-check the live PR/head and this handover before further writes.
+- PR #2 must remain Open/Draft/unmerged, target `main`. Do not deploy, migrate, or touch Production. Phase H remains deferred until explicit user authorization.
