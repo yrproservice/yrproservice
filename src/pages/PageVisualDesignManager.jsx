@@ -131,6 +131,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }, [initialPageKey]);
 
   function update(field, value) {
+    if (busy) return;
     if (!settingsReady || settingsLoadFailed) {
       setError("Wait for the current design settings to load successfully before editing.");
       return;
@@ -141,6 +142,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }
 
   async function saveDraft() {
+    if (busy) return;
     if (!settingsReady || settingsLoadFailed) {
       setError("Wait for the current design settings to load successfully before saving. Reload this manager if loading failed.");
       return;
@@ -175,6 +177,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }
 
   async function deleteDraft() {
+    if (busy) return;
     if (!settingsReady || settingsLoadFailed) {
       setError("Load the current design settings successfully before deleting its draft.");
       return;
@@ -210,6 +213,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   }
 
   async function publishToPreview() {
+    if (busy) return;
     if (!settingsReady || settingsLoadFailed) {
       setError("Load the current design settings successfully before publishing its draft.");
       return;
