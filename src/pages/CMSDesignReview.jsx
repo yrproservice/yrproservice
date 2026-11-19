@@ -42,7 +42,7 @@ export default function CMSDesignReview() {
             <iframe
               title={`${label} visual preview`}
               src={`/admin/cms/design-preview?key=${encodeURIComponent(`page-design.${key}`)}`}
-              loading="eager"
+              loading="lazy"
             />
           </section>
         ))}
