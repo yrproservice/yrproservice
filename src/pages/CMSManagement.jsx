@@ -64,6 +64,9 @@ export default function CMSManagement() {
   const [media, setMedia] = useState([]);
   const [mediaIncludeArchived, setMediaIncludeArchived] = useState(false);
   const [mediaIntegrityFilter, setMediaIntegrityFilter] = useState("all");
+  const [mediaHistoryId, setMediaHistoryId] = useState("");
+  const [mediaHistory, setMediaHistory] = useState([]);
+  const [mediaHistoryLoading, setMediaHistoryLoading] = useState(false);
   const [mediaAltDrafts, setMediaAltDrafts] = useState({});
   const [mediaFilenameDrafts, setMediaFilenameDrafts] = useState({});
   const [mediaUsage, setMediaUsage] = useState(null);
@@ -487,6 +490,28 @@ export default function CMSManagement() {
       setBusy(false);
     }
   }
+  async function inspectMediaHistory(item) {
+    if (!item?.id) return;
+    if (mediaHistoryId === item.id) {
+      setMediaHistoryId("");
+      setMediaHistory([]);
+      return;
+    }
+    setMediaHistoryId(item.id);
+    setMediaHistory([]);
+    setMediaHistoryLoading(true);
+    try {
+      const includeArchived = item.deleted_at ? "&includeDeleted=1" : "";
+      const data = await api(`/api/cms/admin/media?id=${encodeURIComponent(item.id)}${includeArchived}&history=1`);
+      setMediaHistory(data.history || []);
+    } catch (historyError) {
+      setError(historyError.message);
+      setMediaHistoryId("");
+    } finally {
+      setMediaHistoryLoading(false);
+    }
+  }
+
   async function inspectMediaUsage(item, forceRefresh = false) {
     if (!item?.id) return;
     if (!forceRefresh && mediaUsageId === item.id && mediaUsage) { setMediaUsage(null); setMediaUsageId(""); return; }
@@ -645,7 +670,9 @@ export default function CMSManagement() {
       setMedia((current) => current.map((row) => row.id === item.id ? data.media : row));
       setMediaAltDrafts((current) => { const next = { ...current }; delete next[item.id]; return next; });
       setMediaFilenameDrafts((current) => { const next = { ...current }; delete next[item.id]; return next; });
-      setNotice("Filename and alt text saved. Storage identifiers and content references were not changed.");
+      setNotice(data.changed === false
+        ? "No metadata changes detected; nothing was added to the history."
+        : "Filename and alt text saved and recorded in the media audit history. Storage identifiers and content references were not changed.");
     } catch (saveError) {
       setError(saveError.message);
     } finally {
@@ -1335,6 +1362,23 @@ export default function CMSManagement() {
                 <div className="cms-media-integrity-warnings">
                   <strong>Metadata warnings ({getMediaIntegrityIssues(item).length})</strong>
                   <ul>{getMediaIntegrityIssues(item).map((issue) => <li key={issue}>{issue}</li>)}</ul>
+                </div>
+              )}
+              <button className="admin-secondary-button" type="button" onClick={() => inspectMediaHistory(item)} disabled={mediaHistoryLoading && mediaHistoryId === item.id}>
+                {mediaHistoryLoading && mediaHistoryId === item.id ? "Loading history…" : mediaHistoryId === item.id ? "Hide change history" : "View change history"}
+              </button>
+              {mediaHistoryId === item.id && (
+                <div className="cms-media-history">
+                  <strong>Metadata change history</strong>
+                  {mediaHistory.length ? mediaHistory.map((entry) => (
+                    <article key={entry.id}>
+                      <small>{entry.createdAt ? new Date(entry.createdAt).toLocaleString() : "Time unavailable"} · {entry.actorEmail || "Administrator identity unavailable"}</small>
+                      {Object.entries(entry.metadata?.changes || {}).map(([field, change]) => (
+                        <p key={field}><b>{field === "original_file_name" ? "Original filename" : field === "alt_text" ? "Alt text" : field}</b><span>Before: {change.before || "—"}</span><span>After: {change.after || "—"}</span></p>
+                      ))}
+                    </article>
+                  )) : <small>No recorded metadata changes for this media item.</small>}
+                  <small>History is read-only. It does not include changes made before audit logging was introduced.</small>
                 </div>
               )}
               <button className="admin-secondary-button" disabled={Boolean(mediaStorageCheckingId)} onClick={() => checkMediaStorage(item)}>
