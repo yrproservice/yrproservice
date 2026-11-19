@@ -263,6 +263,7 @@ Changes in `src/pages/CMSManagement.jsx`:
 - Track the baseline setting key and JSON value currently loaded into the editor.
 - Treat either changing the setting key or editing its JSON as unsaved work, even when the newly typed key has no existing draft row.
 - Warn and require confirmation before the saved-settings list or a media-reference shortcut replaces unsaved editor content.
+- Include an explicit unsaved-change warning when restoring or deleting a saved settings draft would replace the currently edited setting.
 - Keep the editor baseline aligned after saving a setting draft, restoring a setting revision, or deleting a setting draft and reloading the selected setting.
 - Explain beside the setting-key field that changing the key is an unsaved edit and saving creates a draft under the new key.
 
