@@ -1509,3 +1509,11 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Corrected byte-count checks with `TextEncoder` in `functions/api/cms/admin/pages.js` (100,000-byte page payload), `functions/api/cms/admin/products.js` (100,000-byte product payload), `functions/api/cms/admin/publish.js` (4,000-byte publish payload), and `functions/api/cms/admin/settings.js` (60,000-byte settings request and 50,000-byte serialized setting value).
 - Commits: `96299706ada5a390ecee7dc773992cdac2247902`, `2b6c00e080aa8fe7481517245d093700bbbea577`, `437501108ad17374b709078b8013f34af5d91246`, `de5a70ae89c286f7b978fae547719431585ea4b8`, `4fc32c4af8b1a6a4ca7a67776c8bbdfcb8f982ec`.
 - Re-fetched all four files and confirmed the new byte-count expressions are present. This is source verification only; no tests, builds, requests, database operations or Preview checks were run. Phase H should exercise boundary-sized ASCII and multibyte UTF-8 payloads, including the serialized settings value.
+
+
+## Generic CMS brand-grid image rendering correction — 19 November 2026
+
+- Source review found a validator/renderer mismatch: `validatePageContent` permits brand-grid item objects with an image URL, alt text and optional name, but `GenericCmsRenderer` previously rendered only string entries. Valid image-based brand entries on generic CMS pages could therefore be silently omitted.
+- Updated `src/components/GenericCmsRenderer.jsx` to render both legacy string entries and validated object entries with image, alt text and optional name. Updated `src/style.css` with a bounded `object-fit: contain` logo rule (max 160 × 64 px) inside generic brand-grid cards.
+- Commits: renderer `20b1a1c257898d5bc66c02056ac966d77d68d50c`; targeted CSS `d1db474ef38e71424892e85268240197d2821f51`.
+- Re-fetched both files and confirmed object-entry rendering and the logo sizing rule are present. No tests, builds, screenshots, browser checks, image loading/processing or Preview requests were performed. Phase H should verify image and string brand-grid entries at desktop/mobile sizes and confirm logo containment.
