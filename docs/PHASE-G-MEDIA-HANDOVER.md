@@ -7,13 +7,13 @@ Updated: 19 November 2026
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
 - Previous handover-era checkpoint: `88e2cf0ec8ab1564a4935059c3d7ac77d7eb0071`.
-- Latest functional source checkpoint reviewed in this continuation: `747d536c53f1086687e6e0156e61e31db84e6ea6` (Product, Settings, Services, Team and Visual Design Studio tab navigation safeguards, with stable dirty-state reporting). Recovery-document-only commits may advance the branch tip beyond this functional source checkpoint.
+- Latest functional source checkpoint reviewed and built in this continuation: `744be994c1fa401811097a70b5cbf59365fd1375` (retry-safe cart storage migration, visible recovery state, and all earlier CMS safeguards). Latest verified workflow/documentation checkpoint: `c3ac9518b7b1a3799cf828ddd8ca87b54acd4cd9`. Recovery-document-only commits may advance the branch tip beyond the functional source checkpoint.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: verified 19 November 2026 as Open, Draft, and unmerged, targeting `main`. The PR tracks `cms-development`; this handover refresh is committed to that branch. It must remain Draft and unmerged without explicit user approval.
-- Production: untouched; do not merge or deploy.
+- Preview: build and branch asset deployment verification completed. Production website, D1, R2, bindings and secrets remain untouched; do not merge or deploy Production.
 - Preview-only D1/R2 CMS workflow remains the intended target.
 
-The latest GitHub compare showed `cms-development` ahead of `main` and 0 commits behind. The ahead count changes as recovery-document commits are added; it is a branch-history comparison only, not merge approval. Review the full branch history and PR diff before any future merge; do not infer that the branch is safe to merge from a mergeable flag alone.
+The latest GitHub compare at this checkpoint showed `cms-development` 953 commits ahead of `main` and 0 behind, with 98 changed files. The ahead count changes as recovery-document commits are added; it is a branch-history comparison only, not merge approval. Review the full branch history and PR diff before any future merge; do not infer that the branch is safe to merge from a mergeable flag alone.
 
 ## Phase G media work completed in this continuation
 
@@ -1653,3 +1653,19 @@ Verification:
 - Browser storage quota/security failure behaviour has unit-level coverage through a simulated storage adapter. No actual browser storage was accessed or modified.
 
 The new migration marker is internal metadata stored with a chair-request item. It is not displayed in the public request summary. Revisit only if a future migration changes the storage format or if legacy chair entries can be reintroduced after a successful migration.
+
+
+## Latest verified Preview checkpoint after cart-storage recovery — 19 November 2026
+
+- Latest workflow run: #44496605117, successful for `c3ac9518b7b1a3799cf828ddd8ca87b54acd4cd9`.
+- Non-image automated tests: 66 passed, 0 failed. `image-validation.test.js` and `product-images.test.js` remain excluded under the no-image instruction.
+- Vite build passed; entry bundle `255.10 kB` minified / `78.57 kB` gzip, with no 500 kB chunk warning.
+- Cloudflare Pages Functions build passed.
+- Preview D1 schema readiness passed: `title_column=1`, `route_column=1`, `route_index=1`, `null_metadata=0`.
+- Preview branch served the same hashed JS/CSS assets as the build and all four referenced assets returned successful responses.
+- Cart-storage migration fix and simulated quota-failure tests are included in the verified code. The UI surfaces storage errors and retry controls across the public routes.
+- Preview D1 migration 0003 remains verified by run #44494472823. Production was not referenced or modified.
+- PR #2 remains Open, Draft and unmerged. Latest compare: 953 ahead, 0 behind, 98 changed files.
+- No images, screenshots or image-processing operations were performed.
+
+The remaining significant verification gate is authenticated Preview CMS runtime testing (save, preview, publish, restore, Admin session, media protections and customer request flows). Static asset matching is not a substitute for those workflows. Keep PR #2 Draft; do not merge or deploy Production without explicit approval.
