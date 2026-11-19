@@ -62,6 +62,7 @@ export default function CMSManagement() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyFailed, setHistoryFailed] = useState(false);
   const [media, setMedia] = useState([]);
+  const [mediaIncludeArchived, setMediaIncludeArchived] = useState(false);
   const [mediaAltDrafts, setMediaAltDrafts] = useState({});
   const [mediaUsage, setMediaUsage] = useState(null);
   const [mediaUsageId, setMediaUsageId] = useState("");
@@ -95,7 +96,7 @@ export default function CMSManagement() {
   }
 
   async function refreshMedia(isActive = () => true) {
-    const data = await api("/api/cms/admin/media");
+    const data = await api("/api/cms/admin/media" + (mediaIncludeArchived ? "?includeDeleted=1" : ""));
     if (!isActive()) return;
 
     setMedia(data.media || []);
@@ -568,17 +569,21 @@ export default function CMSManagement() {
   })();
   async function removeMedia(id) {
     const confirmed = window.confirm(
-      "Remove this media file? The server will refuse deletion while any saved page, product, setting or revision still references it."
+      "Move this image to Archived media? Its Preview storage object will be retained so it can be restored. Referenced content and revision history will still block this action."
     );
     if (!confirmed) return;
-
+    setBusy(true);
+    setError("");
+    setNotice("");
     try {
       await api(
         `/api/cms/admin/media?id=${encodeURIComponent(id)}`,
         { method: "DELETE" }
       );
       await refreshMedia();
-      setNotice("Media removed.");
+      setMediaUsageId("");
+      setMediaUsage(null);
+      setNotice("Media archived. Its stored image is retained and can be restored.");
     } catch (removeError) {
       if (removeError.status === 409 && removeError.data?.usage) {
         setMediaUsageId(id);
@@ -586,6 +591,26 @@ export default function CMSManagement() {
         setNotice("Removal blocked. The saved-reference report is open below the media item.");
       }
       setError(removeError.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function restoreMedia(id) {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      await api(`/api/cms/admin/media?id=${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ action: "restore" }),
+      });
+      await refreshMedia();
+      setNotice("Media restored to the active library.");
+    } catch (restoreError) {
+      setError(restoreError.message);
+    } finally {
+      setBusy(false);
     }
   }
   async function saveSetting() {
@@ -1087,26 +1112,45 @@ export default function CMSManagement() {
             CMS_MEDIA_PUBLIC_BASE before uploads can work.
           </p>
         )}
-        <h3>Uploaded Preview media</h3>
+        <div className="cms-media-archive-toggle">
+          <label>
+            <input
+              type="checkbox"
+              checked={mediaIncludeArchived}
+              disabled={busy}
+              onChange={async (event) => {
+                setMediaIncludeArchived(event.target.checked);
+                setMediaUsageId("");
+                setMediaUsage(null);
+                const data = await api("/api/cms/admin/media" + (event.target.checked ? "?includeDeleted=1" : ""));
+                setMedia(data.media || []);
+                setStorageReady(Boolean(data.storageReady));
+              }}
+            />
+            Show archived media
+          </label>
+        </div>
+        <h3>{mediaIncludeArchived ? "Preview media · Active and archived" : "Uploaded Preview media"}</h3>
         <div className="cms-media-grid">
           {media.map((item) => (
             <article key={item.id}>
               <img src={item.public_url} alt={item.alt_text || item.original_file_name} />
+              {item.deleted_at && <strong className="cms-media-archived-label">Archived · {item.deleted_at}</strong>}
               <strong>{item.original_file_name}</strong>
               <small>{Math.round(item.byte_size / 1024)} KB · {item.mime_type}</small>
-              <label className="cms-media-alt-editor">Alt text
+              {!item.deleted_at && <label className="cms-media-alt-editor">Alt text
                 <input
                   maxLength={300}
                   value={mediaAltDrafts[item.id] ?? item.alt_text ?? ""}
                   onChange={(event) => setMediaAltDrafts((current) => ({ ...current, [item.id]: event.target.value }))}
                   placeholder="Describe the image for accessibility"
                 />
-              </label>
-              <button
+              </label>}
+              {!item.deleted_at && <button
                 className="admin-secondary-button"
                 disabled={busy || (mediaAltDrafts[item.id] ?? item.alt_text ?? "") === (item.alt_text ?? "")}
                 onClick={() => saveMediaAltText(item)}
-              >Save alt text</button>
+              >Save alt text</button>}
               <button className="admin-secondary-button" disabled={mediaUsageLoading && mediaUsageId === item.id} onClick={() => inspectMediaUsage(item)}>
                 {mediaUsageLoading && mediaUsageId === item.id ? "Checking usage…" : mediaUsageId === item.id && mediaUsage ? "Hide usage" : "View usage"}
               </button>
@@ -1139,13 +1183,15 @@ export default function CMSManagement() {
               >
                 Copy URL
               </button>
-              <button
-                className="admin-secondary-button"
-                disabled={busy}
-                onClick={() => removeMedia(item.id)}
-              >
-                Remove
-              </button>
+              {item.deleted_at ? (
+                <button className="admin-primary-button" disabled={busy || !storageReady} onClick={() => restoreMedia(item.id)}>
+                  Restore media
+                </button>
+              ) : (
+                <button className="admin-secondary-button" disabled={busy} onClick={() => removeMedia(item.id)}>
+                  Archive media
+                </button>
+              )}
             </article>
           ))}
         </div>
