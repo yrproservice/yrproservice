@@ -63,6 +63,7 @@ export default function CMSManagement() {
   const [historyFailed, setHistoryFailed] = useState(false);
   const [media, setMedia] = useState([]);
   const [mediaIncludeArchived, setMediaIncludeArchived] = useState(false);
+  const [mediaIntegrityFilter, setMediaIntegrityFilter] = useState("all");
   const [mediaAltDrafts, setMediaAltDrafts] = useState({});
   const [mediaFilenameDrafts, setMediaFilenameDrafts] = useState({});
   const [mediaUsage, setMediaUsage] = useState(null);
@@ -547,6 +548,16 @@ export default function CMSManagement() {
     link.remove();
     URL.revokeObjectURL(url);
     setNotice(`Exported ${media.length} loaded media record(s). The report does not modify CMS data.`);
+  }
+
+  function getMediaIntegrityPriority(item) {
+    const issues = getMediaIntegrityIssues(item);
+    if (!issues.length) return "clean";
+    const critical = ["Unknown storage provider", "Missing object key", "R2 key is outside the CMS upload prefix", "Public URL is invalid", "Public URL is not HTTPS", "Public URL contains credentials"];
+    if (issues.some((issue) => critical.includes(issue))) return "critical";
+    const descriptive = ["Missing original filename"];
+    if (issues.every((issue) => descriptive.includes(issue))) return "descriptive";
+    return "metadata";
   }
 
   function getMediaIntegrityIssues(item) {
@@ -1270,8 +1281,9 @@ export default function CMSManagement() {
         </div>
         <p className="cms-media-health-note">Counts cover only the records currently loaded in this library view (up to 300). R2 status is based only on checks you have run; unverified does not mean missing. This is not a full-bucket inventory.</p>
         <div className="cms-media-integrity-summary">
-          <strong>{media.filter((item) => getMediaIntegrityIssues(item).length > 0).length} record(s) with metadata warnings</strong>
-          <span>Checks cover the loaded records only. Warnings identify database metadata inconsistencies; they do not confirm whether an image URL is publicly reachable or whether an R2 object exists.</span>
+          <strong>{media.filter((item) => getMediaIntegrityPriority(item) !== "clean").length} record(s) with metadata warnings</strong>
+          <span>Critical: {media.filter((item) => getMediaIntegrityPriority(item) === "critical").length} · Other metadata: {media.filter((item) => getMediaIntegrityPriority(item) === "metadata").length} · Descriptive: {media.filter((item) => getMediaIntegrityPriority(item) === "descriptive").length} · Clean: {media.filter((item) => getMediaIntegrityPriority(item) === "clean").length}</span>
+          <span>Critical flags identify storage identity or URL problems. Other metadata flags cover file type, size or dimensions. Descriptive flags identify filename/alt-text follow-up. Checks cover loaded records only and do not confirm public URL reachability.</span>
         </div>
         <div className="cms-media-report-actions">
           <span>Export includes the records currently loaded here (maximum 300), including archived records only when “Show archived media” is enabled.</span>
@@ -1300,9 +1312,19 @@ export default function CMSManagement() {
           )}
           <small>This is a read-only, partial report until every batch is scanned. No objects are deleted or modified. Objects outside <code>cms/</code> are not included.</small>
         </section>
+        <div className="cms-media-integrity-filter">
+          <label htmlFor="cms-media-integrity-filter">Prioritise media records</label>
+          <select id="cms-media-integrity-filter" value={mediaIntegrityFilter} onChange={(event) => setMediaIntegrityFilter(event.target.value)}>
+            <option value="all">All loaded records ({media.length})</option>
+            <option value="critical">Critical storage / URL issues ({media.filter((item) => getMediaIntegrityPriority(item) === "critical").length})</option>
+            <option value="metadata">Other metadata issues ({media.filter((item) => getMediaIntegrityPriority(item) === "metadata").length})</option>
+            <option value="descriptive">Descriptive follow-up ({media.filter((item) => getMediaIntegrityPriority(item) === "descriptive").length})</option>
+            <option value="clean">No metadata warnings ({media.filter((item) => getMediaIntegrityPriority(item) === "clean").length})</option>
+          </select>
+        </div>
         <h3>{mediaIncludeArchived ? "Preview media · Active and archived" : "Uploaded Preview media"}</h3>
         <div className="cms-media-grid">
-          {media.map((item) => (
+          {media.filter((item) => mediaIntegrityFilter === "all" || getMediaIntegrityPriority(item) === mediaIntegrityFilter).map((item) => (
             <article key={item.id}>
               <img src={item.public_url} alt={item.alt_text || item.original_file_name} />
               {item.deleted_at && <strong className="cms-media-archived-label">Archived · {item.deleted_at}</strong>}
