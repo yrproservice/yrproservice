@@ -1,18 +1,24 @@
 import { products as catalogue } from "../data/products";
 import { mergePublishedProduct } from "../data/productImages";
+import { isDentalChairProduct } from "../data/productWorkflow";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 const ChairRequestContext = createContext(null);
+
+function normalizeQuantity(value) {
+  const quantity = Number(value);
+  return Number.isSafeInteger(quantity) && quantity > 0 ? quantity : 1;
+}
 
 export function ChairRequestProvider({ children }) {
   const [items, setItems] = useState(() => {
     try {
       const stored = JSON.parse(localStorage.getItem("yr-chair-requests") || "[]");
       if (!Array.isArray(stored)) return [];
-      return stored.filter((item) => item && typeof item === "object").map((item) => {
+      return stored.filter((item) => item && typeof item === "object" && isDentalChairProduct(item)).map((item) => {
         const base = catalogue.find((product) => product.slug === item.slug);
-        return mergePublishedProduct(base, item);
+        return { ...mergePublishedProduct(base, item), quantity: normalizeQuantity(item.quantity) };
       });
     } catch {
       return [];
@@ -23,7 +29,8 @@ export function ChairRequestProvider({ children }) {
   }, [items]);
 
   function addChair(chair, quantity = 1) {
-    const amount = Math.max(1, Number(quantity) || 1);
+    if (!isDentalChairProduct(chair)) return;
+    const amount = normalizeQuantity(quantity);
     setItems((current) => {
       const found = current.find((item) => item.slug === chair.slug);
       if (found)
@@ -39,7 +46,7 @@ export function ChairRequestProvider({ children }) {
     setItems((current) => current.filter((item) => item.slug !== slug));
   }
   function updateChairQuantity(slug, quantity) {
-    const value = Math.max(1, Number(quantity) || 1);
+    const value = normalizeQuantity(quantity);
     setItems((current) =>
       current.map((item) =>
         item.slug === slug ? { ...item, quantity: value } : item,
@@ -52,7 +59,7 @@ export function ChairRequestProvider({ children }) {
 
   const value = {
     items,
-    count: items.reduce((sum, item) => sum + (item.quantity || 1), 0),
+    count: items.reduce((sum, item) => sum + item.quantity, 0),
     modelCount: items.length,
     addChair,
     removeChair,
