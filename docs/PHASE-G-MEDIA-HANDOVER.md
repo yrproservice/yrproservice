@@ -757,3 +757,31 @@ No settings, product drafts, published content, media, database schema, deployme
 - Production remains untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
 - Continue small source-only reviews. Keep Phase H for final runtime, image and visual verification.
 
+## Additional Phase G continuation — settings recovery paths use shared request sequencing (19 November 2026)
+
+A deeper pass through revision and draft actions found two remaining direct settings-list fetches in CMS Management, plus direct product-list refresh in product draft deletion. Those paths could bypass the list request sequencing introduced earlier and reintroduce stale rows if requests overlapped.
+
+Updated `src/pages/CMSManagement.jsx`:
+- Settings revision restore now refreshes through the shared sequenced settings loader.
+- Settings draft deletion now refreshes through the same loader and no longer independently marks stale settings ready.
+- Product draft deletion now uses the shared sequenced product loader.
+- Settings revision restore, settings draft deletion and settings Preview publishing have handler-level readiness guards.
+- A superseded list refresh is reported as requiring a reload instead of being treated as a current editor refresh.
+
+Commits:
+- 4c664fe6c747697aaf28e790635b844062bda14c — route revision and draft recovery through sequenced CMS list refreshes.
+- db7033b9de56604601edf5b25c71af96160275b2 — guard settings revision and draft actions when settings are stale.
+
+The descriptive media metadata save path was also reviewed: it updates the matching loaded media record and clears only that record's local filename/alt-text drafts after a successful server response. No additional change was necessary in that path.
+
+No product or settings records, media metadata, drafts, published content, database schema, deployment configuration or Production data were changed by this source review. Source inspection only; no tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations were performed.
+
+## Recovery checkpoint refresh — 19 November 2026 (revision and draft refresh paths)
+
+- Working branch: `cms-development`
+- Latest source changes for this pass: `4c664fe6c747697aaf28e790635b844062bda14c` and `db7033b9de56604601edf5b25c71af96160275b2`.
+- Product and settings revision/draft refreshes now use the shared sequenced loaders.
+- PR #2 remains Open, Draft and unmerged; verify its head matches the branch before resuming.
+- Production untouched. No tests, builds, screenshots, visual checks, image processing, deployments, Preview publishing or migrations.
+- Continue small source-only reviews; defer Phase H runtime and visual verification until the final stage.
+
