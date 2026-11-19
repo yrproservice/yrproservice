@@ -6,7 +6,7 @@ Updated: 19 November 2026
 
 - Repository: `yrproservice/yrproservice`
 - Working branch: `cms-development`
-- Latest checkpoint at handover: `56bd67395d00250984ea3b850cd6b90b5a5ab33`
+- Latest checkpoint at handover: `cb23e9058c277da470d414e0c139bc1238aaf017` (CSS); the handover document itself is updated in a subsequent commit.
 - Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 - PR status: Open, Draft, unmerged (must remain Draft and unmerged without explicit user approval).
 - Production: untouched; do not merge or deploy.
@@ -52,6 +52,27 @@ GitHub compare at this checkpoint reported `cms-development` as 676 commits ahea
 - `f37d5f0f1e6049d0d7411173101c794a76153e63` — archive and restore audit events.
 - `77942fdf3a60125148d2242a67a3946fb7737e97` — surface audit outcomes in the CMS.
 - `56bd67395d00250984ea3b850cd6b90b5a5ab33` — include lifecycle events in media history and CSV export.
+
+## Additional Phase G continuation — product and page image workflows (19 November 2026)
+
+Latest code changes after the original handover:
+
+- Product image picker now distinguishes replacement of the primary image from replacement of a selected gallery image.
+- Selected-state highlighting follows the actual replacement target, so the currently selected gallery image is not confused with the primary image.
+- The picker searches catalogue images by filename, brand, category and folder, and uploaded Preview media by filename, alt text, MIME type and storage key.
+- Search result counts and no-match states are shown.
+- Product editor guidance identifies whether the editor is using an existing draft, a published baseline with no draft, or a new product. It explains that changes remain draft-only until explicitly published to Preview.
+- Homepage section media picker now explicitly says that selecting an image changes the current page draft only; published page content is unchanged until publishing to Preview.
+- Added responsive-compatible search field styling for the product image picker.
+
+Relevant commits:
+- `a6d82978584b5025a13c6491eef063e4ba5ab3a4` — clarify product image replacement targets.
+- `2429bdb187fec7c9e0867c4cb1a54cea654392cf` — label product draft and published editing state.
+- `ad2fcbf98b44dc63ff93ddfda3c182c25fc88848` — clarify homepage image changes are draft-only.
+- `bae933a31171f85345691a18577f15dbdd0bb2f4` — add searchable product image library.
+- `cb23e9058c277da470d414e0c139bc1238aaf017` — style searchable product media picker.
+
+These are source-level changes only. Do not treat them as visually or functionally verified until Phase H.
 
 ## Existing safeguards and limits retained
 
