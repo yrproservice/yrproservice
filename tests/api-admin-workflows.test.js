@@ -174,7 +174,7 @@ function makeCmsDb({
         },
         async first() {
           calls.push(this);
-          const normalizedSql = sql.replace(/\\s+/g, " ");
+          const normalizedSql = sql.replace(/\s+/g, " ");
           if (normalizedSql.includes(`FROM ${entityTable} WHERE ${entityKeyColumn} = ?`)) {
             if (!entityExists) return null;
             return { id: entityId, published_version_id: publishedVersionId };
