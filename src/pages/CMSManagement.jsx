@@ -1778,6 +1778,7 @@ export default function CMSManagement() {
             />
             </label>
           </div>
+        </div>
         {!mediaReady && (
           <p className="admin-alert admin-alert-error">The Media Library is loading or could not be refreshed. Media actions remain disabled until a successful refresh.</p>
         )}
