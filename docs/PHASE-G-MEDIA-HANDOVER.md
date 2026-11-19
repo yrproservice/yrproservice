@@ -1545,3 +1545,13 @@ No tests, builds, screenshots, image processing, visual checks, API requests, de
 - Follow-up: implement a coordinated, non-destructive migration state that preserves both stores when storage writes fail, then test quota/security exceptions and normal migration in Phase H. No local storage was accessed or modified in this source review.
 - Detailed note: `docs/PHASE-G-19-NOV-SOURCE-REVIEW.md` (commit `9c9c728dec7c26f544638ec95e1aea7cf2e83d7c`).
 - No tests/builds, browser/API requests, Preview operations, migrations, deployments, screenshots, PDFs or image processing were performed.
+
+
+## CMS editor and stylesheet cascade review — 19 November 2026
+
+- Re-reviewed the Services Manager, Team Manager, Page Visual Design Manager, shared navigation/footer, Service Details, document/specification editors and their current source. Existing save/publish guards and load-failure handling were retained; no additional confirmed application defect justified a code change.
+- Performed a bounded structural review of `src/style.css`: 171,443 characters, 5,193 lines, 1,571 parsed rules, 1,382 distinct selector strings, and 172 selector strings repeated. Repetition includes expected media-query/responsive variants as well as later component/layout adjustments. A text-only duplicate count cannot reliably distinguish intentional breakpoints from harmful cascade overrides.
+- No broad CSS consolidation was attempted. That work requires mapping the cascade to the V10 page structure and checking desktop/mobile rendering in Phase H; changing it blindly risks regressions and conflicts with the no-patch-piling requirement.
+- No tests, builds, test-file inspection, browser/API requests, Preview operations, images, screenshots or PDFs were performed.
+
+- Latest review note commit: `a8756e6c262e183cd01e2fddcb17c9bc0088879b`.
