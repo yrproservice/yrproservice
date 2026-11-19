@@ -1461,11 +1461,11 @@ export default function CMSManagement() {
           </p>
           <details className="cms-page-design-accordion" open>
             <summary>Products listing · Visual Design Studio</summary>
-            <PageVisualDesignManager key="products" pageKey="products" />
+            <PageVisualDesignManager key="products" pageKey="products" onUnsavedChange={reportVisualDesignUnsaved} />
           </details>
           <details className="cms-page-design-accordion">
             <summary>Product details · Visual Design Studio</summary>
-            <PageVisualDesignManager key="product-detail" pageKey="product-detail" />
+            <PageVisualDesignManager key="product-detail" pageKey="product-detail" onUnsavedChange={reportVisualDesignUnsaved} />
           </details>
         </section>
       </>
