@@ -67,6 +67,8 @@ export default function CMSManagement() {
   const [mediaUsage, setMediaUsage] = useState(null);
   const [mediaUsageId, setMediaUsageId] = useState("");
   const [mediaUsageLoading, setMediaUsageLoading] = useState(false);
+  const [mediaStorageChecks, setMediaStorageChecks] = useState({});
+  const [mediaStorageCheckingId, setMediaStorageCheckingId] = useState("");
   const [storageReady, setStorageReady] = useState(false);
   const [settings, setSettings] = useState([]);
   const [settingKey, setSettingKey] = useState("site.navigation");
@@ -490,6 +492,22 @@ export default function CMSManagement() {
     } catch (usageError) { setError(usageError.message); setMediaUsageId(""); }
     finally { setMediaUsageLoading(false); }
   }
+  async function checkMediaStorage(item) {
+    if (!item?.id || mediaStorageCheckingId) return;
+    setMediaStorageCheckingId(item.id);
+    setError("");
+    try {
+      const includeArchived = item.deleted_at ? "&includeDeleted=1" : "";
+      const data = await api(`/api/cms/admin/media?id=${encodeURIComponent(item.id)}${includeArchived}&checkStorage=1`);
+      setMediaStorageChecks((current) => ({ ...current, [item.id]: data.storageCheck || { status: "unavailable", detail: "No storage result was returned." } }));
+    } catch (checkError) {
+      setMediaStorageChecks((current) => ({ ...current, [item.id]: { status: "unavailable", detail: checkError.message, checkedAt: new Date().toISOString() } }));
+      setError(checkError.message);
+    } finally {
+      setMediaStorageCheckingId("");
+    }
+  }
+
   async function saveMediaAltText(item) {
     if (!item?.id || busy) return;
     const altText = mediaAltDrafts[item.id] ?? item.alt_text ?? "";
@@ -1138,6 +1156,16 @@ export default function CMSManagement() {
               {item.deleted_at && <strong className="cms-media-archived-label">Archived · {item.deleted_at}</strong>}
               <strong>{item.original_file_name}</strong>
               <small>{Math.round(item.byte_size / 1024)} KB · {item.mime_type}</small>
+              <button className="admin-secondary-button" disabled={Boolean(mediaStorageCheckingId)} onClick={() => checkMediaStorage(item)}>
+                {mediaStorageCheckingId === item.id ? "Checking R2…" : "Check storage"}
+              </button>
+              {mediaStorageChecks[item.id] && (
+                <small className={`cms-media-storage-status is-${mediaStorageChecks[item.id].status}`}>
+                  Storage: {mediaStorageChecks[item.id].status === "available" ? "Object present in Preview R2" : mediaStorageChecks[item.id].status === "missing" ? "Object missing from Preview R2" : mediaStorageChecks[item.id].status === "not-managed" ? "Not managed by Preview R2" : "Unable to verify"}
+                  {mediaStorageChecks[item.id].checkedAt ? ` · ${new Date(mediaStorageChecks[item.id].checkedAt).toLocaleString()}` : ""}
+                  {mediaStorageChecks[item.id].detail ? ` · ${mediaStorageChecks[item.id].detail}` : ""}
+                </small>
+              )}
               {!item.deleted_at && <label className="cms-media-alt-editor">Alt text
                 <input
                   maxLength={300}
