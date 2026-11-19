@@ -1504,7 +1504,7 @@ export default function CMSDashboard({ onAdminLogout }) {
                   </div>
                 )}
 
-                <input aria-label="Search media library" value={mediaSearch} onChange={(event) => setMediaSearch(event.target.value)} placeholder="Search filename, alt text or storage key" />
+                <input aria-label="Search media library" value={mediaSearch} onChange={(event) => setMediaSearch(event.target.value)} placeholder="Search filename, alt text, file type or storage key" />
                 {mediaError && <p className="cms-media-picker-error">{mediaError} You can still enter an image path manually.</p>}
                 {mediaLoading && <p className="cms-media-picker-note">Loading uploaded media…</p>}
                 <details className="cms-section-media-group">
