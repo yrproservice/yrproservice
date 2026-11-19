@@ -59,6 +59,7 @@ function MediaPicker({ media, value, onSelect, label }) {
 
 export default function TeamManager({ onUnsavedChange }) {
   const [content, setContent] = useState(() => cloneTemplate());
+  const [reloadRequired, setReloadRequired] = useState(false);
   const [savedContentJson, setSavedContentJson] = useState(() => JSON.stringify(cloneTemplate()));
   const [media, setMedia] = useState([]);
   const [draftId, setDraftId] = useState("");
@@ -164,6 +165,10 @@ export default function TeamManager({ onUnsavedChange }) {
   }
 
   async function saveDraft() {
+    if (reloadRequired) {
+      setError("Reload this manager to retrieve the published page content before saving. The deleted draft is no longer available.");
+      return;
+    }
     setBusy(true); setError(""); setNotice("");
     try {
       const result = await request("/api/cms/admin/pages", {
@@ -189,13 +194,22 @@ export default function TeamManager({ onUnsavedChange }) {
         method: "DELETE",
         body: JSON.stringify({ entityType: "page", entityKey: "team", versionId: draftId })
       });
-      const refreshed = await request("/api/cms/admin/preview?key=team").catch(() => null);
-      if (refreshed?.page?.content) { setContent(refreshed.page.content); setSavedContentJson(JSON.stringify(refreshed.page.content)); }
-      else { const baseline = cloneTemplate(); setContent(baseline); setSavedContentJson(JSON.stringify(baseline)); }
       setDraftId("");
       setDraftVersion(null);
-      setPublishedVersion(refreshed?.page?.publishedVersion || publishedVersion);
-      setNotice(`Team draft V${result.deletedVersion} deleted. The published page and archived history were preserved.`);
+      try {
+        const refreshed = await request("/api/cms/admin/preview?key=team");
+        if (!refreshed?.page?.content) throw new Error("Published page content was not returned.");
+        setContent(refreshed.page.content);
+        setSavedContentJson(JSON.stringify(refreshed.page.content));
+        setPublishedVersion(refreshed.page.publishedVersion || publishedVersion);
+        setReloadRequired(false);
+        setNotice(`Team draft V${result.deletedVersion} deleted. The published page and archived history were preserved.`);
+      } catch (refreshError) {
+        setReloadRequired(true);
+        setSavedContentJson("");
+        setNotice(`Team draft V${result.deletedVersion} was deleted and the published page was preserved.`);
+        setError(`The published Team content could not be reloaded (${refreshError.message}). Reload this manager before making or saving further edits.`);
+      }
     } catch (err) { setError(err.message || "Unable to delete the Team draft."); }
     finally { setBusy(false); }
   }
