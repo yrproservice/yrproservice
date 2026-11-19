@@ -1126,10 +1126,10 @@ export default function CMSManagement() {
           </label>
           <button
             className="admin-secondary-button"
-            disabled={!historyKey}
+            disabled={!historyKey || historyLoading}
             onClick={() => loadHistory(historyType, historyKey)}
           >
-            Load history
+            {historyLoading ? "Loading…" : "Load history"}
           </button>
         </div>
         <RevisionList
