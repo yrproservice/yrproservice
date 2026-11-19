@@ -476,9 +476,9 @@ export default function CMSManagement() {
       setBusy(false);
     }
   }
-  async function inspectMediaUsage(item) {
+  async function inspectMediaUsage(item, forceRefresh = false) {
     if (!item?.id) return;
-    if (mediaUsageId === item.id && mediaUsage) { setMediaUsage(null); setMediaUsageId(""); return; }
+    if (!forceRefresh && mediaUsageId === item.id && mediaUsage) { setMediaUsage(null); setMediaUsageId(""); return; }
     setMediaUsageId(item.id); setMediaUsage(null); setMediaUsageLoading(true);
     try {
       const data = await api("/api/cms/admin/media?id=" + encodeURIComponent(item.id));
@@ -511,7 +511,7 @@ export default function CMSManagement() {
     const item = media.find((row) => row.public_url === currentProductImage);
     if (!item) return;
     setTab("media");
-    await inspectMediaUsage(item);
+    await inspectMediaUsage(item, true);
   }
 
   async function uploadMedia(event) {
