@@ -1066,3 +1066,20 @@ The current PR #2 API/utility inventory was reviewed from its exact changed-file
 No additional speculative changes were made where the existing validation was already adequate or where a source-only change could risk changing established CMS workflows. This is a source review checkpoint, not a claim that all CMS behavior has been runtime-verified.
 
 No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed. Phase G remains in progress; Phase H remains the final verification stage and is deferred.
+
+
+## Recovery checkpoint refresh — 19 November 2026 (public routes, request flows and media lifecycle review)
+
+Additional source-only review covered the public CMS read routes, public request submission/tracking, authenticated request administration, media upload/metadata/archive/restore UI, shared media usage reporting, orphan reconciliation, and image signature/dimension inspection.
+
+Findings retained without speculative edits:
+- Public page/product/settings routes select published-version pointers; their read paths do not accept write payloads. Public response caching differs by route as currently implemented; no change was made without runtime/cache behavior verification.
+- Public request submission already requires JSON, bounds the body at 20,000 characters, validates request type/contact fields/service slugs and product selection, and applies per-IP/per-email rate limiting before storing requests.
+- Request tracking is GET-only, validates the reference/email pair, returns only limited status fields, and applies rate limiting. Admin request listing is bounded to 200 rows and status updates validate a small JSON payload and allowed status values.
+- Media UI blocks uploads unless the library is loaded and Preview storage is available; metadata edits require a loaded library; archive checks for unsaved metadata and relies on server-side saved-reference checks; restore requires storage availability. Upload/archive/restore outcomes distinguish successful mutations from subsequent refresh failures.
+- Media usage inspection searches saved page, product and settings revisions, reports bounded samples with total counts, and explains that historical references continue to block archive. Orphan reconciliation is read-only and paginated in bounded R2 batches.
+- Image validation uses file signatures rather than trusting the browser-supplied MIME type and rejects unsupported formats; dimensions are parsed with upper bounds. No image was opened, processed, transformed, uploaded or visually inspected in this review.
+
+No additional source edits were justified by this pass. Some public route/cache behavior and full media lifecycle behavior still require final-stage runtime verification; this source review does not certify those behaviors.
+
+No tests, builds, API requests, screenshots, image processing, visual checks, deployments, Preview publishing, migrations or Production changes were performed. Phase G remains in progress. Phase H remains deferred.
