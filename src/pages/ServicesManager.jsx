@@ -112,7 +112,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }, []);
 
   function update(group, field, value) {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => section.type !== "services-page" ? section : {
@@ -122,7 +122,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function updateService(index, field, value) {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => {
@@ -139,7 +139,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function updateStep(index, field, value) {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       sections: current.sections.map((section) => {
@@ -152,7 +152,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function updateGlobalDesign(field, value) {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       design: { ...(current.design || {}), global: { ...(current.design?.global || {}), [field]: value } }
@@ -160,7 +160,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function updateSectionDesign(sectionKey, field, value) {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
       design: {
@@ -174,7 +174,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   }
 
   function moveSection(from, to) {
-    if (!contentReady || reloadRequired) return;
+    if (busy || !contentReady || reloadRequired) return;
     setContent((current) => {
       const order = [...(current.sectionOrder || defaultSectionOrder)];
       if (to < 0 || to >= order.length || from === to) return current;
