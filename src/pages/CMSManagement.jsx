@@ -714,11 +714,11 @@ export default function CMSManagement() {
     }
     const cell = (value) => {
       let text = value == null ? "" : String(value);
-      if (/^\\s*[=+@-]/.test(text)) text = "'" + text;
+      if (/^\s*[=+@-]/.test(text)) text = "'" + text;
       return '"' + text.replace(/"/g, '""') + '"';
     };
-    const csv = rows.map((row) => row.map(cell).join(",")).join("\\r\\n");
-    const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+    const csv = rows.map((row) => row.map(cell).join(",")).join("\r\n");
+    const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -835,7 +835,7 @@ export default function CMSManagement() {
     ];
     const csvCell = (value) => {
       let text = value == null ? "" : String(value);
-      if (/^[\\s]*[=+@-]/.test(text)) text = "'" + text;
+      if (/^\s*[=+@-]/.test(text)) text = "'" + text;
       return '"' + text.replace(/"/g, '""') + '"';
     };
     const rows = media.map((item) => {
@@ -863,7 +863,7 @@ export default function CMSManagement() {
       ];
     });
     const csv = [columns, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
-    const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
