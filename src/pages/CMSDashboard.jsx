@@ -205,6 +205,7 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [savedSnapshot, setSavedSnapshot] = useState("");
   const [selectedSectionId, setSelectedSectionId] = useState("");
   const [draftId, setDraftId] = useState("");
+  const [draftCreatedAt, setDraftCreatedAt] = useState(null);
   const [draftVersion, setDraftVersion] = useState(null);
   const [publishedVersion, setPublishedVersion] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -418,6 +419,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       resetEditorHistory(pageData.content);
       setContent(pageData.content);
       setDraftId(pageData.draftId || "");
+      setDraftCreatedAt(pageData.draftCreatedAt || null);
       setSavedSnapshot(
         JSON.stringify({
           pageKey: pageData.pageKey,
@@ -459,6 +461,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     setContent(initial);
     setSelectedSectionId(firstSection.id);
     setDraftId("");
+    setDraftCreatedAt(null);
     setDraftVersion(null);
     setPublishedVersion(null);
     setSavedSnapshot("");
@@ -927,6 +930,7 @@ export default function CMSDashboard({ onAdminLogout }) {
           content,
           changeNote: "Visual editor update",
           expectedDraftId: draftId || null,
+          expectedDraftCreatedAt: draftCreatedAt || null,
         }),
         cache: "no-store",
       });
@@ -937,6 +941,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       }
 
       setDraftId(result.draftId);
+      setDraftCreatedAt(result.draftCreatedAt || null);
       setDraftVersion(result.version);
       setSavedSnapshot(
         JSON.stringify({ pageKey, pageTitle, route, content })
