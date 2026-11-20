@@ -11,7 +11,11 @@ function makeDb({ ipCount = 0, emailCount = 0, requestRow = null } = {}) {
       const execute = (values) => ({
         async run() {
           statements.push({ sql, values });
-          return { meta: { changes: 1 } };
+          const submissionDenied = sql.includes("INSERT INTO request_submission_attempts") &&
+            (emailCount >= 5 || (sql.includes("ip_hash = ?") && ipCount >= 20));
+          const trackingDenied = sql.includes("INSERT INTO request_tracking_attempts") &&
+            (ipCount >= 30 || emailCount >= 10);
+          return { meta: { changes: submissionDenied || trackingDenied ? 0 : 1 } };
         },
         async first() {
           if (sql.includes("COUNT(*)")) {
