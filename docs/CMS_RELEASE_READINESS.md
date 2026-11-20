@@ -838,3 +838,25 @@ Exact-commit build-only Preview verification:
 - Source commit: `d32888a89b070bf98bdf1b64dcdc7e1ec9297b11`; handover synchronization commit: `6c0b10624856597e227b54122fa5d6deeb26f840`.
 - No schema change or migration is needed. The build-only workflow triggers on pushes to `cms-development`, but an exact-commit result for these new commits has not yet been confirmed. Earlier successful runs do not verify these commits.
 - No tests, screenshots, image processing, migrations, or Production operations were performed. PR #2 remains Open, Draft and unmerged.
+
+
+## Admin identity/session and migration safety review — 20 November 2026
+
+### Admin session policy — source-confirmed limitation
+
+- `functions/_utils/admin-auth.js` validates the Cloudflare Access JWT on each protected request (RS256 signature, issuer, audience, expiry/not-before, and the single configured email allowlist). The configured account is `yr.proservice@gmail.com`.
+- The implementation deliberately permits multiple administrators using that same authorized account concurrently. There is no server-side session table, device registry, session nonce, lease, or one-device lock. Browser `sessionStorage` is not a server-enforced lock.
+- `functions/api/admin/session.js` GET/POST/PATCH only validate the Access identity. DELETE clears the app cookie name `yr_admin_session`, but this source does not issue that cookie and does not revoke the Cloudflare Access session. Do not describe this endpoint as revoking the Access login or enforcing single-device logout.
+- A strict one-device policy requires an explicit product/security decision and a server-side design (for example a durable active-session record with atomic claim, expiry/heartbeat, and controlled revocation). Do not implement it implicitly: it could lock out legitimate staff sharing the authorized account. Until the policy is confirmed, retain the current allowlisted shared-account behavior and state the limitation accurately.
+
+### D1 migration and recovery review
+
+- `migrations/0002_create_cms.sql` uses `CREATE TABLE/INDEX IF NOT EXISTS` and is structurally re-runnable for already-created objects.
+- `migrations/0003_page_metadata_versions.sql` contains non-idempotent `ALTER TABLE ... ADD COLUMN` statements. The Preview workflow checks that both metadata columns are present or both absent; it refuses a one-column partial state. If both are present, it performs a null backfill and creates the index with `IF NOT EXISTS`.
+- `.github/workflows/cms-preview-migration.yml` is hard-wired to `yr-proservice-test-db` and verifies both the expected database name and UUID before executing SQL. It has no Production migration target. Keep this guard intact.
+- No down-migration is supplied. Treat schema rollback as a forward-fix/recovery operation, not an automatic reverse SQL script. Before any future data-affecting migration, require a verified Preview backup/export and a documented restore plan; inspect row counts and schema before/after. Production migration remains a separate approval gate and is not authorized.
+- No migration was executed or changed during this review.
+
+### Review outcome
+
+No source change was justified in this pass. The main unresolved decision is the intended Admin session policy; the current code is internally consistent with a shared authorized Cloudflare Access account, not a single-device lock. The migration workflow's Preview database identity guard and partial-state refusal were confirmed by source inspection. No tests, screenshots, image processing, builds, migrations, or deployments were run as part of this source-only review.
