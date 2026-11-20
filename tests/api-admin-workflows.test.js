@@ -308,7 +308,7 @@ for (const entityType of ["page", "product", "setting"]) {
     assert.ok(batch[0].sql.includes("SET state = 'published'"));
     assert.equal(batch[0].values[1], "draft-version");
     assert.ok(batch[1].sql.includes("SET state = 'archived'"));
-    assert.deepEqual(batch[1].values, ["previous-version"]);
+    assert.deepEqual(batch[1].values, ["previous-version", "draft-version"]);
     if (entityType === "page") {
       assert.ok(batch[2].sql.includes("SET title = ?, route = ?, published_version_id = ?"));
       assert.equal(batch[2].values[2], "draft-version");
