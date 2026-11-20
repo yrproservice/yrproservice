@@ -1677,3 +1677,10 @@ The two workflow results above are verified against their exact documentation co
 - The production Pages hostname(s), custom domain routing, and Cloudflare Access application coverage for the eventual production host must also be confirmed in the Cloudflare dashboard. Prior confirmation for `production-release.yrproservice.pages.dev` does not prove that every production hostname is protected.
 - These findings mean PR #2 is **not ready to merge/deploy to Production**, even though the user has expanded authorization. This is a readiness decision based on missing environment configuration and unverified Production data recovery, not a lack of user permission. Keep working on source and Preview; do not use Preview R2/D1 as a substitute for Production resources.
 - No Production resource, binding, database, bucket, deployment, customer record or backup was changed or exported during this review.
+
+
+## Preview screenshot capture enabled — 20 November 2026
+
+- Workflow commit `592383fd48cad5a59d80d0b5bd682bb45cdc4df8` adds a Chromium-based, desktop-size screenshot stage after successful Preview deployment verification. It captures Home, Products, Services, Team, the Signo T100 product detail, and HR Contact, then uploads the PNGs as a seven-day GitHub Actions artifact.
+- This captures rendered pages only. It does not process, optimize, convert, resize or alter repository/catalogue image assets. The screenshot step uses a temporary Playwright install with package-lock updates disabled; it does not add a permanent application dependency.
+- The immediately preceding Production preflight documentation checkpoint `1e8df0fab13e3131a0fb86abfc17282c15f34886` passed exact-head Preview build verification in workflow [#44674935199](https://github.com/yrproservice/yrproservice/actions/runs/44674935199). The new screenshot stage requires its own exact-head workflow run and artifact check.
