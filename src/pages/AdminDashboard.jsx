@@ -245,7 +245,7 @@ export default function AdminDashboard({ onAuthenticated }) {
             <button
               type="button"
               className="admin-secondary-button"
-              onClick={loadRequests}
+              onClick={() => loadRequests()}
               disabled={loading || saving}
             >
               {loading ? "Refreshing…" : "Refresh"}
