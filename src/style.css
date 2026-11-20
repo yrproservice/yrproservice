@@ -513,7 +513,6 @@ h6 {
 .bp-hero-content {
   position: relative;
   z-index: 2;
-  width: 100%;
   padding: 40px 0 44px;
 }
 .bp-hero-copy {
@@ -2088,6 +2087,9 @@ h6 {
 .services-hero {
   background: var(--yr-navy);
   color: #fff;
+}
+.services-hero .eyebrow {
+  color: #9deaff;
 }
 .services-hero-grid {
   display: grid;
