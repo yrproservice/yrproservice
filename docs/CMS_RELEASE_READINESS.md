@@ -1278,3 +1278,14 @@ The settings concurrency concern is not a confirmed defect after the batch-guard
 - P2 media audit completeness: upload-created events are now written to the unified audit log and shown in the lifecycle filter. No upload has been performed in this work.
 - P2 discoverability: request, CMS revision and media lists now have cursor pagination and visible continuation controls. Request history per-item events and media per-item audit history remain individually bounded to their latest 50 events; those are distinct from the three collection pagination workflows.
 - Final verification remains deferred by instruction: no automated tests, screenshots, or image processing. The Preview website build and deployment checks for the latest code commit must be confirmed before calling the current Preview checkpoint successful.
+
+
+## Verified Preview checkpoint — 20 November 2026
+
+- Code checkpoint: `22c3ed99b16d836d550b32511568facdf52c2263` on `cms-development`.
+- GitHub build workflow run `44664052578` completed successfully: locked dependency installation, Vite website build, Cloudflare Pages Functions build, Preview D1 CMS schema-readiness query, and Preview asset verification all passed.
+- The Preview verification step confirmed that `https://cms-development.yrproservice.pages.dev` served the exact build's HTML asset references and all four referenced JavaScript/CSS assets returned successfully.
+- Cloudflare Pages check for this code commit completed successfully; deployment-specific Preview URL: `https://83c67e12.yrproservice.pages.dev`; branch Preview remains `https://cms-development.yrproservice.pages.dev`.
+- The separate Cloudflare Workers Builds check was still in progress at the time of this checkpoint and is not represented as a success.
+- PR #2 remains Open and Draft, not merged. Production was not deployed to or modified.
+- No automated tests, screenshots, image processing, customer request changes, media uploads, destructive actions, or Production operations were performed.
