@@ -59,9 +59,6 @@ export async function onRequestDelete(context) {
     const actor = auth.email || null;
     const statements = [
       env.DB.prepare(`DELETE FROM ${config.versions} WHERE id = ? AND ${config.foreignKey} = ? AND state = 'draft'`).bind(versionId, entity.id),
-      env.DB.prepare(
-        "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'delete_draft', ?, ?, ?)"
-      ).bind(crypto.randomUUID(), actor, type, entity.id, JSON.stringify({ version: draft.version_number, versionId }))
     ];
     if (type === "page" && entity.published_version_id) {
       const publishedPage = await env.DB.prepare(
@@ -69,12 +66,28 @@ export async function onRequestDelete(context) {
       ).bind(entity.published_version_id).first();
       if (publishedPage) {
         statements.push(
-          env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ?")
+          env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ? AND changes() = 1")
             .bind(publishedPage.title, publishedPage.route, new Date().toISOString(), entity.id)
         );
       }
     }
-    await env.DB.batch(statements);
+    // Record the audit event only when the conditional DELETE actually removed
+    // this draft. If a concurrent publish/restore won, do not create a false
+    // delete event for a revision that was not deleted.
+    statements.push(
+      env.DB.prepare(`
+        INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
+        SELECT ?, ?, 'delete_draft', ?, ?, ?
+        WHERE changes() = 1
+      `).bind(
+        crypto.randomUUID(), actor, type, entity.id,
+        JSON.stringify({ version: draft.version_number, versionId })
+      )
+    );
+    const results = await env.DB.batch(statements);
+    if (Number(results?.[0]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "This draft changed in another session and was not deleted. Reload the item before trying again." }, 409);
+    }
 
     return adminJson({ ok: true, entityType: type, entityKey: key, deletedVersion: draft.version_number });
   } catch (error) {
