@@ -181,6 +181,9 @@ export async function onRequestPost(context) {
         error: "This draft or published version changed while publishing. Refresh the item and try again."
       }, 409);
     }
+    if (Number(results?.[results.length - 1]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "The publish audit record could not be saved. The publish operation was rolled back." }, 500);
+    }
     return adminJson({ ok: true, entityType, entityKey, version: target.version_number, publishedAt: now });
   } catch (error) {
     console.error("CMS publish failed", error);
