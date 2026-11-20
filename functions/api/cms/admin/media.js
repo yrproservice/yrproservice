@@ -362,13 +362,18 @@ export async function onRequestPatch(context) {
     }
     if (Object.keys(changes).length) {
       const statements = [
-        env.DB.prepare(`UPDATE cms_media SET ${updates.join(", ")} WHERE id=? AND deleted_at IS NULL`).bind(...values, id),
+        env.DB.prepare(`UPDATE cms_media SET ${updates.join(", ")} WHERE id=? AND deleted_at IS NULL AND original_file_name IS ? AND alt_text IS ?`)
+          .bind(...values, id, previous.original_file_name, previous.alt_text),
         env.DB.prepare(`
           INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-          VALUES (?, ?, 'update_media_metadata', 'media', ?, ?)
+          SELECT ?, ?, 'update_media_metadata', 'media', ?, ?
+          WHERE changes() = 1
         `).bind(crypto.randomUUID(), auth.email || null, id, JSON.stringify({ changes })),
       ];
-      await env.DB.batch(statements);
+      const results = await env.DB.batch(statements);
+      if (Number(results?.[0]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "This media metadata changed in another session. Reload the item before saving again." }, 409);
+      }
     }
     const media = await env.DB.prepare(
       "SELECT id, storage_provider, object_key, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at, deleted_at FROM cms_media WHERE id=? AND deleted_at IS NULL"
@@ -398,11 +403,22 @@ export async function onRequestDelete(context) {
       }, 409);
     }
     const deletedAt = new Date().toISOString();
-    const softDelete = await env.DB.prepare(
-      "UPDATE cms_media SET deleted_at=? WHERE id=? AND deleted_at IS NULL"
-    ).bind(deletedAt, id).run();
-    if (softDelete?.meta?.changes === 0) {
-      return adminJson({ error: "This media item has already been removed." }, 409);
+    const softDelete = await env.DB.prepare(`
+      UPDATE cms_media SET deleted_at=?
+      WHERE id=? AND deleted_at IS NULL
+        AND NOT EXISTS (SELECT 1 FROM cms_page_versions WHERE instr(content_json, ?) > 0)
+        AND NOT EXISTS (SELECT 1 FROM cms_product_versions WHERE instr(product_json, ?) > 0)
+        AND NOT EXISTS (SELECT 1 FROM cms_site_setting_versions WHERE instr(value_json, ?) > 0)
+    `).bind(deletedAt, id, row.public_url, row.public_url, row.public_url).run();
+    if (Number(softDelete?.meta?.changes || 0) !== 1) {
+      const latestUsage = await getMediaUsage(env.DB, row);
+      if (latestUsage.total > 0) {
+        return adminJson({
+          error: "This image became referenced by saved CMS content or revision history. The media file has been kept.",
+          usage: latestUsage,
+        }, 409);
+      }
+      return adminJson({ error: "This media item has already been removed or changed." }, 409);
     }
     let auditRecorded = true;
     try {
