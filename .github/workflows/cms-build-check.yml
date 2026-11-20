@@ -1,7 +1,7 @@
 name: CMS Preview Build Check
 
-# Run a build-only Preview pipeline on the development branch.
-# Automated tests, screenshots and image processing are intentionally excluded.
+# Run automated tests and build/deploy verification for the development Preview.
+# Screenshot capture and image processing remain intentionally excluded.
 on:
   push:
     branches: [cms-development]
@@ -25,8 +25,11 @@ jobs:
       - name: Install locked dependencies
         id: install
         run: npm ci
+      - name: Run automated tests
+        if: ${{ steps.install.outcome == 'success' }}
+        run: npm test
       - name: Build Vite website
-        if: ${{ always() && steps.install.outcome == 'success' }}
+        if: ${{ success() }}
         run: npm run build
       - name: Build Cloudflare Pages Functions
         if: success()
