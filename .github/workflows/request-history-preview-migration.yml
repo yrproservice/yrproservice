@@ -5,7 +5,6 @@ on:
     branches: [cms-development]
     paths:
       - migrations/0004_request_status_history.sql
-      - .github/workflows/request-history-preview-migration.yml
   workflow_dispatch:
 
 permissions:
@@ -66,7 +65,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Verify request history schema
         run: |
-          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT (SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='request_status_history') AS history_table, (SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='idx_request_status_history_reference') AS reference_index, (SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='idx_request_status_history_request') AS request_index;" --json > request-history-verification.json
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT (SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='request_status_history') AS history_table, (SELECT COUNT(*) FROM pragma_table_info('request_status_history') WHERE name IN ('id', 'request_id', 'reference', 'previous_status', 'new_status', 'actor_email', 'created_at')) AS history_columns, (SELECT COUNT(*) FROM pragma_foreign_key_list('request_status_history') WHERE "table" = 'requests' AND "from" = 'request_id' AND "to" = 'id' AND on_delete = 'RESTRICT') AS request_fk, (SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='idx_request_status_history_reference') AS reference_index, (SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='idx_request_status_history_request') AS request_index;" --json > request-history-verification.json
           node --input-type=commonjs <<'NODE'
           const fs = require('node:fs');
           const parsed = JSON.parse(fs.readFileSync('request-history-verification.json', 'utf8'));
@@ -74,7 +73,7 @@ jobs:
           const rows = sets.flatMap((item) => Array.isArray(item?.results) ? item.results : []);
           if (rows.length !== 1) throw new Error('Request history verification returned an unexpected result.');
           const row = rows[0];
-          if (Number(row.history_table) !== 1 || Number(row.reference_index) !== 1 || Number(row.request_index) !== 1) {
+          if (Number(row.history_table) !== 1 || Number(row.history_columns) !== 7 || Number(row.request_fk) !== 1 || Number(row.reference_index) !== 1 || Number(row.request_index) !== 1) {
             throw new Error('Request history schema verification failed: ' + JSON.stringify(row));
           }
           console.log('Verified Preview request history schema:', row);
