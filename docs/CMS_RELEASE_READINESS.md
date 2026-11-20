@@ -1345,3 +1345,14 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 - Reviewed the current Contact page: it is explicitly an HR/careers enquiry page with a mailto HR action and no product, service, quote or generic enquiry form. This matches the standing requirement that Contact remain HR-only. The Contact page file is not present at the historical root commit, so this review confirms current behavior but does not claim exact Contact-page equivalence to that older snapshot.
 - Reviewed current header navigation defaults: Products, Services, Team and HR Contact; the brand logo links to Home. The public header contains no redundant “Get a Quote” navigation button. The cart link remains available, and service navigation is sourced from published CMS content with static fallback.
 - Source-only review; no UI, screenshot, test, data, staff, Preview CMS or Production changes were made.
+
+
+## Request dashboard aggregate status-count correction — 20 November 2026
+
+- Source review found the dashboard status summary was computed only from the currently loaded request page (50 records). With more than 50 matching requests, the summary understated totals while presenting them as counts for the current filters.
+- Updated `functions/api/admin/requests.js` to calculate grouped status totals across the complete filtered request set. The aggregate query uses the same request-type, status and text-search filters as the list, but intentionally excludes the pagination cursor so counts remain stable across pages.
+- Updated `src/pages/AdminDashboard.jsx` to display the API's aggregate `statusCounts` instead of recomputing totals from the current 50-row page.
+- Request list pagination, request data, status updates, history records and schema are unchanged. No customer records were read or modified; no migration was needed.
+- Source commits: API `2335fcca4a58e4d8729bd0f6f33921ac0fbe6bd0`; dashboard `0033c16da73ec7243d72ce9e7908a36bc5236a30`.
+- This is a source-reviewed correction only. Runtime behavior and query performance must be included in the deferred final verification; no tests were run in this phase.
+- No screenshots, image processing, migration execution, Production operations, PR merge or access-policy changes were performed.
