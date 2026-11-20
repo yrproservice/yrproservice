@@ -672,6 +672,7 @@ export default function CMSManagement() {
           entityType: type,
           entityKey: key,
           versionId: id,
+          expectedDraftCreatedAt,
         }),
       });
 
