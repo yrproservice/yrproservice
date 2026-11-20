@@ -1443,3 +1443,18 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 - The Pages Preview build workflow deploys or verifies only branch `cms-development` at `cms-development.yrproservice.pages.dev`. A separate `worker-preview.yml` workflow is triggered by pushes to `production-release` and uses `wrangler.worker-preview.toml`, which declares a Workers Preview environment without Production D1/R2 bindings. This separate Worker Preview path is not the Pages Preview pipeline and must not be confused with Production Pages deployment. No workflow was run manually or changed during this review.
 - `wrangler.toml` keeps Production D1 and Preview D1/R2 bindings separate. The current Preview build workflow reads Preview D1 schema and checks deployed static assets; it does not validate backup recoverability or execute authenticated CMS workflows.
 - No migration was executed, no database rows were queried or modified for this review, no R2 objects were changed, and Production, secrets, Cloudflare Access policy and PR #2 remain untouched.
+
+
+## Media recovery and inventory continuation — 20 November 2026
+
+A fresh source review of the current Media Library API and UI confirmed:
+
+- The active/archived Media Library uses keyset pagination with a maximum of 100 records per page, ordered by active/archived state, creation time and ID. The UI retains cursor history for Previous/Next navigation. Older Phase G wording that described a 300-record loaded-library cap is superseded by this 100-record page size; the library is not limited to 100 total records.
+- The R2 orphan scan is read-only and lists at most 100 objects per request under the `cms/` prefix. The UI can continue using the returned cursor and accumulates scan results for the current session. A partial scan must not be treated as a complete inventory.
+- The orphan comparison includes all database media rows for the R2 provider, including archived rows. This is intentional: archived objects are retained for restoration and must not be mislabeled as untracked orphans.
+- Per-item storage checks use R2 `head()` on demand. “Unchecked” or “unavailable” is not evidence that an object is missing. Restore checks object existence before clearing the database archive flag.
+- Archive checks all saved page, product and settings revisions and repeats the reference guard in the conditional database update. The R2 object is not deleted. A restore or archive audit insert that affects zero rows can leave the primary database state change committed; the handler therefore reports an ambiguous result and instructs the administrator to reload and inspect state before retrying.
+- Media reference reports are bounded to 50 displayed revisions per content group while separate counts expose whether results are truncated. This is an inspection limit, not proof that no additional historical references exist.
+- Upload writes the R2 object before its D1 record and audit event. Confirmed failures attempt to remove the just-uploaded object; if the database record exists but audit confirmation fails, the API returns the media ID and directs the administrator to refresh before retrying. No automated cleanup of such ambiguous uploads or orphan objects is performed.
+
+No media was uploaded, archived, restored, renamed, deleted or rewritten during this review. No R2 listing or storage-check endpoint was invoked against the live Preview bucket; conclusions above are from source inspection only. Final runtime verification of multi-page inventory, orphan-scan continuation, archive/restore and ambiguous audit outcomes remains deferred to Phase H.
