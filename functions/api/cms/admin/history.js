@@ -207,7 +207,11 @@ export async function onRequestPost(context) {
     if (Number(insertResult?.meta?.changes || 0) !== 1) {
       return adminJson({ error: "This CMS draft changed in another session. Reload its history before restoring again." }, 409);
     }
-    return adminJson({ ok: true, draftId: newId, version: nextVersion, restoredFrom: source.version_number }, 201);
+    const auditResult = results?.[results.length - 1];
+    if (Number(auditResult?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "The revision may have been restored as a draft, but its audit record could not be confirmed. Reload the item history and inspect the current draft before retrying." }, 500);
+    }
+    return adminJson({ ok: true, auditRecorded: true, draftId: newId, version: nextVersion, restoredFrom: source.version_number }, 201);
   } catch (error) {
     console.error("CMS revision restore failed", error);
     return adminJson({ error: "Unable to restore this revision as a draft." }, 500);
