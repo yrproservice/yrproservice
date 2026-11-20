@@ -770,3 +770,15 @@ Commits and exact-commit build-only Preview verification:
 - Draft deletion snapshot guard: `037a9acf3b040c1c35652d50ca3e3b010b20a44d` — [run #44654247583](https://github.com/yrproservice/yrproservice/actions/runs/44654247583) passed.
 - The runs performed dependency installation, Vite build, Pages Functions compilation, Preview D1 schema readiness and Preview asset verification. No tests ran. No schema migration or Production operation was performed.
 - Authenticated runtime and concurrency failure-path checks remain deferred to the final stage. PR #2 remains Open, Draft and unmerged.
+
+## Loaded draft timestamp concurrency checkpoint — 20 November 2026
+
+Draft identity alone was insufficient for page/product edits because those workflows update an existing draft row in place. A second administrator could save newer content without changing the draft ID. The editor/API contract now includes the exact `created_at` timestamp loaded with that draft.
+
+- Page list and page-preview APIs expose `draft_created_at` / `draftCreatedAt`. The Home Visual Website Editor retains that timestamp, sends it with saves, and updates its snapshot after a successful save. The page API rejects a stale ID/timestamp pair with HTTP 409.
+- Product list APIs expose `draft_created_at`. Product selection retains it; product save/archive sends both expected draft ID and timestamp. The API rejects stale pairs and returns the new timestamp after save. Catalogue import sends explicit null snapshots for new products.
+- Settings list now exposes the active draft timestamp for history restore. The CMS history UI sends both expected draft ID and timestamp. The restore API compares both and conditionally archives only the exact loaded draft snapshot.
+- New page/product draft inserts write an explicit timestamp and return it to the editor. No migration or schema change was needed.
+- Latest combined functional source commit: `3bbc5c4da6540c3c12dff2b252ec97db414256e1`; [build-only Preview run #44654582422](https://github.com/yrproservice/yrproservice/actions/runs/44654582422) passed install, Vite, Pages Functions, Preview D1 schema readiness and all four Preview JS/CSS asset checks.
+- Component source commits: page API `1f524b2cab7fd2e2593782108577cec0f75f2d04`; product API `286e0edf26b3725469e154ff3048c930101e1fa0`; history API `1ad4c65c66d8d6e66c2735565067704431f51f1f`; page preview `2ae2d7455376b630f5a580a16362bac888edff86`; settings list `94b944538b6d33b95bbe4d085818f51d5a16c44f`; Home editor `09c773f3c4fef82eb32eef15f68048f7e5fd9c49`; CMS product/history UI `3bbc5c4da6540c3c12dff2b252ec97db414256e1`.
+- No tests ran. Runtime stale-editor conflict behavior remains deferred to the final stage. Production remains untouched; PR #2 remains Open, Draft and unmerged.
