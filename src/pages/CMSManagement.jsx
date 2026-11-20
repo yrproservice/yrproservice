@@ -312,7 +312,10 @@ export default function CMSManagement() {
     try {
       const data = await api("/api/cms/admin/products", {
         method: "POST",
-        body: JSON.stringify(product),
+        body: JSON.stringify({
+          product,
+          expectedDraftId: selected?.isNew ? null : selected?.draftId || null,
+        }),
       });
 
       if (selected?.isNew) {
@@ -375,7 +378,10 @@ export default function CMSManagement() {
     try {
       const data = await api("/api/cms/admin/products", {
         method: "POST",
-        body: JSON.stringify(product),
+        body: JSON.stringify({
+          product,
+          expectedDraftId: selected?.isNew ? null : selected?.draftId || null,
+        }),
       });
 
       historyRequestId.current += 1;
@@ -473,7 +479,7 @@ export default function CMSManagement() {
       for (const product of missingProducts) {
         await api("/api/cms/admin/products", {
           method: "POST",
-          body: JSON.stringify(product),
+          body: JSON.stringify({ product, expectedDraftId: null }),
         });
         importedCount += 1;
       }
