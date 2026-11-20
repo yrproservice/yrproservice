@@ -926,6 +926,7 @@ export default function CMSDashboard({ onAdminLogout }) {
           route,
           content,
           changeNote: "Visual editor update",
+          expectedDraftId: draftId || null,
         }),
         cache: "no-store",
       });
