@@ -110,8 +110,17 @@ export async function onRequestPost(context) {
     const expectedDraftId = typeof body.expectedDraftId === "string" && body.expectedDraftId
       ? body.expectedDraftId.slice(0, 80)
       : null;
-    const draft = await env.DB.prepare(`SELECT id, version_number FROM ${config.versions} WHERE ${config.fk} = ? AND state = 'draft'`).bind(entity.id).first();
-    if ((draft?.id || null) !== expectedDraftId) {
+    if (!Object.prototype.hasOwnProperty.call(body, "expectedDraftCreatedAt")) {
+      return adminJson({ error: "Reload the item history before restoring; the current draft timestamp was not supplied." }, 409);
+    }
+    const expectedDraftCreatedAt = typeof body.expectedDraftCreatedAt === "string" && body.expectedDraftCreatedAt
+      ? body.expectedDraftCreatedAt.slice(0, 64)
+      : null;
+    if (expectedDraftId && !expectedDraftCreatedAt) {
+      return adminJson({ error: "Reload the item history before restoring; the current draft snapshot is incomplete." }, 409);
+    }
+    const draft = await env.DB.prepare(`SELECT id, version_number, created_at FROM ${config.versions} WHERE ${config.fk} = ? AND state = 'draft'`).bind(entity.id).first();
+    if ((draft?.id || null) !== expectedDraftId || (draft?.created_at || null) !== expectedDraftCreatedAt) {
       return adminJson({ error: "This CMS draft changed in another session. Reload its history before restoring again." }, 409);
     }
     const latest = await env.DB.prepare(`SELECT COALESCE(MAX(version_number), 0) AS version FROM ${config.versions} WHERE ${config.fk} = ?`).bind(entity.id).first();
@@ -124,8 +133,8 @@ export async function onRequestPost(context) {
     // cannot be archived; the no-draft branch confirms no draft appeared.
     if (expectedDraftId) {
       statements.push(
-        env.DB.prepare(`UPDATE ${config.versions} SET state = 'archived' WHERE id = ? AND ${config.fk} = ? AND state = 'draft'`)
-          .bind(expectedDraftId, entity.id)
+        env.DB.prepare(`UPDATE ${config.versions} SET state = 'archived' WHERE id = ? AND ${config.fk} = ? AND state = 'draft' AND created_at = ?`)
+          .bind(expectedDraftId, entity.id, expectedDraftCreatedAt)
       );
     } else {
       statements.push(
