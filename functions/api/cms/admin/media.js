@@ -453,6 +453,9 @@ export async function onRequestPatch(context) {
       if (Number(results?.[0]?.meta?.changes || 0) !== 1) {
         return adminJson({ error: "This media metadata changed in another session. Reload the item before saving again." }, 409);
       }
+      if (Number(results?.[1]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "The media metadata audit record could not be saved. The metadata update was rolled back." }, 500);
+      }
     }
     const media = await env.DB.prepare(
       "SELECT id, storage_provider, object_key, public_url, original_file_name, mime_type, byte_size, width, height, alt_text, created_at, deleted_at FROM cms_media WHERE id=? AND deleted_at IS NULL"
