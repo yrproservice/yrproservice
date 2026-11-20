@@ -1,8 +1,33 @@
-# YR Proservice CMS — Release Readiness Audit
+## Latest source and Preview build checkpoint — 20 November 2026
 
-**Current status update: 19 November 2026**  
+The latest source-review continuation made focused integrity changes without running tests, screenshots or image processing:
+
+- Media metadata updates now use an optimistic snapshot predicate and only record an audit event when the metadata update actually succeeds.
+- Media archiving atomically rechecks all saved page, product and site-setting revisions for references before soft-deleting the media record. The R2 object remains in place for recovery.
+- Draft deletion checks the conditional DELETE result. Its audit event and page-metadata follow-up are gated on the successful delete; stale requests return HTTP 409.
+- Revision restore and schema partial unique indexes were reviewed. One active draft per page/product/setting is enforced by existing indexes; no schema change was required.
+- Public page/product endpoints currently use `max-age=60, stale-while-revalidate=300`; public settings and admin JSON use `no-store`.
+
+Exact-commit build/Preview verification:
+- Run [#44652236533](https://github.com/yrproservice/yrproservice/actions/runs/44652236533) passed for media source commit `e1680d3cab8964f32283c2091cc4e289a1a684ee`.
+- Run [#44652255773](https://github.com/yrproservice/yrproservice/actions/runs/44652255773) passed for functional source commit `bcf4e0cbb3d73f4b278bf2bef267e37f9c281c41`.
+- Run [#44652386287](https://github.com/yrproservice/yrproservice/actions/runs/44652386287) passed for handover documentation commit `4d2ea47a218b69a8e7a229227c00b6b6a5b405c0`.
+- Each run passed locked dependency installation (20 packages; 0 reported vulnerabilities), Vite build, Wrangler Pages Functions compilation, Preview D1 schema readiness (`title_column=1`, `route_column=1`, `route_index=1`, `null_metadata=0`) and Preview asset verification (all four referenced JS/CSS assets returned successfully).
+- These build-only workflows contained no test step. No new automated or browser tests were run in this continuation. Historical test results elsewhere in this document are historical and do not represent current verification.
+- No migration was added or rerun. Production website, D1, R2, bindings, secrets and deployment remain untouched.
+
+### Current branch and release gates
+
+- `cms-development` is 982 commits ahead of `main`, 0 behind, with 98 changed files. The full history and complete PR diff must be reviewed before any merge decision.
+- PR #2 remains Open, Draft and unmerged. No merge, Production migration or Production deployment is authorized.
+- Authenticated CMS runtime workflows, concurrency behaviour, visual inspection, screenshots, image processing and final regression/security/accessibility verification remain deferred.
+- The Admin auth implementation is Cloudflare Access JWT verification for one authorized account; it does not enforce a server-side single-device session lock. Do not claim that capability until the intended session policy is clarified and implemented.
+
+
+**Current status update: 20 November 2026**  
 **Verified branch:** `cms-development`  
-**Latest verified commit:** `5108aa3a3520fd0a969cf39544d7ef7fb17bd867`  
+**Latest verified functional source commit:** `bcf4e0cbb3d73f4b278bf2bef267e37f9c281c41`  
+**Latest handover documentation checkpoint:** `4d2ea47a218b69a8e7a229227c00b6b6a5b405c0`  
 **Production status:** unchanged; release not approved
 
 ## Latest Preview verification — 19 November 2026
