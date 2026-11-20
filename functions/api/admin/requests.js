@@ -111,15 +111,37 @@ export async function onRequestPatch(context) {
 
   try {
     const existing = await env.DB.prepare(
-      "SELECT reference, status FROM requests WHERE reference = ? LIMIT 1",
+      "SELECT id, reference, status FROM requests WHERE reference = ? LIMIT 1",
     )
       .bind(reference)
       .first();
     if (!existing) return adminJson({ error: "Request not found." }, 404);
-    const changed = await env.DB.prepare(
-      "UPDATE requests SET status = ? WHERE reference = ? AND status = ?"
-    ).bind(status, reference, existing.status).run();
-    if (Number(changed?.meta?.changes || 0) !== 1) {
+    if (existing.status === status) {
+      const current = await env.DB.prepare(
+        "SELECT reference, request_type, status, created_at FROM requests WHERE reference = ? LIMIT 1"
+      ).bind(reference).first();
+      return adminJson({ ok: true, alreadyApplied: true, request: current });
+    }
+    const historyResults = await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE requests SET status = ? WHERE reference = ? AND status = ?"
+      ).bind(status, reference, existing.status),
+      env.DB.prepare(`
+        INSERT INTO request_status_history
+          (id, request_id, reference, previous_status, new_status, actor_email)
+        SELECT ?, id, reference, ?, ?, ?
+        FROM requests
+        WHERE reference = ? AND status = ? AND changes() = 1
+      `).bind(
+        crypto.randomUUID(),
+        existing.status,
+        status,
+        auth.email || null,
+        reference,
+        status,
+      ),
+    ]);
+    if (Number(historyResults?.[0]?.meta?.changes || 0) !== 1) {
       const current = await env.DB.prepare(
         "SELECT reference, request_type, status, created_at FROM requests WHERE reference = ? LIMIT 1"
       ).bind(reference).first();
@@ -132,12 +154,15 @@ export async function onRequestPatch(context) {
         request: current,
       }, 409);
     }
+    if (Number(historyResults?.[1]?.meta?.changes || 0) !== 1) {
+      return adminJson({
+        error: "The request status history could not be recorded. Refresh the request before trying again.",
+      }, 500);
+    }
     const updated = await env.DB.prepare(
       "SELECT reference, request_type, status, created_at FROM requests WHERE reference = ? LIMIT 1",
-    )
-      .bind(reference)
-      .first();
-    return adminJson({ ok: true, request: updated });
+    ).bind(reference).first();
+    return adminJson({ ok: true, request: updated, historyRecorded: true });
   } catch (error) {
     console.error("Admin request status update failed", error);
     return adminJson(
