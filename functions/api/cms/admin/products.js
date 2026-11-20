@@ -124,7 +124,7 @@ export async function onRequestPost(context) {
         return adminJson({ error: "This product draft changed in another session. Reload it before saving again." }, 409);
       }
       if (Number(results?.[2]?.meta?.changes || 0) !== 1) {
-        return adminJson({ error: "The product draft audit record could not be saved. The update was rolled back." }, 500);
+        return adminJson({ error: "The product draft audit record could not be confirmed. Reload the product before retrying; the draft update may have been applied." }, 500);
       }
       return adminJson({ ok: true, productId: row.id, draftId: draft.id, draftCreatedAt: now, version: draft.version_number });
     }
@@ -149,7 +149,7 @@ export async function onRequestPost(context) {
       return adminJson({ error: "A product draft was created in another session. Reload the product before saving again." }, 409);
     }
     if (Number(results?.[3]?.meta?.changes || 0) !== 1) {
-      return adminJson({ error: "The new product draft audit record could not be saved. The draft creation was rolled back." }, 500);
+      return adminJson({ error: "The new product draft audit record could not be confirmed. Reload the product list before retrying; the draft may have been created." }, 500);
     }
     return adminJson({ ok: true, productId: row.id, draftId: versionId, draftCreatedAt: now, version }, 201);
   } catch (error) {
