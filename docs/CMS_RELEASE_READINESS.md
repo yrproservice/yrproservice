@@ -982,3 +982,35 @@ No source change was justified in this pass. The main unresolved decision is the
 - Before production release, document and verify: D1 backup/export schedule and retention; a tested restore procedure and recovery point objective; R2 bucket versioning/backup or an equivalent copy/retention plan; operator access and approval requirements; and a reconciliation procedure after restoring D1 and R2.
 - No destructive R2 cleanup or automatic orphan deletion should be enabled until retention, backup and approval rules are agreed. Keep archived media objects during the recovery period.
 - Revision restore/publish, media archive/restore and orphan reconciliation were source-reviewed only. No live data was changed and no restore, migration, test, screenshot or image-processing operation was run.
+
+
+## CMS settings and product publishing integration review — 20 November 2026
+
+### Settings lifecycle
+
+- Admin settings reads are authenticated and return draft and published values separately.
+- Saving a setting requires the caller to provide the expected current draft ID. The handler validates supported keys and values, bounds request/value size, and uses a guarded D1 batch to archive the prior draft, insert the replacement draft, update the parent timestamp and record the audit event.
+- Supported setting families are navigation, footer and page-design settings for an explicit allowlist of page keys. Unknown setting keys are rejected.
+- Public settings reads join only the published pointer and published revision state. Draft values are not returned by the public endpoint.
+- Publishing revalidates the setting value and internal route destinations before moving the published pointer.
+
+### Product lifecycle
+
+- Admin product reads are authenticated and expose draft and published snapshots separately.
+- Product draft writes validate slug, name, purchase flow, optional price and stock state, image paths, gallery entries, specification/document shapes and supported manufacturer source URL.
+- Confirmed dental-chair slugs are forced to the dedicated chair request flow; a conflicting explicitly supplied flow is rejected. The current confirmed-slug list is hard-coded in the API and should be kept aligned with the authoritative product catalogue when models are added.
+- Product saves require the expected draft ID and creation timestamp for existing products. Draft updates use compare-and-swap guards and audit records; creating a new draft is guarded against a concurrent draft.
+- Publishing revalidates the product snapshot and verifies that its slug matches the CMS record. Public product reads expose only the published pointer; archived products are excluded from lists and return HTTP 410 on direct lookup.
+
+### Cross-cutting boundaries
+
+- The admin endpoints require the existing admin authentication check before CMS reads or writes. Public settings and product endpoints expose published state only.
+- The reviewed lifecycle code does not establish that every existing frontend screen is already consuming these CMS public endpoints; frontend integration and live Preview behavior remain separate release checks.
+- Product content validation permits approved `/catalog/` paths and HTTPS R2-hosted product images. The validator does not itself prove that a catalog path exists or that an R2 object belongs to the intended Preview bucket; image/catalog reconciliation remains a separate content-integrity task.
+- The chair-flow safeguard is a code-level list, not a catalogue-derived rule. Before bulk product import or future chair-model additions, reconcile the list with the approved manufacturer/model inventory and inspect the final stored requestFlow values.
+
+### Status
+
+- Source review only; no CMS content was created, modified or published.
+- No code change, migration, automated test, screenshot, image processing or Production operation was performed.
+- Remaining release work includes frontend-to-public-CMS integration verification, authoritative product catalogue reconciliation, live Preview binding verification, and final-stage tests and visual/image checks after the user's deferred phase is authorized.
