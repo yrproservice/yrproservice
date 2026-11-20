@@ -1500,3 +1500,12 @@ The two workflow results above are verified against their exact documentation co
 - No branch protection, ruleset, workflow, secret, Cloudflare setting, deployment, database, R2 object or customer record was changed during this review. No tests, screenshots or image processing were run.
 - Exact-commit Preview build run [#44667704874](https://github.com/yrproservice/yrproservice/actions/runs/44667704874) on `d52e64fabf6c2c1ef2d2513cb4bdff3987dc780a` completed successfully: locked install, Vite build, Pages Functions build, Preview D1 schema readiness and Preview asset verification all passed. No test step ran.
 - At review time, PR #2 remained Open, Draft and unmerged; its head matched `cms-development`. Keep it unmerged pending explicit approval; Production remains outside scope.
+
+
+## Ambiguous Media Library upload recovery fix — 20 November 2026
+
+- Source commit `aba8e4c52d04c3ddec4b4f76efcb2d5d56319db9` updates the Media Library upload error path in `functions/api/cms/admin/media.js`.
+- Previously, after the R2 object was written, any thrown D1 batch error entered a catch block that deleted the R2 object. A network/transport failure can leave the D1 commit outcome unknown; if the media row committed before the response failed, deleting the object would leave a broken media record.
+- The handler now tracks whether the R2 write completed, whether the D1 batch was started/completed, and whether the media row was confirmed. It cleans up when no D1 batch was sent or when a completed batch confirms no media row was inserted. If the D1 batch outcome is ambiguous, it retains the object, logs the media ID/key, and returns an explicit ambiguous-outcome response instructing the administrator to refresh and inspect before retrying.
+- This intentionally prefers a possible orphaned R2 object over a database record pointing to a deleted object. The existing read-only orphan reconciliation can help identify retained objects; no automatic deletion or cleanup is performed.
+- This is a source-level recovery correction only. No upload, R2 mutation, D1 operation, test, screenshot or image processing was performed. Runtime simulation of ambiguous D1 responses remains deferred to the final authorized verification stage.
