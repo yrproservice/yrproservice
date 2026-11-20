@@ -1337,7 +1337,7 @@ export default function CMSManagement() {
       (tab === "settings" && hasUnsavedSettingChanges) ||
       (tab === "media" && hasUnsavedMediaMetadataChanges) ||
       (tab === "products" && Boolean(selected) && selected.savedJson !== json) ||
-      (visualDesignKeysByTab[tab] || []).some((key) => visualDesignUnsaved[key]) ||
+      (VISUAL_DESIGN_KEYS_BY_TAB[tab] || []).some((key) => visualDesignUnsaved[key]) ||
       (tab === "services" && servicesHaveUnsavedChanges) ||
       (tab === "team" && teamHaveUnsavedChanges);
     if (!hasUnsavedCurrentTabChanges) return undefined;
