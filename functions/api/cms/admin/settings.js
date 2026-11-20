@@ -101,7 +101,10 @@ export async function onRequestPost(context) {
     if (Number(results?.[2]?.meta?.changes || 0) !== 1) {
       return adminJson({ error: "This setting draft changed in another session. Reload the setting before saving again." }, 409);
     }
-    return adminJson({ ok: true, draftId: id, version }, 201);
+    if (Number(results?.[4]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "The settings draft may have been saved, but its audit record could not be confirmed. Reload the setting and inspect its current draft before retrying." }, 500);
+    }
+    return adminJson({ ok: true, auditRecorded: true, draftId: id, version }, 201);
   } catch (error) {
     console.error("CMS settings save failed", error);
     return adminJson({ error: "Unable to save settings draft." }, 500);
