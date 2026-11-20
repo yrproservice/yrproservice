@@ -1532,3 +1532,11 @@ The two workflow results above are verified against their exact documentation co
 - Source commit `ca8c799cec1fe7b10c7e3e3795957f52e8c5fbb3` adds an explicit affected-row check for the page metadata update in the page-revision restore batch.
 - Page restores now independently confirm the new draft insert, the page title/route metadata update, and the final audit insert. Product and setting restores confirm the new draft insert and audit insert. Any unconfirmed follow-on result produces a reload-and-inspect response rather than a success response.
 - This remains source-only review; no live revisions were restored and no D1 writes were made. Preview build verification is pending.
+
+
+## Publish transition result verification — 20 November 2026
+
+- Source commit `b047ecd16808975167c7157c22029f38a7485b95` updates `functions/api/cms/admin/publish.js`.
+- The publish batch previously checked the draft-to-published transition and final audit insert, but did not separately verify (when applicable) archival of the prior published revision or the entity's published-version pointer update.
+- The handler now checks the prior-revision archive result when a prior published revision exists, calculates and checks the published-pointer update result for both first-publish and replacement-publish batch shapes, and retains the audit insert check. Unconfirmed transitions return explicit reload-and-inspect guidance; these checks do not claim zero-row statements roll back earlier D1 batch statements.
+- Source-only review; no publication or D1 write was performed. Preview verification is pending. Final runtime tests remain deferred.
