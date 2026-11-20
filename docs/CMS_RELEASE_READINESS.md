@@ -1729,3 +1729,9 @@ The two workflow results above are verified against their exact documentation co
 
 - Several rapid documentation/workflow commits produced overlapping screenshot-enabled Preview builds. Workflow commit `47a77ace9f90bf1569c6934f60f6b1bc2c177a95` adds a shared `cms-preview-build` concurrency group with cancellation of superseded runs, so only the latest branch checkpoint continues consuming CI/browser resources.
 - This applies only to the CMS Preview build workflow. The separate guarded D1 migration and read-only schema-verification workflows retain their own concurrency/target controls.
+
+
+## Preview screenshot DOM readiness wait — 20 November 2026
+
+- Workflow commit `42a2bc6c390670fa26dc1b26bf466b2085fc2990` changes screenshot navigation to wait for the initial response commit, then require a rendered `main` element before capturing. This avoids waiting for all background network activity while still requiring that the React page has rendered. Per-route page load remains bounded by 20 seconds, rendered-content wait by 15 seconds, and the job by 15 minutes.
+- Exact-head screenshot capture and artifact upload remain pending.
