@@ -1306,3 +1306,14 @@ The settings concurrency concern is not a confirmed defect after the batch-guard
 ### V10 recovery decision
 
 Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered historical website baseline labelled V10**, while retaining the README V8 discrepancy as an explicit provenance caveat. Future visual/CMS work must preserve the existing `cms-development` implementation and use focused comparisons against this historical tree; never reset, cherry-pick wholesale, or replace current files from the old snapshot without a verified file-level reason.
+
+
+## Git-recovered Services content parity correction — 20 November 2026
+
+- Compared the original `src/data/services.js` and `src/pages/Services.jsx` at the Git-recovered V10-labelled baseline with the current CMS source and default Services template.
+- Confirmed that the eight service slugs, descriptions, and most card content match the historical source. Found and restored three wording differences in the service catalogue/default data: `Cleaning & adjustment`, `Repair & Technical Support`, and the original ampersand in the Repair service title.
+- Restored the original process-step labels in `src/data/servicesCmsTemplate.js`: `Review & plan` and `Test & handover`. The original Services hero, introduction, listing headings, process descriptions, CTA wording, and section structure were also compared against the historical page and retained.
+- Source commits: `b652c843d2efe354017a331d224a14295a25ec16` (service data) and `ebed350f17614015de1bce4e24c6775f23804732` (Services default template).
+- Exact-commit CMS Preview Build Check [run #44665106571](https://github.com/yrproservice/yrproservice/actions/runs/44665106571) completed successfully. Locked dependency installation, Vite build, Pages Functions build, Preview D1 schema-readiness and Preview verification all passed.
+- Important data-safety limitation: the Services Manager intentionally loads an already-saved Preview CMS page in preference to the source template. These source corrections therefore repair the default/fallback template and future fresh-template initialization; they do not overwrite an existing saved Services draft or published D1 revision. No Preview CMS page data was changed or queried. Existing saved Services content must be reviewed through the authenticated Preview CMS before any deliberate content update, so administrator edits are not overwritten.
+- No tests, screenshots, image processing, migrations, customer data operations, media operations, Production actions, PR merge, or access-policy changes were performed.
