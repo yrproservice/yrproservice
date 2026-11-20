@@ -37,6 +37,7 @@ export default function AdminDashboard({ onAuthenticated }) {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
   const [historyNote, setHistoryNote] = useState("");
+  const [historyHasMore, setHistoryHasMore] = useState(false);
   const [pageCursor, setPageCursor] = useState("");
   const [cursorStack, setCursorStack] = useState([]);
   const [nextCursor, setNextCursor] = useState("");
@@ -121,6 +122,7 @@ export default function AdminDashboard({ onAuthenticated }) {
       setRequestHistory([]);
       setHistoryError("");
       setHistoryNote("");
+      setHistoryHasMore(false);
       setHistoryLoading(false);
       return undefined;
     }
@@ -139,11 +141,13 @@ export default function AdminDashboard({ onAuthenticated }) {
         }
         setRequestHistory(Array.isArray(result.history) ? result.history : []);
         setHistoryNote(typeof result.note === "string" ? result.note : "");
+        setHistoryHasMore(Boolean(result.hasMore));
       })
       .catch((loadError) => {
         if (!controller.signal.aborted) {
           setRequestHistory([]);
           setHistoryNote("");
+          setHistoryHasMore(false);
           setHistoryError(loadError.message || "Unable to load request history.");
         }
       })
@@ -468,6 +472,7 @@ export default function AdminDashboard({ onAuthenticated }) {
                 <div>
                   <h3>Status history</h3>
                   <p>{historyNote || "Recorded status changes and the authorized account that made each change."}</p>
+                  {historyHasMore && <p>Showing the latest 50 status changes. Older entries are available in the stored history but are not displayed here.</p>}
                 </div>
               </div>
               {historyLoading ? (
