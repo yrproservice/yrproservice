@@ -1159,3 +1159,13 @@ Reviewed current `cms-development` sources for the public CMS readers, authentic
 - Operational consideration: `requests.js` and `track.js` create their rate-limit tables/indexes and prune old attempt rows during requests. This is runtime schema/maintenance behavior, not a release migration. It should be deliberately accounted for in future schema ownership/operations planning; no migration or database operation was run as part of this review.
 - The service submission allowlist currently contains eight fixed service slugs. Confirm that these correspond to the preserved Services catalogue before final release; this review did not alter the list or infer that the current UI catalogue has been reconciled.
 - This was static source inspection only. It does not establish live endpoint behaviour, rate-limit effectiveness under concurrency, or production readiness. Automated tests and final regression verification remain deferred.
+
+## Additional source-review checkpoint — request administration
+
+Reviewed `functions/api/admin/requests.js` and `functions/api/admin/session.js` on the current development branch.
+
+- Admin request listing and status changes require `requireAdmin`; list filters are allowlisted and results are capped at 200.
+- Status updates use a compare-and-set condition on the previously read status and return a conflict response when another session changes the request first.
+- **Release-readiness gap:** request status changes are not written to a durable audit/history table. The CMS audit log used by CMS page/product/settings/media workflows is not updated by this endpoint. Consequently, the current request manager cannot provide a durable record of who changed a request status, when, or from which status to which status.
+- This is a documented functional/audit gap, not a claim of an authorization bypass. No code or database change was made. Decide whether request-status audit history is required before enabling broader staff workflows; implementation would need a defined schema and retention approach.
+- Static source review only; no request records were read or modified, and no endpoint tests were run.
