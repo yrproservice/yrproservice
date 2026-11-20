@@ -104,14 +104,35 @@ export async function onRequestPost(context) {
       `).bind(entity.id, source.route, source.route, source.route).first();
       if (routeConflict) return adminJson({ error: "The archived page route is now assigned to another CMS page." }, 409);
     }
+    if (!Object.prototype.hasOwnProperty.call(body, "expectedDraftId")) {
+      return adminJson({ error: "Reload the item history before restoring; the current draft version was not supplied." }, 409);
+    }
+    const expectedDraftId = typeof body.expectedDraftId === "string" && body.expectedDraftId
+      ? body.expectedDraftId.slice(0, 80)
+      : null;
     const draft = await env.DB.prepare(`SELECT id, version_number FROM ${config.versions} WHERE ${config.fk} = ? AND state = 'draft'`).bind(entity.id).first();
+    if ((draft?.id || null) !== expectedDraftId) {
+      return adminJson({ error: "This CMS draft changed in another session. Reload its history before restoring again." }, 409);
+    }
     const latest = await env.DB.prepare(`SELECT COALESCE(MAX(version_number), 0) AS version FROM ${config.versions} WHERE ${config.fk} = ?`).bind(entity.id).first();
     const nextVersion = Number(latest?.version || 0) + 1;
     const now = new Date().toISOString();
     const actor = auth.email || null;
-    const statements = [];
-    if (draft) statements.push(env.DB.prepare(`UPDATE ${config.versions} SET state = 'archived' WHERE id = ? AND state = 'draft'`).bind(draft.id));
     const newId = crypto.randomUUID();
+    const statements = [];
+    // The first statement is a compare-and-swap guard. A stale draft ID
+    // cannot be archived; the no-draft branch confirms no draft appeared.
+    if (expectedDraftId) {
+      statements.push(
+        env.DB.prepare(`UPDATE ${config.versions} SET state = 'archived' WHERE id = ? AND ${config.fk} = ? AND state = 'draft'`)
+          .bind(expectedDraftId, entity.id)
+      );
+    } else {
+      statements.push(
+        env.DB.prepare(`UPDATE ${config.versions} SET state = state WHERE ${config.fk} = ? AND state = 'draft'`)
+          .bind(entity.id)
+      );
+    }
     if (type === "page") {
       statements.push(
         env.DB.prepare(`
@@ -119,14 +140,14 @@ export async function onRequestPost(context) {
             id, page_id, version_number, state, title, route, content_json,
             created_by, change_note, created_at
           )
-          VALUES (?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?)
+          SELECT ?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?
+          WHERE changes() = ?
         `).bind(
           newId, entity.id, nextVersion, source.title, source.route,
-          source.content, actor, `Restored from V${source.version_number}`, now
-        )
-      );
-      statements.push(
-        env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ?")
+          source.content, actor, `Restored from V${source.version_number}`, now,
+          expectedDraftId ? 1 : 0
+        ),
+        env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ? AND changes() = 1")
           .bind(source.title, source.route, now, entity.id)
       );
     } else {
@@ -136,36 +157,32 @@ export async function onRequestPost(context) {
             id, ${config.fk}, version_number, state, ${config.json},
             created_by, change_note, created_at
           )
-          VALUES (?, ?, ?, 'draft', ?, ?, ?, ?)
+          SELECT ?, ?, ?, 'draft', ?, ?, ?, ?
+          WHERE changes() = ?
         `).bind(
           newId, entity.id, nextVersion, source.content, actor,
-          `Restored from V${source.version_number}`, now
+          `Restored from V${source.version_number}`, now,
+          expectedDraftId ? 1 : 0
         )
       );
     }
     statements.push(
       env.DB.prepare(`
         INSERT INTO cms_audit_log (
-          id,
-          actor_email,
-          action,
-          entity_type,
-          entity_id,
-          metadata_json
+          id, actor_email, action, entity_type, entity_id, metadata_json
         )
-        VALUES (?, ?, 'restore_revision_as_draft', ?, ?, ?)
+        SELECT ?, ?, 'restore_revision_as_draft', ?, ?, ?
+        WHERE changes() = 1
       `).bind(
-        crypto.randomUUID(),
-        actor,
-        type,
-        entity.id,
-        JSON.stringify({
-          sourceVersion: source.version_number,
-          newVersion: nextVersion,
-        })
+        crypto.randomUUID(), actor, type, entity.id,
+        JSON.stringify({ sourceVersion: source.version_number, newVersion: nextVersion })
       )
     );
-    await env.DB.batch(statements);
+    const results = await env.DB.batch(statements);
+    const insertResult = results?.[1];
+    if (Number(insertResult?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "This CMS draft changed in another session. Reload its history before restoring again." }, 409);
+    }
     return adminJson({ ok: true, draftId: newId, version: nextVersion, restoredFrom: source.version_number }, 201);
   } catch (error) {
     console.error("CMS revision restore failed", error);
