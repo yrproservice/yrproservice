@@ -782,3 +782,24 @@ Draft identity alone was insufficient for page/product edits because those workf
 - Latest combined functional source commit: `3bbc5c4da6540c3c12dff2b252ec97db414256e1`; [build-only Preview run #44654582422](https://github.com/yrproservice/yrproservice/actions/runs/44654582422) passed install, Vite, Pages Functions, Preview D1 schema readiness and all four Preview JS/CSS asset checks.
 - Component source commits: page API `1f524b2cab7fd2e2593782108577cec0f75f2d04`; product API `286e0edf26b3725469e154ff3048c930101e1fa0`; history API `1ad4c65c66d8d6e66c2735565067704431f51f1f`; page preview `2ae2d7455376b630f5a580a16362bac888edff86`; settings list `94b944538b6d33b95bbe4d085818f51d5a16c44f`; Home editor `09c773f3c4fef82eb32eef15f68048f7e5fd9c49`; CMS product/history UI `3bbc5c4da6540c3c12dff2b252ec97db414256e1`.
 - No tests ran. Runtime stale-editor conflict behavior remains deferred to the final stage. Production remains untouched; PR #2 remains Open, Draft and unmerged.
+
+
+
+## Publish snapshot concurrency checkpoint — 20 November 2026
+
+A published-pointer guard alone did not prove that the draft content was unchanged since an editor loaded it. The publish API now also requires the loaded draft `created_at` timestamp, compares it with the selected revision, and includes it in the conditional D1 publish transition. A stale draft returns HTTP 409 rather than publishing newer content that the requesting editor did not load.
+
+- Page Visual Website Editor sends its loaded page draft timestamp. The page preview API now explicitly selects and returns `draft_created_at`, so the editor receives a real snapshot instead of an undefined value.
+- Product Management sends the selected product draft timestamp.
+- Settings publishing from CMS Management and Page Visual Design Manager sends the timestamp returned by the settings list. Page Visual Design Manager retains the timestamp after save and clears it after publish/delete.
+- Product archive now also sends and retains the expected draft timestamp; previously the archive action omitted it and could be rejected by the timestamp-aware product API.
+- No database migration or schema change was needed.
+
+Source commits and exact-commit build-only Preview verification:
+- Product archive caller: `84ae5ceb75920a5788480c608c6f02cb0fef0c7e` — [run #44655314872](https://github.com/yrproservice/yrproservice/actions/runs/44655314872) passed.
+- Publish API and page/product/settings callers: `f7edf5c3465fc05298032a7903615a3bc87c4152` — [run #44655526322](https://github.com/yrproservice/yrproservice/actions/runs/44655526322) passed.
+- Page Visual Design Manager timestamp state: `87bdc62173da4c1a8059b7af9eed0b509013d3c0` — [run #44655610178](https://github.com/yrproservice/yrproservice/actions/runs/44655610178) passed.
+- Design publish caller: `41760a4e6b071a316a06ee95979e550b9d1bb6e5` — [run #44655660564](https://github.com/yrproservice/yrproservice/actions/runs/44655660564) passed.
+- Page preview timestamp selection: `ea69bf66de81d32dcb303281ba71c6516b7021a9` — [run #44655685815](https://github.com/yrproservice/yrproservice/actions/runs/44655685815) passed.
+- The runs passed dependency installation, Vite build, Pages Functions compilation, Preview D1 schema readiness and Preview asset verification. No tests ran. Runtime stale-publish conflict behavior remains deferred to the final stage.
+- No migration was added or run. Production remains untouched; PR #2 remains Open, Draft and unmerged.
