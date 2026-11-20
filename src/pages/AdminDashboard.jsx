@@ -133,7 +133,7 @@ export default function AdminDashboard({ onAuthenticated }) {
         if (!controller.signal.aborted) setHistoryLoading(false);
       });
     return () => controller.abort();
-  }, [selected?.reference]);
+  }, [selected?.reference, selected?.status]);
 
   const counts = STATUSES.reduce((result, key) => ({
     ...result,
