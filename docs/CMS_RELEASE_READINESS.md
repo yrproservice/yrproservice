@@ -1148,3 +1148,14 @@ This records build/workflow completion for the exact documentation commit. It is
 - Current scope remains preparation/source review and build-only Preview checks. Automated tests, screenshots, image processing and final regression checks remain deferred. No migration/data operation, Production change, PR merge or release was performed or authorized in this checkpoint.
 - PR #2 remains Open, Draft and unmerged. Production remains protected and untouched.
 - Existing older dated audit entries in this document are historical checkpoints; they must not be interpreted as current-HEAD verification unless their commit SHA matches the source under review.
+
+## Additional source-review checkpoint — public CMS and request endpoints
+
+Reviewed current `cms-development` sources for the public CMS readers, authenticated draft previews, public request submission, and request tracking. No runtime calls or database writes were made.
+
+- Public page and product readers resolve content through each entity's `published_version_id` and require the selected version to remain in the `published` state. Public CMS readers do not query draft content.
+- Page and product draft preview handlers call `requireAdmin` before reading draft JSON. The site-settings public reader returns published settings only and uses non-cacheable `adminJson` response headers.
+- Public request submission validates request type, required fields, email format, and the service slug allowlist; it applies email/IP attempt limits before inserting a request. Tracking requires both reference and email and applies a separate rate limit before lookup; its response exposes status/reference/type/time, not the submitted message or contact details.
+- Operational consideration: `requests.js` and `track.js` create their rate-limit tables/indexes and prune old attempt rows during requests. This is runtime schema/maintenance behavior, not a release migration. It should be deliberately accounted for in future schema ownership/operations planning; no migration or database operation was run as part of this review.
+- The service submission allowlist currently contains eight fixed service slugs. Confirm that these correspond to the preserved Services catalogue before final release; this review did not alter the list or infer that the current UI catalogue has been reconciled.
+- This was static source inspection only. It does not establish live endpoint behaviour, rate-limit effectiveness under concurrency, or production readiness. Automated tests and final regression verification remain deferred.
