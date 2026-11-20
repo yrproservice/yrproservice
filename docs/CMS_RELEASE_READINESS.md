@@ -1138,3 +1138,13 @@ The recovery-readiness documentation commit `35b2d6091e3b5adefa3774508105328ec2c
 - Workers Builds: success.
 
 This records build/workflow completion for the exact documentation commit. It is not evidence that automated tests, authenticated CMS runtime workflows, visual parity, image/catalogue correctness, or disaster-recovery restore have been verified. The checks did not authorize or perform a Production deployment, migration, or PR merge.
+
+## Current handover checkpoint — 20 November 2026, Management Centre fix
+
+- Active branch: `cms-development`; current source commit at this checkpoint: `b0f71fa1ef2ed0aaf241791197fa1a0d3afb756a`.
+- The Management Centre blank-screen defect was a case-sensitive identifier mismatch in `src/pages/CMSManagement.jsx`: the tab lookup now uses the declared `VISUAL_DESIGN_KEYS_BY_TAB` constant. This was a one-identifier correction; no broader UI or CSS changes were made for this fix.
+- Exact-commit GitHub checks completed successfully (3/3): [Install and build website](https://github.com/yrproservice/yrproservice/actions/runs/44659829078), [Cloudflare Pages](https://github.com/yrproservice/yrproservice/runs/136035173068), and [Workers Builds](https://github.com/yrproservice/yrproservice/runs/136035287618). These are build/deployment workflow results, not automated tests or authenticated end-to-end verification.
+- The user confirmed the hard-refresh/reload step after the fix. Treat the Management Centre rendering issue as user-confirmed resolved; do not represent that confirmation as an assistant-run browser test.
+- Current scope remains preparation/source review and build-only Preview checks. Automated tests, screenshots, image processing and final regression checks remain deferred. No migration/data operation, Production change, PR merge or release was performed or authorized in this checkpoint.
+- PR #2 remains Open, Draft and unmerged. Production remains protected and untouched.
+- Existing older dated audit entries in this document are historical checkpoints; they must not be interpreted as current-HEAD verification unless their commit SHA matches the source under review.
