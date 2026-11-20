@@ -1557,3 +1557,12 @@ The two workflow results above are verified against their exact documentation co
 - Successful page/product draft updates now explicitly return `auditRecorded: true`. Unconfirmed intermediate results return inspect-before-retry guidance; no claim is made that a zero-row conditional D1 statement rolls back earlier statements in a batch.
 - Media source review reconfirmed that ambiguous upload batch outcomes preserve the R2 object, and archive/restore retain objects and check their audit insert. No media object was changed.
 - Source-only work; no CMS records, settings, publications, or media were mutated. Preview verification is pending for the current branch head.
+
+## Draft-transition safeguards and Preview verification — 20 November 2026
+
+- The latest exact-head build-only workflow, [#44669087753](https://github.com/yrproservice/yrproservice/actions/runs/44669087753), completed successfully on `254acdcdbc9833ec888c9ab286621b8f9fa93de5`.
+- All workflow stages passed: locked dependency installation, Vite website build, Cloudflare Pages Functions build, read-only Preview D1 schema-readiness check, and Cloudflare Pages Preview deployment / asset verification. This is build and deployment evidence only; the workflow did not run the deferred final functional, security, recovery or browser test suite.
+- Source review confirmed the recent CMS draft-transition changes separately check parent metadata updates, draft/version transitions and audit inserts. The publish batch checks the new draft transition, prior published revision archival when applicable, published-version pointer update and audit insert. Batch result indexes account for first-publish versus replacement-publish shapes.
+- Media upload preserves the R2 object when the D1 batch outcome is ambiguous; archive/restore retain the underlying object and check the corresponding database/audit results. No media or database operation was executed during this review.
+- Latest branch head at this checkpoint: `254acdcdbc9833ec888c9ab286621b8f9fa93de5`. PR #2 remains Open, Draft and unmerged. The live comparison reports 1,136 commits ahead of `main`, 0 behind, and 102 changed files; this substantial history/diff remains a mandatory merge-review gate, not a merge recommendation.
+- Tests, screenshots and image processing remain deferred. No migration, Production deployment, Production D1/R2 operation, access-policy change or PR merge was performed.
