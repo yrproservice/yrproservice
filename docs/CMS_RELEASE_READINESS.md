@@ -1807,3 +1807,10 @@ Newly confirmed blockers:
 Admin workspace exit was clarified in commit `dfc7338f533ae538028e3a952b74dc0df38953c8`: it exits the local Admin UI but leaves the Cloudflare Access browser session active, and the UI now communicates that truthfully. Exact-head CI passed.
 
 No Production migration, deployment, R2 operation, PR merge, or image processing has occurred. The Production environment remains untouched. Image processing is prohibited.
+
+
+## Continuation note — Visual Editor workspace exit label — 20 November 2026
+
+Current source head `8793cfd35e344bae99884f779efed4010b98e4c9` updates the remaining Visual Website Editor exit control to read `Exit Admin workspace`, matching the shared handler and the other Admin controls. The exact-head workflow [#44694351760](https://github.com/yrproservice/yrproservice/actions/runs/44694351760) was still running at last inspection; its result must be checked before claiming verification.
+
+Release blockers remain unchanged: Production CMS R2 binding/public base is not provisioned in Wrangler; GitHub reports `main.protected=false` and no repository rulesets; authenticated Preview mutation/runtime and D1/R2 recovery tests remain outstanding; Production backup/restore rehearsal and final V10/content provenance checks remain outstanding. No Production operations, merge, or image processing have occurred.

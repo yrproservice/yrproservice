@@ -207,3 +207,14 @@ No code change was made during this review because the inspected source did not 
 - Content/business gates remain: verify Services copy and Team role-image approval against authoritative V10; verify remaining product records against exact-model official sources; obtain confirmed prices/stock and HR contact destination. Do not invent missing information.
 - PR #2 remains Draft and unmerged. No Production migration, Production deployment, Production resource operation, or image processing occurred. Production remains untouched.
 - Next: continue bounded frontend/editor review, then authenticated Preview runtime and D1/R2 recovery verification. Do not merge solely because GitHub reports mergeable=true.
+
+
+## Continuation checkpoint — Visual Editor exit-label consistency — 20 November 2026
+
+- Current source head: `8793cfd35e344bae99884f779efed4010b98e4c9` on `cms-development`.
+- Updated `src/pages/CMSDashboard.jsx` so the Visual Website Editor uses the same truthful `Exit Admin workspace` label as the other Admin surfaces. It invokes the existing shared handler; no authentication/session semantics changed.
+- Exact-head workflow [#44694351760](https://github.com/yrproservice/yrproservice/actions/runs/44694351760) was observed in progress. At last check, checkout was complete and Node setup was running; no result or screenshot artifact was available yet. Do not treat the previous run for `9495e54` as verification of this newer source head.
+- The prior exact-head workflow for `dfc7338f533ae538028e3a952b74dc0df38953c8` passed all 11 workflow steps, including 77 tests, both builds, Preview D1 schema, Preview asset verification, six routes across desktop/mobile screenshot capture, and artifact upload.
+- PR #2 remains Open, Draft, unmerged; its head now matches `8793cfd35e344bae99884f779efed4010b98e4c9`; changed-file count remains 104. Do not merge while branch protection, Production R2 isolation, backup/restore evidence and authenticated Preview runtime gates remain unresolved.
+- No Production migration, deployment, merge, resource mutation or image processing occurred. Image processing remains prohibited.
+- Next: verify the exact-head workflow; continue source-level review and identify whether the Preview runtime can be exercised with an authorized browser/session. The available GitHub integration has no Cloudflare D1/R2 or browser-session action, so do not claim authenticated live mutations were tested without an appropriate authorized runtime.
