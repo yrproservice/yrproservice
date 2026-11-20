@@ -127,6 +127,9 @@ export default function AdminDashboard({ onAuthenticated }) {
       return undefined;
     }
     const controller = new AbortController();
+    setRequestHistory([]);
+    setHistoryNote("");
+    setHistoryHasMore(false);
     setHistoryLoading(true);
     setHistoryError("");
     fetch(`/api/admin/request-history?reference=${encodeURIComponent(selected.reference)}`, {
