@@ -1787,3 +1787,25 @@ Exact-commit Preview build verification:
 - The latest run passed locked dependency installation (20 packages; 0 reported vulnerabilities), Vite build, Wrangler Pages Functions compilation, Preview D1 schema readiness (`title_column=1`, `route_column=1`, `route_index=1`, `null_metadata=0`) and Preview asset verification (all four referenced JS/CSS assets returned successfully).
 - Build-only workflow; no tests ran. Authenticated runtime and concurrent-save verification remain deferred to the final stage.
 - No migration was added or run. Production remains untouched. PR #2 remains Open, Draft and unmerged.
+
+## Revision restore and media audit integrity checkpoint — 20 November 2026
+
+Revision restore concurrency:
+- `POST /api/cms/admin/history` now requires the editor's `expectedDraftId` snapshot. Missing snapshots or a mismatch with the active draft return HTTP 409.
+- The restore D1 batch conditionally archives only the expected draft. If the editor expected no draft, a no-draft guard prevents a concurrent draft from appearing before the restored revision is inserted.
+- The restored revision insert is conditional on the guard succeeding. Page metadata and the audit event are written only after a successful insert. The CMS editor requires the current item row to be loaded and sends its draft ID (or null).
+- This applies to page, product and site-setting revision restores. No schema migration was required.
+
+Media archive/restore audit integrity:
+- Media archive and restore now use D1 batches for the conditional media-row update and its audit insert. Audit rows are inserted only when the matching media update changes exactly one row.
+- If the audit insert fails, the D1 batch rolls back the archive/restore rather than leaving a state change without its audit record. R2 objects remain in the recovery window; no object purge was introduced.
+- No schema migration was required and no image processing was performed.
+
+Commits and exact-commit build-only Preview verification:
+- Revision restore API guard: `5966a2cc0551c94e2876186074fd91f765f926e2` — [run #44653381204](https://github.com/yrproservice/yrproservice/actions/runs/44653381204) passed.
+- CMS editor expected-draft integration: `78e47735ab6d9d34cc5223ec60b11a194a811de4` — [run #44653388894](https://github.com/yrproservice/yrproservice/actions/runs/44653388894) passed.
+- Require loaded current entity snapshot: `ae1e335db614660c5edb4ce93e40118e1a982268` — [run #44653406912](https://github.com/yrproservice/yrproservice/actions/runs/44653406912) passed.
+- Atomic media archive/restore audit: `c8e3013386877bf2f4f4a68eeaf8a793451f0ea7` — [run #44653550375](https://github.com/yrproservice/yrproservice/actions/runs/44653550375) passed.
+- Latest verified run installed 20 packages with 0 reported vulnerabilities, built Vite and Pages Functions, confirmed Preview D1 metadata readiness (`title_column=1`, `route_column=1`, `route_index=1`, `null_metadata=0`), and confirmed all four referenced Preview JS/CSS assets returned successfully.
+- These are build and Preview asset checks only. No tests ran. Authenticated runtime, concurrent restore and media audit failure-path verification remain deferred to the final stage.
+- Production remains untouched. PR #2 remains Open, Draft and unmerged.

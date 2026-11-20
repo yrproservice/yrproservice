@@ -20,7 +20,7 @@ Exact-commit build/Preview verification:
 
 ### Current branch and release gates
 
-- At the 20 November settings-concurrency checkpoint, `cms-development` is 990 commits ahead of `main`, 0 behind, with 98 changed files. The full history and complete PR diff must be reviewed before any merge decision.
+- At the 20 November revision/media integrity checkpoint, `cms-development` is 995 commits ahead of `main`, 0 behind, with 98 changed files. The full history and complete PR diff must be reviewed before any merge decision.
 - PR #2 remains Open, Draft and unmerged. No merge, Production migration or Production deployment is authorized.
 - Authenticated CMS runtime workflows, concurrency behaviour, visual inspection, screenshots, image processing and final regression/security/accessibility verification remain deferred.
 - The Admin auth implementation is Cloudflare Access JWT verification for one authorized account; it does not enforce a server-side single-device session lock. Do not claim that capability until the intended session policy is clarified and implemented.
@@ -28,8 +28,8 @@ Exact-commit build/Preview verification:
 
 **Current status update: 20 November 2026**  
 **Verified branch:** `cms-development`  
-**Latest verified functional source commit:** `cc20f005c66dad7bcfdaaadb268afe4e8af1a62e`  
-**Latest handover documentation checkpoint:** `9cbda6fa24a331e2c62740a5caf75a70c152b6f2`  
+**Latest verified functional source commit:** `c8e3013386877bf2f4f4a68eeaf8a793451f0ea7`  
+**Latest handover documentation checkpoint:** `9cbda6fa24a331e2c62740a5caf75a70c152b6f2` (pre-restore/media update; this checkpoint is being refreshed)  
 **Production status:** unchanged; release not approved
 
 Latest settings concurrency verification:
@@ -732,3 +732,16 @@ The settings editor now sends its expected current draft ID with each save. The 
 - Editor integration commit: `cc20f005c66dad7bcfdaaadb268afe4e8af1a62e`; build run [#44652971759](https://github.com/yrproservice/yrproservice/actions/runs/44652971759) passed.
 - Latest run passed dependency installation (20 packages; 0 reported vulnerabilities), Vite, Pages Functions, Preview D1 schema and all four Preview asset checks. No tests ran.
 - Runtime/concurrency verification remains deferred. Production remains untouched; PR #2 remains Draft and unmerged.
+
+## Revision restore and media audit integrity — 20 November 2026
+
+Revision restore now uses an expected-draft snapshot. The API rejects missing/stale snapshots with HTTP 409; its D1 batch archives only the expected draft, prevents a new draft racing a restore when none was expected, conditionally inserts the restored revision, and gates page metadata/audit writes on successful insertion. The CMS editor requires a loaded current entity and sends its draft ID. Applies to pages, products and settings. No migration required.
+
+Media archive and restore now atomically pair the conditional media-row update with an audit insert in one D1 batch. The audit insert is conditional on the row update; an audit failure rolls back the state change. R2 objects remain recoverable; no image processing or purge was performed.
+
+- Restore API guard `5966a2cc0551c94e2876186074fd91f765f926e2`: [run #44653381204](https://github.com/yrproservice/yrproservice/actions/runs/44653381204) passed.
+- Editor integration `78e47735ab6d9d34cc5223ec60b11a194a811de4`: [run #44653388894](https://github.com/yrproservice/yrproservice/actions/runs/44653388894) passed.
+- Loaded-row guard `ae1e335db614660c5edb4ce93e40118e1a982268`: [run #44653406912](https://github.com/yrproservice/yrproservice/actions/runs/44653406912) passed.
+- Media audit atomicity `c8e3013386877bf2f4f4a68eeaf8a793451f0ea7`: [run #44653550375](https://github.com/yrproservice/yrproservice/actions/runs/44653550375) passed.
+- Latest run: 20 packages installed, 0 reported vulnerabilities; Vite and Pages Functions builds passed; Preview D1 schema readiness passed; all four referenced Preview assets returned successfully. No tests ran.
+- Authenticated runtime, restore race and media audit rollback verification remain deferred. No migration was added or run; Production remains untouched.
