@@ -30,6 +30,20 @@ export async function onRequestGet(context) {
 
   const where = [];
   const bindings = [];
+  let cursor = null;
+  const cursorValue = url.searchParams.get("cursor") || "";
+  if (cursorValue) {
+    if (cursorValue.length > 512) return adminJson({ error: "Invalid request page cursor." }, 400);
+    try { cursor = JSON.parse(cursorValue); } catch {
+      return adminJson({ error: "Invalid request page cursor." }, 400);
+    }
+    if (
+      !cursor || typeof cursor !== "object" ||
+      typeof cursor.createdAt !== "string" || cursor.createdAt.length > 40 ||
+      !Number.isFinite(Date.parse(cursor.createdAt)) ||
+      typeof cursor.id !== "string" || !/^[A-Za-z0-9-]{1,80}$/.test(cursor.id)
+    ) return adminJson({ error: "Invalid request page cursor." }, 400);
+  }
   if (type) {
     where.push("request_type = ?");
     bindings.push(type);
@@ -44,6 +58,10 @@ export async function onRequestGet(context) {
     );
     const pattern = `%${search.toLowerCase()}%`;
     bindings.push(pattern, pattern, pattern, pattern);
+  }
+  if (cursor) {
+    where.push("(created_at < ? OR (created_at = ? AND id < ?))");
+    bindings.push(cursor.createdAt, cursor.createdAt, cursor.id);
   }
 
   const sql = `
@@ -63,14 +81,21 @@ export async function onRequestGet(context) {
       created_at
     FROM requests
     ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
-    ORDER BY created_at DESC
-    LIMIT 200
+    ORDER BY created_at DESC, id DESC
+    LIMIT 51
   `;
   try {
     const result = await env.DB.prepare(sql)
       .bind(...bindings)
       .all();
-    return adminJson({ ok: true, requests: result.results || [], limit: 200 });
+    const rows = result.results || [];
+    const hasMore = rows.length > 50;
+    const requests = rows.slice(0, 50);
+    const last = requests[requests.length - 1];
+    const nextCursor = hasMore && last
+      ? JSON.stringify({ createdAt: last.created_at, id: last.id })
+      : null;
+    return adminJson({ ok: true, requests, limit: 50, hasMore, nextCursor });
   } catch (error) {
     console.error("Admin request list query failed", error);
     return adminJson({ error: "Unable to load requests right now." }, 500);
