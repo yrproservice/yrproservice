@@ -101,8 +101,8 @@ function makeRequestDb({ exists = true } = {}) {
         },
         async first() {
           calls.push(this);
-          if (sql.includes("SELECT reference FROM requests")) {
-            return exists ? { reference: this.values[0] } : null;
+          if (sql.includes("SELECT id, reference, status FROM requests")) {
+            return exists ? { id: "request-id", reference: this.values[0], status: currentStatus } : null;
           }
           if (sql.includes("SELECT reference, request_type, status, created_at")) {
             return {
@@ -116,6 +116,13 @@ function makeRequestDb({ exists = true } = {}) {
         },
       };
       return statement;
+    },
+    async batch(statements) {
+      calls.push(...statements);
+      if (statements[0]?.sql.startsWith("UPDATE requests SET status")) {
+        currentStatus = statements[0].values[0];
+      }
+      return statements.map(() => ({ meta: { changes: 1 } }));
     },
   };
   return db;
@@ -195,7 +202,7 @@ function makeCmsDb({
     },
     async batch(statements) {
       batches.push(statements);
-      return statements.map(() => ({ success: true }));
+      return statements.map(() => ({ meta: { changes: 1 } }));
     },
   };
 }
@@ -218,6 +225,7 @@ test("Admin status update saves the allowed status and returns the updated reque
       status: "in_review",
       created_at: "2026-11-16T02:00:00.000Z",
     },
+    historyRecorded: true,
   });
   assert.ok(db.calls.some((call) =>
     call.sql.startsWith("UPDATE requests SET status") &&
@@ -297,10 +305,10 @@ for (const entityType of ["page", "product", "setting"]) {
     assert.ok(result.publishedAt);
     assert.equal(db.batches.length, 1);
     assert.equal(batch.length, 4);
-    assert.ok(batch[0].sql.includes("SET state = 'archived'"));
-    assert.deepEqual(batch[0].values, ["previous-version"]);
-    assert.ok(batch[1].sql.includes("SET state = 'published'"));
-    assert.equal(batch[1].values[1], "draft-version");
+    assert.ok(batch[0].sql.includes("SET state = 'published'"));
+    assert.equal(batch[0].values[1], "draft-version");
+    assert.ok(batch[1].sql.includes("SET state = 'archived'"));
+    assert.deepEqual(batch[1].values, ["previous-version"]);
     if (entityType === "page") {
       assert.ok(batch[2].sql.includes("SET title = ?, route = ?, published_version_id = ?"));
       assert.equal(batch[2].values[2], "draft-version");
