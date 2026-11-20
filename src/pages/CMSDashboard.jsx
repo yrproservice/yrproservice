@@ -503,6 +503,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     setContent(initial);
     setSelectedSectionId(firstSection.id);
     setDraftId("");
+    setDraftCreatedAt(null);
     setDraftVersion(null);
     setPublishedVersion(null);
     setSavedSnapshot("");
@@ -1000,6 +1001,7 @@ export default function CMSDashboard({ onAdminLogout }) {
 
       setPublishedVersion(result.version);
       setDraftId("");
+      setDraftCreatedAt(null);
       setDraftVersion(null);
       setNotice(`Page revision V${result.version} published to this Preview environment only. Production remains unchanged.`);
       await loadPages();
