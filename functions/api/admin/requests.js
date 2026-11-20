@@ -67,7 +67,7 @@ export async function onRequestGet(context) {
       typeof cursor.id !== "string" ||
       !cursor.id ||
       cursor.id.length > 80 ||
-      /[\\u0000-\\u001f\\u007f]/.test(cursor.id)
+      /[\x00-\x1f\x7f]/.test(cursor.id)
     ) {
       return adminJson({ error: "Invalid request page cursor." }, 400);
     }
