@@ -1650,3 +1650,10 @@ The two workflow results above are verified against their exact documentation co
   - Product image test expected fallback to the catalogue image when a published CMS record contained an unapproved legacy image. Current implementation deliberately returns an empty image in that case to prevent stale/incorrect model imagery; the assertion now tests that safety behavior instead.
 - Corrected fixtures/assertions were committed in `36fd64ac70018d45e74508b3554c42fea3519a31`, `5b023ce86ba7cddec6f6f8b4bd70aac11c9d13ec`, and `87a32f236657c3349e6dd606027ce3f99e4b4ed1`. The runtime product image policy was not weakened or changed.
 - The failed run was useful and is not counted as a pass. A fresh exact-head full test/build run is required to establish current results. No image processing was performed; image-related tests inspect signatures/path policy and do not transform assets.
+
+
+## Second automated test run — publish fixture token correction — 20 November 2026
+
+- After the first fixture updates, the suite reached 74/77 passing. The three remaining failures were the publish tests' stale mock data: the current publish API requires the draft's `created_at` value to be loaded and submitted as `expectedDraftCreatedAt` for its compare-and-swap guard. The mock had omitted both.
+- Commit `74bda7fcdadf89bfe30a6a3d7b52a01f43ddd90b` updates the fixture with the expected draft timestamp and includes it in the publish request. No production publish logic was weakened; this test specifically exercises the concurrency token now required by the API.
+- Exact-head full suite and Preview build are pending.
