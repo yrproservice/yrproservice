@@ -1684,3 +1684,9 @@ The two workflow results above are verified against their exact documentation co
 - Workflow commit `592383fd48cad5a59d80d0b5bd682bb45cdc4df8` adds a Chromium-based, desktop-size screenshot stage after successful Preview deployment verification. It captures Home, Products, Services, Team, the Signo T100 product detail, and HR Contact, then uploads the PNGs as a seven-day GitHub Actions artifact.
 - This captures rendered pages only. It does not process, optimize, convert, resize or alter repository/catalogue image assets. The screenshot step uses a temporary Playwright install with package-lock updates disabled; it does not add a permanent application dependency.
 - The immediately preceding Production preflight documentation checkpoint `1e8df0fab13e3131a0fb86abfc17282c15f34886` passed exact-head Preview build verification in workflow [#44674935199](https://github.com/yrproservice/yrproservice/actions/runs/44674935199). The new screenshot stage requires its own exact-head workflow run and artifact check.
+
+
+## Screenshot runner compatibility correction — 20 November 2026
+
+- Screenshot workflow attempt [#44675041079](https://github.com/yrproservice/yrproservice/actions/runs/44675041079) reached the screenshot stage but failed before Chromium installation: GitHub's `ubuntu-latest` runner resolved to Ubuntu 26.04, which Playwright 1.56.1 does not support. This was a runner compatibility failure, not a site navigation or rendering failure; no screenshots were captured and no artifact was uploaded.
+- Workflow commit `e0e90d7b8d9b827845cfd5279b92106f977b1ea6` pins the Preview workflow runner to `ubuntu-24.04`, a supported Playwright platform. Re-run screenshot capture and verify the artifact before claiming screenshots are complete.
