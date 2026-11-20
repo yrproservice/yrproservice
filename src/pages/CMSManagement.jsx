@@ -536,6 +536,16 @@ export default function CMSManagement() {
       setError("Load the current settings successfully before restoring a settings revision.");
       return;
     }
+    const currentEntityRow = type === "page"
+      ? pages.find((row) => row.page_key === key)
+      : type === "product"
+        ? items.find((row) => row.product_slug === key)
+        : settings.find((row) => row.setting_key === key);
+    if (!currentEntityRow) {
+      setError("The current CMS item could not be found in the loaded list. Reload the item list before restoring a revision.");
+      return;
+    }
+    const expectedDraftId = currentEntityRow.draft_id || null;
 
     const discardsSettingEdits = type === "setting" && key === settingKey && hasUnsavedSettingChanges;
     const discardsProductEdits = type === "product" && selected?.slug === key && selected.savedJson !== json;
@@ -557,11 +567,7 @@ export default function CMSManagement() {
           entityType: type,
           entityKey: key,
           versionId: id,
-          expectedDraftId: type === "page"
-            ? (pages.find((row) => row.page_key === key)?.draft_id || null)
-            : type === "product"
-              ? (items.find((row) => row.product_slug === key)?.draft_id || null)
-              : (settings.find((row) => row.setting_key === key)?.draft_id || null),
+          expectedDraftId,
         }),
       });
 
