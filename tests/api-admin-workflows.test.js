@@ -1399,3 +1399,55 @@ test("CMS media upload preserves its R2 object when the D1 batch outcome is ambi
   assert.equal(putCalls, 1);
   assert.equal(deleteCalls, 0);
 });
+
+for (const scenario of [
+  {
+    name: "rejects SVG uploads before writing to R2",
+    bytes: new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"></svg>'),
+    type: "image/svg+xml",
+    expectedStatus: 415,
+  },
+  {
+    name: "rejects a declared MIME type that does not match the image bytes",
+    bytes: (() => {
+      const bytes = new Uint8Array(24);
+      bytes.set([137, 80, 78, 71, 13, 10, 26, 10], 0);
+      bytes.set([0, 0, 0, 13, 73, 72, 68, 82], 8);
+      bytes.set([0, 0, 0, 1, 0, 0, 0, 1], 16);
+      return bytes;
+    })(),
+    type: "image/jpeg",
+    expectedStatus: 415,
+  },
+  {
+    name: "rejects empty image uploads before writing to R2",
+    bytes: new Uint8Array(),
+    type: "image/png",
+    expectedStatus: 400,
+  },
+]) {
+  test(`CMS media upload ${scenario.name}`, async () => {
+    const form = new FormData();
+    form.set("file", new Blob([scenario.bytes], { type: scenario.type }), "invalid-image");
+    let putCalls = 0;
+    const db = {
+      prepare(sql) { return { sql, bind() { return this; } }; },
+      async batch() { throw new Error("D1 must not be reached for invalid uploads"); },
+    };
+    const response = await uploadCmsMedia({
+      request: new Request("https://yrproservice.test/api/cms/admin/media", {
+        method: "POST",
+        headers: { "Cf-Access-Jwt-Assertion": accessToken },
+        body: form,
+      }),
+      env: {
+        ...adminConfig,
+        DB: db,
+        CMS_MEDIA_PUBLIC_BASE: "https://media.example.r2.dev",
+        CMS_MEDIA: { async put() { putCalls += 1; } },
+      },
+    });
+    assert.equal(response.status, scenario.expectedStatus);
+    assert.equal(putCalls, 0);
+  });
+}
