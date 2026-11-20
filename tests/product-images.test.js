@@ -26,12 +26,12 @@ test("uses an approved CMS image when present", () => {
   assert.equal(result.img, "https://pub-example.r2.dev/cms/test.webp");
 });
 
-test("falls back to the exact catalogue image instead of an old external image", () => {
+test("does not fall back to a catalogue image when a published CMS record has an unapproved image", () => {
   const result = mergePublishedProduct(
     { slug: "test", img: "/catalog/test-model.jpg" },
     { slug: "test", img: "https://old-manufacturer.example.com/old.jpg" },
   );
-  assert.equal(result.img, "/catalog/test-model.jpg");
+  assert.equal(result.img, "");
 });
 
 test("does not invent a product image when no approved image exists", () => {
