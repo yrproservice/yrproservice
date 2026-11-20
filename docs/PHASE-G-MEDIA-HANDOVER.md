@@ -38,7 +38,7 @@ The latest GitHub compare at this checkpoint showed `cms-development` 953 commit
    - Archive actions attempt to write an `archive_media` event to the existing `cms_audit_log`.
    - Restore actions attempt to write a `restore_media` event.
    - These use the existing audit table; no migration was added.
-   - Archive and restore use a D1 batch containing the media-state update and its audit insert. The handlers verify that both statements changed one row; if the audit insert is not confirmed, the handler reports an error and relies on D1 batch atomicity to roll back the paired state change. Do not describe these lifecycle audit writes as best-effort.
+   - Archive and restore use a D1 batch containing the media-state update and its audit insert. The handlers verify that both statements changed one row. A SQL statement error rolls back the batch, but a conditional audit insert that successfully executes while affecting zero rows does not itself guarantee rollback of the preceding state update. In that ambiguous case, the handler reports the unconfirmed audit event and requires the administrator to reload and inspect the item before retrying; do not claim the state change was rolled back.
 
 5. Expanded per-item media activity history:
    - All activity, filename changes, alt-text changes, and archive/restore events can be filtered.
@@ -1903,3 +1903,8 @@ Exact-commit build-only Preview verification:
 - Source commit: `d32888a89b070bf98bdf1b64dcdc7e1ec9297b11`.
 - The build-only workflow is configured to run on pushes to `cms-development`; an exact-commit result has not yet been confirmed in this handover. Do not treat earlier build runs as verification of this commit.
 - No tests, screenshots, image processing, migrations, or Production operations were performed. PR #2 remains Open, Draft and unmerged.
+
+
+## Audit affected-row semantics correction — 20 November 2026
+
+The media lifecycle audit wording above has been corrected: a zero-row conditional audit insert is not a SQL error and does not guarantee that earlier statements in a D1 batch are rolled back. Archive/restore handlers check both affected-row counts and return an explicit reload-and-inspect message if the audit event is not confirmed. Runtime failure-path behavior remains deferred to the final verification stage. See `docs/CMS_RELEASE_READINESS.md` for the broader CMS audit consistency review.
