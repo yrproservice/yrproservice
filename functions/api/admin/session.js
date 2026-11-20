@@ -1,4 +1,4 @@
-import { adminJson, clearAdminSessionCookie, requireAdmin } from "../../_utils/admin-auth.js";
+import { adminJson, requireAdmin } from "../../_utils/admin-auth.js";
 
 export async function onRequestGet(context) {
   const accessReturn = new URL(context.request.url).searchParams.get("access_return") === "1";
@@ -33,12 +33,11 @@ export async function onRequestPatch(context) {
 export async function onRequestDelete(context) {
   const auth = await requireAdmin(context);
   if (!auth.ok) return auth.response;
-  const headers = new Headers({
-    "Content-Type": "application/json; charset=utf-8",
-    "Cache-Control": "no-store, max-age=0",
-    "Set-Cookie": clearAdminSessionCookie(),
-    "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "no-referrer",
+  // This endpoint confirms the caller's Access identity and lets the SPA exit
+  // its local Admin workspace. It does not revoke Cloudflare Access tokens.
+  return adminJson({
+    ok: true,
+    workspaceClosed: true,
+    accessSessionActive: true,
   });
-  return new Response(JSON.stringify({ ok: true, loggedOut: true }), { status: 200, headers });
 }

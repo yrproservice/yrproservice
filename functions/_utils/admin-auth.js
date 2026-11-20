@@ -175,12 +175,6 @@ export function adminJson(data, status = 200) {
   });
 }
 
-const ADMIN_SESSION_COOKIE = "yr_admin_session";
-
-export function clearAdminSessionCookie() {
-  return `${ADMIN_SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`;
-}
-
 export async function requireAdmin(context) {
   const token = context.request.headers.get("Cf-Access-Jwt-Assertion");
   if (!token)

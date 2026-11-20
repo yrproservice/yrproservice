@@ -185,7 +185,7 @@ function Router() {
       logoutError = "The server could not be reached to confirm logout. Please try again.";
     }
     sessionStorage.removeItem("yrproservice-access-mode");
-    setAccessMessage(logoutError || "You have logged out of Admin.");
+    setAccessMessage(logoutError || "Admin workspace closed. Your Cloudflare Access session remains active in this browser.");
     setAccessMode("choose");
     if (window.location.pathname !== "/") navigate("/");
   }
@@ -280,7 +280,7 @@ function Router() {
       {isAdminRoute && accessMode === "admin" && path !== "/admin/cms" && (
         <div className="admin-session-utility">
           <span>Admin access active</span>
-          <button type="button" onClick={handleAdminLogout}>Log out</button>
+          <button type="button" onClick={handleAdminLogout}>Exit Admin workspace</button>
         </div>
       )}
       {path !== "/cart" && path !== "/dental-chair-request" && (!migrationReady || migrationError) && (
