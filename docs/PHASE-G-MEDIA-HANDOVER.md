@@ -1766,3 +1766,24 @@ Exact-commit build/Preview evidence:
 - Both workflows contained only install/build/Functions/D1/Preview asset steps; no test step ran.
 - These checks establish build and Preview static-asset alignment only. Authenticated CMS workflows and concurrency behaviour still require final-stage runtime verification.
 - No migration was added or rerun. Screenshots and image processing remain deferred. Production D1/R2, bindings, secrets and deployment remain untouched. PR #2 remains Open, Draft and unmerged.
+
+## Settings draft concurrency checkpoint — 20 November 2026
+
+Source review found that the settings save endpoint could archive a newer draft after a stale editor save, because it did not compare the draft version loaded by the editor. The API and CMS editor now use an expected-draft ID:
+
+- The editor sends the current setting's `draft_id` (or `null` when no draft exists) with every settings save.
+- The API rejects a missing expected-draft value and returns HTTP 409 if the active draft ID differs from the editor's snapshot.
+- The D1 batch conditionally archives only the expected active draft. For a new setting with no draft, an in-batch guard checks that no draft appeared before insertion. The new draft, setting timestamp and audit entry are gated on that guard succeeding.
+- Concurrent/stale saves therefore fail with a conflict instead of replacing another administrator's newer draft. Existing immutable revision history and partial unique draft index remain in use.
+- No migration or schema change was required.
+
+Commits:
+- `da8509d33986bd4355c9c33428b0db1f80c94b0e` — server-side expected-draft guard for settings saves.
+- `cc20f005c66dad7bcfdaaadb268afe4e8af1a62e` — send expected draft ID from the CMS settings editor.
+
+Exact-commit Preview build verification:
+- [Run #44652965071](https://github.com/yrproservice/yrproservice/actions/runs/44652965071) passed for the settings API guard.
+- [Run #44652971759](https://github.com/yrproservice/yrproservice/actions/runs/44652971759) passed for the editor integration commit.
+- The latest run passed locked dependency installation (20 packages; 0 reported vulnerabilities), Vite build, Wrangler Pages Functions compilation, Preview D1 schema readiness (`title_column=1`, `route_column=1`, `route_index=1`, `null_metadata=0`) and Preview asset verification (all four referenced JS/CSS assets returned successfully).
+- Build-only workflow; no tests ran. Authenticated runtime and concurrent-save verification remain deferred to the final stage.
+- No migration was added or run. Production remains untouched. PR #2 remains Open, Draft and unmerged.

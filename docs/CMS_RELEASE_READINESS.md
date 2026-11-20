@@ -716,3 +716,12 @@ Commit `5a9add5` changes only `src/style.css`. It connects the existing `--yr-in
 - Live compare at this checkpoint reports `cms-development` 963 commits ahead of `main`, 0 behind, with 98 changed files. This large branch delta remains a merge-review gate; no merge or Production release is authorized.
 - Preview migration 0002/0003 is not being rerun. Do not modify migration files unless an actual schema requirement is established and the guarded workflow is deliberately reviewed.
 - Production D1/R2, bindings, secrets and deployments remain outside scope and untouched.
+
+## Settings save concurrency — 20 November 2026
+
+The settings editor now sends its expected current draft ID with each save. The API checks that snapshot and conditionally archives only the expected draft inside the D1 batch. New-setting saves also guard against a draft appearing between the editor read and insert. Stale saves return HTTP 409; audit and timestamp writes occur only after a successful new draft insert. No migration was needed.
+
+- API guard commit: `da8509d33986bd4355c9c33428b0db1f80c94b0e`; build run [#44652965071](https://github.com/yrproservice/yrproservice/actions/runs/44652965071) passed.
+- Editor integration commit: `cc20f005c66dad7bcfdaaadb268afe4e8af1a62e`; build run [#44652971759](https://github.com/yrproservice/yrproservice/actions/runs/44652971759) passed.
+- Latest run passed dependency installation (20 packages; 0 reported vulnerabilities), Vite, Pages Functions, Preview D1 schema and all four Preview asset checks. No tests ran.
+- Runtime/concurrency verification remains deferred. Production remains untouched; PR #2 remains Draft and unmerged.
