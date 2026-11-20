@@ -1525,3 +1525,10 @@ The two workflow results above are verified against their exact documentation co
 - Revision restore already checked that the new draft insert affected one row, but did not check the final conditional audit-log insert. The handler now checks the final batch result for one affected audit row and returns an explicit ambiguous-outcome response if it cannot be confirmed. Successful restore responses include `auditRecorded: true`.
 - The source uses a variable-length batch for page versus product/setting restores; checking the final result keeps the audit assertion correct for all three entity types.
 - This was a source-only change. No revision was restored and no D1 operation was executed. Preview build verification is pending. Runtime tests for each entity type and ambiguous D1 outcomes remain deferred.
+
+
+## Revision restore page-metadata confirmation — 20 November 2026
+
+- Source commit `ca8c799cec1fe7b10c7e3e3795957f52e8c5fbb3` adds an explicit affected-row check for the page metadata update in the page-revision restore batch.
+- Page restores now independently confirm the new draft insert, the page title/route metadata update, and the final audit insert. Product and setting restores confirm the new draft insert and audit insert. Any unconfirmed follow-on result produces a reload-and-inspect response rather than a success response.
+- This remains source-only review; no live revisions were restored and no D1 writes were made. Preview build verification is pending.
