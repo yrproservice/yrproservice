@@ -41,17 +41,21 @@ The previous attempt using `CLOUDFLARE_API_TOKEN` failed at the database identit
 
 ## Build-only, migration and Preview deployment workflow
 
-The `CMS Preview Build Check` workflow runs on pushes to `cms-development` and remains manually dispatchable. Its current build-only sequence is:
+The `CMS Preview Build Check` workflow runs on pushes to `cms-development` and remains manually dispatchable. Its current sequence is:
 
 1. Install locked dependencies with `npm ci`.
-2. Build the Vite website with `npm run build`.
-3. Compile Cloudflare Pages Functions with `npx wrangler@4.157.0 pages functions build`.
-4. Verify that the Preview D1 database has the page-version `title` and `route` columns, the route/state index, and no null page metadata.
-5. Deploy the built output to the Preview branch only with `wrangler pages deploy dist --project-name=yrproservice --branch=cms-development`, attaching the Git commit SHA when direct upload is configured.
+2. Run the automated Node test suite with `npm test`.
+3. Build the Vite website with `npm run build`.
+4. Compile Cloudflare Pages Functions with `npx wrangler@4.157.0 pages functions build`.
+5. Verify that the Preview D1 database has the page-version `title` and `route` columns, the route/state index, and no null page metadata.
+6. Deploy or verify the built output against the Preview branch only (`cms-development`).
+7. Capture viewport screenshots for Home, Products, Services, Team, Signo T100 product detail and HR Contact at desktop and mobile viewport sizes, then upload the 12 captures as a seven-day artifact.
 
-**Tests are intentionally not part of this workflow at the current user instruction.** Automated tests, screenshots and image processing are deferred. A successful build or deployment is not a test result. Do not add test execution back to this workflow until the user authorizes the final verification stage.
+The screenshot step uses Playwright/Chromium and waits for `domcontentloaded` plus a bounded render delay. It captures visible viewport screenshots, not full-page evidence. **Image processing remains prohibited and is not performed:** screenshots are rendered-page evidence only; source/catalogue image files are not converted, resized, optimized, or otherwise transformed.
 
-The Preview deploy step runs only after dependency installation, Vite build, Pages Functions build and Preview D1 schema readiness succeed. The branch argument is explicitly `cms-development`; the Production branch is not targeted. If a dedicated Pages token is unavailable, the workflow waits for the Git-integrated Preview branch and compares its hashed JavaScript/CSS asset references with the build output. It only accepts that fallback when the Preview is serving the same build assets.
+The Preview deploy step runs only after dependency installation, tests, Vite build, Pages Functions build and Preview D1 schema readiness succeed. The branch argument is explicitly `cms-development`; the Production branch is not targeted. If a dedicated Pages token is unavailable, the workflow waits for the Git-integrated Preview branch and compares its hashed JavaScript/CSS asset references with the build output. It only accepts that fallback when the Preview is serving the same build assets.
+
+A successful build or deployment alone is not a test result. Record each workflow stage and screenshot artifact against the exact commit SHA; do not transfer a passing result from an earlier commit to a later head.
 
 The `Apply CMS Migration to Preview D1` workflow triggers when either `migrations/0002_create_cms.sql` or `migrations/0003_page_metadata_versions.sql` changes. It verifies the exact Preview database name and UUID before SQL execution. The page-metadata migration checks whether both columns exist, refuses a partially migrated schema, and verifies the columns, index and backfill after execution. **Do not change migration files casually:** doing so automatically triggers this workflow. No migration is required merely because the build workflow changed.
 
