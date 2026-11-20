@@ -1908,3 +1908,8 @@ Exact-commit build-only Preview verification:
 ## Audit affected-row semantics correction — 20 November 2026
 
 The media lifecycle audit wording above has been corrected: a zero-row conditional audit insert is not a SQL error and does not guarantee that earlier statements in a D1 batch are rolled back. Archive/restore handlers check both affected-row counts and return an explicit reload-and-inspect message if the audit event is not confirmed. Runtime failure-path behavior remains deferred to the final verification stage. See `docs/CMS_RELEASE_READINESS.md` for the broader CMS audit consistency review.
+
+
+## Superseding pagination note — 20 November 2026
+
+The earlier “Media library list: maximum 300 loaded records” note above is outdated. Current source uses keyset pagination with **100 records per page**, with Previous/Next navigation; this is a page-size limit, not a total library cap. The R2 orphan scan is independently bounded to 100 objects per request and can continue with its cursor. See `docs/CMS_RELEASE_READINESS.md` → “Media recovery and inventory continuation — 20 November 2026” for the current source-review details. This correction does not represent a live R2 inventory or runtime verification.
