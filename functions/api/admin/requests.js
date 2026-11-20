@@ -28,37 +28,26 @@ export async function onRequestGet(context) {
   if (status && !ALLOWED_STATUSES.has(status))
     return adminJson({ error: "Invalid status filter." }, 400);
 
-  const where = [];
-  const bindings = [];
-  let cursor = null;
-  const cursorValue = url.searchParams.get("cursor") || "";
-  if (cursorValue) {
-    if (cursorValue.length > 512) return adminJson({ error: "Invalid request page cursor." }, 400);
-    try { cursor = JSON.parse(cursorValue); } catch {
-      return adminJson({ error: "Invalid request page cursor." }, 400);
-    }
-    if (
-      !cursor || typeof cursor !== "object" ||
-      typeof cursor.createdAt !== "string" || cursor.createdAt.length > 40 ||
-      !Number.isFinite(Date.parse(cursor.createdAt)) ||
-      typeof cursor.id !== "string" || !/^[A-Za-z0-9-]{1,80}$/.test(cursor.id)
-    ) return adminJson({ error: "Invalid request page cursor." }, 400);
-  }
+  const filterWhere = [];
+  const filterBindings = [];
   if (type) {
-    where.push("request_type = ?");
-    bindings.push(type);
+    filterWhere.push("request_type = ?");
+    filterBindings.push(type);
   }
   if (status) {
-    where.push("status = ?");
-    bindings.push(status);
+    filterWhere.push("status = ?");
+    filterBindings.push(status);
   }
   if (search) {
-    where.push(
+    filterWhere.push(
       "(reference LIKE ? OR lower(customer_name) LIKE ? OR lower(email) LIKE ? OR lower(company) LIKE ?)",
     );
     const pattern = `%${search.toLowerCase()}%`;
-    bindings.push(pattern, pattern, pattern, pattern);
+    filterBindings.push(pattern, pattern, pattern, pattern);
   }
+
+  const where = [...filterWhere];
+  const bindings = [...filterBindings];
   if (cursor) {
     where.push("(created_at < ? OR (created_at = ? AND id < ?))");
     bindings.push(cursor.createdAt, cursor.createdAt, cursor.id);
@@ -85,9 +74,15 @@ export async function onRequestGet(context) {
     LIMIT 51
   `;
   try {
-    const result = await env.DB.prepare(sql)
-      .bind(...bindings)
-      .all();
+    const [result, statusResult] = await Promise.all([
+      env.DB.prepare(sql).bind(...bindings).all(),
+      env.DB.prepare(`
+        SELECT status, COUNT(*) AS total
+        FROM requests
+        ${filterWhere.length ? `WHERE ${filterWhere.join(" AND ")}` : ""}
+        GROUP BY status
+      `).bind(...filterBindings).all(),
+    ]);
     const rows = result.results || [];
     const hasMore = rows.length > 50;
     const requests = rows.slice(0, 50);
@@ -95,7 +90,11 @@ export async function onRequestGet(context) {
     const nextCursor = hasMore && last
       ? JSON.stringify({ createdAt: last.created_at, id: last.id })
       : null;
-    return adminJson({ ok: true, requests, limit: 50, hasMore, nextCursor });
+    const statusCounts = Object.fromEntries(
+      (statusResult.results || []).map((row) => [row.status, Number(row.total || 0)]),
+    );
+    return adminJson({ ok: true, requests, limit: 50, hasMore, nextCursor, statusCounts });
+
   } catch (error) {
     console.error("Admin request list query failed", error);
     return adminJson({ error: "Unable to load requests right now." }, 500);
