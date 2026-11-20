@@ -1289,3 +1289,20 @@ The settings concurrency concern is not a confirmed defect after the batch-guard
 - The separate Cloudflare Workers Builds check was still in progress at the time of this checkpoint and is not represented as a success.
 - PR #2 remains Open and Draft, not merged. Production was not deployed to or modified.
 - No automated tests, screenshots, image processing, customer request changes, media uploads, destructive actions, or Production operations were performed.
+
+
+## Git-based V10 source recovery review — 20 November 2026
+
+- The user confirmed the authoritative V10 ZIP cannot be uploaded because of the platform file-size limit and asked whether Git can be used instead. Repository history was inspected directly; no ZIP re-upload is required to recover the committed source tree.
+- Git contains root commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e`, dated 16 October 2026, with commit message **Initial V10 website commit**. Its tree is `be96eae2c9a872a7aa04f3c6e2f5f8a998ff151d` and contains the original React/Vite website source, `src/pages`, `src/components`, `src/data`, `src/style.css`, public assets, brand logos and the original catalogue image folder structure.
+- The current `cms-development` branch descends directly from this commit: GitHub compare reports 1,099 commits ahead and 0 behind, with the merge base equal to the initial V10-labelled commit. This establishes a usable Git ancestry checkpoint for preserving and comparing the original website implementation; it does not prove that every byte matches the user's external V10 ZIP.
+- **Provenance discrepancy:** the README present in the initial V10-labelled commit is titled “Visual Blueprint V8”. Its body describes the design direction, page identities, eight Services entries, HR-only Contact, product/cart versus dental-chair request separation, and a catalogue built from `catalog.zip`. The commit message calls the snapshot V10, but the README's V8 title means the external ZIP's exact version identity and byte-for-byte equivalence cannot be certified from Git alone. Do not silently rewrite this discrepancy or claim a cryptographic match.
+- The root tree contains 148 entries and includes the original page/data/style source and catalogue images. The current CMS branch retains these files while adding CMS renderers, administration routes, migrations and Preview infrastructure. Use the initial commit as the historical source for targeted diffs and recovery, not as a replacement branch or a reason to roll back CMS work.
+- The current Services source at `src/data/services.js` contains eight entries matching the slugs already compared with the request allowlist. This verifies internal current-source parity only; it does not establish fidelity to any later external V10 ZIP revision. Preserve the current content until a stronger source comparison is available.
+- Access policy remains unchanged: one configured authorized account behind Cloudflare Access, with shared-account use possible and no server-side single-device lock. No identity, session, or staff policy changes were made.
+- Current branch head observed during this review: `73b7e40435ddc3451d5fc19b96bd2ee04125c8c7`. Its CMS Preview Build Check run `44664155930` completed successfully. This is build/Preview workflow evidence, not final functional test or visual verification.
+- No application source, database, migration, media object, access policy, Production resource, PR state or deployment target was changed during this source-recovery review. No tests, screenshots or image processing were run.
+
+### V10 recovery decision
+
+Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered historical website baseline labelled V10**, while retaining the README V8 discrepancy as an explicit provenance caveat. Future visual/CMS work must preserve the existing `cms-development` implementation and use focused comparisons against this historical tree; never reset, cherry-pick wholesale, or replace current files from the old snapshot without a verified file-level reason.
