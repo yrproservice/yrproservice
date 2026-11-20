@@ -1744,3 +1744,25 @@ The remaining significant verification gate is authenticated Preview CMS runtime
 - Exact latest source commit `17f0e08a54093aebec61eb320cf28cd2785c4bdd` passed GitHub Actions run [#44499923643](https://github.com/yrproservice/yrproservice/actions/runs/44499923643): locked dependency install, Vite build, Pages Functions compilation, Preview D1 schema readiness and Git-integrated Preview asset verification. All four referenced JS/CSS assets returned successfully. The workflow had no test step.
 - Intermediate exact-commit build runs for the tracking and request-status changes also passed: [#44499771080](https://github.com/yrproservice/yrproservice/actions/runs/44499771080) and [#44499813828](https://github.com/yrproservice/yrproservice/actions/runs/44499813828). The latest run above includes the final combined source state.
 - No migration was required or run. Tests, screenshots, image processing and authenticated runtime/concurrency checks remain deferred. Production remains untouched; PR #2 remains Draft and unmerged.
+
+## Additional Phase G continuation — media lifecycle and draft deletion concurrency (20 November 2026)
+
+Source review identified two remaining integrity edges and applied focused safeguards:
+
+- `functions/api/cms/admin/media.js`: metadata updates now compare the previously-read filename and alt-text snapshot in the UPDATE predicate. The audit event is inserted only when that guarded UPDATE changed one row. A stale administrator edit returns HTTP 409 rather than overwriting newer metadata or recording a misleading audit event.
+- The media archive operation now rechecks page, product and site-setting revision content inside the conditional UPDATE itself. If a reference appears between the earlier usage report and archive write, the archive is rejected and the latest usage report is returned. Existing archive behaviour remains reversible; R2 objects are retained.
+- `functions/api/cms/admin/draft.js`: draft deletion now checks the affected-row count. The audit event is conditional on the DELETE succeeding, and page metadata restoration is gated on the successful delete. A stale delete returns HTTP 409 rather than reporting a deletion that did not happen.
+- Existing revision-history restore and single-draft partial unique indexes were reviewed. The indexes enforce one active draft per page/product/setting; concurrent restore attempts that collide on a version number or draft slot fail transactionally. No migration was needed.
+- Public CMS endpoints were reviewed: published page/product JSON uses a 60-second public cache with 300-second stale-while-revalidate; public settings use the shared no-store response helper. Admin endpoints remain no-store. This is the current cache behaviour, not an authenticated runtime verification.
+
+Relevant commits:
+- `e1680d3cab8964f32283c2091cc4e289a1a684ee` — guard CMS media metadata and archive concurrency.
+- `bcf4e0cbb3d73f4b278bf2bef267e37f9c281c41` — guard CMS draft deletion against concurrent changes.
+
+Exact-commit build/Preview evidence:
+- [Run #44652236533](https://github.com/yrproservice/yrproservice/actions/runs/44652236533) passed for the media safeguards commit.
+- [Run #44652255773](https://github.com/yrproservice/yrproservice/actions/runs/44652255773) passed for the latest draft-deletion safeguards commit.
+- Both runs passed `npm ci` (20 packages; 0 reported vulnerabilities), Vite build, Wrangler Pages Functions compilation, Preview D1 schema readiness (`title_column=1`, `route_column=1`, `route_index=1`, `null_metadata=0`) and Git-integrated Preview asset verification (all four referenced JS/CSS assets returned successfully).
+- Both workflows contained only install/build/Functions/D1/Preview asset steps; no test step ran.
+- These checks establish build and Preview static-asset alignment only. Authenticated CMS workflows and concurrency behaviour still require final-stage runtime verification.
+- No migration was added or rerun. Screenshots and image processing remain deferred. Production D1/R2, bindings, secrets and deployment remain untouched. PR #2 remains Open, Draft and unmerged.
