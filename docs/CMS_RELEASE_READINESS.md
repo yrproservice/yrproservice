@@ -1710,3 +1710,10 @@ The two workflow results above are verified against their exact documentation co
 
 - The Ubuntu 24.04 screenshot attempt successfully installed Chromium but the Home page navigation exceeded 45 seconds while waiting for Playwright's `networkidle` condition. The Preview site was reachable and its asset-fingerprint check had passed, but no screenshots were captured by that run.
 - Workflow commit `bedc6f365da9e784a891c3de6cfb2ce705503180` changes screenshot navigation to `domcontentloaded` followed by a short render wait. This avoids treating persistent background requests as a page-load failure. Exact-head screenshot execution remains pending.
+
+
+## Read-only request-history schema check passed — 20 November 2026
+
+- Workflow [#44675277581](https://github.com/yrproservice/yrproservice/actions/runs/44675277581) completed successfully on commit `e2333a57318e4b8a74507ff20fedcf3ede498e29`.
+- It positively verified Preview D1 identity and executed the SELECT-only schema check. All seven expected columns, the `request_id` foreign key to `requests.id` with `ON DELETE RESTRICT`, and both indexes were present. No migration or other database write occurred in this run.
+- This independently verifies the current Preview request-history schema shape; it does not establish Production D1 readiness.
