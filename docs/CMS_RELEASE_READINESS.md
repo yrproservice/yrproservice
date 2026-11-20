@@ -906,3 +906,29 @@ No source change was justified in this pass. The main unresolved decision is the
 - The Cloudflare Workers Builds check also completed successfully and its details URL is under the `previews/cms-development/builds/` path. The generic dashboard path contains the service's `production` namespace, but the check itself identifies this build as a Preview for branch `cms-development`; it is not evidence of a Production deployment.
 - This verification did not run automated tests, screenshots, image processing, or database migrations. A successful Preview build/deployment is not approval to merge PR #2 or release Production.
 - PR #2 remains Open and Draft; Production remains protected and no Production release was authorized.
+
+
+## Admin request-status auditability — implementation decision and integration review (20 November 2026)
+
+### Confirmed existing audit pattern
+
+- The Preview CMS schema already defines `cms_audit_log` with `actor_email`, `action`, `entity_type`, `entity_id`, JSON metadata and a timestamp; it is created by `migrations/0002_create_cms.sql`.
+- The CMS publish handler writes its audit row in the same D1 batch as the guarded publication pointer updates. The audit insert is conditional on the target revision and published pointer reaching the expected state. This is the established atomic-audit pattern to follow.
+- Media archive/restore also records its audit event atomically with its conditional state change. Media history reads this shared log.
+- The existing Admin request status handler uses compare-and-swap for concurrent status updates but performs the update as a standalone statement and does not append an audit row. This confirms the auditability gap from the previous review.
+
+### Safe implementation boundary
+
+- Do not add a best-effort audit insert after the request update: a failed second write would leave an unrecorded status change.
+- If request status changes are required to be auditable, the update and audit insert should be one D1 batch/transaction. The audit insert must be conditional on the compare-and-swap update having changed exactly one row; no event should be written for an already-applied retry or a conflict.
+- Capture the authenticated actor email, request reference as entity ID, previous and new status, and request type as bounded metadata. Do not copy customer name, email, phone, message or request details into the audit metadata.
+- Reuse `cms_audit_log` only when the target environment is guaranteed to have the CMS schema. The Preview migration workflow creates this table, but the request API is a general customer-request feature and its availability must not silently become dependent on an unapplied CMS migration. Before implementation, explicitly verify schema readiness for every intended environment and define the expected API behavior if the audit table is unavailable.
+- No additional migration is justified yet: the shared audit table already exists in the CMS schema. A separate request-audit table would add schema and retention complexity without a demonstrated requirement.
+- Retain the existing status compare-and-swap behavior and response semantics. An audit write must not weaken concurrency handling or disclose customer data.
+
+### Decision and release gate
+
+- Recommended direction: use the existing `cms_audit_log` and an atomic conditional D1 batch, after confirming CMS audit-table readiness for the Preview request API target. Do not add a silent best-effort fallback.
+- This is a documented recommendation, not an implemented code change. The user/product owner must confirm that durable audit history is required and that the CMS schema dependency is acceptable before source changes.
+- Until that decision is approved, accurately describe request status changes as authenticated and concurrency-protected, but not durably audited.
+- No automated tests, screenshots, image processing, migrations, or Production operations were performed during this review.
