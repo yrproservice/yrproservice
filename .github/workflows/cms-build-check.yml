@@ -14,6 +14,7 @@ jobs:
   build:
     name: Install, test and build website
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -129,14 +130,14 @@ jobs:
           const browser = await chromium.launch({ headless: true });
           try {
             const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
-            page.setDefaultNavigationTimeout(45000);
+            page.setDefaultNavigationTimeout(20000);
             for (const [name, route] of routes) {
               const response = await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
               if (!response || response.status() >= 400) {
                 throw new Error('Preview page failed: ' + route + ' (' + (response?.status() ?? 'no response') + ')');
               }
               await page.waitForTimeout(1800);
-              await page.screenshot({ path: 'preview-screenshots/' + name + '.png', fullPage: true });
+              await page.screenshot({ path: 'preview-screenshots/' + name + '.png', fullPage: false });
               console.log('Captured', route, response.status());
             }
           } finally {
