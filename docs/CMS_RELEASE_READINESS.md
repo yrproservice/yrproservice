@@ -13,14 +13,14 @@ The latest source-review continuation made focused integrity changes without run
 Exact-commit build/Preview verification:
 - Run [#44652236533](https://github.com/yrproservice/yrproservice/actions/runs/44652236533) passed for media source commit `e1680d3cab8964f32283c2091cc4e289a1a684ee`.
 - Run [#44652255773](https://github.com/yrproservice/yrproservice/actions/runs/44652255773) passed for functional source commit `bcf4e0cbb3d73f4b278bf2bef267e37f9c281c41`.
-- Run [#44652386287](https://github.com/yrproservice/yrproservice/actions/runs/44652386287) passed for handover documentation commit `4d2ea47a218b69a8e7a229227c00b6b6a5b405c0`.
+- Run [#44652386287](https://github.com/yrproservice/yrproservice/actions/runs/44652386287) passed for the earlier handover documentation commit `4d2ea47a218b69a8e7a229227c00b6b6a5b405c0`.
 - Each run passed locked dependency installation (20 packages; 0 reported vulnerabilities), Vite build, Wrangler Pages Functions compilation, Preview D1 schema readiness (`title_column=1`, `route_column=1`, `route_index=1`, `null_metadata=0`) and Preview asset verification (all four referenced JS/CSS assets returned successfully).
 - These build-only workflows contained no test step. No new automated or browser tests were run in this continuation. Historical test results elsewhere in this document are historical and do not represent current verification.
 - No migration was added or rerun. Production website, D1, R2, bindings, secrets and deployment remain untouched.
 
 ### Current branch and release gates
 
-- At this audit checkpoint, `cms-development` was 985 commits ahead of `main`, 0 behind, with 98 changed files. The full history and complete PR diff must be reviewed before any merge decision.
+- At the 20 November settings-concurrency checkpoint, `cms-development` is 990 commits ahead of `main`, 0 behind, with 98 changed files. The full history and complete PR diff must be reviewed before any merge decision.
 - PR #2 remains Open, Draft and unmerged. No merge, Production migration or Production deployment is authorized.
 - Authenticated CMS runtime workflows, concurrency behaviour, visual inspection, screenshots, image processing and final regression/security/accessibility verification remain deferred.
 - The Admin auth implementation is Cloudflare Access JWT verification for one authorized account; it does not enforce a server-side single-device session lock. Do not claim that capability until the intended session policy is clarified and implemented.
@@ -28,9 +28,16 @@ Exact-commit build/Preview verification:
 
 **Current status update: 20 November 2026**  
 **Verified branch:** `cms-development`  
-**Latest verified functional source commit:** `bcf4e0cbb3d73f4b278bf2bef267e37f9c281c41`  
-**Latest handover documentation checkpoint:** `4d2ea47a218b69a8e7a229227c00b6b6a5b405c0`  
+**Latest verified functional source commit:** `cc20f005c66dad7bcfdaaadb268afe4e8af1a62e`  
+**Latest handover documentation checkpoint:** `9cbda6fa24a331e2c62740a5caf75a70c152b6f2`  
 **Production status:** unchanged; release not approved
+
+Latest settings concurrency verification:
+- API expected-draft guard commit `da8509d33986bd4355c9c33428b0db1f80c94b0e`: [run #44652965071](https://github.com/yrproservice/yrproservice/actions/runs/44652965071) passed.
+- CMS editor expected-draft integration commit `cc20f005c66dad7bcfdaaadb268afe4e8af1a62e`: [run #44652971759](https://github.com/yrproservice/yrproservice/actions/runs/44652971759) passed.
+- The API guard and editor integration now prevent a stale settings editor from archiving a newer draft. A D1 batch guard protects both existing-draft and no-draft saves; stale attempts return HTTP 409. No migration was required.
+- Runtime/concurrency tests remain deferred; these were build-only workflows.
+
 
 ## Latest Preview verification — 19 November 2026
 
