@@ -1548,3 +1548,12 @@ The two workflow results above are verified against their exact documentation co
 - Initial page and product creation now checks the D1 batch result for the parent record, first draft version and audit event before returning success. Successful responses explicitly include `auditRecorded: true`; unconfirmed writes return reload-and-inspect guidance rather than claiming creation succeeded.
 - These affected-row checks do not establish rollback for a successfully executed zero-row statement. Error handling deliberately asks the administrator to inspect current state before retrying.
 - Source review only; no new CMS records were created. Preview build verification is pending for the latest branch head.
+
+
+## CMS draft metadata transition checks — 20 November 2026
+
+- Source commits: `bf404a4856604adfe44803937685b28664a225a0` (page drafts), `eefb5a6388fe27110ec9a0de2ff2dcf1b24bb98e` (product drafts), and `62f9e2cfe7b52fec94b493b477e1384f2b39a77f` (site settings).
+- Existing page/product draft updates now verify the corresponding parent-record metadata update separately from the draft-row update and audit insert. Settings draft saves likewise verify the settings-row timestamp update independently of the draft insert and audit event.
+- Successful page/product draft updates now explicitly return `auditRecorded: true`. Unconfirmed intermediate results return inspect-before-retry guidance; no claim is made that a zero-row conditional D1 statement rolls back earlier statements in a batch.
+- Media source review reconfirmed that ambiguous upload batch outcomes preserve the R2 object, and archive/restore retain objects and check their audit insert. No media object was changed.
+- Source-only work; no CMS records, settings, publications, or media were mutated. Preview verification is pending for the current branch head.
