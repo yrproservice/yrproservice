@@ -956,3 +956,29 @@ No source change was justified in this pass. The main unresolved decision is the
 - Keep migration execution separately gated from ordinary build/deploy work. Do not manually dispatch the migration workflow without explicit migration approval and a fresh Preview database identity check.
 - Before any release, independently verify the live Pages branch/deployment and Cloudflare D1/R2 bindings in the dashboard. Repository configuration is evidence of intended targets, not proof of live account configuration.
 - No workflow or Wrangler configuration was changed in this review. No tests, screenshots, image processing, database migrations, or Production actions were performed.
+
+
+## CMS revision and media recovery review — 20 November 2026
+
+### Page, product and settings revision recovery
+
+- The authenticated history endpoint lists up to 100 revisions for the selected page, product or setting, newest first. It identifies the currently published revision; it does not expose revision JSON through the history list.
+- Restore does not directly republish an archived revision. It validates the stored JSON against the current page/product/settings rules, checks page routes and destinations, then creates a new draft with a new version number and an audit event.
+- Restore requires the caller's expected draft ID and creation timestamp. The database batch uses a compare-and-swap guard so a stale editor cannot silently replace a newer draft. A concurrent change returns a conflict response.
+- Publishing accepts only a saved draft, checks its creation timestamp and current published pointer, validates content again, then updates the published pointer and audit log in a guarded D1 batch. Archived revisions must first be restored as a new draft.
+- The page preview endpoint prefers the current draft and falls back to the published revision. Product preview follows the same draft-first behavior. These are preview reads, not publication operations.
+
+### Media recovery
+
+- Media archive is a soft-delete: it marks the D1 media row as archived and writes an audit event in the same batch. It does not delete the corresponding R2 object.
+- Before archive, the handler checks page, product and settings revision JSON for references. The conditional archive statement repeats the reference check to reduce the chance of archiving an image that became referenced between the initial check and write.
+- Media restore checks that the R2 object still exists before clearing the archive timestamp, then records the restore audit event atomically. If the R2 binding is unavailable or the object is missing, restore is refused and the row remains archived.
+- Media usage returns a count and up to 50 matching records per content group. The response marks the result as truncated when counts exceed the returned rows; operators must not treat a partial usage list as exhaustive.
+- The orphan reconciliation endpoint is read-only and paginated in batches of at most 100 objects. Every returned cursor must be followed before the scan can be considered complete. It does not remove orphan objects.
+
+### Recovery limits and release prerequisites
+
+- These application-level revision and media recovery paths are not a substitute for D1 point-in-time recovery/export or R2 object backup. The reviewed repository configuration does not establish that independent backups, retention periods, restore permissions, or restore drills are configured in the Cloudflare account.
+- Before production release, document and verify: D1 backup/export schedule and retention; a tested restore procedure and recovery point objective; R2 bucket versioning/backup or an equivalent copy/retention plan; operator access and approval requirements; and a reconciliation procedure after restoring D1 and R2.
+- No destructive R2 cleanup or automatic orphan deletion should be enabled until retention, backup and approval rules are agreed. Keep archived media objects during the recovery period.
+- Revision restore/publish, media archive/restore and orphan reconciliation were source-reviewed only. No live data was changed and no restore, migration, test, screenshot or image-processing operation was run.
