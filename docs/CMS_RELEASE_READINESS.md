@@ -1704,3 +1704,9 @@ The two workflow results above are verified against their exact documentation co
 - GitHub's branch endpoint currently reports `main.protected = false`; the earlier ruleset read returned no rulesets. The repository integration cannot update branch protection. This means required review/check enforcement is not confirmed and must be configured by a repository administrator before a high-risk production release.
 - The user previously confirmed the Production Pages hostname as `yrproservice.pages.dev`. Cloudflare Access coverage for that exact host and any custom domains is still not verified; the earlier Access confirmation for `production-release.yrproservice.pages.dev` is not sufficient evidence for the Production hostname.
 - PR #2 remains a large change set (102 files; more than 1,150 commits ahead at this checkpoint). Do not use the absence of merge conflicts or a green build as a substitute for reviewing the full diff and required production controls.
+
+
+## Preview screenshot navigation wait correction — 20 November 2026
+
+- The Ubuntu 24.04 screenshot attempt successfully installed Chromium but the Home page navigation exceeded 45 seconds while waiting for Playwright's `networkidle` condition. The Preview site was reachable and its asset-fingerprint check had passed, but no screenshots were captured by that run.
+- Workflow commit `bedc6f365da9e784a891c3de6cfb2ce705503180` changes screenshot navigation to `domcontentloaded` followed by a short render wait. This avoids treating persistent background requests as a page-load failure. Exact-head screenshot execution remains pending.
