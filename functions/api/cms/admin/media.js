@@ -399,7 +399,7 @@ export async function onRequestPatch(context) {
         return adminJson({ error: "This media item is no longer archived." }, 409);
       }
       if (Number(restoreResults?.[1]?.meta?.changes || 0) !== 1) {
-        return adminJson({ error: "The media restore audit record could not be saved. The restore was rolled back." }, 500);
+        return adminJson({ error: "The media restore audit record could not be confirmed. Reload the Media Library and inspect this item before retrying." }, 500);
       }
       return adminJson({ ok: true, restored: true, auditRecorded: true });
     } catch (error) {
@@ -454,7 +454,7 @@ export async function onRequestPatch(context) {
         return adminJson({ error: "This media metadata changed in another session. Reload the item before saving again." }, 409);
       }
       if (Number(results?.[1]?.meta?.changes || 0) !== 1) {
-        return adminJson({ error: "The media metadata audit record could not be saved. The metadata update was rolled back." }, 500);
+        return adminJson({ error: "The media metadata audit record could not be confirmed. The metadata may have been updated; reload the Media Library before retrying." }, 500);
       }
     }
     const media = await env.DB.prepare(
@@ -513,7 +513,7 @@ export async function onRequestDelete(context) {
       return adminJson({ error: "This media item has already been removed or changed." }, 409);
     }
     if (Number(archiveResults?.[1]?.meta?.changes || 0) !== 1) {
-      return adminJson({ error: "The media archive audit record could not be saved. The archive was rolled back." }, 500);
+      return adminJson({ error: "The media archive audit record could not be confirmed. Reload the Media Library and inspect this item before retrying." }, 500);
     }
     // Keep the R2 object during the recovery window. The database record is
     // hidden from the active library but can be restored without re-uploading.
