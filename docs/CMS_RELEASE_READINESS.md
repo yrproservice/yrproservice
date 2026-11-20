@@ -1230,3 +1230,32 @@ Reviewed `functions/api/admin/requests.js` and `functions/api/admin/session.js` 
 6. **P3 — Verification and operations:** after remediation is approved, add regression coverage for concurrent saves/publishes/restores, request status races and audit atomicity, pagination boundaries, media upload cleanup/audit, and access policy. Then complete the deferred UI, screenshot, and image review stages before any release decision.
 
 The settings concurrency concern is not a confirmed defect after the batch-guard review. Publish and restore paths also showed no new confirmed defect in this static review. No code changes, tests, screenshots, image processing, database operations, migrations, R2 operations, merge, or Production deployment were performed for this checkpoint.
+
+
+## Request lifecycle history implementation — 20 November 2026
+
+- Added the non-destructive schema migration `migrations/0004_request_status_history.sql`. It creates an append-only status-event table with request reference/ID, previous and new status, authorized account email, timestamp, and indexes for request history retrieval. It does not rewrite or delete existing request records.
+- Added a dedicated Preview-only migration workflow, `.github/workflows/request-history-preview-migration.yml`, which verifies the exact Preview D1 name and UUID before executing migration 0004 and verifies the resulting table and indexes. It is deliberately separate from the older CMS migration workflow so migrations 0002/0003 are not rerun.
+- The first workflow attempt failed closed before executing SQL because the workflow used an incorrect database name. The authoritative `wrangler.toml` Preview binding showed the correct name is `yr-proservice-test-db` (UUID `7fca4ad0-3baa-4148-ad28-bfd2ef416c16`). The workflow was corrected and the subsequent Preview migration completed successfully, including schema verification. No Production database was targeted.
+- Updated the authenticated request status PATCH handler to record each actual status transition in the same D1 batch as the compare-and-set request update. It records the Access-authorized account email as actor. Re-submitting the already-current status does not create a duplicate history event; conflicting concurrent updates retain the existing 409 behavior.
+- Added authenticated `GET /api/admin/request-history?reference=...` and a Status history panel in the Admin Request Dashboard. The panel refreshes when the selected request status changes and identifies the authorized account and timestamp for each event.
+- Historical limitation: existing request statuses were not backfilled because prior actors/timestamps are unavailable. The timeline begins when this feature is activated. The existing shared-account identity remains unchanged; the recorded actor email identifies the authorized account, not an individual staff member.
+- This is implementation plus Preview schema workflow verification and website build/deployment checks only. No customer request records were queried or modified, no status transitions were simulated, and no automated tests were run.
+
+## Media upload audit implementation — 20 November 2026
+
+- Updated the authenticated Preview CMS media upload path to insert the `cms_media` row and a matching `upload_media` event in `cms_audit_log` through a D1 batch. The event records the authorized account, media ID, object key, public URL, filename, MIME type, byte size, dimensions, and upload timestamp.
+- Existing R2-first upload and best-effort R2 cleanup on thrown database/storage failures remain in place. If the audit insert cannot be confirmed, the handler reports that the image may already be stored and instructs the operator to refresh the Media Library rather than deleting a database-backed object.
+- Static implementation review only; no image was uploaded, processed, or deleted. Final-stage upload/audit and cleanup regression checks remain outstanding.
+
+## Services catalogue slug parity review — 20 November 2026
+
+- Compared the eight service slugs in `functions/api/requests.js` against the eight entries in `src/data/services.js`, which are the source used by `src/data/servicesCmsTemplate.js`. All eight slugs match exactly; no service slug allowlist change is indicated by this comparison.
+- This does not prove fidelity to the user's authoritative original Services content or V10 baseline. The current original V10 ZIP and its full original Services content were not available in the repository review context, and the user previously rejected generic replacement service content. Preserve current content and leave the original-content fidelity check open until the authoritative V10 source is available for inspection.
+
+## Current authorization checkpoint — 20 November 2026
+
+- User authorized independent development within the existing boundaries: work only on `cms-development` and Cloudflare Preview; PR #2 remains Open/Draft/unmerged; Production remains untouched; no destructive database/R2/file operations; no staff access-policy changes; no tests, screenshots, or image processing until final stage.
+- Latest work includes request history schema/API/Admin UI and media upload audit event. Preview migration 0004 was applied only after exact Preview database identity verification. Website build and Cloudflare Pages Preview checks must be polled for the latest code commit before recording deployment success.
+- Outstanding prioritized work: implement cursor pagination for request administration, revision history, and Media Library; complete safe static review and remediation of remaining release-readiness items; keep the shared-account staff policy as a documented decision pending user approval; preserve original Services/V10 content verification as blocked pending source access.
+- No PR merge, Production deployment/configuration, Production D1 operation, destructive action, test run, screenshot, or image processing was performed.
