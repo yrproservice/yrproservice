@@ -554,3 +554,81 @@ test("CMS settings save rejects a newly appeared draft instead of overwriting it
   assert.match(result.error, /changed in another session/i);
   assert.equal(db.batches.length, 0);
 });
+
+
+import { onRequestPost as saveCmsPage } from "../functions/api/cms/admin/pages.js";
+import { onRequestPost as saveCmsProduct } from "../functions/api/cms/admin/products.js";
+
+function makeCmsCreateDb() {
+  const calls = [];
+  const batches = [];
+  return {
+    calls,
+    batches,
+    prepare(sql) {
+      const statement = {
+        sql, values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() { calls.push(this); return null; },
+      };
+      return statement;
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map(() => ({ meta: { changes: 1 } }));
+    },
+  };
+}
+
+test("CMS page save creates a version-one draft and an audit record", async () => {
+  const db = makeCmsCreateDb();
+  const response = await saveCmsPage(adminContext(
+    "/api/cms/admin/pages",
+    {
+      pageKey: "cms-test-page",
+      title: "CMS Test Page",
+      route: "/cms-test-page",
+      content: { sections: [] },
+      changeNote: "Create test page",
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.equal(result.ok, true);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(result.version, 1);
+  assert.equal(db.batches.length, 1);
+  assert.equal(db.batches[0].length, 3);
+  assert.match(db.batches[0][0].sql, /INSERT INTO cms_pages/);
+  assert.match(db.batches[0][1].sql, /INSERT INTO cms_page_versions/);
+  assert.match(db.batches[0][2].sql, /'create_draft', 'page'/);
+});
+
+test("CMS product save creates a version-one draft and an audit record", async () => {
+  const db = makeCmsCreateDb();
+  const response = await saveCmsProduct(adminContext(
+    "/api/cms/admin/products",
+    {
+      product: {
+        slug: "cms-test-product",
+        name: "CMS Test Product",
+        purchaseType: "cart",
+        requestFlow: "cart",
+      },
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.equal(result.ok, true);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(result.version, 1);
+  assert.equal(db.batches.length, 1);
+  assert.equal(db.batches[0].length, 3);
+  assert.match(db.batches[0][0].sql, /INSERT INTO cms_products/);
+  assert.match(db.batches[0][1].sql, /INSERT INTO cms_product_versions/);
+  assert.match(db.batches[0][2].sql, /'create_draft', 'product'/);
+});
