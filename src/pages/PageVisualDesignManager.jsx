@@ -236,6 +236,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
       });
       setPublishedVersion(result.version || draftVersion);
       setDraftId("");
+      setDraftCreatedAt(null);
       setDraftVersion(null);
       setHasUnsavedChanges(false);
       setNotice(`Design V${result.version || draftVersion} published to the isolated Preview website only.`);
