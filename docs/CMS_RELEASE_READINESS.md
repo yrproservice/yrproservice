@@ -1127,3 +1127,14 @@ A documentation/source inventory review checked the existing Preview operations 
 - This is a documented readiness gap, not a claim that Cloudflare has no platform-level backups. Account-side plan, configuration and backup history have not been verified here.
 - No D1 export, R2 copy, backup, restore, migration, data mutation or Production operation was performed.
 - Do not treat the Production release as fully disaster-recovery-ready until the account-side backup evidence and a successful isolated restore rehearsal are recorded.
+
+
+## Exact-commit Preview build checkpoint — 20 November 2026
+
+The recovery-readiness documentation commit `35b2d6091e3b5adefa3774508105328ec2c458ff` completed all three reported checks successfully:
+
+- Install and build website: success.
+- Cloudflare Pages: success.
+- Workers Builds: success.
+
+This records build/workflow completion for the exact documentation commit. It is not evidence that automated tests, authenticated CMS runtime workflows, visual parity, image/catalogue correctness, or disaster-recovery restore have been verified. The checks did not authorize or perform a Production deployment, migration, or PR merge.
