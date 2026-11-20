@@ -932,3 +932,27 @@ No source change was justified in this pass. The main unresolved decision is the
 - This is a documented recommendation, not an implemented code change. The user/product owner must confirm that durable audit history is required and that the CMS schema dependency is acceptable before source changes.
 - Until that decision is approved, accurately describe request status changes as authenticated and concurrency-protected, but not durably audited.
 - No automated tests, screenshots, image processing, migrations, or Production operations were performed during this review.
+
+
+## Deployment workflow and environment-target review — 20 November 2026
+
+### Environment configuration
+
+- `wrangler.toml` defines separate named environments: Production binds `DB` to `yr-proservice-db` (UUID `9bf690db-a74b-43e9-8c38-cc8bab18a9f1`); Preview binds `DB` to `yr-proservice-test-db` (UUID `7fca4ad0-3baa-4148-ad28-bfd2ef416c16`) and the Preview R2 bucket `yrproservice-cms-preview`.
+- The checked-in configuration keeps the Preview and Production D1 names/IDs distinct. This source review does not verify live Cloudflare dashboard bindings or secrets; those remain separate environment controls.
+- `wrangler.worker-preview.toml` points the Worker preview configuration at the built `dist` assets and declares `[previews]`.
+
+### Workflow boundaries
+
+- `.github/workflows/cms-build-check.yml` runs on pushes to `cms-development` and manual dispatch. It installs locked dependencies, builds Vite and Pages Functions, checks the named Preview D1 schema, then deploys Pages Preview if the dedicated Pages token exists.
+- When the dedicated Pages token is absent, the workflow falls back to checking the Git-integrated Preview hostname. It compares the local and served HTML asset URL lists and fetches those assets. This is a useful deployment smoke/readiness signal, but it does not query Cloudflare's deployment metadata to prove the exact deployed commit SHA. Do not describe this fallback alone as cryptographic or API-level proof of the deployed commit.
+- `.github/workflows/cms-preview-migration.yml` is separately scoped to the named Preview D1 database and runs only when the two migration files change on `cms-development`, or on manual dispatch. It verifies the Preview database name and UUID before applying SQL. No migration was triggered or executed in this continuation.
+- `.github/workflows/worker-preview.yml` is triggered by pushes to `production-release`, not `cms-development`. It invokes Wrangler's `preview` command with `wrangler.worker-preview.toml`; it is not the workflow that deploys the CMS development branch.
+- Cloudflare's Workers Builds check for the current documentation commit was still in progress at the time of this review. Its dashboard URL contains a generic `production` service namespace; that path alone does not establish a Production deployment. Wait for the check result and inspect its deployment/environment metadata before making any stronger claim.
+
+### Operational recommendations
+
+- Prefer the dedicated Pages API token path for a direct commit-hash deployment and retain the current Preview-only branch target. If the fallback remains in use, describe its result as asset-level Preview verification, not exact commit attestation.
+- Keep migration execution separately gated from ordinary build/deploy work. Do not manually dispatch the migration workflow without explicit migration approval and a fresh Preview database identity check.
+- Before any release, independently verify the live Pages branch/deployment and Cloudflare D1/R2 bindings in the dashboard. Repository configuration is evidence of intended targets, not proof of live account configuration.
+- No workflow or Wrangler configuration was changed in this review. No tests, screenshots, image processing, database migrations, or Production actions were performed.
