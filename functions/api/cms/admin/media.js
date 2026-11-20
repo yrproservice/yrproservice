@@ -263,9 +263,42 @@ export async function onRequestPost(context) {
     }
     const url = `${publicBase}/${key.split("/").map(encodeURIComponent).join("/")}`;
     const alt = String(form.get("altText") || "").slice(0,300);
-    await env.DB.prepare("INSERT INTO cms_media (id,storage_provider,object_key,public_url,original_file_name,mime_type,byte_size,width,height,alt_text,uploaded_by) VALUES (?,'r2',?,?,?,?,?,?,?,?,?)")
-      .bind(id,key,url,originalFileName,contentType,file.size,dimensions?.width || null,dimensions?.height || null,alt,auth.email || null).run();
-    return adminJson({ ok: true, media: { id, object_key:key, public_url:url, original_file_name:originalFileName, mime_type:contentType, byte_size:file.size, width:dimensions?.width || null, height:dimensions?.height || null, alt_text:alt } }, 201);
+    const uploadResults = await env.DB.batch([
+      env.DB.prepare("INSERT INTO cms_media (id,storage_provider,object_key,public_url,original_file_name,mime_type,byte_size,width,height,alt_text,uploaded_by) VALUES (?,'r2',?,?,?,?,?,?,?,?,?)")
+        .bind(id,key,url,originalFileName,contentType,file.size,dimensions?.width || null,dimensions?.height || null,alt,auth.email || null),
+      env.DB.prepare(`
+        INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
+        SELECT ?, ?, 'upload_media', 'media', ?, ?
+        FROM cms_media
+        WHERE id = ? AND changes() = 1
+      `).bind(
+        crypto.randomUUID(),
+        auth.email || null,
+        id,
+        JSON.stringify({
+          objectKey: key,
+          publicUrl: url,
+          originalFileName,
+          mimeType: contentType,
+          byteSize: file.size,
+          width: dimensions?.width || null,
+          height: dimensions?.height || null,
+          uploadedAt: new Date().toISOString(),
+        }),
+        id,
+      ),
+    ]);
+    if (Number(uploadResults?.[0]?.meta?.changes || 0) !== 1) {
+      throw new Error("Media database record was not created.");
+    }
+    if (Number(uploadResults?.[1]?.meta?.changes || 0) !== 1) {
+      console.error("CMS media upload audit event was not recorded", { mediaId: id });
+      return adminJson({
+        error: "The image was stored but its audit event could not be confirmed. Refresh the Media Library before retrying the upload.",
+        mediaId: id,
+      }, 500);
+    }
+    return adminJson({ ok: true, auditRecorded: true, media: { id, object_key:key, public_url:url, original_file_name:originalFileName, mime_type:contentType, byte_size:file.size, width:dimensions?.width || null, height:dimensions?.height || null, alt_text:alt } }, 201);
   } catch (error) {
     console.error("CMS media upload failed", error);
     try { await env.CMS_MEDIA.delete(key); } catch {}
