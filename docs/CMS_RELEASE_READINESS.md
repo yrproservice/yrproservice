@@ -1329,3 +1329,10 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 - The static product source contains 111 unique slugs and no duplicate slugs. 93 products currently have null price and pending stock metadata; this is a content/business-data completion item, not a code defect. Do not invent prices or stock states. These values are editable through the CMS once an authorized administrator has verified the actual commercial information.
 - Product catalogue and image checks were performed against Git tree paths only. They do not verify image visual quality, model/image semantic matching, deployed HTTP asset responses, or external manufacturer specifications. Those remain for the final visual/content verification stage; no image processing or screenshots were run.
 - No tests, migrations, customer data changes, media changes, Production operations, PR merge or access-policy changes were performed.
+
+
+## Product detail copy Preview build verification — 20 November 2026
+
+- Source commit `c2fba74f62d23f8e4dc95dabce9f6df55851f248` updates the outdated Product Details note about price/availability being future admin features.
+- Exact-commit workflow [run #44665429434](https://github.com/yrproservice/yrproservice/actions/runs/44665429434) completed successfully. Locked dependency installation, Vite build, Cloudflare Pages Functions build, Preview D1 schema-readiness, and Preview deployment/asset verification all passed.
+- The subsequent documentation-only checkpoint records the product CMS/static catalogue review. No application source changed after the verified code commit.
