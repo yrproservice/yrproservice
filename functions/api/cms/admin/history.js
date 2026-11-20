@@ -207,6 +207,9 @@ export async function onRequestPost(context) {
     if (Number(insertResult?.meta?.changes || 0) !== 1) {
       return adminJson({ error: "This CMS draft changed in another session. Reload its history before restoring again." }, 409);
     }
+    if (type === "page" && Number(results?.[2]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "The page revision may have been restored as a draft, but its page metadata update could not be confirmed. Reload the page and inspect its draft before retrying." }, 500);
+    }
     const auditResult = results?.[results.length - 1];
     if (Number(auditResult?.meta?.changes || 0) !== 1) {
       return adminJson({ error: "The revision may have been restored as a draft, but its audit record could not be confirmed. Reload the item history and inspect the current draft before retrying." }, 500);
