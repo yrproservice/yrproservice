@@ -90,3 +90,12 @@ Items requiring runtime/operational verification, not inferred from source:
 - The current exact branch head does not yet have a confirmed workflow result from the workflow-run connector; the prior successful 77-test run is for commit `1b2221f1a16caf75cff7e9a5dd66897f24ef2dc4` only.
 
 No code change was made during this review because the inspected source did not establish a safe, isolated defect that could be corrected without a runtime reproduction. Do not invent a fix or change behaviour solely to create a commit.
+
+## Desktop and mobile Preview screenshot coverage — 20 November 2026
+
+- Updated `.github/workflows/cms-build-check.yml` to capture both desktop (1440×1000, DPR 1) and mobile (390×844, DPR 2, touch emulation) screenshots for the same six routes: Home, Products, Services, Team, Signo T100 product detail, and HR Contact.
+- The workflow now produces 12 rendered-page screenshots in `preview-screenshots/desktop/` and `preview-screenshots/mobile/`, uploaded as one run artifact.
+- This changes screenshot capture only. It does not modify, convert, resize, optimize, or otherwise process source/catalogue images.
+- Workflow change commit: `c0c89854c7a8357ab1d0c9db63339c3a7b02ae34`.
+- Exact-head workflow result has not yet been returned by the available commit-run lookup. Do not claim the new workflow has passed until a corresponding GitHub Actions run and its jobs are inspected.
+- Latest PR check at this checkpoint: head `c0c89854c7a8357ab1d0c9db63339c3a7b02ae34`, Open/Draft/unmerged, 1,187 commits ahead of `main`, 0 behind, 104 changed files. GitHub mergeability response is currently false; recheck before any merge attempt.
