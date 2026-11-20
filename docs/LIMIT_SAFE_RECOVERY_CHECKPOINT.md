@@ -66,3 +66,27 @@ Image processing remains excluded: do not convert, manipulate, optimize, resize,
 ## Next recommended action
 
 Continue the full PR/source review in small groups, starting with security-sensitive API/authentication and database/migration changes. Keep all writes on `cms-development` until the Production gates above are independently verified.
+
+## Security and data-integrity review — 20 November 2026
+
+Reviewed all 17 changed API route files listed in PR #2, with focused source inspection of admin authentication/session, CMS draft save/delete, revision history/restore, publish, media upload/archive/restore, request submission, request tracking, request status administration/history, public CMS reads, and the three CMS migrations.
+
+Findings confirmed from source:
+- All inspected admin API handlers call `requireAdmin(context)` before accessing protected CMS/customer data or mutating it.
+- Cloudflare Access JWT verification checks RS256, `kid`, issuer, audience, expiry, optional not-before, signature against the Access cert endpoint, and the single allowlisted admin email. It fails closed if Access configuration or the exact allowlist is missing.
+- The current "session" API does not implement a server-side session registry or single-device lock. POST/PATCH are authenticated acknowledgements; DELETE returns a clearing cookie, while protected APIs still authenticate the Access JWT. Do not describe this as a revocable application session.
+- CMS draft save/delete, restore and publish use revision ownership checks, draft-state checks, conditional writes, D1 batches, and audit records. Publish requires a current draft and expected creation timestamp. Restore creates a new draft from a selected revision.
+- Media uploads accept only recognized JPEG/PNG/GIF/WebP signatures, validate declared MIME agreement, enforce a 12 MiB file limit, and inspect dimensions as metadata. No image transformation/conversion/optimization was performed. Media archive checks references across all saved revisions and retains the R2 object for recovery; this is soft-archive, not physical deletion.
+- Request status updates validate allowed statuses and use a conditional status update plus lifecycle-history insert. The history endpoint is authenticated and paginated.
+- Public CMS endpoints expose published page/product/settings data only. Setting publishing is restricted by an explicit settings-key/field validator; arbitrary setting keys are rejected.
+- Migration 0004 adds a separate history table with allowed-status checks, non-identical previous/new status constraint, foreign key `ON DELETE RESTRICT`, and supporting indexes.
+
+Items requiring runtime/operational verification, not inferred from source:
+- Confirm D1 batch transaction/changes() sequencing against the deployed Cloudflare D1 runtime using the current exact branch head.
+- Exercise concurrent draft save/publish/restore/delete and request status updates against Preview.
+- Confirm the request-history migration is applied to Preview and separately determine Production migration readiness.
+- Confirm media upload, archive, restore and usage checks against the Preview R2 bucket; do not process image contents beyond existing signature/dimension metadata inspection.
+- Confirm Access policy coverage for the actual Preview and Production hostnames.
+- The current exact branch head does not yet have a confirmed workflow result from the workflow-run connector; the prior successful 77-test run is for commit `1b2221f1a16caf75cff7e9a5dd66897f24ef2dc4` only.
+
+No code change was made during this review because the inspected source did not establish a safe, isolated defect that could be corrected without a runtime reproduction. Do not invent a fix or change behaviour solely to create a commit.
