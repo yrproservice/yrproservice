@@ -1782,3 +1782,12 @@ The two workflow results above are verified against their exact documentation co
 - GitHub currently reports the PR as mergeable. This is only a merge-conflict assessment; it is not evidence that review, CI, Preview runtime verification, or Production release gates have passed.
 - The available combined commit-status lookup returned no status entries for this head, and the commit workflow lookup is limited to PR-triggered runs. Exact-head push-workflow result and screenshot artifact remain unverified through the current connector.
 - PR #2 remains Draft and has not been merged. Production remains untouched. Do not interpret the current mergeable flag as release approval.
+
+
+## Current branch verification and artifact-upload correction — 20 November 2026
+
+- The Preview screenshot workflow writes desktop and mobile captures into nested folders. The artifact upload glob was corrected from `preview-screenshots/*.png` to `preview-screenshots/**/*.png` in commit `7ff1de30b922a4b9daee563e8c6a48d813e7170c`; the exact-head run must confirm that both folders are uploaded.
+- Before that correction, PR #2 was Open/Draft/unmerged at `4a41cbb86099027f4417269ea705bb0e01055408`, with 1,193 commits ahead, 0 behind and 104 changed files. GitHub reported mergeable=true, but this does not establish release readiness.
+- The connector returned no combined statuses or PR-triggered workflow runs for that prior head. Because its workflow-run lookup is limited to PR-triggered runs while the workflow also runs on push, exact-head CI status remains unverified; do not carry forward results from older SHAs.
+- Content review item: team fallback cards use generic role labels and four team image paths whose identity/authorization has not yet been verified. Services fallback content includes service scope/claims that must be compared with the approved original Services content. Neither issue was changed without verified source material.
+- No Production operations were performed. Production D1 migration state, backup/PITR and restore proof, Production R2 binding/base URL, actual Production Access hostname coverage, and branch protection remain release gates until independently verified.
