@@ -1076,3 +1076,14 @@ No source change was justified in this pass. The main unresolved decision is the
 - A successful product/settings/media operation can be followed by a separate list-refresh failure. The UI generally distinguishes these outcomes; operators should follow the explicit message and reload before repeating the mutation.
 - Media orphan reconciliation must be continued through every returned cursor before recording a complete scan. It is read-only and must not be treated as cleanup.
 - Source review only. No CMS edits, uploads, archival actions, publication, live Preview verification, automated tests, screenshots, image processing, migrations or Production operations were performed.
+
+
+## Dental-chair request-flow catalogue reconciliation — 20 November 2026
+
+- Compared the confirmed chair-slug Set in `functions/api/cms/admin/products.js` with the current authoritative static catalogue entries in `src/data/products.js` whose category is `Dental Chairs`.
+- The current catalogue contains 11 chair slugs: `cingol-x1`, `cingol-x3`, `cingol-x5`, `mocom-f10`, `mocom-m10`, `mocom-v10`, `signo-g10ii`, `signo-g20`, `signo-t100`, `signo-t500`, and `signo-z300`.
+- All 11 catalogue slugs match the API's confirmed-chair Set exactly. Each corresponding static catalogue record currently uses `purchaseType: "quote"`.
+- The API normalizes the slug for Set lookup and forces `requestFlow: "dental_chair"` for these confirmed models. If an explicit incompatible requestFlow is supplied, the save is rejected.
+- This is a source-to-source reconciliation only. It does not establish that the live Preview D1 contains all 11 products, that their published revisions have the correct flow, or that every future imported chair will be classified correctly.
+- Future chair additions or slug renames must update/reconcile the API allowlist and catalogue together. A catalogue-derived or shared canonical classification would reduce drift risk, but changing the current API contract is not justified by this matching snapshot alone.
+- No product records were imported or changed; no migration, publication, test, screenshot, image processing or Production operation was performed.
