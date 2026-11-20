@@ -1065,7 +1065,7 @@ export default function CMSDashboard({ onAdminLogout }) {
             </button>
             {hasUnsavedChanges && <small role="status">Unsaved or invalid edits · correct the JSON and save before previewing</small>}
             <button type="button" className="admin-primary-button" onClick={publishDraft} disabled={busy || !pagesReady || !draftId || hasUnsavedChanges}>Publish to Preview</button>
-            <div className="cms-admin-session" role="status"><span>Admin access active</span><button type="button" onClick={onAdminLogout}>Log out</button></div>
+            <div className="cms-admin-session" role="status"><span>Admin access active</span><button type="button" onClick={onAdminLogout}>Exit Admin workspace</button></div>
           </div>
         </div>
         <div className="cms-editor-grid">
