@@ -1717,3 +1717,9 @@ The two workflow results above are verified against their exact documentation co
 - Workflow [#44675277581](https://github.com/yrproservice/yrproservice/actions/runs/44675277581) completed successfully on commit `e2333a57318e4b8a74507ff20fedcf3ede498e29`.
 - It positively verified Preview D1 identity and executed the SELECT-only schema check. All seven expected columns, the `request_id` foreign key to `requests.id` with `ON DELETE RESTRICT`, and both indexes were present. No migration or other database write occurred in this run.
 - This independently verifies the current Preview request-history schema shape; it does not establish Production D1 readiness.
+
+
+## Preview screenshot scope and timeout bounds — 20 November 2026
+
+- The first supported-runner capture with `domcontentloaded` continued to spend excessive time in the screenshot stage across the six long-form pages. To keep the build workflow bounded, commit `9970e8c44caf6e64bdc11845327e7a3b7fb84ace` limits the job to 15 minutes, page navigation to 20 seconds, and captures the visible desktop viewport rather than full-page scroll-height images.
+- These are viewport screenshots intended for quick visual inspection, not full-page evidence. The artifact remains seven-day retention. A successful artifact upload is still required before marking screenshot capture complete.
