@@ -181,6 +181,13 @@ export async function onRequestPost(context) {
         error: "This draft or published version changed while publishing. Refresh the item and try again."
       }, 409);
     }
+    const pointerResultIndex = expectedPublishedId ? 2 : 1;
+    if (expectedPublishedId && Number(results?.[1]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "The new revision may have been published, but archiving the previous published revision could not be confirmed. Reload the item and inspect both revision states before retrying." }, 500);
+    }
+    if (Number(results?.[pointerResultIndex]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "The new revision may have been marked published, but the public version pointer could not be confirmed. Reload the item and inspect its published version before retrying." }, 500);
+    }
     if (Number(results?.[results.length - 1]?.meta?.changes || 0) !== 1) {
       return adminJson({ error: "The publish audit record could not be confirmed. Reload the item and check its published version before retrying." }, 500);
     }
