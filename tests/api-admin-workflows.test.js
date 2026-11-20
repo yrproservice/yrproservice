@@ -928,3 +928,175 @@ test("CMS media archive is blocked while a saved revision still references the i
   assert.equal(result.usage.total, 1);
   assert.equal(db.batches.length, 0);
 });
+
+
+function makeExistingCmsDraftDb(type, { updateChanges = [1, 1, 1] } = {}) {
+  const calls = [];
+  const batches = [];
+  const entityId = type === "setting" ? "site.navigation" : type + "-id";
+  const draftId = type + "-draft-id";
+  const draftContent = type === "page"
+    ? JSON.stringify({ sections: [] })
+    : type === "product"
+      ? JSON.stringify({ slug: "cms-test-product", name: "CMS Test Product", purchaseType: "cart", requestFlow: "cart" })
+      : undefined;
+  return {
+    calls,
+    batches,
+    prepare(sql) {
+      const statement = {
+        sql, values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          calls.push(this);
+          if (type === "page" && sql.includes("SELECT id FROM cms_pages WHERE page_key")) return { id: entityId };
+          if (type === "product" && sql.includes("SELECT id FROM cms_products WHERE product_slug")) return { id: entityId };
+          if (sql.includes("SELECT p.id") && sql.includes("LEFT JOIN cms_page_versions")) return null;
+          if (type === "page" && sql.includes("FROM cms_page_versions WHERE page_id = ? AND state = 'draft'")) {
+            return { id: draftId, version_number: 2, created_at: "2026-11-20T07:00:00.000Z", content_json: draftContent };
+          }
+          if (type === "product" && sql.includes("FROM cms_product_versions WHERE product_id = ? AND state = 'draft'")) {
+            return { id: draftId, version_number: 2, created_at: "2026-11-20T07:00:00.000Z", product_json: draftContent };
+          }
+          if (type === "setting" && sql.includes("FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'")) {
+            return { id: draftId, version_number: 2 };
+          }
+          if (type === "setting" && sql.includes("COALESCE(MAX(version_number),0)")) return { version: 2 };
+          return null;
+        },
+      };
+      return statement;
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map((_, index) => ({ meta: { changes: updateChanges[index] ?? 1 } }));
+    },
+  };
+}
+
+test("CMS page save updates the existing draft snapshot and records an audit event", async () => {
+  const db = makeExistingCmsDraftDb("page");
+  const response = await saveCmsPage(adminContext(
+    "/api/cms/admin/pages",
+    {
+      pageKey: "cms-test-page",
+      title: "Updated CMS Test Page",
+      route: "/cms-test-page",
+      content: { sections: [] },
+      expectedDraftId: "page-draft-id",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(result.ok, true);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(result.version, 2);
+  assert.equal(db.batches.length, 1);
+  assert.equal(db.batches[0].length, 3);
+  assert.match(db.batches[0][0].sql, /content_json = \?/);
+  assert.match(db.batches[0][2].sql, /'update_draft', 'page'/);
+});
+
+test("CMS product save updates the existing draft snapshot and records an audit event", async () => {
+  const db = makeExistingCmsDraftDb("product");
+  const response = await saveCmsProduct(adminContext(
+    "/api/cms/admin/products",
+    {
+      product: {
+        slug: "cms-test-product",
+        name: "Updated CMS Test Product",
+        purchaseType: "cart",
+        requestFlow: "cart",
+      },
+      expectedDraftId: "product-draft-id",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(result.ok, true);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(result.version, 2);
+  assert.equal(db.batches.length, 1);
+  assert.equal(db.batches[0].length, 3);
+  assert.match(db.batches[0][0].sql, /UPDATE cms_product_versions SET product_json/);
+  assert.match(db.batches[0][2].sql, /'update_draft', 'product'/);
+});
+
+test("CMS navigation setting save replaces the exact current draft with an audited version", async () => {
+  const db = makeExistingCmsDraftDb("setting");
+  const response = await saveCmsSetting(adminContext(
+    "/api/cms/admin/settings",
+    {
+      key: "site.navigation",
+      value: { items: [{ label: "Products", url: "/products" }, { label: "Services", url: "/services" }] },
+      expectedDraftId: "setting-draft-id",
+      changeNote: "Update navigation",
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.equal(result.ok, true);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(result.version, 3);
+  assert.ok(result.draftId);
+  assert.equal(db.batches.length, 1);
+  assert.equal(db.batches[0].length, 5);
+  assert.match(db.batches[0][1].sql, /SET state='archived' WHERE id=\?/);
+  assert.match(db.batches[0][2].sql, /WHERE changes\(\) = \?/);
+  assert.equal(db.batches[0][2].values.at(-1), 1);
+  assert.match(db.batches[0][4].sql, /'save_draft'/);
+});
+
+test("CMS page save rejects a stale draft snapshot without writing metadata or audit records", async () => {
+  const db = makeExistingCmsDraftDb("page", { updateChanges: [0, 0, 0] });
+  const response = await saveCmsPage(adminContext(
+    "/api/cms/admin/pages",
+    {
+      pageKey: "cms-test-page",
+      title: "Stale CMS Test Page",
+      route: "/cms-test-page",
+      content: { sections: [] },
+      expectedDraftId: "page-draft-id",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 409);
+  assert.match(result.error, /changed in another session/i);
+  assert.equal(db.batches.length, 1);
+  assert.match(db.batches[0][0].sql, /created_at = \? AND content_json = \?/);
+});
+
+test("CMS product save rejects a stale draft snapshot without writing metadata or audit records", async () => {
+  const db = makeExistingCmsDraftDb("product", { updateChanges: [0, 0, 0] });
+  const response = await saveCmsProduct(adminContext(
+    "/api/cms/admin/products",
+    {
+      product: {
+        slug: "cms-test-product",
+        name: "Stale CMS Test Product",
+        purchaseType: "cart",
+        requestFlow: "cart",
+      },
+      expectedDraftId: "product-draft-id",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 409);
+  assert.match(result.error, /changed in another session/i);
+  assert.equal(db.batches.length, 1);
+  assert.match(db.batches[0][0].sql, /created_at = \? AND product_json = \?/);
+});
