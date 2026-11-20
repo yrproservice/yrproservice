@@ -779,3 +779,152 @@ test("CMS media restore reactivates an existing R2 object and records the audit 
   assert.match(db.batches[0][0].sql, /UPDATE cms_media SET deleted_at=NULL/);
   assert.match(db.batches[0][1].sql, /'restore_media'/);
 });
+
+
+import { onRequestDelete as archiveCmsMedia } from "../functions/api/cms/admin/media.js";
+
+function makeRevisionRestoreDb(entityType) {
+  const calls = [];
+  const batches = [];
+  const entityId = entityType === "setting" ? "site.navigation" : entityType + "-id";
+  const entityTable = entityType === "page" ? "cms_pages" : entityType === "setting" ? "cms_site_settings" : "cms_products";
+  const keyColumn = entityType === "page" ? "page_key" : entityType === "setting" ? "setting_key" : "product_slug";
+  const versionTable = entityType === "page" ? "cms_page_versions" : entityType === "setting" ? "cms_site_setting_versions" : "cms_product_versions";
+  const foreignKey = entityType === "page" ? "page_id" : entityType === "setting" ? "setting_key" : "product_id";
+  const content = entityType === "page"
+    ? { sections: [] }
+    : { items: [{ label: "Products", url: "/products" }] };
+  return {
+    calls,
+    batches,
+    prepare(sql) {
+      return {
+        sql, values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          calls.push(this);
+          if (sql.includes(`FROM ${entityTable} WHERE ${keyColumn} = ?`)) return { id: entityId };
+          if (sql.includes(`FROM ${versionTable} WHERE id = ? AND ${foreignKey} = ?`)) {
+            return {
+              version_number: 2,
+              content: JSON.stringify(content),
+              ...(entityType === "page" ? { title: "Home", route: "/" } : {}),
+            };
+          }
+          if (sql.includes(`FROM ${versionTable} WHERE ${foreignKey} = ? AND state = 'draft'`)) return null;
+          if (sql.includes("COALESCE(MAX(version_number), 0)")) return { version: 4 };
+          return null;
+        },
+      };
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map(() => ({ meta: { changes: 1 } }));
+    },
+  };
+}
+
+test("CMS page revision restore creates a new page draft and leaves the published pointer unchanged", async () => {
+  const db = makeRevisionRestoreDb("page");
+  const response = await restoreCmsRevision(adminContext(
+    "/api/cms/admin/history",
+    {
+      entityType: "page",
+      entityKey: "home",
+      versionId: "old-page-version",
+      expectedDraftId: null,
+      expectedDraftCreatedAt: null,
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.equal(result.ok, true);
+  assert.equal(result.version, 5);
+  assert.equal(result.restoredFrom, 2);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(db.batches.length, 1);
+  assert.equal(db.batches[0].length, 4);
+  assert.match(db.batches[0][1].sql, /INSERT INTO cms_page_versions/);
+  assert.match(db.batches[0][1].sql, /'draft'/);
+  assert.match(db.batches[0][2].sql, /UPDATE cms_pages SET title = \?, route = \?/);
+  assert.match(db.batches[0][3].sql, /'restore_revision_as_draft'/);
+});
+
+test("CMS navigation setting revision restore creates a new draft and audit record", async () => {
+  const db = makeRevisionRestoreDb("setting");
+  const response = await restoreCmsRevision(adminContext(
+    "/api/cms/admin/history",
+    {
+      entityType: "setting",
+      entityKey: "site.navigation",
+      versionId: "old-navigation-version",
+      expectedDraftId: null,
+      expectedDraftCreatedAt: null,
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.equal(result.ok, true);
+  assert.equal(result.version, 5);
+  assert.equal(result.restoredFrom, 2);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(db.batches.length, 1);
+  assert.equal(db.batches[0].length, 3);
+  assert.match(db.batches[0][1].sql, /INSERT INTO cms_site_setting_versions/);
+  assert.match(db.batches[0][1].sql, /'draft'/);
+  assert.match(db.batches[0][2].sql, /'restore_revision_as_draft'/);
+});
+
+test("CMS media archive is blocked while a saved revision still references the image", async () => {
+  const calls = [];
+  const batches = [];
+  const db = {
+    calls,
+    batches,
+    prepare(sql) {
+      return {
+        sql, values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          calls.push(this);
+          if (sql.includes("FROM cms_media WHERE id=? AND deleted_at IS NULL")) {
+            return {
+              id: "media-id",
+              storage_provider: "r2",
+              object_key: "cms/used-image.png",
+              public_url: "https://media.example.r2.dev/cms/used-image.png",
+            };
+          }
+          if (sql.includes("SELECT COUNT(*) AS total FROM cms_page_versions")) return { total: 1 };
+          return { total: 0 };
+        },
+        async all() {
+          calls.push(this);
+          return { results: [] };
+        },
+      };
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map(() => ({ meta: { changes: 1 } }));
+    },
+  };
+
+  const response = await archiveCmsMedia({
+    request: new Request("https://yrproservice.test/api/cms/admin/media?id=media-id", {
+      method: "DELETE",
+      headers: { "Cf-Access-Jwt-Assertion": accessToken },
+    }),
+    env: { ...adminConfig, DB: db },
+  });
+  const result = await response.json();
+
+  assert.equal(response.status, 409);
+  assert.match(result.error, /referenced by saved CMS content/i);
+  assert.equal(result.usage.total, 1);
+  assert.equal(db.batches.length, 0);
+});
