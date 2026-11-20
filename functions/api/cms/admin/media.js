@@ -202,6 +202,34 @@ export async function onRequestGet(context) {
   }
   try {
     const includeDeleted = params.get("includeDeleted") === "1";
+    let cursor = null;
+    const cursorValue = params.get("cursor") || "";
+    if (cursorValue) {
+      if (cursorValue.length > 512) return adminJson({ error: "Invalid Media Library page cursor." }, 400);
+      try { cursor = JSON.parse(cursorValue); } catch {
+        return adminJson({ error: "Invalid Media Library page cursor." }, 400);
+      }
+      if (
+        !cursor || typeof cursor !== "object" ||
+        ![0, 1].includes(cursor.archived) ||
+        (!includeDeleted && cursor.archived !== 0) ||
+        typeof cursor.createdAt !== "string" || cursor.createdAt.length > 40 ||
+        !Number.isFinite(Date.parse(cursor.createdAt)) ||
+        typeof cursor.id !== "string" || !/^[A-Za-z0-9-]{1,80}$/.test(cursor.id)
+      ) return adminJson({ error: "Invalid Media Library page cursor." }, 400);
+    }
+    const where = ["(? = 1 OR deleted_at IS NULL)"];
+    const bindings = [includeDeleted ? 1 : 0];
+    if (cursor) {
+      where.push(`(
+        CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END > ?
+        OR (
+          CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END = ?
+          AND (created_at < ? OR (created_at = ? AND id < ?))
+        )
+      )`);
+      bindings.push(cursor.archived, cursor.archived, cursor.createdAt, cursor.createdAt, cursor.id);
+    }
     const rows = await context.env.DB.prepare(`
       SELECT
         id,
@@ -217,11 +245,29 @@ export async function onRequestGet(context) {
         created_at,
         deleted_at
       FROM cms_media
-      WHERE (? = 1 OR deleted_at IS NULL)
-      ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC
-      LIMIT 300
-    `).bind(includeDeleted ? 1 : 0).all();
-    return adminJson({ ok: true, media: rows.results || [], storageReady: Boolean(context.env.CMS_MEDIA) });
+      WHERE ${where.join(" AND ")}
+      ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC, id DESC
+      LIMIT 101
+    `).bind(...bindings).all();
+    const allRows = rows.results || [];
+    const hasMore = allRows.length > 100;
+    const media = allRows.slice(0, 100);
+    const last = media[media.length - 1];
+    const nextCursor = hasMore && last
+      ? JSON.stringify({
+          archived: last.deleted_at ? 1 : 0,
+          createdAt: last.created_at,
+          id: last.id,
+        })
+      : null;
+    return adminJson({
+      ok: true,
+      media,
+      limit: 100,
+      hasMore,
+      nextCursor,
+      storageReady: Boolean(context.env.CMS_MEDIA),
+    });
   } catch (error) {
     console.error("CMS media list failed", error);
     return adminJson({ error: "Unable to load media library." }, 500);
