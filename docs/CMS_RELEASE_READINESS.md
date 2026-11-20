@@ -860,3 +860,29 @@ Exact-commit build-only Preview verification:
 ### Review outcome
 
 No source change was justified in this pass. The main unresolved decision is the intended Admin session policy; the current code is internally consistent with a shared authorized Cloudflare Access account, not a single-device lock. The migration workflow's Preview database identity guard and partial-state refusal were confirmed by source inspection. No tests, screenshots, image processing, builds, migrations, or deployments were run as part of this source-only review.
+
+
+## CMS API, public request and media recovery review — 20 November 2026
+
+### CMS API access boundaries
+
+- Reviewed the current `functions/api/cms/admin/` endpoints for pages, products, settings, preview, product preview, publish, revision history, draft deletion and media. Each reviewed handler calls `requireAdmin(context)` before reading or mutating CMS data. Keep this check as the first operation in future handlers.
+- The `functions/api/cms/public/` page, product and settings handlers intentionally expose published pointers only; draft and archived CMS revisions are not queried as public content. Product reads also suppress archived products from the public list and return `410` for an individually requested archived product.
+- The public page/product/settings endpoints do not share the admin authorization boundary. Do not move draft reads or admin-only metadata into those routes. The public page/product endpoints set short shared-cache headers; publishing changes may therefore take up to the configured cache window to become visible.
+
+### Media upload and recovery
+
+- Media upload validates file size, filename, detected image signature/dimensions and declared MIME consistency; SVG and unverified active formats are rejected. It writes the R2 object before inserting the D1 media row. If the D1 insert fails, it attempts to delete the just-uploaded R2 object; cleanup is best-effort, so a failed cleanup can leave an orphan object.
+- The orphan reconciliation endpoint is authenticated and read-only. It lists `cms/` objects in bounded batches of at most 100, compares each batch against registered R2 keys, and returns a continuation cursor. Operators must continue through all cursors before treating the scan as complete. It does not delete objects.
+- Media archive checks all saved page/product/setting revision JSON for references, repeats the reference check inside the conditional archive write, records the archive audit event in the same D1 batch, and retains the R2 object for restoration. Restore confirms the R2 object exists and records the restore audit event atomically. Do not add automatic R2 deletion to archive or orphan reconciliation without a separately approved retention and recovery policy.
+
+### Public request submission and tracking; Admin request handling
+
+- `functions/api/requests.js` validates request type, required fields, email and service slug; it applies an atomic email/IP-hash rate-limit insert before writing the request. A failed final request insert still consumes a rate-limit attempt, which is conservative but may require the customer to wait before retrying.
+- `functions/api/track.js` requires both reference and valid email for lookup and applies IP/email-hash rate limits. It returns only reference, request type, status and creation time; no customer message or contact details are exposed by the tracking response.
+- `functions/api/admin/requests.js` authenticates before listing or changing customer requests. Status changes use a compare-and-swap condition to avoid overwriting a concurrent update. However, this handler does not currently write a `cms_audit_log` entry for status changes. That is an auditability gap, not an authorization bypass. Adding request-status audit records should be a separately reviewed change because it couples the customer-request workflow to the CMS audit schema and should be covered by a deliberate migration/readiness check if that schema is not guaranteed in every target environment.
+
+### Review outcome
+
+- No source change or migration was justified in this pass. The concrete follow-up items are: decide whether request status changes require durable audit history; monitor failed best-effort R2 cleanup through the read-only orphan scan; and retain the current published-only public API boundary.
+- This was source inspection only. No tests, screenshots, image processing, builds, migrations, Preview deployments, or Production operations were performed. PR #2 remains Open, Draft and unmerged.
