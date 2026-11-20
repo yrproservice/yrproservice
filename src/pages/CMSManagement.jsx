@@ -1535,6 +1535,15 @@ export default function CMSManagement() {
         {(history.length > 0 || historyLoading || historyLoaded || historyFailed) && (
           <>
             {history.length > 0 && <RevisionList history={history} busy={busy} onRestore={id=>restoreRevision("product",selected.slug,id)} onDeleteDraft={id=>deleteDraft("product",selected.slug,id)}/>}
+            {historyLoaded && (historyHasMore || historyCursorStack.length > 0) && (
+              <RevisionPagination
+                page={historyCursorStack.length + 1}
+                hasMore={historyHasMore}
+                loading={historyLoading}
+                onPrevious={previousHistoryPage}
+                onNext={nextHistoryPage}
+              />
+            )}
             {historyLoading && (
           <p className="cms-history-empty" role="status" aria-live="polite">Loading revision history…</p>
         )}
