@@ -141,3 +141,14 @@ No code change was made during this review because the inspected source did not 
 - Team template still has role-based cards referencing `/assets/team-1.jpg` through `team-4.jpg`; these are not named employees, but the actual asset identity/authorization was not verified in this pass. Keep this as an explicit content/asset verification item; do not present those assets as confirmed staff portraits or invent employee identities.
 - The Services fallback template contains eight named service categories and claims including emergency repair/compliance support. Because the authoritative original Services content and V10 source assets are not present for comparison in this session, no content replacement was made. Verify against the approved original content before release.
 - No Preview runtime, D1/R2 operation, merge, Production migration/deployment, or source-image processing occurred.
+
+
+## Exact-head CI and screenshot artifact verified — 20 November 2026
+
+- Workflow run [#44691001424](https://github.com/yrproservice/yrproservice/actions/runs/44691001424) completed successfully for exact branch commit `eaebfc0db6d8218fd758fc90ffa862a8bfb60709`.
+- Confirmed successful steps: locked dependency installation, automated tests, Vite website build, Cloudflare Pages Functions build, Preview D1 schema readiness, Preview deployment/asset verification, desktop/mobile screenshot capture, and screenshot artifact upload.
+- Screenshot artifact `cms-preview-screenshots-eaebfc0db6d8218fd758fc90ffa862a8bfb60709` (artifact ID `14609040827`, 3,587,918 bytes) was downloaded and inspected as a ZIP. It contains exactly 12 PNG captures: six routes (Home, Products, Services, Team, Signo T100 product detail, HR Contact) in both `desktop/` and `mobile/` directories. This confirms the recursive upload glob includes both nested folders.
+- The artifact was inspected as an archive listing only; no screenshot or source/catalogue image was altered or processed.
+- The run's single job concluded `success`. This is exact-head CI evidence for `eaebfc0...`, not evidence for any later documentation commit.
+- Current release blockers remain: full PR history/diff review; authenticated Preview CMS and D1/R2 runtime/concurrency verification; Production D1 migration/backup/restore, R2 binding, actual Production Access hostname, and branch protection verification; performance/accessibility/security/isolation checks; content/data confirmation; and decision on the absence of a server-side single-device session lock.
+- No PR merge, Production migration/deployment, or Production resource change occurred.
