@@ -1791,3 +1791,19 @@ The two workflow results above are verified against their exact documentation co
 - The connector returned no combined statuses or PR-triggered workflow runs for that prior head. Because its workflow-run lookup is limited to PR-triggered runs while the workflow also runs on push, exact-head CI status remains unverified; do not carry forward results from older SHAs.
 - Content review item: team fallback cards use generic role labels and four team image paths whose identity/authorization has not yet been verified. Services fallback content includes service scope/claims that must be compared with the approved original Services content. Neither issue was changed without verified source material.
 - No Production operations were performed. Production D1 migration state, backup/PITR and restore proof, Production R2 binding/base URL, actual Production Access hostname coverage, and branch protection remain release gates until independently verified.
+
+
+## Live release-gate update — 20 November 2026
+
+The current source head is `dfc7338f533ae538028e3a952b74dc0df38953c8`; exact-head GitHub Actions run [#44693826323](https://github.com/yrproservice/yrproservice/actions/runs/44693826323) passed all 11 substantive steps, including 77 automated tests, Vite and Pages Functions builds, Preview D1 schema readiness, Preview asset verification, desktop/mobile screenshot capture and artifact upload. This supersedes older workflow references above for current-head verification; older entries remain historical.
+
+Current live PR #2: Open, Draft, unmerged; 104 changed files; 23,257 additions; 1,654 deletions; 1,203 commits ahead and 0 behind `main`. GitHub reports mergeable=true, which is not approval to merge.
+
+Newly confirmed blockers:
+1. **Production CMS media binding is absent from this PR's Wrangler config.** `CMS_MEDIA` and `CMS_MEDIA_PUBLIC_BASE` exist only in `env.preview`. Provision and verify an isolated Production R2 bucket, public base and binding before enabling Production media operations. Never reuse Preview storage or its public URL.
+2. **GitHub branch protection is absent.** The live branch endpoint reports `main.protected=false`; the repository rulesets endpoint returned no rulesets. Establish required checks/review and prevent direct unsafe changes before release. The connected integration could not modify these repository settings during this pass.
+3. **Authenticated Preview runtime and recovery evidence is still missing.** Passing unit tests/build/screenshot workflows do not prove live CMS writes, concurrent mutations, D1 batch behaviour, R2 archive/restore, or backup recovery.
+
+Admin workspace exit was clarified in commit `dfc7338f533ae538028e3a952b74dc0df38953c8`: it exits the local Admin UI but leaves the Cloudflare Access browser session active, and the UI now communicates that truthfully. Exact-head CI passed.
+
+No Production migration, deployment, R2 operation, PR merge, or image processing has occurred. The Production environment remains untouched. Image processing is prohibited.
