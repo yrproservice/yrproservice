@@ -300,8 +300,13 @@ export async function onRequestPost(context) {
     return adminJson({ error: "The file contents do not match the selected image type." }, 415);
   }
   const id = crypto.randomUUID(), key = `cms/${new Date().toISOString().slice(0,10)}/${id}-${safeName(originalFileName)}`;
+  let objectStored = false;
+  let databaseBatchStarted = false;
+  let databaseBatchCompleted = false;
+  let databaseRecordCreated = false;
   try {
     await env.CMS_MEDIA.put(key, bytes, { httpMetadata: { contentType, cacheControl: "public, max-age=31536000, immutable" } });
+    objectStored = true;
     const publicBase = String(env.CMS_MEDIA_PUBLIC_BASE || "").replace(/\/$/, "");
     if (!publicBase) {
       await env.CMS_MEDIA.delete(key);
@@ -309,6 +314,9 @@ export async function onRequestPost(context) {
     }
     const url = `${publicBase}/${key.split("/").map(encodeURIComponent).join("/")}`;
     const alt = String(form.get("altText") || "").slice(0,300);
+    // A transport error after sending the D1 batch leaves its commit outcome unknown.
+    // Retain the R2 object rather than risk breaking a media row that may have committed.
+    databaseBatchStarted = true;
     const uploadResults = await env.DB.batch([
       env.DB.prepare("INSERT INTO cms_media (id,storage_provider,object_key,public_url,original_file_name,mime_type,byte_size,width,height,alt_text,uploaded_by) VALUES (?,'r2',?,?,?,?,?,?,?,?,?)")
         .bind(id,key,url,originalFileName,contentType,file.size,dimensions?.width || null,dimensions?.height || null,alt,auth.email || null),
@@ -334,7 +342,9 @@ export async function onRequestPost(context) {
         id,
       ),
     ]);
-    if (Number(uploadResults?.[0]?.meta?.changes || 0) !== 1) {
+    databaseBatchCompleted = true;
+    databaseRecordCreated = Number(uploadResults?.[0]?.meta?.changes || 0) === 1;
+    if (!databaseRecordCreated) {
       throw new Error("Media database record was not created.");
     }
     if (Number(uploadResults?.[1]?.meta?.changes || 0) !== 1) {
@@ -347,7 +357,20 @@ export async function onRequestPost(context) {
     return adminJson({ ok: true, auditRecorded: true, media: { id, object_key:key, public_url:url, original_file_name:originalFileName, mime_type:contentType, byte_size:file.size, width:dimensions?.width || null, height:dimensions?.height || null, alt_text:alt } }, 201);
   } catch (error) {
     console.error("CMS media upload failed", error);
-    try { await env.CMS_MEDIA.delete(key); } catch {}
+    const databaseOutcomeKnownWithoutRecord = databaseBatchCompleted && !databaseRecordCreated;
+    if (objectStored && (!databaseBatchStarted || databaseOutcomeKnownWithoutRecord)) {
+      try { await env.CMS_MEDIA.delete(key); }
+      catch (cleanupError) {
+        console.error("CMS media upload cleanup failed", { mediaId: id, cleanupError });
+      }
+    } else if (objectStored && databaseBatchStarted && !databaseBatchCompleted) {
+      console.error("CMS media upload has an ambiguous D1 batch outcome; preserving the R2 object for reconciliation", { mediaId: id, objectKey: key });
+      return adminJson({
+        error: "The database result could not be confirmed. The uploaded object was retained to avoid breaking a possibly saved media record. Refresh the Media Library and inspect the item before retrying.",
+        mediaId: id,
+        outcome: "ambiguous",
+      }, 500);
+    }
     return adminJson({ error: "Unable to store this image in Preview media storage." }, 500);
   }
 }
