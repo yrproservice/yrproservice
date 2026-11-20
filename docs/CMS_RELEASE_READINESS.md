@@ -1396,3 +1396,13 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 - Application source commit: `bef98b8fba6d4f0eb145f50a788018b4fe1a8232`.
 - Runtime behavior and rollback semantics remain for final verification. No tests were run.
 - No R2 objects, media records, D1 data/schema, staff access, Production resources or PR state were changed by this source correction.
+
+
+## CMS lifecycle audit affected-row guards — 20 November 2026
+
+- Extended the media metadata audit correction to the CMS page/product draft update and new-version paths, publishing, and draft deletion. Those paths already paired their state/content changes with audit inserts in D1 batches, but several success responses checked only the primary mutation and did not confirm the final audit insert had affected one row.
+- Added explicit affected-row checks for the audit statement in each affected path. An unconfirmed audit insert now produces an error response describing the operation as rolled back instead of reporting success without its required audit event. Existing optimistic-concurrency checks and audit payloads are preserved.
+- Updated source commits: `604614e79d9a317a64b4ccfb27ed6731c5884ea0`, `063da8379d53de2de8545880f618e765d81b5eb3`, `496fd45b490713b257460e9add930c56285b0d3e`, `72738d1ffb47ace5add11bdcf49f21b6e1c30fe0`, `6bad5b65fabafd9bf44f80dfa09259ec08f86519`, and `093f02cac86f188f53e4a12fc69305c44347edae`.
+- Settings draft save already checked the audit statement's affected-row count and was left unchanged. Initial page/product creation paths use direct inserts inside a D1 batch; no conditional audit insert was found there.
+- These are source-level consistency guards. Runtime rollback behavior and the affected CMS workflows remain for final verification; no tests were run.
+- No Preview or Production data, schema, media objects, staff access or PR state was changed by these source edits.
