@@ -38,7 +38,7 @@ The latest GitHub compare at this checkpoint showed `cms-development` 953 commit
    - Archive actions attempt to write an `archive_media` event to the existing `cms_audit_log`.
    - Restore actions attempt to write a `restore_media` event.
    - These use the existing audit table; no migration was added.
-   - Audit writes are best-effort. If an audit insert fails after the archive/restore operation, the operation remains applied and the UI reports that the audit event could not be recorded.
+   - Archive and restore use a D1 batch containing the media-state update and its audit insert. The handlers verify that both statements changed one row; if the audit insert is not confirmed, the handler reports an error and relies on D1 batch atomicity to roll back the paired state change. Do not describe these lifecycle audit writes as best-effort.
 
 5. Expanded per-item media activity history:
    - All activity, filename changes, alt-text changes, and archive/restore events can be filtered.
