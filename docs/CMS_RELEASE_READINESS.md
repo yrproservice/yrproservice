@@ -1426,3 +1426,10 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 - Preview configuration in `wrangler.toml` binds `DB` to `yr-pro-service-test-db` (expected ID `7fca4ad0-3baa-4148-ad28-bfd2ef416c16`) and `CMS_MEDIA` to `yrproservice-cms-preview`. Production bindings remain separately named and were not used. The build workflow's schema query and Preview asset verification passed in workflow `#44666824165`.
 - The source review found no missing `requireAdmin` call among the administrative API endpoints. This is a static source audit, not a penetration test or runtime authorization test; final negative/positive authentication checks remain deferred.
 - No code, migrations, database rows, R2 objects, secrets, Cloudflare Access policies or Production resources were changed during this audit.
+
+
+### Request status history ambiguous-result messaging — 20 November 2026
+
+- Extended the same affected-row semantics review to `functions/api/admin/requests.js`. The request status update and conditional `request_status_history` insert run in one D1 batch; if the history insert affects zero rows without a SQL error, the preceding status update is not guaranteed to roll back.
+- Updated the handler's error response to say the status may already have changed and instruct the administrator to reload and inspect the current status before retrying. This avoids implying the status update failed or inviting a duplicate retry.
+- Source commit: `0f63999562f9ccf6d43b03d66cb378a2e74dcde4`. Runtime failure-path verification remains deferred; no tests were run and no request records were accessed or changed.
