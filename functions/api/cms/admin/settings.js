@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
   if (!context.env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
   try {
     const rows = await context.env.DB.prepare(`
-      SELECT s.setting_key, d.id AS draft_id, d.version_number AS draft_version, d.value_json AS draft_value,
+      SELECT s.setting_key, d.id AS draft_id, d.version_number AS draft_version, d.created_at AS draft_created_at, d.value_json AS draft_value,
         p.version_number AS published_version, p.value_json AS published_value
       FROM cms_site_settings s
       LEFT JOIN cms_site_setting_versions d ON d.setting_key=s.setting_key AND d.state='draft'
