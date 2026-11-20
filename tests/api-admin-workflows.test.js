@@ -1100,3 +1100,77 @@ test("CMS product save rejects a stale draft snapshot without writing metadata o
   assert.equal(db.batches.length, 1);
   assert.match(db.batches[0][0].sql, /created_at = \? AND product_json = \?/);
 });
+
+
+function makeSettingsExistingDraftDb({ batchChanges = [1, 1, 1, 1, 1], latestVersion = 3 } = {}) {
+  const batches = [];
+  return {
+    batches,
+    prepare(sql) {
+      return {
+        sql, values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          if (sql.includes("FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'")) {
+            return { id: "current-navigation-draft", version_number: 3 };
+          }
+          if (sql.includes("COALESCE(MAX(version_number),0)")) return { version: latestVersion };
+          return null;
+        },
+      };
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map((_, index) => ({ meta: { changes: batchChanges[index] ?? 1 } }));
+    },
+  };
+}
+
+test("CMS settings save archives the exact expected draft before creating its replacement", async () => {
+  const db = makeSettingsExistingDraftDb();
+  const response = await saveCmsSetting(adminContext(
+    "/api/cms/admin/settings",
+    {
+      key: "site.navigation",
+      value: { items: [{ label: "Products", url: "/products" }, { label: "Team", url: "/team" }] },
+      expectedDraftId: "current-navigation-draft",
+      changeNote: "Replace navigation draft",
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.equal(result.ok, true);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(result.version, 4);
+  assert.ok(result.draftId);
+  assert.equal(db.batches.length, 1);
+  assert.equal(db.batches[0].length, 5);
+  assert.match(db.batches[0][1].sql, /SET state='archived' WHERE id=\? AND setting_key=\? AND state='draft'/);
+  assert.equal(db.batches[0][1].values[0], "current-navigation-draft");
+  assert.match(db.batches[0][2].sql, /WHERE changes\(\) = \?/);
+  assert.equal(db.batches[0][2].values.at(-1), 1);
+  assert.match(db.batches[0][4].sql, /'save_draft'/);
+});
+
+test("CMS settings save rejects a draft changed after the editor snapshot was loaded", async () => {
+  const db = makeSettingsExistingDraftDb({ batchChanges: [1, 0, 0, 0, 0] });
+  const response = await saveCmsSetting(adminContext(
+    "/api/cms/admin/settings",
+    {
+      key: "site.navigation",
+      value: { items: [{ label: "Services", url: "/services" }] },
+      expectedDraftId: "current-navigation-draft",
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 409);
+  assert.match(result.error, /changed in another session/i);
+  assert.equal(db.batches.length, 1);
+  assert.match(db.batches[0][1].sql, /WHERE id=\? AND setting_key=\? AND state='draft'/);
+  assert.match(db.batches[0][2].sql, /WHERE changes\(\) = \?/);
+  assert.equal(db.batches[0][2].values.at(-1), 1);
+});
