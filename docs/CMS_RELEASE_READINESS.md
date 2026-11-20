@@ -1657,3 +1657,12 @@ The two workflow results above are verified against their exact documentation co
 - After the first fixture updates, the suite reached 74/77 passing. The three remaining failures were the publish tests' stale mock data: the current publish API requires the draft's `created_at` value to be loaded and submitted as `expectedDraftCreatedAt` for its compare-and-swap guard. The mock had omitted both.
 - Commit `74bda7fcdadf89bfe30a6a3d7b52a01f43ddd90b` updates the fixture with the expected draft timestamp and includes it in the publish request. No production publish logic was weakened; this test specifically exercises the concurrency token now required by the API.
 - Exact-head full suite and Preview build are pending.
+
+
+## Full automated test and Preview build checkpoint — 20 November 2026
+
+- Exact-head GitHub Actions run [#44674750662](https://github.com/yrproservice/yrproservice/actions/runs/44674750662) succeeded on source commit `dd1317882092cec5d12c05b8313bc641f9bbc964`.
+- `npm test`: 77 tests passed, 0 failed. This includes image-signature/path-policy unit assertions only; no image assets were decoded, transformed, resized, optimized, generated or otherwise processed.
+- Vite production build passed; Cloudflare Pages Functions build passed; read-only Preview D1 page metadata readiness check passed; Git-integrated Preview verification confirmed the exact built JS/CSS fingerprints and all four referenced assets returned successful HTTP responses.
+- This is automated unit/regression test and build evidence, not a complete authenticated browser/production runtime test. Screenshot capture and image processing remain excluded.
+- The earlier failed test runs (69/77, then 74/77) remain in history as triage evidence; they are superseded by this successful exact-head run. The corrected tests now exercise the current D1 batch result shape, publish compare-and-swap timestamp, atomic rate-limit insert behavior, and no-stale-image-fallback rule.
