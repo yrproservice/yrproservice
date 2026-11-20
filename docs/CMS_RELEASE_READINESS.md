@@ -1100,3 +1100,30 @@ Reviewed `.github/workflows/cms-build-check.yml`, `.github/workflows/cms-preview
 - The main `wrangler.toml` maps the production environment's DB binding to `yr-proservice-db`; Preview maps DB to `yr-proservice-test-db` and CMS_MEDIA to `yrproservice-cms-preview`. No Production CMS_MEDIA binding is present in the reviewed file.
 - Workflow source review does not prove the current GitHub secret values, Cloudflare project settings, access policies, branch protection, or live deployed resource state. Those require account-side verification during the final release stage.
 - No workflow was dispatched manually, no migration was run, no Worker was deployed, and no Production resource was changed during this review.
+
+
+## D1/R2 backup and disaster-recovery readiness gap — 20 November 2026
+
+A documentation/source inventory review checked the existing Preview operations and media handover notes for a repeatable CMS data-recovery procedure.
+
+### What is established
+
+- Preview D1 is `yr-proservice-test-db` (`7fca4ad0-3baa-4148-ad28-bfd2ef416c16`); Preview media is stored in R2 bucket `yrproservice-cms-preview`.
+- Media archive/restore is application-level recovery: archived rows retain their R2 objects, and restore checks that the object still exists. This protects against ordinary CMS archive actions; it is not a bucket backup.
+- Revision history and audit records provide application-level content history, but they are stored in the same D1 database and do not replace an independent database backup.
+- The media integrity export and orphan scan are diagnostic/reconciliation tools. The orphan scan is read-only and cursor-based; neither is a complete D1+R2 disaster-recovery snapshot.
+- No documented recurring D1 backup schedule, independent backup destination, retention period, R2 object backup/replication procedure, or end-to-end restore drill was established by the reviewed repository documents.
+
+### Required before Production migration/release
+
+1. Confirm Cloudflare account-side D1 backup/export capability and establish a pre-change backup of the exact Production database. Record database name/UUID, UTC time, operator, export identifier/location, and verification result without putting credentials in the repository.
+2. Establish an independent, access-controlled backup/retention plan for CMS R2 objects and metadata. Preserve object keys and the relationship to D1 media rows; a D1-only export cannot restore image bytes.
+3. Define restore ordering and consistency handling for D1 records versus R2 objects, including objects uploaded during the backup window.
+4. Verify that backups are readable and complete, and conduct a controlled restore rehearsal in an isolated non-Production environment before relying on the procedure.
+5. Define retention, access controls, encryption, recovery-point objective, recovery-time objective and an owner for periodic restore drills.
+
+### Guardrails
+
+- This is a documented readiness gap, not a claim that Cloudflare has no platform-level backups. Account-side plan, configuration and backup history have not been verified here.
+- No D1 export, R2 copy, backup, restore, migration, data mutation or Production operation was performed.
+- Do not treat the Production release as fully disaster-recovery-ready until the account-side backup evidence and a successful isolated restore rehearsal are recorded.
