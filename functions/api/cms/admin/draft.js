@@ -99,7 +99,7 @@ export async function onRequestDelete(context) {
       return adminJson({ error: "This draft changed in another session and was not deleted. Reload the item before trying again." }, 409);
     }
     if (Number(results?.[results.length - 1]?.meta?.changes || 0) !== 1) {
-      return adminJson({ error: "The draft deletion audit record could not be saved. The deletion was rolled back." }, 500);
+      return adminJson({ error: "The draft deletion audit record could not be confirmed. Reload the item and inspect its draft state before retrying." }, 500);
     }
 
     return adminJson({ ok: true, entityType: type, entityKey: key, deletedVersion: draft.version_number });
