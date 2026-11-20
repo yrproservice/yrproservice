@@ -131,10 +131,11 @@ jobs:
             const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
             page.setDefaultNavigationTimeout(45000);
             for (const [name, route] of routes) {
-              const response = await page.goto(origin + route, { waitUntil: 'networkidle' });
+              const response = await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
               if (!response || response.status() >= 400) {
                 throw new Error('Preview page failed: ' + route + ' (' + (response?.status() ?? 'no response') + ')');
               }
+              await page.waitForTimeout(1800);
               await page.screenshot({ path: 'preview-screenshots/' + name + '.png', fullPage: true });
               console.log('Captured', route, response.status());
             }
