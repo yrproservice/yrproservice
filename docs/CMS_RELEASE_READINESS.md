@@ -1509,3 +1509,11 @@ The two workflow results above are verified against their exact documentation co
 - The handler now tracks whether the R2 write completed, whether the D1 batch was started/completed, and whether the media row was confirmed. It cleans up when no D1 batch was sent or when a completed batch confirms no media row was inserted. If the D1 batch outcome is ambiguous, it retains the object, logs the media ID/key, and returns an explicit ambiguous-outcome response instructing the administrator to refresh and inspect before retrying.
 - This intentionally prefers a possible orphaned R2 object over a database record pointing to a deleted object. The existing read-only orphan reconciliation can help identify retained objects; no automatic deletion or cleanup is performed.
 - This is a source-level recovery correction only. No upload, R2 mutation, D1 operation, test, screenshot or image processing was performed. Runtime simulation of ambiguous D1 responses remains deferred to the final authorized verification stage.
+
+
+## Settings draft audit confirmation correction — 20 November 2026
+
+- Source commit `0b936812eb25cd5ef89f4ddeb5b7bd5f9c807afd` updates `functions/api/cms/admin/settings.js`.
+- The settings save batch inserts/guards a draft, updates the setting row, then conditionally inserts its audit event. The handler previously confirmed the draft insert but did not inspect the final audit statement's affected-row count.
+- The handler now verifies batch result index 4 (the audit insert) equals one. If not, it returns an explicit ambiguous-save response instructing the administrator to reload and inspect the current draft before retrying. A successful response now includes `auditRecorded: true`.
+- This is a source-level check only; no setting was saved and no D1 operation was executed. Build/Preview verification is pending for this commit. Runtime concurrency and zero-row audit scenarios remain deferred to final testing.
