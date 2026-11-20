@@ -232,7 +232,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
     try {
       const result = await api("/api/cms/admin/publish", {
         method: "POST",
-        body: JSON.stringify({ entityType: "setting", entityKey: `page-design.${pageKey}`, versionId: draftId })
+        body: JSON.stringify({ entityType: "setting", entityKey: `page-design.${pageKey}`, versionId: draftId, expectedDraftCreatedAt: draftCreatedAt })
       });
       setPublishedVersion(result.version || draftVersion);
       setDraftId("");
