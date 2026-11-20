@@ -1893,3 +1893,13 @@ Exact-commit build-only Preview verification:
 - Duplicate revision timestamp property cleanup: `9320f6e6181b0843da8ebafba71cf1fa61d4db8c` — [run #44656102984](https://github.com/yrproservice/yrproservice/actions/runs/44656102984) passed.
 - All listed runs completed dependency installation, Vite build, Pages Functions compilation, Preview D1 schema readiness and Preview asset verification. No test step ran. Runtime concurrency conflict checks remain deferred to the final stage.
 - No migration was added or run. Production remains untouched; PR #2 remains Open, Draft and unmerged.
+
+
+## Page Visual Design Manager publish-state cleanup — 20 November 2026
+
+- A bounded editor/API review rechecked page, product and settings publish callers, revision restore, draft deletion, and media archive/recovery.
+- Found one stale local-state inconsistency: after a successful Preview publish, Page Visual Design Manager cleared its draft ID but retained the previous draft timestamp. This did not alter D1 data or block a later save, but left an obsolete snapshot in editor state.
+- Corrected the success handler to clear `draftCreatedAt` together with the draft ID/version. The fix is isolated to `src/pages/PageVisualDesignManager.jsx` and requires no migration.
+- Source commit: `d32888a89b070bf98bdf1b64dcdc7e1ec9297b11`.
+- The build-only workflow is configured to run on pushes to `cms-development`; an exact-commit result has not yet been confirmed in this handover. Do not treat earlier build runs as verification of this commit.
+- No tests, screenshots, image processing, migrations, or Production operations were performed. PR #2 remains Open, Draft and unmerged.
