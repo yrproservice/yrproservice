@@ -1172,6 +1172,7 @@ export default function CMSManagement() {
         body: JSON.stringify({
           key: settingKey,
           value,
+          expectedDraftId: settings.find((row) => row.setting_key === settingKey)?.draft_id || null,
         }),
       });
 
