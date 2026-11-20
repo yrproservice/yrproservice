@@ -1478,3 +1478,12 @@ No media was uploaded, archived, restored, renamed, deleted or rewritten during 
 
 ### Scope of this checkpoint
 The two workflow results above are verified against their exact documentation commit SHAs. No tests, screenshots, image processing, migrations, database row changes, R2 mutations, backup changes, staff access changes, PR merge or Production operation was performed in this checkpoint. The current work is source/documentation preparation and Preview build verification only.
+
+
+## Preview deployment and migration trigger separation — 20 November 2026
+
+- Rechecked the exact-commit build-only workflow for checkpoint `1f7667034c318b749848198ae5bdd989d20a573b`: workflow [#44667557041](https://github.com/yrproservice/yrproservice/actions/runs/44667557041) completed successfully. Locked install, Vite, Pages Functions, read-only Preview D1 schema readiness, and Pages Preview deployment/asset verification all passed.
+- Re-read the deployment configuration. `wrangler.toml` keeps Pages Production D1 (`yr-proservice-db`) distinct from Preview D1 (`yr-pro-service-test-db`) and binds the Preview media bucket separately. The Preview media public base is configured only under `env.preview.vars`; it points to the Preview bucket's public R2 hostname. No Production binding or public-base value was changed.
+- The separate `worker-preview.yml` workflow runs only on pushes to `production-release`, builds the site and invokes Wrangler's Worker Preview command using `wrangler.worker-preview.toml`. That config contains static assets and a `[previews]` section but no D1 or R2 bindings. This is not the Pages Preview deployment and is not a Production Pages deployment. No Worker Preview deployment was triggered during this review.
+- The two D1 migration workflows are path-triggered on `cms-development` and also manually dispatchable. They verify the exact Preview D1 name and UUID before running SQL. The current documentation-only commits do not match their migration-file path triggers, and no migration workflow was manually dispatched. Do not use migration workflows as routine schema health checks; the read-only build schema check is the routine path.
+- No source/configuration change was needed from this review. No migration, Worker deployment, D1 write, R2 operation, Production operation, test, screenshot, image processing, access-policy change or PR merge was performed.
