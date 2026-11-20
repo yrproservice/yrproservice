@@ -1401,8 +1401,17 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 ## CMS lifecycle audit affected-row guards — 20 November 2026
 
 - Extended the media metadata audit correction to the CMS page/product draft update and new-version paths, publishing, and draft deletion. Those paths already paired their state/content changes with audit inserts in D1 batches, but several success responses checked only the primary mutation and did not confirm the final audit insert had affected one row.
-- Added explicit affected-row checks for the audit statement in each affected path. An unconfirmed audit insert now produces an error response describing the operation as rolled back instead of reporting success without its required audit event. Existing optimistic-concurrency checks and audit payloads are preserved.
+- Added explicit affected-row checks for the audit statement in each affected path. An unconfirmed audit insert now produces an error response instructing the administrator to reload and inspect the item before retrying, rather than reporting success without its required audit event. Existing optimistic-concurrency checks and audit payloads are preserved.
 - Updated source commits: `604614e79d9a317a64b4ccfb27ed6731c5884ea0`, `063da8379d53de2de8545880f618e765d81b5eb3`, `496fd45b490713b257460e9add930c56285b0d3e`, `72738d1ffb47ace5add11bdcf49f21b6e1c30fe0`, `6bad5b65fabafd9bf44f80dfa09259ec08f86519`, and `093f02cac86f188f53e4a12fc69305c44347edae`.
 - Settings draft save already checked the audit statement's affected-row count and was left unchanged. Initial page/product creation paths use direct inserts inside a D1 batch; no conditional audit insert was found there.
 - These are source-level consistency guards. Runtime rollback behavior and the affected CMS workflows remain for final verification; no tests were run.
 - No Preview or Production data, schema, media objects, staff access or PR state was changed by these source edits.
+
+
+### Audit affected-row semantics clarification — 20 November 2026
+
+- Clarified the failure responses for media archive/restore/metadata, page/product draft saves, publishing and draft deletion. A D1 batch transaction rolls back on a statement error, but a conditional statement that successfully executes while affecting zero rows is not itself a SQL error and does not guarantee rollback of earlier statements.
+- Accordingly, an unconfirmed audit insert now returns a reload-and-inspect message that does not claim the content/status change was rolled back. Administrators are told to verify the item's current state before retrying, avoiding duplicate actions after an ambiguous response.
+- This correction is deliberately conservative: the affected-row guards detect an unconfirmed audit write but do not by themselves implement a compensating rollback. Runtime failure-path behavior remains for final verification.
+- Source commits: `008262beb3eb562f399dffb764e4bd9ee439a7e7`, `5c3fe9551ff1df302f5f7af27eb29a35db0788b0`, `3a5f25e23e947ab73e504745afe7e106e289d878`, `c6078cbdc3a821207b0859ee4e190ae96e586d67`, and `0848704f950c3d8668d49850c2bea1f9cd5a610a`.
+- No tests, migrations, Preview/Production data changes, R2 operations, staff-access changes or PR merge were performed.
