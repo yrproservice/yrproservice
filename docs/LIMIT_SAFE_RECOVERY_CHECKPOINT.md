@@ -152,3 +152,13 @@ No code change was made during this review because the inspected source did not 
 - The run's single job concluded `success`. This is exact-head CI evidence for `eaebfc0...`, not evidence for any later documentation commit.
 - Current release blockers remain: full PR history/diff review; authenticated Preview CMS and D1/R2 runtime/concurrency verification; Production D1 migration/backup/restore, R2 binding, actual Production Access hostname, and branch protection verification; performance/accessibility/security/isolation checks; content/data confirmation; and decision on the absence of a server-side single-device session lock.
 - No PR merge, Production migration/deployment, or Production resource change occurred.
+
+
+## Visual follow-up and content provenance review — 20 November 2026
+
+- Re-inspected the previously captured mobile Home screenshot. The subtitle wraps after the hyphen in “Long-term” but remains within the viewport; this is a normal line wrap, not a confirmed overflow defect. No subtitle-specific patch was made.
+- The mobile Services screenshot confirms the original eyebrow colour was blue on a navy background and lacked sufficient contrast. Commit `c3d398ec2033cada4f804e7cb215920f63a82cb3` changes only the Services hero eyebrow to the existing light-cyan palette and removes a redundant `width: 100%` from the Home hero content child so it follows the parent container's natural width.
+- Historical base-branch files at `c3f8b658fa49187f5dc3a5ad2ce4b2feab6817e4` contain the same eight Services entries and hero/intro/process/CTA copy now used by the CMS template. This proves parity with the checked-in base branch, **not** approval against the user's V10 source-of-truth Services content. Keep that content comparison open; do not rewrite it based on assumptions.
+- The checked-in base-branch Team page also already used `/assets/team-1.jpg` through `team-4.jpg` as role-based image cards, with no named staff identities. The current CMS version preserves that pattern. Asset provenance/approval against the user's V10 baseline remains unverified; do not label the images as identified employees or add names.
+- The GitHub connector's commit-workflow lookup is documented to return pull-request-triggered runs only; it returned no run for the latest push commit `c3d398ec2033cada4f804e7cb215920f63a82cb3`. This does **not** prove that no push workflow ran. Exact-head CI/build status for this CSS correction remains unverified through the currently exposed lookup. Do not reuse the successful earlier run #44691001424 as evidence for this later commit.
+- No image/source asset was modified, converted, optimized, resized or otherwise processed. No migration, Production deployment, PR merge or Production resource change occurred.
