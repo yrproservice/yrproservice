@@ -35,10 +35,19 @@ export default function AdminDashboard({ onAuthenticated }) {
   const [requestHistory, setRequestHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
+  const [pageCursor, setPageCursor] = useState("");
+  const [cursorStack, setCursorStack] = useState([]);
+  const [nextCursor, setNextCursor] = useState("");
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+
+  function resetPagination() {
+    setPageCursor("");
+    setCursorStack([]);
+  }
 
   async function loadRequests(signal) {
     setLoading(true);
@@ -49,6 +58,7 @@ export default function AdminDashboard({ onAuthenticated }) {
       if (type) params.set("type", type);
       if (status) params.set("status", status);
       if (search.trim()) params.set("search", search.trim());
+      if (pageCursor) params.set("cursor", pageCursor);
 
       const response = await fetch(
         `/api/admin/requests?${params.toString()}`,
@@ -73,6 +83,8 @@ export default function AdminDashboard({ onAuthenticated }) {
         : [];
 
       setRequests(loadedRequests);
+      setHasMore(Boolean(result.hasMore));
+      setNextCursor(result.nextCursor || "");
       onAuthenticated?.();
       setSelected((current) =>
         current
@@ -99,7 +111,7 @@ export default function AdminDashboard({ onAuthenticated }) {
     return () => {
       controller.abort();
     };
-  }, [type, status, search, onAuthenticated]);
+  }, [type, status, search, pageCursor, onAuthenticated]);
 
   useEffect(() => {
     if (!selected?.reference) {
@@ -228,7 +240,7 @@ export default function AdminDashboard({ onAuthenticated }) {
           <div className="admin-panel-heading">
             <div>
               <h2>Incoming requests</h2>
-              <p>Showing up to 200 matching records, newest first.</p>
+              <p>Showing 50 matching records per page, newest first.</p>
             </div>
             <button
               type="button"
@@ -244,7 +256,7 @@ export default function AdminDashboard({ onAuthenticated }) {
               Search
               <input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => { resetPagination(); setSearch(event.target.value); }}
                 disabled={saving}
                 maxLength={100}
                 placeholder="Reference, customer, email or company"
@@ -254,7 +266,7 @@ export default function AdminDashboard({ onAuthenticated }) {
               Request type
               <select
                 value={type}
-                onChange={(event) => setType(event.target.value)}
+                onChange={(event) => { resetPagination(); setType(event.target.value); }}
                 disabled={saving}
               >
                 <option value="">All types</option>
@@ -267,7 +279,7 @@ export default function AdminDashboard({ onAuthenticated }) {
               Status
               <select
                 value={status}
-                onChange={(event) => setStatus(event.target.value)}
+                onChange={(event) => { resetPagination(); setStatus(event.target.value); }}
                 disabled={saving}
               >
                 <option value="">All statuses</option>
@@ -339,6 +351,33 @@ export default function AdminDashboard({ onAuthenticated }) {
               </tbody>
             </table>
             {loading && <p className="admin-loading">Loading requests…</p>}
+          </div>
+          <div className="admin-pagination" aria-label="Request pages">
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => {
+                const previous = cursorStack[cursorStack.length - 1] || "";
+                setCursorStack((stack) => stack.slice(0, -1));
+                setPageCursor(previous);
+              }}
+              disabled={loading || saving || cursorStack.length === 0}
+            >
+              Previous
+            </button>
+            <span>Page {cursorStack.length + 1}{hasMore ? " · More results available" : " · End of results"}</span>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => {
+                if (!nextCursor) return;
+                setCursorStack((stack) => [...stack, pageCursor]);
+                setPageCursor(nextCursor);
+              }}
+              disabled={loading || saving || !hasMore || !nextCursor}
+            >
+              Next
+            </button>
           </div>
         </section>
 
