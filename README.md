@@ -34,7 +34,7 @@ The current development branch contains:
 - Media-library upload, listing, and removal through the Preview R2 bucket, with file-signature checks, a 12 MB limit, and protection against deleting media referenced by saved content or revisions.
 - CMS page/settings support and management interfaces for Home, Products, Services, Team, navigation/footer, and Visual Design Studio.
 - Public renderers for CMS-managed page, product, navigation, and footer content.
-- Cloudflare Access-protected Admin APIs and a single-device Admin session lock with a 90-second expiry/heartbeat.
+- Cloudflare Access-protected Admin APIs for one authorized account. The current server does not enforce a single-device session lock; shared-account concurrent use remains possible.
 - Separate customer flows: normal products use the Product Cart; dental chairs use the dedicated Dental Chair Request. Quotation, service requests, request tracking, and HR-focused Contact remain separate workflows.
 
 The request dashboard and CMS Admin are private. Public customer request and tracking endpoints must remain accessible without exposing Admin APIs.

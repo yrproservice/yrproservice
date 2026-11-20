@@ -64,7 +64,7 @@ The following work was completed on `cms-development` after the historical 13 No
 - Added automated Admin request-status update and CMS publishing tests, including page, product and settings publication, invalid/foreign revision handling, and repeat-publish behavior.
 - Fixed the Preview Admin sign-in return flow. When Cloudflare Access requires an interactive login during an Admin API request, the browser now completes that authentication through a top-level navigation and returns to Admin.
 - GitHub Actions passed for code commit `d182e0ac9ff3b8856304690e31009e24b63f3cc7` and final verification-notes commit `41cb8c4996f145c14e840b204d04e64b6e52d42f`. The reported automated suite has **47 passing tests**, and the Vite production build succeeds. The initial entry bundle is **373.48 kB minified (101.00 kB gzip)** with no large-chunk warning.
-- Preview browser verification confirmed the Cloudflare Access gate, Admin sign-in/session acquisition, request dashboard and Visual CMS loading, successful logout, and release of the active-device session lock.
+- Earlier browser notes recorded Admin sign-in/logout and described a session lock. Subsequent source review on 20 November found that the server does not implement that lock: the session endpoint only validates the Access identity, and browser `sessionStorage` is local UI state. Treat the earlier lock-specific statement as superseded; authenticated runtime checks still need to be repeated in final verification.
 - No live request status was changed and no CMS content was published during that browser verification.
 - The latest working tree was reported clean.
 

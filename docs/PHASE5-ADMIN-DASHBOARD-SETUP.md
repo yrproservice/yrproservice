@@ -56,7 +56,7 @@ Do not use `VITE_` prefixes or put these values in frontend code. Keep the exist
 
 ## Client / Admin entry mode
 
-The public application now presents a first-entry choice. Client mode opens the public site and remembers the choice for the current browser tab. Admin mode navigates to the protected `/admin` entry route and acquires the single-device session through `POST /api/admin/session`. After that succeeds, the application returns the administrator to the public homepage and displays the Admin navigation menu. The menu is a convenience only: all dashboard and CMS endpoints continue to enforce Cloudflare Access JWT validation and the single-account allowlist on the server.
+The public application now presents a first-entry choice. Client mode opens the public site and remembers the choice for the current browser tab. Admin mode navigates to the protected `/admin` entry route and checks the Cloudflare Access identity through `POST /api/admin/session`. This endpoint does not acquire a server-side device lock. After that succeeds, the application returns the administrator to the public homepage and displays the Admin navigation menu. The menu is a convenience only: all dashboard and CMS endpoints continue to enforce Cloudflare Access JWT validation and the single-account allowlist on the server.
 
 When the browser's fetch to the separate Admin API Access application is redirected to its login page, the Admin entry performs a top-level navigation to `GET /api/admin/session?access_return=1`. After Access verifies the identity, that endpoint returns the browser to `/admin?entry=1`, where the session can be acquired without a cross-origin fetch redirect. The return route validates the Access identity and uses a fixed local destination; it does not accept a user-supplied redirect URL.
 
@@ -64,10 +64,14 @@ On page refresh, Admin mode is revalidated through `GET /api/admin/session`. No 
 
 For Preview, ensure the existing **YR Proservice Admin** Access application covers `/admin*` and the existing **YR Proservice Admin API** application covers both `/api/admin*` and `/api/cms/admin*` on the current Preview hostname. The API application's AUD must match the Preview `ACCESS_AUD` value. Access hostname/path configuration is managed in Cloudflare Zero Trust, not in this repository.
 
-## Single-account, single-device Admin session and logout
+## Single-account Admin access and logout (current implementation)
 
-The server accepts exactly one administrator identity: `yr.proservice@gmail.com`. Several people can use this shared authorized account at different times, but the app does not create or authorize separate staff accounts. The Preview application enforces one active Admin browser/device session using the existing Preview D1 database binding. The first Admin device atomically acquires the singleton `admin_session_lock` row through `POST /api/admin/session`. The lock is renewed every 30 seconds and expires after 90 seconds without a heartbeat. A second device receives HTTP 409 and is not allowed into Admin. The lock table is created automatically on first use in the bound D1 database; no additional database or API application is required.
+The server accepts exactly one administrator identity: `yr.proservice@gmail.com`. The server-side authorization boundary is Cloudflare Access JWT verification plus the one-account allowlist. The source explicitly permits multiple authorized staff to use the shared account concurrently.
 
-Logout is available in the Admin navigation and on Admin workspace routes. It calls `DELETE /api/admin/session`, releases only the current browser's lock, clears its HttpOnly session cookie and returns to the Client/Admin entry screen. If the browser closes unexpectedly or loses connection, the lock expires within 90 seconds. All existing dashboard and CMS API handlers use `requireAdmin`, which checks the Cloudflare Access identity, the one-account allowlist, and the active single-device session.
+`GET`, `POST` and `PATCH /api/admin/session` validate the Access identity and return authorization status; they do not acquire or renew a device lock. `DELETE /api/admin/session` clears the browser's local Admin mode through the UI and expires the named cookie if present, but it does not revoke the Cloudflare Access identity session or a server-side session record.
+
+The browser's `sessionStorage` value controls only the local Client/Admin interface mode. It is not an authentication credential, session registry, heartbeat or device lock. Cloudflare Access remains responsible for its own authentication and session policy.
+
+Do not describe the current implementation as enforcing one active Admin browser/device. A strict single-device policy conflicts with shared-account multi-staff concurrency; clarify the intended policy before designing a database-backed lock or revocation mechanism.
 
 The lock is scoped to the Cloudflare Pages environment's existing D1 binding: Preview uses `yr-proservice-test-db`; Production would use `yr-proservice-db` only when a separately approved Production deployment is made. Do not merge or deploy to Production as part of Preview verification.
