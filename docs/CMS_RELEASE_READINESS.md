@@ -1259,3 +1259,22 @@ The settings concurrency concern is not a confirmed defect after the batch-guard
 - Latest work includes request history schema/API/Admin UI and media upload audit event. Preview migration 0004 was applied only after exact Preview database identity verification. Website build and Cloudflare Pages Preview checks must be polled for the latest code commit before recording deployment success.
 - Outstanding prioritized work: implement cursor pagination for request administration, revision history, and Media Library; complete safe static review and remediation of remaining release-readiness items; keep the shared-account staff policy as a documented decision pending user approval; preserve original Services/V10 content verification as blocked pending source access.
 - No PR merge, Production deployment/configuration, Production D1 operation, destructive action, test run, screenshot, or image processing was performed.
+
+
+## Cursor pagination implementation — 20 November 2026
+
+- **Admin requests:** changed the authenticated request-list endpoint to stable keyset pagination using `created_at DESC, id DESC`, 50 rows per page, a validated opaque JSON cursor, and a `hasMore` / `nextCursor` response. The Admin Request Dashboard now provides Previous / Next controls and resets to the first page when search/type/status filters change. Status counts are explicitly described as applying to the currently loaded page and filters; no misleading filtered-total count is claimed.
+- **CMS revision history:** added validated version-number cursor pagination to the authenticated history endpoint, returning 100 revisions per page and continuation metadata. The dedicated Revision History workspace now exposes Previous / Next controls while retaining the selected entity context.
+- **Media Library:** added stable keyset pagination ordered by active/archive group, creation time and ID, returning 100 records per page. Cursor validation preserves correct traversal across the active-to-archived boundary when the archived view is enabled. The Media Library workspace now exposes Previous / Next controls, and its overview/search/export copy clarifies that metrics and exports cover the currently loaded page rather than the entire library.
+- Media lifecycle filtering now includes `upload_media` events alongside archive and restore events, and upload records display filename/type/size metadata in the per-item history.
+- The request list, revision history and Media Library no longer rely on their previous fixed 200 / 100 / 300 row response caps as the only available page. No total-count query was added; the UI reports continuation/end-of-results rather than inventing totals.
+- Static source review only. No customer requests, CMS revisions, media rows, or R2 objects were queried or modified for pagination. Final-stage pagination-boundary regression tests remain outstanding.
+
+## Release-readiness status update — 20 November 2026
+
+- P1 request lifecycle accountability: implementation is present on `cms-development`; Preview D1 migration 0004 was applied and verified against the exact Preview database identity. The Admin UI shows forward status events. Historical pre-activation transitions cannot be reconstructed.
+- P1 service slug integrity: all eight current public request allowlist slugs match the eight entries in the current legacy Services data source. Original V10 content fidelity remains unverified until the authoritative source ZIP is available.
+- P1 staff access: unchanged and still a policy decision. The current identity is a single authorized email shared by staff; no individual identity or session lock was introduced.
+- P2 media audit completeness: upload-created events are now written to the unified audit log and shown in the lifecycle filter. No upload has been performed in this work.
+- P2 discoverability: request, CMS revision and media lists now have cursor pagination and visible continuation controls. Request history per-item events and media per-item audit history remain individually bounded to their latest 50 events; those are distinct from the three collection pagination workflows.
+- Final verification remains deferred by instruction: no automated tests, screenshots, or image processing. The Preview website build and deployment checks for the latest code commit must be confirmed before calling the current Preview checkpoint successful.
