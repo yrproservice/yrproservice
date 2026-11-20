@@ -108,7 +108,7 @@ export async function onRequestPost(context) {
       if (expectedDraftId || expectedDraftCreatedAt) return adminJson({ error: "The page changed or was removed. Reload the page list before saving." }, 409);
       const id = crypto.randomUUID();
       const versionId = crypto.randomUUID();
-      await env.DB.batch([
+      const results = await env.DB.batch([
         env.DB.prepare("INSERT INTO cms_pages (id, page_key, title, route, updated_at) VALUES (?, ?, ?, ?, ?)")
           .bind(id, pageKey, title, route, now),
         env.DB.prepare("INSERT INTO cms_page_versions (id, page_id, version_number, state, title, route, content_json, created_by, change_note, created_at) VALUES (?, ?, 1, 'draft', ?, ?, ?, ?, ?, ?)")
@@ -116,7 +116,13 @@ export async function onRequestPost(context) {
         env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'create_draft', 'page', ?, ?)")
           .bind(crypto.randomUUID(), actor, id, JSON.stringify({ pageKey, route }))
       ]);
-      return adminJson({ ok: true, pageId: id, draftId: versionId, draftCreatedAt: now, version: 1 }, 201);
+      if (Number(results?.[0]?.meta?.changes || 0) !== 1 || Number(results?.[1]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "The new page record or draft could not be confirmed. Reload the page list and inspect the item before retrying." }, 500);
+      }
+      if (Number(results?.[2]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "The new page and draft may have been created, but the audit record could not be confirmed. Reload the page list and inspect the item before retrying." }, 500);
+      }
+      return adminJson({ ok: true, auditRecorded: true, pageId: id, draftId: versionId, draftCreatedAt: now, version: 1 }, 201);
     }
 
     const draft = await env.DB.prepare("SELECT id, version_number, created_at, content_json FROM cms_page_versions WHERE page_id = ? AND state = 'draft' LIMIT 1")
