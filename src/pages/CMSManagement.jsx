@@ -437,6 +437,7 @@ export default function CMSManagement() {
           entityType: "product",
           entityKey: selected.slug,
           versionId: selected.draftId,
+          expectedDraftCreatedAt: selected.draftCreatedAt,
         }),
       });
 
@@ -1236,6 +1237,7 @@ export default function CMSManagement() {
           entityType: "setting",
           entityKey: row.setting_key,
           versionId: row.draft_id,
+          expectedDraftCreatedAt: row.draft_created_at,
         }),
       });
 

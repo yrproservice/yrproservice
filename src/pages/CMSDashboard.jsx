@@ -989,7 +989,7 @@ export default function CMSDashboard({ onAdminLogout }) {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ pageKey, versionId: draftId }),
+        body: JSON.stringify({ pageKey, versionId: draftId, expectedDraftCreatedAt: draftCreatedAt }),
         cache: "no-store",
       });
       const result = await response.json().catch(() => ({}));

@@ -41,7 +41,7 @@ export async function onRequestPost(context) {
     if (!entity) return adminJson({ error: `CMS ${config.label} not found.` }, 404);
     const valueColumn = entityType === "setting" ? "value_json" : entityType === "page" ? "content_json AS value_json, title, route" : entityType === "product" ? "product_json AS value_json" : "NULL AS value_json";
     const target = await env.DB.prepare(`
-      SELECT id, version_number, state, ${valueColumn}
+      SELECT id, version_number, state, created_at, ${valueColumn}
       FROM ${config.versions}
       WHERE id = ? AND ${config.foreignKey} = ?
       LIMIT 1
@@ -58,6 +58,10 @@ export async function onRequestPost(context) {
     // older archived revision directly over the current public version.
     if (target.state !== "draft") {
       return adminJson({ error: "Only a saved draft can be published. Restore an archived revision as a draft first." }, 409);
+    }
+    const expectedDraftCreatedAt = clean(body.expectedDraftCreatedAt, 64);
+    if (!expectedDraftCreatedAt || target.created_at !== expectedDraftCreatedAt) {
+      return adminJson({ error: "This draft changed after it was loaded. Reload the item before publishing." }, 409);
     }
     if (entityType === "product") {
       let product;
@@ -118,12 +122,12 @@ export async function onRequestPost(context) {
       env.DB.prepare(`
         UPDATE ${config.versions}
         SET state = 'published', published_at = ?
-        WHERE id = ? AND ${config.foreignKey} = ? AND state = 'draft'
+        WHERE id = ? AND ${config.foreignKey} = ? AND state = 'draft' AND created_at = ?
           AND EXISTS (
             SELECT 1 FROM ${config.table}
             WHERE ${entityKeyColumn} = ? AND published_version_id IS ?
           )
-      `).bind(now, versionId, entity.id, entity.id, expectedPublishedId)
+      `).bind(now, versionId, entity.id, expectedDraftCreatedAt, entity.id, expectedPublishedId)
     );
     if (expectedPublishedId) {
       batch.push(
