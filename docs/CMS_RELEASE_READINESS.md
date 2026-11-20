@@ -895,3 +895,14 @@ No source change was justified in this pass. The main unresolved decision is the
 - Locked dependency installation, Vite website build, Cloudflare Pages Functions build, Preview D1 schema-readiness verification, and the workflow's Preview deployment/asset-verification step all completed successfully.
 - This was the build-only workflow. No automated tests, screenshots, image processing, or database migrations were run. The workflow result is not approval to merge PR #2 or release Production.
 - PR #2 remains Open and Draft; Production remains untouched.
+
+
+## Exact-commit Preview build and deployment verification — 20 November 2026
+
+- Exact source/documentation commit: `9000f942cca125967ec431c93ef1d89dff1529a2`.
+- GitHub Actions [run #44657517588](https://github.com/yrproservice/yrproservice/actions/runs/44657517588) completed with conclusion `success`.
+- Its single build job completed successfully: locked dependency installation, Vite website build, Cloudflare Pages Functions build, Preview D1 schema-readiness verification, and Cloudflare Pages Preview deployment/verification.
+- The Cloudflare Pages check completed successfully for this exact commit. It reports the commit-specific Preview URL `https://850b9ce2.yrproservice.pages.dev` and branch Preview URL `https://cms-development.yrproservice.pages.dev`.
+- The Cloudflare Workers Builds check also completed successfully and its details URL is under the `previews/cms-development/builds/` path. The generic dashboard path contains the service's `production` namespace, but the check itself identifies this build as a Preview for branch `cms-development`; it is not evidence of a Production deployment.
+- This verification did not run automated tests, screenshots, image processing, or database migrations. A successful Preview build/deployment is not approval to merge PR #2 or release Production.
+- PR #2 remains Open and Draft; Production remains protected and no Production release was authorized.
