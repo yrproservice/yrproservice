@@ -218,3 +218,27 @@ No code change was made during this review because the inspected source did not 
 - PR #2 remains Open, Draft, unmerged; its head now matches `8793cfd35e344bae99884f779efed4010b98e4c9`; changed-file count remains 104. Do not merge while branch protection, Production R2 isolation, backup/restore evidence and authenticated Preview runtime gates remain unresolved.
 - No Production migration, deployment, merge, resource mutation or image processing occurred. Image processing remains prohibited.
 - Next: verify the exact-head workflow; continue source-level review and identify whether the Preview runtime can be exercised with an authorized browser/session. The available GitHub integration has no Cloudflare D1/R2 or browser-session action, so do not claim authenticated live mutations were tested without an appropriate authorized runtime.
+
+
+## Repository recovery and release-boundary review — 20 November 2026 (latest)
+
+- Recovery commit: `e72b537aee7351c3fb1f6526ffbee6cd6e747e76`, parent `3d506577bc2cbba9ca991dd9fa7fd371c0045445`. The preceding commit accidentally replaced the repository root tree with only a test file. Recovery rebuilt the full tree from the intact parent tree and overlaid the new media-upload validation test file; no force push or history rewrite was used.
+- Verified recovered tree: 392 entries, including `package.json`, `src/`, `functions/`, migrations, docs and workflows. The updated `tests/api-admin-workflows.test.js` blob was retained.
+- Exact-head checks all completed successfully: Cloudflare Pages Preview, Cloudflare Workers Builds, automated tests/build, CMS Preview D1 schema migration, request-history Preview D1 migration, and read-only request-history schema check. Workers build URL was explicitly under `production/previews/cms-development`; Pages deployment ID `4b883060-7be3-448e-b3af-2997d824e43a` produced `https://4b883060.yrproservice.pages.dev`, with branch Preview `https://cms-development.yrproservice.pages.dev`.
+- The migration workflows were re-read. They trigger only for their matching migration-file paths (or manual dispatch), verify the exact Preview D1 name and UUID before SQL, and target only `yr-proservice-test-db`. Migrations 0002 and 0004 use `IF NOT EXISTS`; 0003 checks for partial schema state before applying/repairing. These are Preview safeguards, not Production migration approval.
+- PR #2 remains Open, Draft and unmerged. The live comparison reports 1,219 commits ahead, 0 behind, 105 changed files; the merge base is exactly `main` at `c3f8b658fa49187f5dc3a5ad2ce4b2feab6817e4`. The count is accumulated development history after the true base, not an unrelated-root mismatch. It still requires full review before any merge.
+- Read-only UI/content audit found unresolved alignment items: the current Services CMS fallback still uses the eight-item installation/compressor/suction/underfloor-piping/maintenance/relocation/repair list and the CTA says “Request a Quotation” rather than the specified “Contact Us”. The current Team CMS fallback includes four generic functional-role cards and references `/assets/team-1.jpg` through `team-4.jpg`; no employee names are present, but the images and content have not been verified as approved real team material. Contact page source is HR-only.
+- The authoritative `YR-Proservice-Visual-Blueprint-V10-Verified-Images.zip` was not found in the available Library search; only handover/audit documents were found. The V10 archive has therefore NOT been inspected in this continuation. Do not edit the Services/Team visual/content fallback or claim V10 fidelity until the actual V10 source is available. This also means the current Git branch cannot be assumed to be a byte-for-byte V10 baseline.
+- No application code or image assets were changed during this review. No image processing occurred. Production website, D1, R2, bindings, secrets and deployment remain untouched.
+
+## Remaining gates after recovery
+
+1. Authenticated Preview CMS runtime checks for save, preview, publish, restore, draft deletion, media upload/archive/restore/reference protection, request history and authorization. GitHub CI and static deployment checks do not substitute for these.
+2. Verify actual Preview R2 operations with an authenticated Cloudflare session; current GitHub connection does not provide that session.
+3. Confirm and configure a separate Production R2 bucket/public media URL before Production CMS media can be enabled.
+4. Verify Production D1 migration readiness, backup/PITR and a tested restore procedure before any Production database operation.
+5. Verify Cloudflare Access coverage for the actual Production hostname and branch protection/review rules.
+6. Review the complete PR history and all 105 changed files. Keep PR #2 Draft/unmerged until the review and all release gates pass.
+7. Obtain the actual V10 ZIP (or a verified V10 source archive) before making any V10-sensitive UI/content changes; preserve the original Services content and do not use unverified Team imagery/content.
+
+No merge, Production migration or Production deployment was performed.

@@ -54,3 +54,14 @@ Coverage remains insufficient for the complete page/product/settings draft-save 
 5. Review PR #2's unusually large history/diff before any merge decision.
 
 PR #2 remains Draft and unmerged. Do not merge or deploy Production until the release gates are satisfied. Production database, bindings, and media storage remain out of scope for this checkpoint.
+
+
+## Latest recovery verification — 20 November 2026
+
+- Repository recovery commit: `e72b537aee7351c3fb1f6526ffbee6cd6e747e76` (full 392-entry tree restored after the incomplete-tree commit).
+- Exact-head workflow checks all passed: install/tests/build, Pages Functions build, Preview schema readiness, Preview Pages deployment/asset verification, desktop/mobile screenshot artifact, CMS Preview migration, request-history Preview migration, read-only request-history schema check, and Workers Builds under the `production/previews/cms-development` path.
+- Preview deployment: `https://4b883060.yrproservice.pages.dev`; branch Preview: `https://cms-development.yrproservice.pages.dev`.
+- Both migration workflows verify Preview database name and UUID before SQL and explicitly use `yr-proservice-test-db`; no Production database was targeted.
+- PR #2 remains Open/Draft/unmerged. Compare against `main`: 1,219 commits ahead, 0 behind, 105 changed files; `main` is the actual merge base.
+- The actual V10 ZIP was not present in the available Library search. Services/Team content mismatches have been recorded in `docs/LIMIT_SAFE_RECOVERY_CHECKPOINT.md`; no UI/content edits were made without the V10 source.
+- Production remains untouched. Image processing remains prohibited.
