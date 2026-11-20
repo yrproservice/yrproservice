@@ -1517,3 +1517,11 @@ The two workflow results above are verified against their exact documentation co
 - The settings save batch inserts/guards a draft, updates the setting row, then conditionally inserts its audit event. The handler previously confirmed the draft insert but did not inspect the final audit statement's affected-row count.
 - The handler now verifies batch result index 4 (the audit insert) equals one. If not, it returns an explicit ambiguous-save response instructing the administrator to reload and inspect the current draft before retrying. A successful response now includes `auditRecorded: true`.
 - This is a source-level check only; no setting was saved and no D1 operation was executed. Build/Preview verification is pending for this commit. Runtime concurrency and zero-row audit scenarios remain deferred to final testing.
+
+
+## Revision restore audit confirmation correction — 20 November 2026
+
+- Source commit `209043263356553c9cb47e7333c6d04284a0dffe` updates `functions/api/cms/admin/history.js`.
+- Revision restore already checked that the new draft insert affected one row, but did not check the final conditional audit-log insert. The handler now checks the final batch result for one affected audit row and returns an explicit ambiguous-outcome response if it cannot be confirmed. Successful restore responses include `auditRecorded: true`.
+- The source uses a variable-length batch for page versus product/setting restores; checking the final result keeps the audit assertion correct for all three entity types.
+- This was a source-only change. No revision was restored and no D1 operation was executed. Preview build verification is pending. Runtime tests for each entity type and ambiguous D1 outcomes remain deferred.
