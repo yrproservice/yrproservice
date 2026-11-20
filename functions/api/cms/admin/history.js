@@ -31,7 +31,7 @@ export async function onRequestGet(context) {
     const cursorValue = params.get("cursor") || "";
     let cursor = null;
     if (cursorValue) {
-      if (!/^\\d{1,12}$/.test(cursorValue) || Number(cursorValue) < 1) {
+      if (!/^\d{1,12}$/.test(cursorValue) || Number(cursorValue) < 1) {
         return adminJson({ error: "Invalid revision history cursor." }, 400);
       }
       cursor = Number(cursorValue);
