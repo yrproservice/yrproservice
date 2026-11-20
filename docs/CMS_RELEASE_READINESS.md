@@ -745,3 +745,28 @@ Media archive and restore now atomically pair the conditional media-row update w
 - Media audit atomicity `c8e3013386877bf2f4f4a68eeaf8a793451f0ea7`: [run #44653550375](https://github.com/yrproservice/yrproservice/actions/runs/44653550375) passed.
 - Latest run: 20 packages installed, 0 reported vulnerabilities; Vite and Pages Functions builds passed; Preview D1 schema readiness passed; all four referenced Preview assets returned successfully. No tests ran.
 - Authenticated runtime, restore race and media audit rollback verification remain deferred. No migration was added or run; Production remains untouched.
+
+## Draft-save caller integration and deletion snapshot checkpoint — 20 November 2026
+
+Settings editor integration:
+- The separate `PageVisualDesignManager` also saves through `/api/cms/admin/settings`. It now sends the `draftId` snapshot loaded for that page design (or null when no draft existed). This closes the caller gap introduced by the server-side expected-draft requirement.
+
+Page and product draft creation:
+- `CMSDashboard` sends the loaded page `draftId` with each page save. The page API compares it with the current active draft and returns HTTP 409 on mismatch.
+- When no page draft was expected, the page API uses an in-batch no-draft guard and conditionally inserts the new draft. Page metadata and audit writes are gated on successful insertion.
+- Product saves now use an envelope that separates product content from `expectedDraftId`. The API rejects a mismatch and uses the same guarded insert when no draft was expected. Product save/archive actions send the selected editor snapshot; catalogue import explicitly sends null for each new product.
+- These changes prevent a stale editor from overwriting a draft that appeared after it loaded and prevent concurrent first-draft creation from producing conflicting versions. No migration was required.
+
+Draft deletion snapshot:
+- The admin draft-delete endpoint now reads the draft's `created_at` and content JSON, then deletes only if both still match. This prevents a concurrent save between the read and delete from causing newer content to be deleted.
+- Applies to page, product and setting drafts. Page metadata and audit writes remain gated on successful deletion. No migration was required.
+
+Commits and exact-commit build-only Preview verification:
+- Page Visual Design Manager expected-draft caller: `54bb6f906b6fcaa0841cd727d8ec42b32b74446f` — [run #44653929357](https://github.com/yrproservice/yrproservice/actions/runs/44653929357) passed.
+- Page API no-draft race guard: `3fa3ac2c388a0b0ac70422055beecaa10b24b4df` — [run #44654029839](https://github.com/yrproservice/yrproservice/actions/runs/44654029839) passed.
+- Product API no-draft race guard: `83c0b63677be7272cbf9b1c4e53fa976310e1fc3` — [run #44654037708](https://github.com/yrproservice/yrproservice/actions/runs/44654037708) passed.
+- Home Visual Website Editor expected-draft caller: `385602b5efb10c3df53a27bc490a882aa7fb6499` — [run #44654045424](https://github.com/yrproservice/yrproservice/actions/runs/44654045424) passed.
+- CMS product editor save/archive/import envelope: `18c53d5d71191aeba49eb0745324acde9206a869` — [run #44654052200](https://github.com/yrproservice/yrproservice/actions/runs/44654052200) passed.
+- Draft deletion snapshot guard: `037a9acf3b040c1c35652d50ca3e3b010b20a44d` — [run #44654247583](https://github.com/yrproservice/yrproservice/actions/runs/44654247583) passed.
+- The runs performed dependency installation, Vite build, Pages Functions compilation, Preview D1 schema readiness and Preview asset verification. No tests ran. No schema migration or Production operation was performed.
+- Authenticated runtime and concurrency failure-path checks remain deferred to the final stage. PR #2 remains Open, Draft and unmerged.
