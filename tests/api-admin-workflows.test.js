@@ -6,6 +6,7 @@ import { onRequestGet as getAdminSession, onRequestPost as startAdminSession, on
 import { onRequestPost as publishCms } from "../functions/api/cms/admin/publish.js";
 import { onRequestGet as previewCmsPage } from "../functions/api/cms/admin/preview.js";
 import { onRequestGet as getPublicCmsPages } from "../functions/api/cms/public/pages.js";
+import { onRequestPost as saveCmsSetting } from "../functions/api/cms/admin/settings.js";
 import { onRequest as getPublicCmsProducts } from "../functions/api/cms/public/products.js";
 
 const cryptoApi = globalThis.crypto || webcrypto;
@@ -471,4 +472,85 @@ test("public CMS product endpoint explicitly selects published revisions only", 
   });
   assert.equal(response.status, 404);
   assert.match(sqlSeen, /v\.state = 'published'/);
+});
+
+
+function makeSettingsSaveDb({ existingDraft = null } = {}) {
+  const calls = [];
+  const batches = [];
+  return {
+    calls,
+    batches,
+    prepare(sql) {
+      const statement = {
+        sql,
+        values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          calls.push(this);
+          if (sql.includes("FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'")) {
+            return existingDraft;
+          }
+          if (sql.includes("COALESCE(MAX(version_number),0)")) return { version: 2 };
+          return null;
+        },
+      };
+      return statement;
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map((statement, index) => ({
+        meta: { changes: index === 1 ? 0 : 1 },
+      }));
+    },
+  };
+}
+
+test("CMS settings save creates an audited draft when no prior draft exists", async () => {
+  const db = makeSettingsSaveDb();
+  const value = {
+    items: [
+      { label: "Products", url: "/products" },
+      { label: "Services", url: "/services", type: "services" },
+      { label: "Team", url: "/team" },
+    ],
+  };
+  const response = await saveCmsSetting(adminContext(
+    "/api/cms/admin/settings",
+    { key: "site.navigation", value, expectedDraftId: null, changeNote: "Navigation update" },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.equal(result.ok, true);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(result.version, 3);
+  assert.ok(result.draftId);
+  assert.equal(db.batches.length, 1);
+  assert.equal(db.batches[0].length, 5);
+  assert.match(db.batches[0][1].sql, /SET state=state WHERE setting_key=\? AND state='draft'/);
+  assert.match(db.batches[0][2].sql, /WHERE changes\(\) = \?/);
+  assert.equal(db.batches[0][2].values.at(-1), 0);
+  assert.match(db.batches[0][4].sql, /'save_draft'/);
+});
+
+test("CMS settings save rejects a newly appeared draft instead of overwriting it", async () => {
+  const db = makeSettingsSaveDb({
+    existingDraft: { id: "concurrent-draft", version_number: 3 },
+  });
+  const response = await saveCmsSetting(adminContext(
+    "/api/cms/admin/settings",
+    {
+      key: "site.navigation",
+      value: { items: [{ label: "Products", url: "/products" }] },
+      expectedDraftId: null,
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 409);
+  assert.match(result.error, /changed in another session/i);
+  assert.equal(db.batches.length, 0);
 });
