@@ -50,6 +50,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
   const [design, setDesign] = useState(DEFAULTS);
   const [settings, setSettings] = useState([]);
   const [draftId, setDraftId] = useState("");
+  const [draftCreatedAt, setDraftCreatedAt] = useState(null);
   const [draftVersion, setDraftVersion] = useState(null);
   const [publishedVersion, setPublishedVersion] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -85,6 +86,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
     const value = readValue(row?.draft_value || row?.published_value);
     setDesign(mergePageDesign(value));
     setDraftId(row?.draft_id || "");
+    setDraftCreatedAt(row?.draft_created_at || null);
     setDraftVersion(row?.draft_version || null);
     setPublishedVersion(row?.published_version || null);
     setHasUnsavedChanges(false);
@@ -165,7 +167,9 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
       setHasUnsavedChanges(false);
       setNotice(`Design draft V${result.version} saved. The public website has not changed.`);
       try {
-        await loadSettings();
+        const rows = await loadSettings();
+        const saved = rows.find((row) => row.setting_key === key);
+        setDraftCreatedAt(saved?.draft_created_at || null);
       } catch (refreshError) {
         setError(`Design draft V${result.version} was saved successfully, but the settings list could not be refreshed (${refreshError.message}). Reload this manager before making further changes.`);
       }
@@ -193,9 +197,10 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
     try {
       const result = await api("/api/cms/admin/draft", {
         method: "DELETE",
-        body: JSON.stringify({ entityType: "setting", entityKey: `page-design.${pageKey}`, versionId: draftId })
+        body: JSON.stringify({ entityType: "setting", entityKey: `page-design.${pageKey}`, versionId: draftId, expectedDraftCreatedAt: draftCreatedAt })
       });
       setDraftId("");
+      setDraftCreatedAt(null);
       setDraftVersion(null);
       setSettingsLoadFailed(true);
       try {
