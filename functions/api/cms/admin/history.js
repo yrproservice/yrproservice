@@ -28,12 +28,27 @@ export async function onRequestGet(context) {
       ? await env.DB.prepare(`SELECT setting_key AS id, published_version_id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first()
       : await env.DB.prepare(`SELECT id, published_version_id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first();
     if (!entity) return adminJson({ error: "CMS item not found." }, 404);
+    const cursorValue = params.get("cursor") || "";
+    let cursor = null;
+    if (cursorValue) {
+      if (!/^\\d{1,12}$/.test(cursorValue) || Number(cursorValue) < 1) {
+        return adminJson({ error: "Invalid revision history cursor." }, 400);
+      }
+      cursor = Number(cursorValue);
+    }
     const rows = await env.DB.prepare(`
       SELECT id, version_number, state, created_by, change_note, created_at, published_at,
         CASE WHEN id = ? THEN 1 ELSE 0 END AS is_current_published
-      FROM ${config.versions} WHERE ${config.fk} = ? ORDER BY version_number DESC LIMIT 100
-    `).bind(entity.published_version_id || "", entity.id).all();
-    return adminJson({ ok: true, history: rows.results || [] });
+      FROM ${config.versions}
+      WHERE ${config.fk} = ? ${cursor ? "AND version_number < ?" : ""}
+      ORDER BY version_number DESC
+      LIMIT 101
+    `).bind(...(cursor ? [entity.published_version_id || "", entity.id, cursor] : [entity.published_version_id || "", entity.id])).all();
+    const allRows = rows.results || [];
+    const hasMore = allRows.length > 100;
+    const history = allRows.slice(0, 100);
+    const nextCursor = hasMore && history.length ? String(history[history.length - 1].version_number) : null;
+    return adminJson({ ok: true, history, limit: 100, hasMore, nextCursor });
   } catch (error) {
     console.error("CMS revision history failed", error);
     return adminJson({ error: "Unable to load revision history." }, 500);
