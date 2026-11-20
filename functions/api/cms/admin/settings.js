@@ -45,43 +45,62 @@ export async function onRequestPost(context) {
   if (new TextEncoder().encode(json).byteLength > 50000) return adminJson({ error: "Setting value is too large." }, 413);
   try {
     const db = context.env.DB, now = new Date().toISOString(), actor = auth.email || null;
+    if (!Object.prototype.hasOwnProperty.call(body, "expectedDraftId")) {
+      return adminJson({ error: "Reload the settings list before saving; the current draft version was not supplied." }, 409);
+    }
+    const expectedDraftId = typeof body.expectedDraftId === "string" && body.expectedDraftId
+      ? body.expectedDraftId.slice(0, 80)
+      : null;
     const draft = await db.prepare("SELECT id, version_number FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'").bind(key).first();
+    if ((draft?.id || null) !== expectedDraftId) {
+      return adminJson({ error: "This setting draft changed in another session. Reload the setting before saving again." }, 409);
+    }
     const latest = await db.prepare("SELECT COALESCE(MAX(version_number),0) AS version FROM cms_site_setting_versions WHERE setting_key=?").bind(key).first();
     const version = Number(latest?.version || 0) + 1, id = crypto.randomUUID();
     const statements = [
       db.prepare("INSERT OR IGNORE INTO cms_site_settings (setting_key, updated_at) VALUES (?, ?)").bind(key, now)
     ];
-    // Keep revision history immutable: archive the current draft and create a new
-    // numbered draft for every explicit Save action.
-    if (draft) statements.push(
-      db.prepare("UPDATE cms_site_setting_versions SET state='archived' WHERE id=? AND state='draft'").bind(draft.id)
-    );
+    // The guard statement and following INSERT execute in one D1 batch.
+    // If a draft was expected, archive only that exact active draft. If none
+    // was expected, the no-op UPDATE must find no active draft. The INSERT
+    // proceeds only when that guard affected exactly one (or zero) rows.
+    if (expectedDraftId) {
+      statements.push(
+        db.prepare("UPDATE cms_site_setting_versions SET state='archived' WHERE id=? AND setting_key=? AND state='draft'")
+          .bind(expectedDraftId, key)
+      );
+    } else {
+      statements.push(
+        db.prepare("UPDATE cms_site_setting_versions SET state=state WHERE setting_key=? AND state='draft'")
+          .bind(key)
+      );
+    }
     statements.push(
-      db.prepare(
-        "INSERT INTO cms_site_setting_versions (id,setting_key,version_number,state,value_json,created_by,change_note) VALUES (?, ?, ?, 'draft', ?, ?, ?)"
-      ).bind(
-        id,
-        key,
-        version,
-        json,
-        actor,
+      db.prepare(`
+        INSERT INTO cms_site_setting_versions
+          (id,setting_key,version_number,state,value_json,created_by,change_note)
+        SELECT ?, ?, ?, 'draft', ?, ?, ?
+        WHERE changes() = ?
+      `).bind(
+        id, key, version, json, actor,
         (typeof body.changeNote === "string" ? body.changeNote.trim().slice(0, 240) : "") ||
-          (draft ? "Updated settings draft" : "New settings draft")
+          (draft ? "Updated settings draft" : "New settings draft"),
+        expectedDraftId ? 1 : 0
       ),
-      db.prepare("UPDATE cms_site_settings SET updated_at=? WHERE setting_key=?").bind(now,key),
-      db.prepare(
-        "INSERT INTO cms_audit_log (id,actor_email,action,entity_type,entity_id,metadata_json) VALUES (?,?,'save_draft','setting',?,?)"
-      ).bind(
-        crypto.randomUUID(),
-        actor,
-        key,
-        JSON.stringify({
-          version,
-          previousDraftVersion: draft?.version_number ?? null,
-        })
+      db.prepare("UPDATE cms_site_settings SET updated_at=? WHERE setting_key=? AND changes()=1").bind(now,key),
+      db.prepare(`
+        INSERT INTO cms_audit_log (id,actor_email,action,entity_type,entity_id,metadata_json)
+        SELECT ?,?,'save_draft','setting',?,?
+        WHERE changes()=1
+      `).bind(
+        crypto.randomUUID(), actor, key,
+        JSON.stringify({ version, previousDraftVersion: draft?.version_number ?? null })
       )
     );
-    await db.batch(statements);
+    const results = await db.batch(statements);
+    if (Number(results?.[2]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "This setting draft changed in another session. Reload the setting before saving again." }, 409);
+    }
     return adminJson({ ok: true, draftId: id, version }, 201);
   } catch (error) {
     console.error("CMS settings save failed", error);
