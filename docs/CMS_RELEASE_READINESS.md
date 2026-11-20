@@ -1387,3 +1387,12 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 - Submission limits are 5 attempts per email and 20 per IP per hour; tracking limits are 10 per email and 30 per IP per 15 minutes. The tracking lookup requires both the request reference and matching email. Tracking responses are non-cacheable and include no-referrer protection.
 - Both handlers currently ensure their rate-limit tables and indexes with `CREATE TABLE/INDEX IF NOT EXISTS` and prune records older than 24 hours during request handling. This is a potential hot-path database overhead to quantify during final runtime/performance verification, not a demonstrated functional defect. No schema migration or code change was made in this review.
 - No customer data was queried or modified; no tests, migrations, screenshots, image processing, Production operations, PR merge or access-policy changes were performed.
+
+
+## Media metadata audit transaction guard — 20 November 2026
+
+- Source review found that the media metadata PATCH handler batched the conditional metadata update and its audit insert, but only checked the metadata-update affected-row count. A zero-row audit insert could therefore be returned to the caller as a successful metadata save even though the required audit event was absent.
+- Added a second affected-row check for the audit insert. If it is not confirmed, the handler now returns an error stating that the metadata update was rolled back; the D1 batch keeps the metadata and audit event paired.
+- Application source commit: `bef98b8fba6d4f0eb145f50a788018b4fe1a8232`.
+- Runtime behavior and rollback semantics remain for final verification. No tests were run.
+- No R2 objects, media records, D1 data/schema, staff access, Production resources or PR state were changed by this source correction.
