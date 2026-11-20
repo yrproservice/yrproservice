@@ -46,6 +46,33 @@ export async function onRequestGet(context) {
     filterBindings.push(pattern, pattern, pattern, pattern);
   }
 
+  let cursor = null;
+  const cursorValue = url.searchParams.get("cursor") || "";
+  if (cursorValue) {
+    if (cursorValue.length > 512) {
+      return adminJson({ error: "Invalid request page cursor." }, 400);
+    }
+    try {
+      cursor = JSON.parse(cursorValue);
+    } catch {
+      return adminJson({ error: "Invalid request page cursor." }, 400);
+    }
+    if (
+      !cursor ||
+      typeof cursor !== "object" ||
+      Array.isArray(cursor) ||
+      typeof cursor.createdAt !== "string" ||
+      cursor.createdAt.length > 40 ||
+      !Number.isFinite(Date.parse(cursor.createdAt)) ||
+      typeof cursor.id !== "string" ||
+      !cursor.id ||
+      cursor.id.length > 80 ||
+      /[\\u0000-\\u001f\\u007f]/.test(cursor.id)
+    ) {
+      return adminJson({ error: "Invalid request page cursor." }, 400);
+    }
+  }
+
   const where = [...filterWhere];
   const bindings = [...filterBindings];
   if (cursor) {
