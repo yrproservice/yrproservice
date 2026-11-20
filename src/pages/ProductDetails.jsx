@@ -222,9 +222,7 @@ export default function ProductDetails({ product, navigate, previewMode = false 
                     : "Add to Cart →"}
           </button>
           {previewMode ? <p className="bp-admin-note">This is an administrator preview. No cart or quotation action will be submitted.</p> : <p className="bp-admin-note">
-            Price and availability are catalogue fields reserved for future
-            admin updates. Manufacturer-specific technical details are shown
-            below when verified.
+            Price and availability reflect the latest information published to the catalogue. Manufacturer-specific technical details are shown below when verified.
           </p>}
         </div>
       </section>
