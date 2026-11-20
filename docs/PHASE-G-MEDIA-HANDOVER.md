@@ -1867,3 +1867,29 @@ Source commits and exact-commit build-only Preview verification:
 - Page preview timestamp selection: `ea69bf66de81d32dcb303281ba71c6516b7021a9` — [run #44655685815](https://github.com/yrproservice/yrproservice/actions/runs/44655685815) passed.
 - The runs passed dependency installation, Vite build, Pages Functions compilation, Preview D1 schema readiness and Preview asset verification. No tests ran. Runtime stale-publish conflict behavior remains deferred to the final stage.
 - No migration was added or run. Production remains untouched; PR #2 remains Open, Draft and unmerged.
+
+
+
+## Stale publish and draft-delete request hardening — 20 November 2026
+
+The prior timestamp-aware save/restore safeguards exposed two remaining caller/API gaps, now closed:
+
+- Product archive now sends the loaded draft timestamp and retains the returned timestamp, matching the product save contract.
+- Publish now requires the loaded draft `created_at` value, checks it against the target revision, and includes it in the conditional D1 publish transition. Page, product and settings publishing callers send their loaded timestamp.
+- Page Visual Design Manager now retains the settings draft timestamp after save and sends it when publishing. The page preview query explicitly selects `d.created_at AS draft_created_at`; without that field the Home Visual Website Editor would have received an undefined timestamp. The Home editor clears its timestamp after publish and when resetting a template.
+- Draft deletion now requires the client's expected draft timestamp and rejects a stale client before attempting deletion. The conditional DELETE still compares the exact timestamp and JSON snapshot to catch a save that races after the API read. CMS Management sends the timestamp for page, product and setting drafts; Page Visual Design Manager already sends it for design-setting deletion.
+- No schema migration was needed.
+
+Exact-commit build-only Preview verification:
+- Product archive caller: `84ae5ceb75920a5788480c608c6f02cb0fef0c7e` — [run #44655314872](https://github.com/yrproservice/yrproservice/actions/runs/44655314872) passed.
+- Publish snapshot API/callers: `f7edf5c3465fc05298032a7903615a3bc87c4152` — [run #44655526322](https://github.com/yrproservice/yrproservice/actions/runs/44655526322) passed.
+- Page Visual Design Manager timestamp state: `87bdc62173da4c1a8059b7af9eed0b509013d3c0` — [run #44655610178](https://github.com/yrproservice/yrproservice/actions/runs/44655610178) passed.
+- Design publish caller: `41760a4e6b071a316a06ee95979e550b9d1bb6e5` — [run #44655660564](https://github.com/yrproservice/yrproservice/actions/runs/44655660564) passed.
+- Page preview timestamp selection: `ea69bf66de81d32dcb303281ba71c6516b7021a9` — [run #44655685815](https://github.com/yrproservice/yrproservice/actions/runs/44655685815) passed.
+- Home editor timestamp reset: `b69dc0dcaaff691071dac66f865be25a67aa9431` — [run #44655895558](https://github.com/yrproservice/yrproservice/actions/runs/44655895558) passed.
+- Client-side stale-delete check: `97fc68c349519939bd10eed8157beda92e9c2b45` — [run #44655971755](https://github.com/yrproservice/yrproservice/actions/runs/44655971755) passed.
+- Page draft timestamp lookup: `cae8f8ac83243a8e054fdef3c30d3d40ad315032` — [run #44656008987](https://github.com/yrproservice/yrproservice/actions/runs/44656008987) passed.
+- Draft deletion API and CMS Management caller: `7b9aa0affa543afb6b12d58866ae94456648b21a` — [run #44656077486](https://github.com/yrproservice/yrproservice/actions/runs/44656077486) passed.
+- Duplicate revision timestamp property cleanup: `9320f6e6181b0843da8ebafba71cf1fa61d4db8c` — [run #44656102984](https://github.com/yrproservice/yrproservice/actions/runs/44656102984) passed.
+- All listed runs completed dependency installation, Vite build, Pages Functions compilation, Preview D1 schema readiness and Preview asset verification. No test step ran. Runtime concurrency conflict checks remain deferred to the final stage.
+- No migration was added or run. Production remains untouched; PR #2 remains Open, Draft and unmerged.
