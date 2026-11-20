@@ -66,6 +66,12 @@ export async function onRequestPost(context) {
   const parsed = await readBody(context.request);
   if (parsed.error) return adminJson({ error: parsed.error }, parsed.status);
   const body = parsed.body;
+  const expectedDraftId = body.expectedDraftId === null || body.expectedDraftId === undefined
+    ? null
+    : typeof body.expectedDraftId === "string" && body.expectedDraftId.length <= 80
+      ? body.expectedDraftId || null
+      : undefined;
+  if (expectedDraftId === undefined) return adminJson({ error: "Invalid expected draft ID." }, 400);
   const invalid = validPageInput(body);
   if (invalid) return adminJson({ error: invalid }, 400);
 
@@ -91,6 +97,7 @@ export async function onRequestPost(context) {
     if (conflict) return adminJson({ error: "That page key or route is already assigned to another page." }, 409);
 
     if (!page) {
+      if (expectedDraftId) return adminJson({ error: "The page changed or was removed. Reload the page list before saving." }, 409);
       const id = crypto.randomUUID();
       const versionId = crypto.randomUUID();
       await env.DB.batch([
@@ -106,6 +113,9 @@ export async function onRequestPost(context) {
 
     const draft = await env.DB.prepare("SELECT id, version_number, created_at, content_json FROM cms_page_versions WHERE page_id = ? AND state = 'draft' LIMIT 1")
       .bind(page.id).first();
+    if ((draft?.id || null) !== expectedDraftId) {
+      return adminJson({ error: "This page draft changed in another session. Reload it before saving again." }, 409);
+    }
     if (draft) {
       const results = await env.DB.batch([
         env.DB.prepare("UPDATE cms_page_versions SET title = ?, route = ?, content_json = ?, change_note = ?, created_by = ?, created_at = ? WHERE id = ? AND state = 'draft' AND created_at = ? AND content_json = ?")
@@ -125,13 +135,24 @@ export async function onRequestPost(context) {
       .bind(page.id).first();
     const version = Number(latest?.version || 0) + 1;
     const versionId = crypto.randomUUID();
-    await env.DB.batch([
-      env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ?").bind(title, route, now, page.id),
-      env.DB.prepare("INSERT INTO cms_page_versions (id, page_id, version_number, state, title, route, content_json, created_by, change_note) VALUES (?, ?, ?, 'draft', ?, ?, ?, ?, ?)")
-        .bind(versionId, page.id, version, title, route, content, actor, clean(body.changeNote, 240) || "New draft"),
-      env.DB.prepare("INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'create_draft', 'page', ?, ?)")
-        .bind(crypto.randomUUID(), actor, page.id, JSON.stringify({ version }))
+    const results = await env.DB.batch([
+      env.DB.prepare("UPDATE cms_page_versions SET state = state WHERE page_id = ? AND state = 'draft'").bind(page.id),
+      env.DB.prepare(`
+        INSERT INTO cms_page_versions (id, page_id, version_number, state, title, route, content_json, created_by, change_note)
+        SELECT ?, ?, ?, 'draft', ?, ?, ?, ?, ?
+        WHERE changes() = 0
+      `).bind(versionId, page.id, version, title, route, content, actor, clean(body.changeNote, 240) || "New draft"),
+      env.DB.prepare("UPDATE cms_pages SET title = ?, route = ?, updated_at = ? WHERE id = ? AND changes() = 1")
+        .bind(title, route, now, page.id),
+      env.DB.prepare(`
+        INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
+        SELECT ?, ?, 'create_draft', 'page', ?, ?
+        WHERE changes() = 1
+      `).bind(crypto.randomUUID(), actor, page.id, JSON.stringify({ version }))
     ]);
+    if (Number(results?.[1]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "A page draft was created in another session. Reload the page before saving again." }, 409);
+    }
     return adminJson({ ok: true, pageId: page.id, draftId: versionId, version }, 201);
   } catch (error) {
     console.error("CMS page draft save failed", error);
