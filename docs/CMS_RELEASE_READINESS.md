@@ -737,7 +737,7 @@ The settings editor now sends its expected current draft ID with each save. The 
 
 Revision restore now uses an expected-draft snapshot. The API rejects missing/stale snapshots with HTTP 409; its D1 batch archives only the expected draft, prevents a new draft racing a restore when none was expected, conditionally inserts the restored revision, and gates page metadata/audit writes on successful insertion. The CMS editor requires a loaded current entity and sends its draft ID. Applies to pages, products and settings. No migration required.
 
-Media archive and restore now atomically pair the conditional media-row update with an audit insert in one D1 batch. The audit insert is conditional on the row update; an audit failure rolls back the state change. R2 objects remain recoverable; no image processing or purge was performed.
+Media archive and restore submit the conditional media-row update and audit insert in one D1 batch and check both affected-row counts. A SQL statement error rolls back the batch, but an audit insert that merely affects zero rows does not itself guarantee rollback of the preceding state update. The handler reports an unconfirmed audit event and requires the administrator to reload and inspect the item before retrying. R2 objects remain recoverable; no image processing or purge was performed.
 
 - Restore API guard `5966a2cc0551c94e2876186074fd91f765f926e2`: [run #44653381204](https://github.com/yrproservice/yrproservice/actions/runs/44653381204) passed.
 - Editor integration `78e47735ab6d9d34cc5223ec60b11a194a811de4`: [run #44653388894](https://github.com/yrproservice/yrproservice/actions/runs/44653388894) passed.
@@ -913,7 +913,7 @@ No source change was justified in this pass. The main unresolved decision is the
 ### Confirmed existing audit pattern
 
 - The Preview CMS schema already defines `cms_audit_log` with `actor_email`, `action`, `entity_type`, `entity_id`, JSON metadata and a timestamp; it is created by `migrations/0002_create_cms.sql`.
-- The CMS publish handler writes its audit row in the same D1 batch as the guarded publication pointer updates. The audit insert is conditional on the target revision and published pointer reaching the expected state. This is the established atomic-audit pattern to follow.
+- The CMS publish handler submits its audit row in the same D1 batch as guarded publication pointer updates and now checks the audit statement's affected-row count. A zero-row conditional audit insert is not itself a SQL error and does not guarantee rollback; the handler reports an unconfirmed audit event and asks the administrator to reload and inspect the published version before retrying.
 - Media archive/restore also records its audit event atomically with its conditional state change. Media history reads this shared log.
 - The existing Admin request status handler uses compare-and-swap for concurrent status updates but performs the update as a standalone statement and does not append an audit row. This confirms the auditability gap from the previous review.
 
@@ -1376,7 +1376,7 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 
 ## Media lifecycle audit handover accuracy correction — 20 November 2026
 
-- Reconciled the Phase G media handover with the current archive/restore implementation. The archive and restore handlers submit the state change and corresponding audit insert in a D1 batch, then verify both affected-row counts. The handover now describes the paired operation and its transactional rollback expectation rather than incorrectly calling lifecycle audit writes best-effort.
+- Reconciled the Phase G media handover with the current archive/restore implementation. The archive and restore handlers submit the state change and corresponding audit insert in a D1 batch, then verify both affected-row counts. The handover now explains that an unconfirmed audit insert requires reload-and-inspect; it does not claim a zero-row conditional insert rolls back the preceding state update.
 - Documentation commit: `4ff47cbb6174585e17deb64f10d3840e317b4faa`.
 - Exact-commit build-only workflow [#44666321216](https://github.com/yrproservice/yrproservice/actions/runs/44666321216) completed successfully, including locked dependency install, Vite build, Pages Functions build, Preview D1 schema readiness and Preview deployment/asset verification.
 - No application source, D1 data/schema, R2 objects, staff access, Production resources or PR state changed. No tests, screenshots or image processing were run.
@@ -1392,9 +1392,9 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 ## Media metadata audit transaction guard — 20 November 2026
 
 - Source review found that the media metadata PATCH handler batched the conditional metadata update and its audit insert, but only checked the metadata-update affected-row count. A zero-row audit insert could therefore be returned to the caller as a successful metadata save even though the required audit event was absent.
-- Added a second affected-row check for the audit insert. If it is not confirmed, the handler now returns an error stating that the metadata update was rolled back; the D1 batch keeps the metadata and audit event paired.
+- Added a second affected-row check for the audit insert. If it is not confirmed, the handler now returns an error explaining that the metadata may have been updated and instructing the administrator to reload the Media Library before retrying.
 - Application source commit: `bef98b8fba6d4f0eb145f50a788018b4fe1a8232`.
-- Runtime behavior and rollback semantics remain for final verification. No tests were run.
+- Runtime behavior and audit-failure recovery semantics remain for final verification. No tests were run.
 - No R2 objects, media records, D1 data/schema, staff access, Production resources or PR state were changed by this source correction.
 
 
