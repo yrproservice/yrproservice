@@ -829,3 +829,12 @@ Exact-commit build-only Preview verification:
 - Duplicate revision timestamp property cleanup: `9320f6e6181b0843da8ebafba71cf1fa61d4db8c` — [run #44656102984](https://github.com/yrproservice/yrproservice/actions/runs/44656102984) passed.
 - All listed runs completed dependency installation, Vite build, Pages Functions compilation, Preview D1 schema readiness and Preview asset verification. No test step ran. Runtime concurrency conflict checks remain deferred to the final stage.
 - No migration was added or run. Production remains untouched; PR #2 remains Open, Draft and unmerged.
+
+
+## Latest source-review checkpoint — Page Visual Design Manager (20 November 2026)
+
+- Rechecked page/product/settings publish callers, revision restore, draft deletion, and media archive/recovery paths.
+- Corrected a stale client-side snapshot: successful Preview publishing now clears the Page Visual Design Manager's `draftCreatedAt` along with its draft ID and version.
+- Source commit: `d32888a89b070bf98bdf1b64dcdc7e1ec9297b11`; handover synchronization commit: `6c0b10624856597e227b54122fa5d6deeb26f840`.
+- No schema change or migration is needed. The build-only workflow triggers on pushes to `cms-development`, but an exact-commit result for these new commits has not yet been confirmed. Earlier successful runs do not verify these commits.
+- No tests, screenshots, image processing, migrations, or Production operations were performed. PR #2 remains Open, Draft and unmerged.
