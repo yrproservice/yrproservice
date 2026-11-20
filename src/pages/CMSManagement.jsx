@@ -267,6 +267,7 @@ export default function CMSManagement() {
     setSelected({
       slug: product.slug || "",
       draftId: row?.draft_id || "",
+      draftCreatedAt: row?.draft_created_at || null,
       version: row?.draft_version || null,
       isNew: !row,
       savedJson: JSON.stringify(product, null, 2),
@@ -315,6 +316,7 @@ export default function CMSManagement() {
         body: JSON.stringify({
           product,
           expectedDraftId: selected?.isNew ? null : selected?.draftId || null,
+          expectedDraftCreatedAt: selected?.isNew ? null : selected?.draftCreatedAt || null,
         }),
       });
 
@@ -330,6 +332,7 @@ export default function CMSManagement() {
       setSelected({
         slug: product.slug,
         draftId: data.draftId,
+        draftCreatedAt: data.draftCreatedAt || null,
         version: data.version,
         isNew: false,
         savedJson: JSON.stringify(product, null, 2),
@@ -479,7 +482,7 @@ export default function CMSManagement() {
       for (const product of missingProducts) {
         await api("/api/cms/admin/products", {
           method: "POST",
-          body: JSON.stringify({ product, expectedDraftId: null }),
+          body: JSON.stringify({ product, expectedDraftId: null, expectedDraftCreatedAt: null }),
         });
         importedCount += 1;
       }
@@ -552,6 +555,7 @@ export default function CMSManagement() {
       return;
     }
     const expectedDraftId = currentEntityRow.draft_id || null;
+    const expectedDraftCreatedAt = currentEntityRow.draft_created_at || null;
 
     const discardsSettingEdits = type === "setting" && key === settingKey && hasUnsavedSettingChanges;
     const discardsProductEdits = type === "product" && selected?.slug === key && selected.savedJson !== json;
@@ -574,6 +578,7 @@ export default function CMSManagement() {
           entityKey: key,
           versionId: id,
           expectedDraftId,
+          expectedDraftCreatedAt,
         }),
       });
 
