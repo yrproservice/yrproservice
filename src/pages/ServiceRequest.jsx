@@ -1,25 +1,54 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
-import { services } from "../data/services";
+import { services as fallbackServices } from "../data/services";
+import { getServicesCmsContent } from "../data/servicesCmsTemplate";
+import { downloadRequestConfirmationPdf } from "../utils/requestConfirmationPdf";
 
 export default function ServiceRequest({ navigate }) {
   const [sent, setSent] = useState(false);
-  const [service, setService] = useState("");
+  const [service, setService] = useState(() =>
+    new URLSearchParams(window.location.search).get("service") || ""
+  );
+  const [services, setServices] = useState(fallbackServices);
   const [submittedReference, setSubmittedReference] = useState("");
+  const [confirmationData, setConfirmationData] = useState(null);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const value = new URLSearchParams(window.location.search).get("service");
-    setService(
-      value && services.some((item) => item.slug === value) ? value : "",
-    );
+    let active = true;
+
+    async function loadServices() {
+      try {
+        const response = await fetch(
+          "/api/cms/public/pages?key=services",
+          { cache: "no-store" }
+        );
+        if (!response.ok) return;
+
+        const result = await response.json();
+        if (!active || !result?.ok) return;
+
+        const page = getServicesCmsContent(result.page?.content);
+        if (page?.listing?.items?.length) {
+          setServices(page.listing.items);
+        }
+      } catch {
+        // Keep the built-in service list if CMS content cannot be loaded.
+      }
+    }
+
+    loadServices();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const selected = services.find((item) => item.slug === service);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
     setError("");
 
     if (!service) {
@@ -52,13 +81,14 @@ export default function ServiceRequest({ navigate }) {
 
       const result = await response.json().catch(() => ({}));
 
-      if (!response.ok) {
+      if (!response.ok || !result.ok || !result.reference) {
         throw new Error(
           result.error || "Your service request could not be sent right now.",
         );
       }
 
-      setSubmittedReference(result.reference || "");
+      setSubmittedReference(result.reference);
+      setConfirmationData({ ...payload, serviceTitle: selected?.title || service, reference: result.reference, submittedAt: new Date().toISOString() });
       setSent(true);
     } catch (submitError) {
       setError(
@@ -83,6 +113,9 @@ export default function ServiceRequest({ navigate }) {
             </p>
           )}
           <div className="success-actions">
+            <button type="button" className="button" onClick={() => downloadRequestConfirmationPdf(confirmationData)}>
+              Download PDF
+            </button>
             <Link to="/services" navigate={navigate} className="button">
               Back to Services
             </Link>

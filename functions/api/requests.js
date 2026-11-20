@@ -9,13 +9,14 @@ const ALLOWED_SERVICE_SLUGS = new Set([
   "repair-technical-support",
 ]);
 
-function json(data, status = 200) {
+function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
+      ...extraHeaders,
     },
   });
 }
@@ -27,6 +28,64 @@ function cleanString(value, maxLength) {
 
 function validEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+async function hashValue(value) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function checkSubmissionRateLimit(db, request, email) {
+  const now = Math.floor(Date.now() / 1000);
+  const windowStart = now - 60 * 60;
+  const ip = request.headers.get("CF-Connecting-IP") || "";
+  const ipHash = ip ? await hashValue(ip) : "";
+  const emailHash = await hashValue(email.toLowerCase());
+
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS request_submission_attempts (
+      id TEXT PRIMARY KEY,
+      ip_hash TEXT,
+      email_hash TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    )
+  `).run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_submission_ip_time ON request_submission_attempts(ip_hash, created_at)").run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_submission_email_time ON request_submission_attempts(email_hash, created_at)").run();
+  await db.prepare("DELETE FROM request_submission_attempts WHERE created_at < ?").bind(now - 86400).run();
+
+  // Keep the limit check and attempt insertion in one SQLite statement.
+  // Separate SELECT/INSERT calls allow concurrent requests to pass the same
+  // count before either request records its attempt.
+  const insertSql = ipHash
+    ? `
+      INSERT INTO request_submission_attempts (id, ip_hash, email_hash, created_at)
+      SELECT ?, ?, ?, ?
+      WHERE
+        (SELECT COUNT(*) FROM request_submission_attempts
+          WHERE email_hash = ? AND created_at > ?) < 5
+        AND
+        (SELECT COUNT(*) FROM request_submission_attempts
+          WHERE ip_hash = ? AND created_at > ?) < 20
+    `
+    : `
+      INSERT INTO request_submission_attempts (id, ip_hash, email_hash, created_at)
+      SELECT ?, NULL, ?, ?
+      WHERE
+        (SELECT COUNT(*) FROM request_submission_attempts
+          WHERE email_hash = ? AND created_at > ?) < 5
+    `;
+  const statement = db.prepare(insertSql);
+  const result = ipHash
+    ? await statement.bind(
+        crypto.randomUUID(), ipHash, emailHash, now,
+        emailHash, windowStart, ipHash, windowStart,
+      ).run()
+    : await statement.bind(
+        crypto.randomUUID(), emailHash, now, emailHash, windowStart,
+      ).run();
+
+  return Number(result.meta?.changes) === 1;
 }
 
 export async function onRequest({ request, env }) {
@@ -88,8 +147,9 @@ export async function onRequest({ request, env }) {
   const timing = cleanString(body.timing, 160);
   const location = cleanString(body.location, 200);
   const productSelection = cleanString(body.product, 8000);
+  const submittedMessage = cleanString(body.message, 5000);
   const message =
-    cleanString(body.message, 5000) ||
+    submittedMessage ||
     (requestType === "quotation"
       ? "Quotation request submitted without additional message."
       : "");
@@ -107,16 +167,28 @@ export async function onRequest({ request, env }) {
     return json({ error: "Please select a valid service." }, 400);
   }
   if (
-    (requestType === "quotation" || requestType === "dental_chair") &&
-    !productSelection
+    (requestType === "dental_chair" && !productSelection) ||
+    (requestType === "quotation" && !productSelection && !submittedMessage)
   ) {
     return json(
       {
         error:
-          "Please include a product selection or describe your quotation requirements.",
+          requestType === "dental_chair"
+            ? "Please include at least one dental chair selection."
+            : "Please include a product selection or describe your quotation requirements.",
       },
       400,
     );
+  }
+
+  try {
+    const allowed = await checkSubmissionRateLimit(env.DB, request, email);
+    if (!allowed) {
+      return json({ error: "Too many requests have been submitted. Please wait one hour before trying again." }, 429, { "Retry-After": "3600" });
+    }
+  } catch (error) {
+    console.error("Unable to apply public request rate limit", error);
+    return json({ error: "Request submission is temporarily unavailable. Please try again later." }, 503);
   }
 
   const now = new Date();
@@ -124,7 +196,7 @@ export async function onRequest({ request, env }) {
   const randomPart = crypto
     .randomUUID()
     .replaceAll("-", "")
-    .slice(0, 6)
+    .slice(0, 16)
     .toUpperCase();
   const referencePrefix =
     requestType === "service"

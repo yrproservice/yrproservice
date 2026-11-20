@@ -1,4 +1,5 @@
 const encoder = new TextEncoder();
+const AUTHORIZED_ADMIN_EMAIL = "yr.proservice@gmail.com";
 
 function jsonError(message, status = 401) {
   return new Response(JSON.stringify({ error: message }), {
@@ -38,14 +39,22 @@ async function validateAccessJwt(token, env) {
     .replace(/^https?:\/\//, "")
     .replace(/\/$/, "");
   const audience = String(env.ACCESS_AUD || "").trim();
-  const adminEmails = String(env.ADMIN_EMAILS || "")
+  const configuredEmails = String(env.ADMIN_EMAILS || "")
     .split(",")
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
-  if (!teamDomain || !audience || adminEmails.length === 0) {
+
+  // Fail closed unless exactly the one approved Admin account is configured.
+  // Multiple authorised staff may use this shared account concurrently.
+  if (
+    !teamDomain ||
+    !audience ||
+    configuredEmails.length !== 1 ||
+    !constantTimeEqual(configuredEmails[0], AUTHORIZED_ADMIN_EMAIL)
+  ) {
     return {
       ok: false,
-      response: jsonError("Admin access is not configured.", 503),
+      response: jsonError("Admin access is not configured for the single authorized account.", 503),
     };
   }
 
@@ -142,10 +151,7 @@ async function validateAccessJwt(token, env) {
 
   const email =
     typeof claims.email === "string" ? claims.email.trim().toLowerCase() : "";
-  if (
-    !email ||
-    !adminEmails.some((allowed) => constantTimeEqual(allowed, email))
-  ) {
+  if (!email || !constantTimeEqual(AUTHORIZED_ADMIN_EMAIL, email)) {
     return {
       ok: false,
       response: jsonError(
@@ -155,13 +161,6 @@ async function validateAccessJwt(token, env) {
     };
   }
   return { ok: true, email };
-}
-
-export async function requireAdmin(context) {
-  const token = context.request.headers.get("Cf-Access-Jwt-Assertion");
-  if (!token)
-    return { ok: false, response: jsonError("Authentication required.", 401) };
-  return validateAccessJwt(token, context.env);
 }
 
 export function adminJson(data, status = 200) {
@@ -174,4 +173,11 @@ export function adminJson(data, status = 200) {
       "Referrer-Policy": "no-referrer",
     },
   });
+}
+
+export async function requireAdmin(context) {
+  const token = context.request.headers.get("Cf-Access-Jwt-Assertion");
+  if (!token)
+    return { ok: false, response: jsonError("Authentication required.", 401) };
+  return validateAccessJwt(token, context.env);
 }

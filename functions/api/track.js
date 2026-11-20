@@ -1,4 +1,4 @@
-function json(data, status = 200) {
+function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -6,6 +6,7 @@ function json(data, status = 200) {
       "Cache-Control": "no-store, max-age=0",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "no-referrer",
+      ...extraHeaders,
     },
   });
 }
@@ -16,6 +17,75 @@ function clean(value, maxLength) {
 
 function validEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+async function hashValue(value) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function checkTrackingRateLimit(db, request, email) {
+  const now = Math.floor(Date.now() / 1000);
+  const windowStart = now - 15 * 60;
+  const ip = request.headers.get("CF-Connecting-IP") || "";
+  const ipHash = ip ? await hashValue(ip) : "";
+  const emailHash = validEmail(email) ? await hashValue(email.toLowerCase()) : "";
+
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS request_tracking_attempts (
+      id TEXT PRIMARY KEY,
+      ip_hash TEXT,
+      email_hash TEXT,
+      created_at INTEGER NOT NULL
+    )
+  `).run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_tracking_ip_time ON request_tracking_attempts(ip_hash, created_at)").run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_tracking_email_time ON request_tracking_attempts(email_hash, created_at)").run();
+  await db.prepare("DELETE FROM request_tracking_attempts WHERE created_at < ?").bind(now - 86400).run();
+
+  if (!ipHash && !emailHash) return true;
+
+  const insertSql = ipHash && emailHash
+    ? `
+      INSERT INTO request_tracking_attempts (id, ip_hash, email_hash, created_at)
+      SELECT ?, ?, ?, ?
+      WHERE
+        (SELECT COUNT(*) FROM request_tracking_attempts
+          WHERE ip_hash = ? AND created_at > ?) < 30
+        AND
+        (SELECT COUNT(*) FROM request_tracking_attempts
+          WHERE email_hash = ? AND created_at > ?) < 10
+    `
+    : ipHash
+      ? `
+        INSERT INTO request_tracking_attempts (id, ip_hash, email_hash, created_at)
+        SELECT ?, ?, NULL, ?
+        WHERE (SELECT COUNT(*) FROM request_tracking_attempts
+          WHERE ip_hash = ? AND created_at > ?) < 30
+      `
+      : `
+        INSERT INTO request_tracking_attempts (id, ip_hash, email_hash, created_at)
+        SELECT ?, NULL, ?, ?
+        WHERE (SELECT COUNT(*) FROM request_tracking_attempts
+          WHERE email_hash = ? AND created_at > ?) < 10
+      `;
+  const statement = db.prepare(insertSql);
+  const result = ipHash && emailHash
+    ? await statement.bind(
+        crypto.randomUUID(), ipHash, emailHash, now,
+        ipHash, windowStart, emailHash, windowStart,
+      ).run()
+    : ipHash
+      ? await statement.bind(
+          crypto.randomUUID(), ipHash, now, ipHash, windowStart,
+        ).run()
+      : await statement.bind(
+          crypto.randomUUID(), emailHash, now, emailHash, windowStart,
+        ).run();
+
+  // The limit checks and attempt insertion share one SQLite statement, so
+  // overlapping requests cannot all pass a stale pre-insert count.
+  return Number(result.meta?.changes) === 1;
 }
 
 export async function onRequest({ request, env }) {
@@ -35,6 +105,15 @@ export async function onRequest({ request, env }) {
   const url = new URL(request.url);
   const reference = clean(url.searchParams.get("reference"), 40).toUpperCase();
   const email = clean(url.searchParams.get("email"), 254).toLowerCase();
+  try {
+    const allowed = await checkTrackingRateLimit(env.DB, request, email);
+    if (!allowed) {
+      return json({ error: "Too many tracking attempts. Please wait 15 minutes before trying again." }, 429, { "Retry-After": "900" });
+    }
+  } catch (error) {
+    console.error("Unable to apply request tracking rate limit", error);
+    return json({ error: "Request tracking is temporarily unavailable. Please try again later." }, 503);
+  }
   if (!reference || !email || !validEmail(email)) {
     return json(
       {

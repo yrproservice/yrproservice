@@ -1,27 +1,22 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useCart } from "../components/CartContext";
-import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
+import { downloadRequestConfirmationPdf } from "../utils/requestConfirmationPdf";
 
 export default function Quote({ navigate }) {
   const { items } = useCart();
-  const { items: chairItems } = useChairRequests();
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
+  const [confirmationData, setConfirmationData] = useState(null);
   const initial =
     new URLSearchParams(window.location.search).get("product") || "";
   const [product, setProduct] = useState(initial);
-  const selected = useMemo(() => {
-    const lines = [
-      ...items.map((i) => `${i.name} (Qty: ${i.quantity})`),
-      ...chairItems.map(
-        (i) => `${i.name} (Chair request · Qty: ${i.quantity})`,
-      ),
-    ];
-    return product || lines.join("\n");
-  }, [items, chairItems, product]);
+  const selectedLines = items.map(
+    (item) => `${item.name} (Qty: ${item.quantity})`,
+  );
+  const selected = product || selectedLines.join("\n");
   async function submit(e) {
     e.preventDefault();
     if (submitting) return;
@@ -41,7 +36,7 @@ export default function Quote({ navigate }) {
     };
     if (!payload.product && !payload.message) {
       setError(
-        "Please select a product or chair, or describe your quotation requirements.",
+        "Please select a catalogue product or describe your quotation requirements.",
       );
       setSubmitting(false);
       return;
@@ -60,6 +55,7 @@ export default function Quote({ navigate }) {
         );
       }
       setReference(result.reference);
+      setConfirmationData({ ...payload, reference: result.reference, submittedAt: new Date().toISOString() });
       setSent(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (submitError) {
@@ -85,6 +81,13 @@ export default function Quote({ navigate }) {
             <strong>Reference: {reference}</strong>
           </p>
           <div className="bp-actions">
+            <button
+              type="button"
+              className="bp-btn bp-btn-primary"
+              onClick={() => downloadRequestConfirmationPdf(confirmationData)}
+            >
+              Download PDF
+            </button>
             <Link
               to="/products"
               navigate={navigate}
@@ -110,8 +113,7 @@ export default function Quote({ navigate }) {
           <p className="bp-eyebrow bp-eyebrow-light">REQUEST A QUOTATION</p>
           <h1>Tell Us What Your Clinic Needs</h1>
           <p>
-            This is the final quotation step after selecting products or dental
-            chairs.
+            This is the final quotation step for products selected from the catalogue.
           </p>
         </div>
       </section>

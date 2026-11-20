@@ -84,10 +84,11 @@ export default function TrackRequest() {
               name="reference"
               value={reference}
               onChange={(event) => setReference(event.target.value)}
+              disabled={loading}
               maxLength={40}
               autoCapitalize="characters"
               autoComplete="off"
-              placeholder="e.g. YRQ-20261022-ABC123"
+              placeholder="e.g. YRQ-20261113-0123456789ABCDEF"
             />
           </label>
           <label>
@@ -98,6 +99,7 @@ export default function TrackRequest() {
               name="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              disabled={loading}
               maxLength={254}
               autoComplete="email"
               placeholder="name@example.com"
