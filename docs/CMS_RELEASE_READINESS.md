@@ -1,5 +1,23 @@
 # YR Proservice CMS — Release Readiness Audit
 
+## Authorization and limit-safe continuation update — 20 November 2026
+
+The user has now explicitly authorized independent development, commits/pushes to `cms-development`, automated and browser testing, screenshots, Preview deployment, necessary destructive/database operations with target/impact/backup/recovery safeguards, PR #2 merge, and Production migrations/deployment once all release gates are satisfied. This supersedes older statements in the historical record that merge or Production deployment were not authorized. Those older statements describe the authorization status at their original checkpoint and must not be treated as current instructions.
+
+**Image processing remains prohibited.** Do not convert, manipulate, optimize, resize, transform or otherwise process source/catalogue image assets. Authorized page screenshots are rendered-page evidence and do not authorize source-image processing.
+
+Limit-safe execution is required: small verifiable batches, regular commits, exact commit/run association, recovery checkpoints, no repeated successful operations, and no claims beyond verified evidence. A current handover record is maintained in [docs/LIMIT_SAFE_RECOVERY_CHECKPOINT.md](./LIMIT_SAFE_RECOVERY_CHECKPOINT.md).
+
+Latest continuation records:
+- Recovery checkpoint commit: `8814d9d2857247c08fa878781e8b063fe66e8f1a`.
+- Workflow documentation correction commit: `38fc5b0a6b0123355d6bc7d27f915b47caef81cd`; this corrects the workflow comment to acknowledge its active desktop screenshot stage while retaining the image-processing exclusion. Runtime workflow commands were not changed by that comment-only commit.
+- At the start of this continuation, PR #2 was Open and Draft, with head `74cd15f0bc0f931c295279ec70291fe8b70602b7`; live comparison showed 1,182 commits ahead of `main`, 0 behind, 98 changed files. The PR remains unmerged. Recheck the live head and compare before release decisions.
+- The latest recorded successful exact-head workflow remains [#44676226791](https://github.com/yrproservice/yrproservice/actions/runs/44676226791) on `1b2221f1a16caf75cff7e9a5dd66897f24ef2dc4`: 77 automated tests, Vite build, Pages Functions build, Preview D1 readiness, Preview asset verification, six desktop viewport screenshots and artifact upload. This is not evidence that later commits have passed the workflow.
+- The above workflow-comment correction is expected to trigger a new branch workflow; its result must be checked before stating that the latest branch head passed.
+
+The previously documented Production blockers remain active until independently verified: Production R2 binding/public media base, Production D1 schema/migrations, backup/PITR and tested restore, Access coverage for the actual Production hostname, branch protection/review requirements, full PR history/diff review, authenticated CMS runtime checks, and performance/accessibility/security/isolation checks. No merge or Production release should proceed merely because GitHub reports the PR as mergeable.
+
+
 ## Latest source and Preview build checkpoint — 20 November 2026
 
 The latest source-review continuation made focused integrity changes without running tests, screenshots or image processing:
