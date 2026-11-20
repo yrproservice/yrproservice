@@ -193,7 +193,7 @@ function makeCmsDb({
               : entityType === "product"
                 ? { value_json: JSON.stringify({ slug: "chair-model", name: "Chair model", purchaseType: "cart" }) }
                 : { value_json: JSON.stringify({ items: [{ label: "Products", url: "/products" }] }) };
-            return { id: this.values[0], version_number: 4, state: targetState, ...draftContent };
+            return { id: this.values[0], version_number: 4, state: targetState, created_at: "2026-11-20T00:00:00.000Z", ...draftContent };
           }
           return null;
         },
@@ -292,7 +292,7 @@ for (const entityType of ["page", "product", "setting"]) {
     const db = makeCmsDb({ entityType });
     const response = await publishCms(adminContext(
       "/api/cms/admin/publish",
-      { entityType, entityKey: entityType === "page" ? "home" : entityType === "product" ? "chair-model" : "site.navigation", versionId: "draft-version" },
+      { entityType, entityKey: entityType === "page" ? "home" : entityType === "product" ? "chair-model" : "site.navigation", versionId: "draft-version", expectedDraftCreatedAt: "2026-11-20T00:00:00.000Z" },
       { ...adminConfig, DB: db },
     ));
     const result = await response.json();
