@@ -49,17 +49,11 @@ The request dashboard and CMS Admin are private. Public customer request and tra
 
 ## Local development and automated checks
 
-Use Node.js 22 and the committed lockfile:
+Use Node.js 22 and the committed lockfile. The final verification stage should run `npm ci`, `npm test`, and `npm run build`; automated tests are deliberately deferred during the current incremental Preview-preparation phase.
 
-```bash
-npm ci
-npm test
-npm run build
-```
+The current GitHub Actions workflow `.github/workflows/cms-build-check.yml` runs on pushes to `cms-development` and on manual dispatch. It performs a locked dependency install, Vite build, Pages Functions build, a read-only Preview D1 schema check, and Preview deployment/asset verification. It does **not** run `npm test`, screenshots, or image processing. A successful workflow confirms build/deployment readiness only; it does not replace authenticated browser testing of CMS workflows.
 
-The GitHub Actions workflow `.github/workflows/cms-build-check.yml` is currently manual-dispatch-only while Phase G source work is in progress. Its locked install, automated Node tests, and Vite build are preserved for the final Phase H verification; it does not run automatically for intermediate commits. A successful build confirms compilation; it does not replace authenticated browser testing of CMS workflows or verification that Cloudflare Pages Preview deployed the same branch commit.
-
-The migration workflow `.github/workflows/cms-preview-migration.yml` targets only `yr-proservice-test-db`. Review migration contents and workflow output before treating a schema change as complete.
+The migration workflow `.github/workflows/cms-preview-migration.yml` targets only `yr-pro-service-test-db`, but it automatically runs when `migrations/0002_create_cms.sql` or `migrations/0003_page_metadata_versions.sql` changes on `cms-development`, as well as on manual dispatch. Do not modify or push those migration files unless a Preview migration has been explicitly authorized. Review migration contents, the fail-closed database identity check, and workflow output before treating any schema change as complete.
 
 ## Release readiness
 
