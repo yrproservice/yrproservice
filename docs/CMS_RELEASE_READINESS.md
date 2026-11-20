@@ -1595,3 +1595,9 @@ The two workflow results above are verified against their exact documentation co
 - Exact-head Preview workflow [#44670129355](https://github.com/yrproservice/yrproservice/actions/runs/44670129355) passed on `882e53bafb2c730342b1d179bf5ae5386766d7fd`: locked dependency install, Vite build, Pages Functions build, read-only Preview D1 schema readiness and Preview deployment/asset verification. No tests, screenshots or image processing ran.
 - Latest documented source review commit before this entry: `882e53bafb2c730342b1d179bf5ae5386766d7fd`. Current GitHub compare remains 1,137 commits ahead of `main`, 0 behind; PR #2 remains Open, Draft and unmerged with 102 changed files. Do not merge or deploy Production without explicit authorization.
 - No migration, Production resource, R2 object, customer record, access policy, secret or workflow configuration was changed. Tests, screenshots and image processing remain deferred.
+
+## Exact-head verification for authentication/publication checkpoint — 20 November 2026
+
+- Documentation/source-review commit `7bc165578ce04957e5c4c5829cfb807de2154d39` passed exact-head build-only Preview workflow [#44670204126](https://github.com/yrproservice/yrproservice/actions/runs/44670204126).
+- All stages passed: locked dependency installation, Vite website build, Cloudflare Pages Functions build, read-only Preview D1 schema readiness and Preview deployment/asset verification. No test, screenshot or image-processing step was configured or executed.
+- The successful workflow verifies the documented source-review checkpoint's build and Preview assets; it does not replace the deferred authenticated browser, security, functional or recovery tests. PR #2 remains Open/Draft/unmerged; Production remains untouched.
