@@ -632,3 +632,150 @@ test("CMS product save creates a version-one draft and an audit record", async (
   assert.match(db.batches[0][1].sql, /INSERT INTO cms_product_versions/);
   assert.match(db.batches[0][2].sql, /'create_draft', 'product'/);
 });
+
+
+import { onRequestPost as restoreCmsRevision } from "../functions/api/cms/admin/history.js";
+import { onRequestPatch as updateCmsMedia } from "../functions/api/cms/admin/media.js";
+
+test("CMS product revision restore creates a new audited draft without publishing it", async () => {
+  const calls = [];
+  const batches = [];
+  const db = {
+    calls,
+    batches,
+    prepare(sql) {
+      const statement = {
+        sql, values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          calls.push(this);
+          if (sql.includes("FROM cms_products WHERE product_slug = ?")) {
+            return { id: "product-id" };
+          }
+          if (sql.includes("FROM cms_product_versions WHERE id = ? AND product_id = ?")) {
+            return {
+              version_number: 2,
+              content: JSON.stringify({
+                slug: "chair-model",
+                name: "Chair model",
+                purchaseType: "cart",
+              }),
+            };
+          }
+          if (sql.includes("FROM cms_product_versions WHERE product_id = ? AND state = 'draft'")) {
+            return null;
+          }
+          if (sql.includes("COALESCE(MAX(version_number), 0)")) return { version: 4 };
+          return null;
+        },
+      };
+      return statement;
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map(() => ({ meta: { changes: 1 } }));
+    },
+  };
+
+  const response = await restoreCmsRevision(adminContext(
+    "/api/cms/admin/history",
+    {
+      entityType: "product",
+      entityKey: "chair-model",
+      versionId: "old-product-version",
+      expectedDraftId: null,
+      expectedDraftCreatedAt: null,
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.equal(result.ok, true);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(result.version, 5);
+  assert.equal(result.restoredFrom, 2);
+  assert.ok(result.draftId);
+  assert.equal(batches.length, 1);
+  assert.equal(batches[0].length, 3);
+  assert.match(batches[0][0].sql, /UPDATE cms_product_versions SET state = state/);
+  assert.match(batches[0][1].sql, /INSERT INTO cms_product_versions/);
+  assert.match(batches[0][1].sql, /'draft'/);
+  assert.match(batches[0][2].sql, /'restore_revision_as_draft'/);
+});
+
+function makeMediaRestoreDb({ archived = true, batchChanges = [1, 1] } = {}) {
+  const calls = [];
+  const batches = [];
+  return {
+    calls,
+    batches,
+    prepare(sql) {
+      return {
+        sql,
+        values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          calls.push(this);
+          if (sql.includes("FROM cms_media WHERE id=? AND deleted_at IS NOT NULL")) {
+            return archived ? { id: "media-id", storage_provider: "r2", object_key: "cms/original-image.png" } : null;
+          }
+          return null;
+        },
+      };
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map((statement, index) => ({
+        meta: { changes: batchChanges[index] ?? 1 },
+      }));
+    },
+  };
+}
+
+function mediaPatchContext(db, mediaBinding) {
+  return {
+    request: new Request("https://yrproservice.test/api/cms/admin/media?id=media-id", {
+      method: "PATCH",
+      headers: {
+        "Cf-Access-Jwt-Assertion": accessToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ action: "restore" }),
+    }),
+    env: { ...adminConfig, DB: db, CMS_MEDIA: mediaBinding },
+  };
+}
+
+test("CMS media restore requires the original R2 object before changing the archive record", async () => {
+  const db = makeMediaRestoreDb();
+  const response = await updateCmsMedia(mediaPatchContext(db, {
+    async head(key) {
+      assert.equal(key, "cms/original-image.png");
+      return null;
+    },
+  }));
+  const result = await response.json();
+
+  assert.equal(response.status, 409);
+  assert.match(result.error, /missing from Preview R2/i);
+  assert.equal(db.batches.length, 0);
+});
+
+test("CMS media restore reactivates an existing R2 object and records the audit event", async () => {
+  const db = makeMediaRestoreDb();
+  const response = await updateCmsMedia(mediaPatchContext(db, {
+    async head(key) {
+      assert.equal(key, "cms/original-image.png");
+      return { key, size: 1234 };
+    },
+  }));
+  const result = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(result, { ok: true, restored: true, auditRecorded: true });
+  assert.equal(db.batches.length, 1);
+  assert.equal(db.batches[0].length, 2);
+  assert.match(db.batches[0][0].sql, /UPDATE cms_media SET deleted_at=NULL/);
+  assert.match(db.batches[0][1].sql, /'restore_media'/);
+});
