@@ -1697,3 +1697,10 @@ The two workflow results above are verified against their exact documentation co
 - Workflow commit `e2333a57318e4b8a74507ff20fedcf3ede498e29` adds `.github/workflows/request-history-preview-schema-check.yml`. It verifies the exact Preview D1 name/UUID and then runs a read-only SELECT check for the request-history table, all seven API-required columns, the `request_id → requests.id` foreign key with `ON DELETE RESTRICT`, and both indexes.
 - The verifier triggers only when its own workflow file changes or via manual dispatch; it never applies SQL or mutates request records. This independently exercises the corrected SQLite identifier quoting without rerunning migration 0004.
 - The workflow's exact-head execution is pending. Production D1 is not a target.
+
+
+## Main-branch and production hostname guard review — 20 November 2026
+
+- GitHub's branch endpoint currently reports `main.protected = false`; the earlier ruleset read returned no rulesets. The repository integration cannot update branch protection. This means required review/check enforcement is not confirmed and must be configured by a repository administrator before a high-risk production release.
+- The user previously confirmed the Production Pages hostname as `yrproservice.pages.dev`. Cloudflare Access coverage for that exact host and any custom domains is still not verified; the earlier Access confirmation for `production-release.yrproservice.pages.dev` is not sufficient evidence for the Production hostname.
+- PR #2 remains a large change set (102 files; more than 1,150 commits ahead at this checkpoint). Do not use the absence of merge conflicts or a green build as a substitute for reviewing the full diff and required production controls.
