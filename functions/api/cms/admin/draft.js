@@ -32,9 +32,13 @@ export async function onRequestDelete(context) {
   const type = clean(body?.entityType, 20);
   const key = clean(body?.entityKey, 100);
   const versionId = clean(body?.versionId, 80);
+  const expectedDraftCreatedAt = clean(body?.expectedDraftCreatedAt, 64);
   const config = CONFIG[type];
   if (!config || !key || !versionId) {
     return adminJson({ error: "A valid entityType, entityKey and versionId are required." }, 400);
+  }
+  if (!expectedDraftCreatedAt) {
+    return adminJson({ error: "Reload the item before deleting; the current draft timestamp was not supplied." }, 409);
   }
 
   try {
@@ -51,6 +55,9 @@ export async function onRequestDelete(context) {
     if (!draft) return adminJson({ error: "The selected revision does not belong to this item." }, 404);
     if (draft.state !== "draft") {
       return adminJson({ error: "Only an unpublished draft can be deleted. Published and archived revisions are protected." }, 409);
+    }
+    if (draft.created_at !== expectedDraftCreatedAt) {
+      return adminJson({ error: "This draft changed in another session and was not deleted. Reload the item before trying again." }, 409);
     }
     if (entity.published_version_id === versionId) {
       return adminJson({ error: "The currently published revision cannot be deleted." }, 409);

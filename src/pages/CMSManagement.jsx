@@ -580,6 +580,7 @@ export default function CMSManagement() {
           entityType: type,
           entityKey: key,
           versionId: id,
+          expectedDraftCreatedAt,
           expectedDraftId,
           expectedDraftCreatedAt,
         }),
@@ -635,6 +636,15 @@ export default function CMSManagement() {
     }
     if (type === "setting" && !settingsReady) {
       setError("Load the current settings successfully before deleting a settings draft.");
+      return;
+    }
+    const expectedDraftCreatedAt = type === "product"
+      ? items.find((row) => row.product_slug === key)?.draft_created_at || (selected?.slug === key ? selected.draftCreatedAt : null)
+      : type === "setting"
+        ? settings.find((row) => row.setting_key === key)?.draft_created_at || null
+        : null;
+    if (!expectedDraftCreatedAt) {
+      setError("Reload the current item list before deleting this draft; its loaded timestamp is unavailable.");
       return;
     }
 
