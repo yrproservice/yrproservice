@@ -164,6 +164,9 @@ export async function onRequestPost(context) {
     if (Number(results?.[1]?.meta?.changes || 0) !== 1) {
       return adminJson({ error: "A page draft was created in another session. Reload the page before saving again." }, 409);
     }
+    if (Number(results?.[3]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "The new page draft audit record could not be saved. The draft creation was rolled back." }, 500);
+    }
     return adminJson({ ok: true, pageId: page.id, draftId: versionId, draftCreatedAt: now, version }, 201);
   } catch (error) {
     console.error("CMS page draft save failed", error);
