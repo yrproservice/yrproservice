@@ -32,9 +32,9 @@ export const servicesCmsTemplate = {
         title: "A clear process from enquiry to service completion.",
         steps: [
           { number: "01", title: "Tell us what you need", text: "Share your clinic, equipment and service requirement with our team." },
-          { number: "02", title: "Review and plan", text: "We review the requirement and determine the appropriate service approach." },
+          { number: "02", title: "Review & plan", text: "We review the requirement and determine the appropriate service approach." },
           { number: "03", title: "Carry out the work", text: "Our technical team performs the agreed work with attention to safety and function." },
-          { number: "04", title: "Test and handover", text: "We check the completed work and explain the service outcome to you." }
+          { number: "04", title: "Test & handover", text: "We check the completed work and explain the service outcome to you." }
         ]
       },
       cta: {
