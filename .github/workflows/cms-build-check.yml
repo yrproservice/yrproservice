@@ -12,8 +12,8 @@ permissions:
 
 jobs:
   build:
-    name: Install and build website
-    runs-on: ubuntu-latest
+    name: Install, test and build website
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out source
         uses: actions/checkout@v4
