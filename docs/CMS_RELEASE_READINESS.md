@@ -1336,3 +1336,12 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 - Source commit `c2fba74f62d23f8e4dc95dabce9f6df55851f248` updates the outdated Product Details note about price/availability being future admin features.
 - Exact-commit workflow [run #44665429434](https://github.com/yrproservice/yrproservice/actions/runs/44665429434) completed successfully. Locked dependency installation, Vite build, Cloudflare Pages Functions build, Preview D1 schema-readiness, and Preview deployment/asset verification all passed.
 - The subsequent documentation-only checkpoint records the product CMS/static catalogue review. No application source changed after the verified code commit.
+
+
+## Team and Contact page source review — 20 November 2026
+
+- Compared the historical Team page at the Git-recovered website commit with the current Team CMS template and renderer. The original six-section content pattern is retained: hero, approach/story, process, capabilities, people/functions, and final CTA. The original role/function descriptions and four image asset paths are represented in the CMS template; the page does not add named or invented employees.
+- The current Team page is rendered through `TeamCmsRenderer` and falls back to `teamCmsTemplate` when no published CMS page is available. The structured Team Manager remains the editable content path.
+- Reviewed the current Contact page: it is explicitly an HR/careers enquiry page with a mailto HR action and no product, service, quote or generic enquiry form. This matches the standing requirement that Contact remain HR-only. The Contact page file is not present at the historical root commit, so this review confirms current behavior but does not claim exact Contact-page equivalence to that older snapshot.
+- Reviewed current header navigation defaults: Products, Services, Team and HR Contact; the brand logo links to Home. The public header contains no redundant “Get a Quote” navigation button. The cart link remains available, and service navigation is sourced from published CMS content with static fallback.
+- Source-only review; no UI, screenshot, test, data, staff, Preview CMS or Production changes were made.
