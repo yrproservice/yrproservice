@@ -1540,3 +1540,11 @@ The two workflow results above are verified against their exact documentation co
 - The publish batch previously checked the draft-to-published transition and final audit insert, but did not separately verify (when applicable) archival of the prior published revision or the entity's published-version pointer update.
 - The handler now checks the prior-revision archive result when a prior published revision exists, calculates and checks the published-pointer update result for both first-publish and replacement-publish batch shapes, and retains the audit insert check. Unconfirmed transitions return explicit reload-and-inspect guidance; these checks do not claim zero-row statements roll back earlier D1 batch statements.
 - Source-only review; no publication or D1 write was performed. Preview verification is pending. Final runtime tests remain deferred.
+
+
+## Initial page/product creation result verification — 20 November 2026
+
+- Source commits: `d1fc2427f3d3eef96b88bd5d6002e22308d11cc8` (pages) and `5a382f96cb310c67f3e932aa3a15e5f26a7b4d33` (products).
+- Initial page and product creation now checks the D1 batch result for the parent record, first draft version and audit event before returning success. Successful responses explicitly include `auditRecorded: true`; unconfirmed writes return reload-and-inspect guidance rather than claiming creation succeeded.
+- These affected-row checks do not establish rollback for a successfully executed zero-row statement. Error handling deliberately asks the administrator to inspect current state before retrying.
+- Source review only; no new CMS records were created. Preview build verification is pending for the latest branch head.
