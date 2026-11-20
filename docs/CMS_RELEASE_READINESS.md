@@ -1186,12 +1186,12 @@ Reviewed `functions/api/admin/requests.js` and `functions/api/admin/session.js` 
 - Media metadata updates, archive operations, and restore operations write CMS audit-log entries. **Upload creation itself does not insert a `cms_audit_log` row**; it only records `uploaded_by` and `created_at` on `cms_media`. Because the media history endpoint reads `cms_audit_log`, an upload event is not represented in that per-item history. Decide whether upload events must be included in the unified audit trail before final staff rollout.
 - The orphan reconciliation endpoint performs a bounded, read-only listing under the `cms/` prefix (100 objects per request) and returns a cursor for later batches; it does not delete objects. No upload, R2 listing, deletion, restoration, or database operation was performed during this static review.
 
-## CMS settings concurrent-edit review — 20 November 2026
+## CMS settings concurrent-edit review — correction, 20 November 2026
 
-- Page and product draft saves compare both the expected draft ID and its creation timestamp before applying an update. Revision restore and draft deletion also use explicit expected draft snapshots.
-- The site-settings save endpoint currently accepts and compares `expectedDraftId`, but it does not require or compare `expectedDraftCreatedAt` or the prior JSON snapshot. Updating an existing settings draft preserves the same revision ID while replacing its value. Consequently, two editors who loaded the same settings draft can both submit with the same expected ID; the later save can overwrite the earlier save rather than receiving the stale-edit 409 response used by page/product workflows.
-- This is a concurrency/data-integrity gap, not an authentication bypass. Recommended correction: require a complete expected snapshot (at minimum ID plus created_at, preferably prior value/snapshot comparison in the conditional UPDATE), and verify the conditional update result before inserting the audit record. Add a regression test for two stale settings saves in the final test stage.
-- No code or database changes were made for this finding. Static source review only.
+- A closer review of the full settings-save D1 batch shows that the active draft is guarded by its expected unique revision ID. When an existing draft is expected, the batch archives only that exact ID and inserts its replacement only if that conditional update changed one row. When no draft is expected, a guard statement prevents insertion if an active draft already exists.
+- The handler checks the new draft INSERT's affected-row count and returns HTTP 409 if the guard did not permit the insert. The settings workflow therefore has compare-and-set protection against two editors submitting from the same stale draft ID; the earlier note claiming the later save could overwrite the earlier one was incorrect.
+- Unlike page/product saves, the settings workflow does not compare the draft timestamp or previous JSON snapshot. Based on the current immutable-ID/archive-and-replace design, this is not by itself evidence of a concurrency defect. Retain timestamp/snapshot checks as an optional consistency improvement, not a release blocker. A final-stage concurrency regression test can confirm the intended behavior.
+- No code or database changes were made. This correction supersedes the earlier settings concurrency finding.
 
 ## Revision-history retention and pagination review — 20 November 2026
 
