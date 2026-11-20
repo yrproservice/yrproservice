@@ -770,7 +770,7 @@ export default function CMSManagement() {
   function getFilteredMediaHistory() {
     return mediaHistory.filter((entry) => {
       const changes = entry.metadata?.changes || {};
-      if (mediaHistoryFilter === "lifecycle") return ["archive_media", "restore_media"].includes(entry.action);
+      if (mediaHistoryFilter === "lifecycle") return ["upload_media", "archive_media", "restore_media"].includes(entry.action);
       if (mediaHistoryFilter === "filename") return Boolean(changes.original_file_name);
       if (mediaHistoryFilter === "alt") return Boolean(changes.alt_text);
       return true;
@@ -1953,7 +1953,7 @@ export default function CMSManagement() {
               <small>{mediaHistoryId ? "History shown for the selected media item only; maximum 50 events." : "Choose View change history on a media card to load that item's latest events."}</small>
             </article>
           </div>
-          <p className="cms-media-overview-scope">Scope note: library and integrity totals reflect only the records loaded in the current active / archived view (up to 300). Archive totals are not a complete archive inventory unless all relevant records are in this view. Orphan results are session-only and cover inspected batches under <code>cms/</code> only. No objects are deleted or modified by these reports.</p>
+          <p className="cms-media-overview-scope">Scope note: library and integrity totals reflect only the records loaded in the current active / archived view (up to 100 per page). Archive totals are not a complete archive inventory unless all relevant records are in this view. Orphan results are session-only and cover inspected batches under <code>cms/</code> only. No objects are deleted or modified by these reports.</p>
           <div className="cms-media-report-actions">
             <span>Export includes the records currently loaded here (maximum 100), including archived records only when “Show archived media” is enabled.</span>
             <button type="button" className="admin-secondary-button" disabled={!media.length} onClick={exportMediaIntegrityReport}>Export metadata report (CSV)</button>
@@ -2062,7 +2062,7 @@ export default function CMSManagement() {
                         <option value="all">All media activity</option>
                         <option value="filename">Filename changes</option>
                         <option value="alt">Alt-text changes</option>
-                        <option value="lifecycle">Archive / restore events</option>
+                        <option value="lifecycle">Upload / archive / restore events</option>
                       </select>
                     </label>
                     <button className="admin-secondary-button" type="button" onClick={exportMediaHistoryReport} disabled={!getFilteredMediaHistory().length}>Export filtered history (CSV)</button>
@@ -2071,6 +2071,9 @@ export default function CMSManagement() {
                   {getFilteredMediaHistory().length ? getFilteredMediaHistory().map((entry) => (
                     <article key={entry.id}>
                       <small>{entry.createdAt ? new Date(entry.createdAt).toLocaleString() : "Time unavailable"} · {entry.actorEmail || "Administrator identity unavailable"} · {(entry.action || "media change").replace(/_/g, " ")}</small>
+                      {entry.action === "upload_media" && (
+                        <p><b>Uploaded image</b><span>{entry.metadata?.originalFileName || "Filename unavailable"}</span><span>{entry.metadata?.mimeType || "File type unavailable"} · {entry.metadata?.byteSize ? Math.round(entry.metadata.byteSize / 1024) + " KB" : "Size unavailable"}</span></p>
+                      )}
                       {Object.entries(entry.metadata?.changes || {}).map(([field, change]) => (
                         <p key={field}><b>{field === "original_file_name" ? "Original filename" : field === "alt_text" ? "Alt text" : field}</b><span>Before: {change.before || "—"}</span><span>After: {change.after || "—"}</span></p>
                       ))}
