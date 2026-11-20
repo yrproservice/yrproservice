@@ -129,3 +129,15 @@ No code change was made during this review because the inspected source did not 
 - Combined commit-status query returned no entries for this head. Do not claim latest CI passed based on the earlier successful run on `1b2221f1a16caf75cff7e9a5dd66897f24ef2dc4`.
 - No Cloudflare runtime/deployment/database tools are exposed in this session. Preview D1/R2 live workflow and Production controls cannot be executed from the current tool set; continue source review and use repository Actions evidence where available.
 - No source-image processing, merge, Production deployment, Production D1 migration, or Production R2 operation occurred.
+
+
+## Screenshot artifact path fix and source review continuation — 20 November 2026
+
+- Rechecked PR #2 after the previous checkpoint. Before this fix, PR #2 was Open/Draft/unmerged at `4a41cbb86099027f4417269ea705bb0e01055408`, 1,193 commits ahead of `main`, 0 behind, 104 changed files; GitHub reported mergeable=true. No submitted reviews or inline review threads were returned.
+- Confirmed the exact-head workflow lookup and combined-status lookup returned no records for that SHA. The workflow lookup is limited to PR-triggered runs; it does not establish that the push-triggered workflow did not run. Exact-head CI remains unverified.
+- Found a concrete artifact upload mismatch: screenshot files are written below `preview-screenshots/desktop/` and `preview-screenshots/mobile/`, while the upload glob only matched files directly under `preview-screenshots/`. Changed the glob to `preview-screenshots/**/*.png` so both viewport folders are included.
+- Workflow fix committed on `cms-development` as `7ff1de30b922a4b9daee563e8c6a48d813e7170c`. This workflow-only correction does not manipulate source/catalogue images.
+- Continued reviewing the cart/chair split and migration logic, service-page content flow, team-page content flow, and image signature/dimension validation. The fixed slug allowlist keeps the 11 confirmed chair models out of the normal cart. Legacy chair migration writes the destination chair store before rewriting the product cart and includes retry-safe quantity tracking.
+- Team template still has role-based cards referencing `/assets/team-1.jpg` through `team-4.jpg`; these are not named employees, but the actual asset identity/authorization was not verified in this pass. Keep this as an explicit content/asset verification item; do not present those assets as confirmed staff portraits or invent employee identities.
+- The Services fallback template contains eight named service categories and claims including emergency repair/compliance support. Because the authoritative original Services content and V10 source assets are not present for comparison in this session, no content replacement was made. Verify against the approved original content before release.
+- No Preview runtime, D1/R2 operation, merge, Production migration/deployment, or source-image processing occurred.
