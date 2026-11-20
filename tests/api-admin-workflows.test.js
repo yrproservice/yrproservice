@@ -1010,6 +1010,53 @@ for (const [referenceType, table] of [
 }
 
 
+test("CMS media archive rejects a product reference added between the usage check and atomic archive", async () => {
+  const countReads = { page: 0, product: 0, setting: 0 };
+  const batches = [];
+  const db = {
+    batches,
+    prepare(sql) {
+      return {
+        sql,
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          if (sql.includes("FROM cms_media WHERE id=? AND deleted_at IS NULL")) {
+            return { id: "media-id", storage_provider: "r2", object_key: "cms/race-image.png", public_url: "https://media.example.r2.dev/cms/race-image.png" };
+          }
+          for (const [key, table] of [["page", "cms_page_versions"], ["product", "cms_product_versions"], ["setting", "cms_site_setting_versions"]]) {
+            if (sql.includes(`FROM ${table}`)) {
+              countReads[key] += 1;
+              return { total: key === "product" && countReads[key] > 1 ? 1 : 0 };
+            }
+          }
+          return { total: 0 };
+        },
+        async all() { return { results: [] }; },
+      };
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map(() => ({ meta: { changes: 0 } }));
+    },
+  };
+
+  const response = await archiveCmsMedia({
+    request: new Request("https://yrproservice.test/api/cms/admin/media?id=media-id", {
+      method: "DELETE",
+      headers: { "Cf-Access-Jwt-Assertion": accessToken },
+    }),
+    env: { ...adminConfig, DB: db },
+  });
+  const result = await response.json();
+
+  assert.equal(response.status, 409);
+  assert.match(result.error, /became referenced/i);
+  assert.equal(result.usage.counts.products, 1);
+  assert.equal(batches.length, 1);
+  assert.equal(countReads.product, 2);
+});
+
+
 function makeExistingCmsDraftDb(type, { updateChanges = [1, 1, 1] } = {}) {
   const calls = [];
   const batches = [];
