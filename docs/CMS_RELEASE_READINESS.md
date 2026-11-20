@@ -1199,3 +1199,10 @@ Reviewed `functions/api/admin/requests.js` and `functions/api/admin/session.js` 
 - As page/product/settings revision records accumulate beyond 100 versions, older versions are not discoverable or restorable through this history endpoint and its current response contract. The underlying rows are not deleted by this limit; this is an accessibility/recovery limitation rather than evidence of data loss.
 - Before long-term CMS operation, decide whether to add cursor-based history pagination (recommended) and a visible indication that more history exists. If an explicit retention policy is later adopted, it must be separate from pagination and must preserve the required recovery/audit window.
 - Static source review only; no revisions were read from or changed in Preview D1.
+
+## Request dashboard pagination review — 20 November 2026
+
+- The authenticated Admin request-list endpoint applies filters and returns newest-first results with a fixed `LIMIT 200`. Its response reports `limit: 200` but provides no cursor, offset, total count, or truncation indicator.
+- When the request volume exceeds 200 records for the selected filters, older matching requests are not discoverable through the current list response. The records remain in the database; this is a retrieval/operations limitation, not evidence of deletion.
+- Add cursor-based pagination or an explicit bounded date/search workflow before the request manager is relied on for high-volume operations. Keep customer PII behind the existing Access-protected Admin endpoint.
+- Static source review only; no customer request records were queried or modified.
