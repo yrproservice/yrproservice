@@ -101,6 +101,9 @@ export async function onRequestPost(context) {
     if (Number(results?.[2]?.meta?.changes || 0) !== 1) {
       return adminJson({ error: "This setting draft changed in another session. Reload the setting before saving again." }, 409);
     }
+    if (Number(results?.[3]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "The settings record timestamp update could not be confirmed. Reload the setting and inspect its current draft before retrying." }, 500);
+    }
     if (Number(results?.[4]?.meta?.changes || 0) !== 1) {
       return adminJson({ error: "The settings draft may have been saved, but its audit record could not be confirmed. Reload the setting and inspect its current draft before retrying." }, 500);
     }
