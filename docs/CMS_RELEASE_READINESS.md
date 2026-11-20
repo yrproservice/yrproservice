@@ -1213,3 +1213,20 @@ Reviewed `functions/api/admin/requests.js` and `functions/api/admin/session.js` 
 - Once the library contains more than 300 matching records, older records are not discoverable through the current list response. The records and R2 objects are not deleted by this limit; this is a management/recovery visibility limitation.
 - Add cursor-based pagination or an explicit filter/search and truncation indicator before the media library grows beyond this bound. Keep the separate R2 orphan scan's existing 100-object cursor behavior; that scan is read-only.
 - Static source review only. No media rows or R2 objects were listed, uploaded, archived, restored, or deleted.
+
+## CMS publish and revision-restore concurrency review — 20 November 2026
+
+- Re-reviewed `functions/api/cms/admin/publish.js` and the restore handler in `functions/api/cms/admin/history.js`. Publishing requires the selected revision to remain the active draft and match its expected creation timestamp. The first D1 write also compares the entity's published-version pointer; subsequent pointer, prior-version archive, and audit writes are guarded within the batch.
+- Revision restore compares the currently active draft ID and timestamp, conditionally archives that exact draft (or confirms no draft appeared), inserts the restored content as a new draft, and writes the audit event only after the guarded insert.
+- No new confirmed concurrency defect was identified in these bounded code paths. This is static source review, not a runtime or race-condition test. Final-stage regression tests remain necessary before release approval.
+
+## Prioritized release-readiness remediation plan — 20 November 2026
+
+1. **P1 — Request lifecycle accountability:** design durable request-status history (actor, previous status, new status, timestamp, and request reference) and ensure status update plus history insertion are atomic. Decide retention and staff visibility before implementation.
+2. **P1 — Service catalogue integrity:** compare the fixed service-slug allowlist in `functions/api/requests.js` with the authoritative original Services catalogue and CMS service options. Do not replace or rename original service content based only on the current allowlist.
+3. **P1 — Staff access policy decision:** confirm whether the configured single authorized email behind Cloudflare Access is intentional shared-account access or whether individual staff identities and server-side session/device controls are required. Current code does not implement a single-device session lock.
+4. **P2 — Media audit completeness:** add an auditable upload-created event to the unified media history, preserving existing upload cleanup and failure handling.
+5. **P2 — Bounded-list discoverability:** add cursor pagination and clear continuation/total indicators for revision history (100), request administration (200), and Media Library (300). Keep the existing bounded read-only R2 orphan scan separate.
+6. **P3 — Verification and operations:** after remediation is approved, add regression coverage for concurrent saves/publishes/restores, request status races and audit atomicity, pagination boundaries, media upload cleanup/audit, and access policy. Then complete the deferred UI, screenshot, and image review stages before any release decision.
+
+The settings concurrency concern is not a confirmed defect after the batch-guard review. Publish and restore paths also showed no new confirmed defect in this static review. No code changes, tests, screenshots, image processing, database operations, migrations, R2 operations, merge, or Production deployment were performed for this checkpoint.
