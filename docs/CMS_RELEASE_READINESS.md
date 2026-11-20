@@ -1749,3 +1749,11 @@ The two workflow results above are verified against their exact documentation co
 
 - The screenshot run with a rendered-`main` selector was slower than expected while checking multiple lazy-loaded routes. The earlier `domcontentloaded` plus short render wait had already succeeded in run #44675789839, so commit `021d852039c2cdea8c08958829dc01ace7f8707e` restores that proven navigation approach while retaining Ubuntu 24.04, viewport-only captures and the 15-minute job bound.
 - The prior successful screenshot artifact remains available; this latest workflow change requires a new exact-head verification.
+
+
+## Latest exact-head Preview test/build/screenshot checkpoint — 20 November 2026
+
+- GitHub Actions run [#44676226791](https://github.com/yrproservice/yrproservice/actions/runs/44676226791) completed successfully on exact head `1b2221f1a16caf75cff7e9a5dd66897f24ef2dc4`.
+- The workflow completed locked dependency install, all 77 automated tests, Vite build, Cloudflare Pages Functions build, read-only Preview D1 page metadata readiness check, Preview asset verification, desktop viewport screenshot capture, and screenshot artifact upload.
+- Artifact `cms-preview-screenshots-1b2221f1a16caf75cff7e9a5dd66897f24ef2dc4` exists (1,633,647 bytes; expires 27 November 2026). It captures Home, Products, Services, Team, Signo T100 product detail and HR Contact. No image assets were processed or changed.
+- This is the current exact-head Preview verification. Production release blockers remain unchanged: Production R2 binding/public base unconfirmed, Production CMS D1 schema/migrations unverified, backup/PITR/restore readiness unconfirmed, Production Access hostname coverage unverified, and `main` branch protection currently false.
