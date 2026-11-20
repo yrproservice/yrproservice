@@ -36,6 +36,7 @@ export default function AdminDashboard({ onAuthenticated }) {
   const [requestHistory, setRequestHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
+  const [historyNote, setHistoryNote] = useState("");
   const [pageCursor, setPageCursor] = useState("");
   const [cursorStack, setCursorStack] = useState([]);
   const [nextCursor, setNextCursor] = useState("");
@@ -119,6 +120,7 @@ export default function AdminDashboard({ onAuthenticated }) {
     if (!selected?.reference) {
       setRequestHistory([]);
       setHistoryError("");
+      setHistoryNote("");
       setHistoryLoading(false);
       return undefined;
     }
@@ -136,10 +138,12 @@ export default function AdminDashboard({ onAuthenticated }) {
           throw new Error(result.error || `Unable to load request history (HTTP ${response.status}).`);
         }
         setRequestHistory(Array.isArray(result.history) ? result.history : []);
+        setHistoryNote(typeof result.note === "string" ? result.note : "");
       })
       .catch((loadError) => {
         if (!controller.signal.aborted) {
           setRequestHistory([]);
+          setHistoryNote("");
           setHistoryError(loadError.message || "Unable to load request history.");
         }
       })
@@ -463,7 +467,7 @@ export default function AdminDashboard({ onAuthenticated }) {
               <div className="admin-panel-heading">
                 <div>
                   <h3>Status history</h3>
-                  <p>Recorded status changes and the authorized account that made each change.</p>
+                  <p>{historyNote || "Recorded status changes and the authorized account that made each change."}</p>
                 </div>
               </div>
               {historyLoading ? (
