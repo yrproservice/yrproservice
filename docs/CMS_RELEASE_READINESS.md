@@ -1624,3 +1624,9 @@ The two workflow results above are verified against their exact documentation co
 - Source commit `e7c08dd16169aecbe4f7724508fa029dda465357` updates the Request Dashboard to disclose when only the latest 50 status changes are displayed. The UI clears the truncation indicator when the selected request closes or a history request fails. This complements the activation-date note; neither disclosure claims older pre-feature history exists.
 - No history data was changed. No test, screenshot or image processing was run. Exact-head build-only Preview verification is pending; runtime pagination and browser behavior remain deferred to the final test stage.
 - The preceding migration-workflow checkpoint `4ca97cb4bd026038ffb5ba5ed0739ca8bff9a13f` passed exact-head Preview workflow [#44673636609](https://github.com/yrproservice/yrproservice/actions/runs/44673636609): locked install, Vite, Pages Functions, read-only Preview D1 schema readiness and Preview deployment/asset verification. No migration workflow was triggered by the workflow-file-only change.
+
+
+## Request-history selection refresh state — 20 November 2026
+
+- Source commit `e6fae734036178fdb4bbcd99febe6ef019973f15` clears the prior request's history entries, activation-date note and 50-row truncation indicator as soon as a different selected request begins loading. This prevents stale history metadata from appearing alongside the loading state while the next request's history is fetched.
+- This is a UI state correction only; no request or history data was changed. Exact-head Preview build verification is pending. Functional switching, cancellation and pagination behavior remain part of the deferred final browser test stage.
