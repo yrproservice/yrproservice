@@ -92,6 +92,10 @@ export default function CMSManagement() {
   const [mediaReady, setMediaReady] = useState(false);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [mediaIncludeArchived, setMediaIncludeArchived] = useState(false);
+  const [mediaCursor, setMediaCursor] = useState("");
+  const [mediaCursorStack, setMediaCursorStack] = useState([]);
+  const [mediaNextCursor, setMediaNextCursor] = useState("");
+  const [mediaHasMore, setMediaHasMore] = useState(false);
   const mediaListRequestId = useRef(0);
   const [mediaIntegrityFilter, setMediaIntegrityFilter] = useState("all");
   const [mediaSearch, setMediaSearch] = useState("");
@@ -153,17 +157,22 @@ export default function CMSManagement() {
     }
   }
 
-  async function refreshMedia(isActive = () => true) {
+  async function refreshMedia(isActive = () => true, cursorOverride = mediaCursor, includeArchivedOverride = mediaIncludeArchived) {
     const requestId = ++mediaListRequestId.current;
     if (isActive()) {
       setMediaReady(false);
       setMediaLoading(true);
     }
     try {
-      const data = await api("/api/cms/admin/media" + (mediaIncludeArchived ? "?includeDeleted=1" : ""));
+      const params = new URLSearchParams();
+      if (includeArchivedOverride) params.set("includeDeleted", "1");
+      if (cursorOverride) params.set("cursor", cursorOverride);
+      const data = await api("/api/cms/admin/media" + (params.toString() ? `?${params.toString()}` : ""));
       if (!isActive() || requestId !== mediaListRequestId.current) return;
 
       setMedia(data.media || []);
+      setMediaHasMore(Boolean(data.hasMore));
+      setMediaNextCursor(data.nextCursor || "");
       setStorageReady(Boolean(data.storageReady));
       setMediaReady(true);
     } catch (loadError) {
@@ -1837,6 +1846,8 @@ export default function CMSManagement() {
               onChange={async (event) => {
                 const includeArchived = event.target.checked;
                 setMediaIncludeArchived(includeArchived);
+                setMediaCursor("");
+                setMediaCursorStack([]);
                 const requestId = ++mediaListRequestId.current;
                 setMediaReady(false);
                 setMediaLoading(true);
@@ -1849,6 +1860,8 @@ export default function CMSManagement() {
                   const data = await api("/api/cms/admin/media" + (includeArchived ? "?includeDeleted=1" : ""));
                   if (requestId !== mediaListRequestId.current) return;
                   setMedia(data.media || []);
+                  setMediaHasMore(Boolean(data.hasMore));
+                  setMediaNextCursor(data.nextCursor || "");
                   setStorageReady(Boolean(data.storageReady));
                   setMediaReady(true);
                 } catch (loadError) {
@@ -1870,7 +1883,7 @@ export default function CMSManagement() {
               <h3>Media operations overview</h3>
               <p>A consolidated snapshot of the currently loaded library and checks performed in this session.</p>
             </div>
-            <span>{media.length} loaded · maximum 300 records</span>
+            <span>{media.length} loaded · maximum 100 records per page</span>
           </div>
           <div className="cms-media-overview-grid" aria-live="polite">
             <article>
@@ -1919,7 +1932,7 @@ export default function CMSManagement() {
           </div>
           <p className="cms-media-overview-scope">Scope note: library and integrity totals reflect only the records loaded in the current active / archived view (up to 300). Archive totals are not a complete archive inventory unless all relevant records are in this view. Orphan results are session-only and cover inspected batches under <code>cms/</code> only. No objects are deleted or modified by these reports.</p>
           <div className="cms-media-report-actions">
-            <span>Export includes the records currently loaded here (maximum 300), including archived records only when “Show archived media” is enabled.</span>
+            <span>Export includes the records currently loaded here (maximum 100), including archived records only when “Show archived media” is enabled.</span>
             <button type="button" className="admin-secondary-button" disabled={!media.length} onClick={exportMediaIntegrityReport}>Export metadata report (CSV)</button>
           </div>
           <section className="cms-media-orphan-report">
@@ -1959,7 +1972,7 @@ export default function CMSManagement() {
             />
             {mediaSearch && <button type="button" className="admin-secondary-button" onClick={() => setMediaSearch("")}>Clear search</button>}
           </div>
-          <small>Showing {visibleMedia.length} of {media.length} loaded record(s). Search is local to the currently loaded library (maximum 300 records).</small>
+          <small>Showing {visibleMedia.length} of {media.length} loaded record(s). Search is local to the currently loaded library (maximum 100 records per page).</small>
         </div>
         <div className="cms-media-integrity-filter">
           <label htmlFor="cms-media-integrity-filter">Prioritise media records</label>
@@ -1970,6 +1983,35 @@ export default function CMSManagement() {
             <option value="descriptive">Descriptive follow-up ({media.filter((item) => getMediaIntegrityPriority(item) === "descriptive").length})</option>
             <option value="clean">No metadata warnings ({media.filter((item) => getMediaIntegrityPriority(item) === "clean").length})</option>
           </select>
+        </div>
+        <div className="admin-pagination" aria-label="Media Library pages">
+          <button
+            type="button"
+            className="admin-secondary-button"
+            disabled={mediaLoading || mediaCursorStack.length === 0}
+            onClick={() => {
+              const previous = mediaCursorStack[mediaCursorStack.length - 1] || "";
+              setMediaCursorStack((stack) => stack.slice(0, -1));
+              setMediaCursor(previous);
+              refreshMedia(() => true, previous, mediaIncludeArchived).catch((loadError) => setError(loadError.message));
+            }}
+          >
+            Previous
+          </button>
+          <span>Page {mediaCursorStack.length + 1}{mediaHasMore ? " · More records available" : " · End of results"}</span>
+          <button
+            type="button"
+            className="admin-secondary-button"
+            disabled={mediaLoading || !mediaHasMore || !mediaNextCursor}
+            onClick={() => {
+              const next = mediaNextCursor;
+              setMediaCursorStack((stack) => [...stack, mediaCursor]);
+              setMediaCursor(next);
+              refreshMedia(() => true, next, mediaIncludeArchived).catch((loadError) => setError(loadError.message));
+            }}
+          >
+            Next
+          </button>
         </div>
         <h3>{mediaIncludeArchived ? "Preview media · Active and archived" : "Uploaded Preview media"}</h3>
         <div className="cms-media-grid">
