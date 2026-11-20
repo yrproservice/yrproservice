@@ -27,6 +27,7 @@ function formatDate(value) {
 
 export default function AdminDashboard({ onAuthenticated }) {
   const [requests, setRequests] = useState([]);
+  const [statusCounts, setStatusCounts] = useState({});
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
@@ -83,6 +84,7 @@ export default function AdminDashboard({ onAuthenticated }) {
         : [];
 
       setRequests(loadedRequests);
+      setStatusCounts(result.statusCounts && typeof result.statusCounts === "object" ? result.statusCounts : {});
       setHasMore(Boolean(result.hasMore));
       setNextCursor(result.nextCursor || "");
       onAuthenticated?.();
@@ -146,11 +148,6 @@ export default function AdminDashboard({ onAuthenticated }) {
       });
     return () => controller.abort();
   }, [selected?.reference, selected?.status]);
-
-  const counts = STATUSES.reduce((result, key) => ({
-    ...result,
-    [key]: requests.filter((item) => item.status === key).length,
-  }), {});
 
   async function saveStatus() {
     if (!selected || !STATUSES.includes(draftStatus) || saving) return;
@@ -231,7 +228,7 @@ export default function AdminDashboard({ onAuthenticated }) {
           {STATUSES.map((key) => (
             <article className="admin-stat" key={key}>
               <span>{STATUS_LABELS[key]}</span>
-              <strong>{counts[key] ?? 0}</strong>
+              <strong>{statusCounts[key] ?? 0}</strong>
             </article>
           ))}
         </div>
