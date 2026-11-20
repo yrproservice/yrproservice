@@ -557,6 +557,11 @@ export default function CMSManagement() {
           entityType: type,
           entityKey: key,
           versionId: id,
+          expectedDraftId: type === "page"
+            ? (pages.find((row) => row.page_key === key)?.draft_id || null)
+            : type === "product"
+              ? (items.find((row) => row.product_slug === key)?.draft_id || null)
+              : (settings.find((row) => row.setting_key === key)?.draft_id || null),
         }),
       });
 
