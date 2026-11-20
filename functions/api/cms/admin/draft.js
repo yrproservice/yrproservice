@@ -1,9 +1,9 @@
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
 
 const CONFIG = {
-  page: { table: "cms_pages", keyColumn: "page_key", versions: "cms_page_versions", foreignKey: "page_id", label: "page" },
-  product: { table: "cms_products", keyColumn: "product_slug", versions: "cms_product_versions", foreignKey: "product_id", label: "product" },
-  setting: { table: "cms_site_settings", keyColumn: "setting_key", versions: "cms_site_setting_versions", foreignKey: "setting_key", label: "site setting" }
+  page: { table: "cms_pages", keyColumn: "page_key", versions: "cms_page_versions", foreignKey: "page_id", jsonColumn: "content_json", label: "page" },
+  product: { table: "cms_products", keyColumn: "product_slug", versions: "cms_product_versions", foreignKey: "product_id", jsonColumn: "product_json", label: "product" },
+  setting: { table: "cms_site_settings", keyColumn: "setting_key", versions: "cms_site_setting_versions", foreignKey: "setting_key", jsonColumn: "value_json", label: "site setting" }
 };
 
 function clean(value, max = 100) {
@@ -45,7 +45,7 @@ export async function onRequestDelete(context) {
     if (!entity) return adminJson({ error: `CMS ${config.label} not found.` }, 404);
 
     const draft = await env.DB.prepare(
-      `SELECT id, version_number, state FROM ${config.versions} WHERE id = ? AND ${config.foreignKey} = ? LIMIT 1`
+      `SELECT id, version_number, state, created_at, ${config.jsonColumn} AS snapshot FROM ${config.versions} WHERE id = ? AND ${config.foreignKey} = ? LIMIT 1`
     ).bind(versionId, entity.id).first();
 
     if (!draft) return adminJson({ error: "The selected revision does not belong to this item." }, 404);
@@ -58,7 +58,10 @@ export async function onRequestDelete(context) {
 
     const actor = auth.email || null;
     const statements = [
-      env.DB.prepare(`DELETE FROM ${config.versions} WHERE id = ? AND ${config.foreignKey} = ? AND state = 'draft'`).bind(versionId, entity.id),
+      // Compare the exact revision snapshot selected above. A concurrent save
+      // cannot have its newer content deleted by a stale delete request.
+      env.DB.prepare(`DELETE FROM ${config.versions} WHERE id = ? AND ${config.foreignKey} = ? AND state = 'draft' AND created_at = ? AND ${config.jsonColumn} = ?`)
+        .bind(versionId, entity.id, draft.created_at, draft.snapshot),
     ];
     if (type === "page" && entity.published_version_id) {
       const publishedPage = await env.DB.prepare(
