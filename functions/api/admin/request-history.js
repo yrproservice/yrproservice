@@ -20,12 +20,12 @@ export async function onRequestGet(context) {
       FROM request_status_history
       WHERE reference = ?
       ORDER BY created_at DESC, id DESC
-      LIMIT 50
+      LIMIT 51
     `).bind(reference).all();
     return adminJson({
       ok: true,
       reference,
-      history: (rows.results || []).map((row) => ({
+      history: (rows.results || []).slice(0, 50).map((row) => ({
         id: row.id,
         reference: row.reference,
         previousStatus: row.previous_status,
@@ -34,6 +34,7 @@ export async function onRequestGet(context) {
         createdAt: row.created_at,
       })),
       limit: 50,
+      hasMore: (rows.results || []).length > 50,
       note: "Status history is recorded from the feature activation date; earlier status changes were not historically captured.",
     });
   } catch (error) {
