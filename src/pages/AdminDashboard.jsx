@@ -32,6 +32,9 @@ export default function AdminDashboard({ onAuthenticated }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
   const [draftStatus, setDraftStatus] = useState("");
+  const [requestHistory, setRequestHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -97,6 +100,40 @@ export default function AdminDashboard({ onAuthenticated }) {
       controller.abort();
     };
   }, [type, status, search, onAuthenticated]);
+
+  useEffect(() => {
+    if (!selected?.reference) {
+      setRequestHistory([]);
+      setHistoryError("");
+      setHistoryLoading(false);
+      return undefined;
+    }
+    const controller = new AbortController();
+    setHistoryLoading(true);
+    setHistoryError("");
+    fetch(`/api/admin/request-history?reference=${encodeURIComponent(selected.reference)}`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || `Unable to load request history (HTTP ${response.status}).`);
+        }
+        setRequestHistory(Array.isArray(result.history) ? result.history : []);
+      })
+      .catch((loadError) => {
+        if (!controller.signal.aborted) {
+          setRequestHistory([]);
+          setHistoryError(loadError.message || "Unable to load request history.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setHistoryLoading(false);
+      });
+    return () => controller.abort();
+  }, [selected?.reference]);
 
   const counts = STATUSES.reduce((result, key) => ({
     ...result,
@@ -385,6 +422,31 @@ export default function AdminDashboard({ onAuthenticated }) {
               >
                 {saving ? "Saving…" : "Save status"}
               </button>
+            </div>
+            <div className="admin-request-history">
+              <div className="admin-panel-heading">
+                <div>
+                  <h3>Status history</h3>
+                  <p>Recorded status changes and the authorized account that made each change.</p>
+                </div>
+              </div>
+              {historyLoading ? (
+                <p className="admin-loading" role="status">Loading status history…</p>
+              ) : historyError ? (
+                <p className="admin-alert admin-alert-error" role="alert">{historyError}</p>
+              ) : requestHistory.length ? (
+                <ol className="admin-request-history-list">
+                  {requestHistory.map((entry) => (
+                    <li key={entry.id}>
+                      <strong>{STATUS_LABELS[entry.previousStatus] || entry.previousStatus} → {STATUS_LABELS[entry.newStatus] || entry.newStatus}</strong>
+                      <span>{entry.actorEmail || "Authorized Admin"}</span>
+                      <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="admin-empty">No status changes have been recorded since request history was enabled.</p>
+              )}
             </div>
           </section>
         )}
