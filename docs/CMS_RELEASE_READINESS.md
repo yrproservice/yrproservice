@@ -1206,3 +1206,10 @@ Reviewed `functions/api/admin/requests.js` and `functions/api/admin/session.js` 
 - When the request volume exceeds 200 records for the selected filters, older matching requests are not discoverable through the current list response. The records remain in the database; this is a retrieval/operations limitation, not evidence of deletion.
 - Add cursor-based pagination or an explicit bounded date/search workflow before the request manager is relied on for high-volume operations. Keep customer PII behind the existing Access-protected Admin endpoint.
 - Static source review only; no customer request records were queried or modified.
+
+## Media Library pagination review — 20 November 2026
+
+- The Admin media-list endpoint returns active (or optionally archived) records ordered by active/archive state and creation time with a fixed `LIMIT 300`. It exposes no cursor, offset, total count, or truncation flag.
+- Once the library contains more than 300 matching records, older records are not discoverable through the current list response. The records and R2 objects are not deleted by this limit; this is a management/recovery visibility limitation.
+- Add cursor-based pagination or an explicit filter/search and truncation indicator before the media library grows beyond this bound. Keep the separate R2 orphan scan's existing 100-object cursor behavior; that scan is read-only.
+- Static source review only. No media rows or R2 objects were listed, uploaded, archived, restored, or deleted.
