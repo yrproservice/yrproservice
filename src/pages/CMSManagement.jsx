@@ -384,6 +384,7 @@ export default function CMSManagement() {
         body: JSON.stringify({
           product,
           expectedDraftId: selected?.isNew ? null : selected?.draftId || null,
+          expectedDraftCreatedAt: selected?.isNew ? null : selected?.draftCreatedAt || null,
         }),
       });
 
@@ -395,6 +396,7 @@ export default function CMSManagement() {
       setSelected({
         slug: product.slug,
         draftId: data.draftId,
+        draftCreatedAt: data.draftCreatedAt || null,
         version: data.version,
         isNew: false,
         savedJson: JSON.stringify(product, null, 2),
