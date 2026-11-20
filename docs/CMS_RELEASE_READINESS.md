@@ -1735,3 +1735,11 @@ The two workflow results above are verified against their exact documentation co
 
 - Workflow commit `42a2bc6c390670fa26dc1b26bf466b2085fc2990` changes screenshot navigation to wait for the initial response commit, then require a rendered `main` element before capturing. This avoids waiting for all background network activity while still requiring that the React page has rendered. Per-route page load remains bounded by 20 seconds, rendered-content wait by 15 seconds, and the job by 15 minutes.
 - Exact-head screenshot capture and artifact upload remain pending.
+
+
+## Preview screenshot artifact successfully captured — 20 November 2026
+
+- Exact workflow run [#44675789839](https://github.com/yrproservice/yrproservice/actions/runs/44675789839) succeeded on commit `03826ce98afb71c00b66a0edd97cb48aacc4cb85`, including all 77 automated tests, Vite build, Pages Functions build, Preview D1 readiness, Preview asset verification, screenshot capture and artifact upload.
+- Screenshot artifact `cms-preview-screenshots-03826ce98afb71c00b66a0edd97cb48aacc4cb85` was confirmed in GitHub Actions (1,633,647 bytes; expires 27 November 2026). It contains desktop viewport captures for Home, Products, Services, Team, Signo T100 product detail and HR Contact.
+- These are viewport captures, not full-page screenshots. They are available from the linked Actions run's Artifacts section. No image asset was processed or changed.
+- Earlier screenshot attempts that failed due runner compatibility or navigation wait are superseded by this successful capture. A later workflow edit changed screenshot navigation to wait for the rendered `main` element; the next exact-head run must verify that final adjustment and the subsequent bounded capture behavior.
