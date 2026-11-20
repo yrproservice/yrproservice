@@ -1743,3 +1743,9 @@ The two workflow results above are verified against their exact documentation co
 - Screenshot artifact `cms-preview-screenshots-03826ce98afb71c00b66a0edd97cb48aacc4cb85` was confirmed in GitHub Actions (1,633,647 bytes; expires 27 November 2026). It contains desktop viewport captures for Home, Products, Services, Team, Signo T100 product detail and HR Contact.
 - These are viewport captures, not full-page screenshots. They are available from the linked Actions run's Artifacts section. No image asset was processed or changed.
 - Earlier screenshot attempts that failed due runner compatibility or navigation wait are superseded by this successful capture. A later workflow edit changed screenshot navigation to wait for the rendered `main` element; the next exact-head run must verify that final adjustment and the subsequent bounded capture behavior.
+
+
+## Restore previously verified screenshot navigation — 20 November 2026
+
+- The screenshot run with a rendered-`main` selector was slower than expected while checking multiple lazy-loaded routes. The earlier `domcontentloaded` plus short render wait had already succeeded in run #44675789839, so commit `021d852039c2cdea8c08958829dc01ace7f8707e` restores that proven navigation approach while retaining Ubuntu 24.04, viewport-only captures and the 15-minute job bound.
+- The prior successful screenshot artifact remains available; this latest workflow change requires a new exact-head verification.
