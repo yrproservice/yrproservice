@@ -1046,3 +1046,33 @@ No source change was justified in this pass. The main unresolved decision is the
 
 - Frontend integration was source-traced only; no runtime tests or Preview content changes were performed.
 - No code changes, migrations, screenshots, image processing or Production operations were performed.
+
+
+## Admin workspace and editor integration trace — 20 November 2026
+
+### Visual page editor
+
+- The Visual Website Editor loads the current page list before enabling page selection, save and publish actions. It loads the selected page through the authenticated admin preview endpoint and keeps draft ID/creation timestamp alongside the editor snapshot.
+- Page save sends the expected draft ID and creation timestamp; publish is blocked while local edits remain unsaved and requires explicit confirmation that the target is Preview only.
+- Page navigation and editor exit guard against discarding unsaved edits. A before-unload warning is also registered while page edits remain.
+- The section editor exposes undo/redo, section recovery, structured JSON editing and media selection. Media selection updates the current page draft; the published page remains unchanged until publishing.
+- The editor's Preview media list is loaded independently and reports load errors rather than silently treating a failed request as an empty library.
+
+### Management centre
+
+- Product save/archive/publish operations carry expected draft identity and creation time where applicable. Archive creates a product archive draft; the public catalogue is unchanged until Preview publication.
+- Product publishing is blocked if the selected editor JSON differs from the saved snapshot. A successful publish followed by a failed list refresh is reported distinctly so operators do not mistake the refresh failure for a failed publication.
+- Product history restore creates a draft rather than directly republishing an old revision; deleting a draft explicitly warns that the draft cannot be recovered while published content/history remain.
+- Settings save uses the currently loaded draft ID; settings publication carries the draft creation timestamp and is blocked when the selected setting contains unsaved edits.
+- Media upload is gated on a successfully loaded media library and ready Preview storage. Upload success and subsequent library-refresh failure are reported separately.
+- Media archive checks for unsaved filename/alt-text edits, confirms the operation, retains the storage object, and reports blocked references. Restore and metadata changes have separate success/error reporting.
+- The media integrity export describes loaded metadata and any storage checks already performed; it is not a complete independent inventory unless all relevant records have been loaded and checked.
+- Orphan reconciliation is cursor-based and read-only in the UI; each continuation adds a batch. The scan is not complete until no continuation cursor remains.
+
+### Operational caveats and follow-up
+
+- The editor has strong local safeguards against unsaved changes and stale draft writes, but these are not substitutes for server-side compare-and-swap validation; the API checks reviewed earlier remain the authoritative protection.
+- A page save calls `loadPages()` after saving. If that refresh fails, the catch path can show an error even though the draft save already succeeded; operators should reload and confirm the saved draft before retrying, to avoid duplicate/conflicting work.
+- A successful product/settings/media operation can be followed by a separate list-refresh failure. The UI generally distinguishes these outcomes; operators should follow the explicit message and reload before repeating the mutation.
+- Media orphan reconciliation must be continued through every returned cursor before recording a complete scan. It is read-only and must not be treated as cleanup.
+- Source review only. No CMS edits, uploads, archival actions, publication, live Preview verification, automated tests, screenshots, image processing, migrations or Production operations were performed.
