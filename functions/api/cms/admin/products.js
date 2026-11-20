@@ -33,13 +33,22 @@ export async function onRequestPost(context) {
   if (!env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
   if (!(request.headers.get("content-type") || "").toLowerCase().includes("application/json")) return adminJson({ error: "Submit JSON data." }, 415);
 
-  let product;
+  let payload;
   try {
     const raw = await request.text();
     if (new TextEncoder().encode(raw).byteLength > MAX_BYTES) return adminJson({ error: "Product data is too large." }, 413);
-    product = JSON.parse(raw);
+    payload = JSON.parse(raw);
   } catch { return adminJson({ error: "Invalid JSON body." }, 400); }
-  if (!product || typeof product !== "object" || Array.isArray(product)) return adminJson({ error: "Invalid product data." }, 400);
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return adminJson({ error: "Invalid product data." }, 400);
+  const product = payload.product && typeof payload.product === "object" && !Array.isArray(payload.product)
+    ? payload.product
+    : payload;
+  const expectedDraftId = Object.prototype.hasOwnProperty.call(payload, "expectedDraftId")
+    ? payload.expectedDraftId
+    : null;
+  if (expectedDraftId !== null && (typeof expectedDraftId !== "string" || expectedDraftId.length > 80)) {
+    return adminJson({ error: "Invalid expected draft ID." }, 400);
+  }
   const slug = typeof product.slug === "string" ? product.slug.trim() : "";
   if (!SLUG.test(slug)) return adminJson({ error: "Product slug must use lowercase letters, numbers and hyphens." }, 400);
   if (typeof product.name !== "string" || !product.name.trim()) return adminJson({ error: "Product name is required." }, 400);
@@ -77,6 +86,7 @@ export async function onRequestPost(context) {
   try {
     let row = await env.DB.prepare("SELECT id FROM cms_products WHERE product_slug = ? LIMIT 1").bind(slug).first();
     if (!row) {
+      if (expectedDraftId) return adminJson({ error: "The product changed or was removed. Reload the product list before saving." }, 409);
       const id = crypto.randomUUID();
       const versionId = crypto.randomUUID();
       await env.DB.batch([
@@ -92,6 +102,9 @@ export async function onRequestPost(context) {
     }
 
     const draft = await env.DB.prepare("SELECT id, version_number, created_at, product_json FROM cms_product_versions WHERE product_id = ? AND state = 'draft' LIMIT 1").bind(row.id).first();
+    if ((draft?.id || null) !== expectedDraftId) {
+      return adminJson({ error: "This product draft changed in another session. Reload it before saving again." }, 409);
+    }
     if (draft) {
       const results = await env.DB.batch([
         env.DB.prepare(
@@ -110,15 +123,23 @@ export async function onRequestPost(context) {
     const latest = await env.DB.prepare("SELECT COALESCE(MAX(version_number), 0) AS version FROM cms_product_versions WHERE product_id = ?").bind(row.id).first();
     const version = Number(latest?.version || 0) + 1;
     const versionId = crypto.randomUUID();
-    await env.DB.batch([
-      env.DB.prepare(
-        "INSERT INTO cms_product_versions (id, product_id, version_number, state, product_json, created_by, change_note) VALUES (?, ?, ?, 'draft', ?, ?, 'New product draft')"
-      ).bind(versionId, row.id, version, json, actor),
-      env.DB.prepare("UPDATE cms_products SET updated_at = ? WHERE id = ?").bind(now, row.id),
-      env.DB.prepare(
-        "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'create_draft', 'product', ?, ?)"
-      ).bind(crypto.randomUUID(), actor, row.id, JSON.stringify({ version }))
+    const results = await env.DB.batch([
+      env.DB.prepare("UPDATE cms_product_versions SET state = state WHERE product_id = ? AND state = 'draft'").bind(row.id),
+      env.DB.prepare(`
+        INSERT INTO cms_product_versions (id, product_id, version_number, state, product_json, created_by, change_note)
+        SELECT ?, ?, ?, 'draft', ?, ?, 'New product draft'
+        WHERE changes() = 0
+      `).bind(versionId, row.id, version, json, actor),
+      env.DB.prepare("UPDATE cms_products SET updated_at = ? WHERE id = ? AND changes() = 1").bind(now, row.id),
+      env.DB.prepare(`
+        INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
+        SELECT ?, ?, 'create_draft', 'product', ?, ?
+        WHERE changes() = 1
+      `).bind(crypto.randomUUID(), actor, row.id, JSON.stringify({ version }))
     ]);
+    if (Number(results?.[1]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "A product draft was created in another session. Reload the product before saving again." }, 409);
+    }
     return adminJson({ ok: true, productId: row.id, draftId: versionId, version }, 201);
   } catch (error) {
     console.error("CMS product draft save failed", error);
