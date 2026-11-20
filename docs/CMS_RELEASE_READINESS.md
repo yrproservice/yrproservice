@@ -1192,3 +1192,10 @@ Reviewed `functions/api/admin/requests.js` and `functions/api/admin/session.js` 
 - The site-settings save endpoint currently accepts and compares `expectedDraftId`, but it does not require or compare `expectedDraftCreatedAt` or the prior JSON snapshot. Updating an existing settings draft preserves the same revision ID while replacing its value. Consequently, two editors who loaded the same settings draft can both submit with the same expected ID; the later save can overwrite the earlier save rather than receiving the stale-edit 409 response used by page/product workflows.
 - This is a concurrency/data-integrity gap, not an authentication bypass. Recommended correction: require a complete expected snapshot (at minimum ID plus created_at, preferably prior value/snapshot comparison in the conditional UPDATE), and verify the conditional update result before inserting the audit record. Add a regression test for two stale settings saves in the final test stage.
 - No code or database changes were made for this finding. Static source review only.
+
+## Revision-history retention and pagination review — 20 November 2026
+
+- The admin revision-history endpoint returns revisions ordered newest-first with a fixed `LIMIT 100`; it does not expose a cursor, offset, total count, or truncation indicator.
+- As page/product/settings revision records accumulate beyond 100 versions, older versions are not discoverable or restorable through this history endpoint and its current response contract. The underlying rows are not deleted by this limit; this is an accessibility/recovery limitation rather than evidence of data loss.
+- Before long-term CMS operation, decide whether to add cursor-based history pagination (recommended) and a visible indication that more history exists. If an explicit retention policy is later adopted, it must be separate from pagination and must preserve the required recovery/audit window.
+- Static source review only; no revisions were read from or changed in Preview D1.
