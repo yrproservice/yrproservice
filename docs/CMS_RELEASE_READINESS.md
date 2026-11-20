@@ -1372,3 +1372,18 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 - The three exact-source build-only workflows for the request cursor correction completed successfully: [API cursor parsing #44666110325](https://github.com/yrproservice/yrproservice/actions/runs/44666110325), [control-character validation #44666132882](https://github.com/yrproservice/yrproservice/actions/runs/44666132882), and [latest documentation checkpoint #44666144896](https://github.com/yrproservice/yrproservice/actions/runs/44666144896).
 - The latest exact-head run verified locked dependency installation, Vite build, Cloudflare Pages Functions compilation, Preview D1 schema readiness and Preview deployment/asset verification. No test step ran.
 - This confirms build and Preview asset readiness for commit `f42968e7f5283f15d2350070e3d086a80a8b87f7`; it does not verify authenticated request pagination at runtime. No migration was run and Production remains untouched.
+
+
+## Media lifecycle audit handover accuracy correction — 20 November 2026
+
+- Reconciled the Phase G media handover with the current archive/restore implementation. The archive and restore handlers submit the state change and corresponding audit insert in a D1 batch, then verify both affected-row counts. The handover now describes the paired operation and its transactional rollback expectation rather than incorrectly calling lifecycle audit writes best-effort.
+- Documentation commit: `4ff47cbb6174585e17deb64f10d3840e317b4faa`.
+- Exact-commit build-only workflow [#44666321216](https://github.com/yrproservice/yrproservice/actions/runs/44666321216) completed successfully, including locked dependency install, Vite build, Pages Functions build, Preview D1 schema readiness and Preview deployment/asset verification.
+- No application source, D1 data/schema, R2 objects, staff access, Production resources or PR state changed. No tests, screenshots or image processing were run.
+
+## Request and tracking rate-limit implementation review — 20 November 2026
+
+- Reviewed the public request-submission and request-tracking handlers. Both use a single SQLite insert-select statement for each limit check and attempt insertion, avoiding the concurrency race that would occur with a separate count query followed by an insert.
+- Submission limits are 5 attempts per email and 20 per IP per hour; tracking limits are 10 per email and 30 per IP per 15 minutes. The tracking lookup requires both the request reference and matching email. Tracking responses are non-cacheable and include no-referrer protection.
+- Both handlers currently ensure their rate-limit tables and indexes with `CREATE TABLE/INDEX IF NOT EXISTS` and prune records older than 24 hours during request handling. This is a potential hot-path database overhead to quantify during final runtime/performance verification, not a demonstrated functional defect. No schema migration or code change was made in this review.
+- No customer data was queried or modified; no tests, migrations, screenshots, image processing, Production operations, PR merge or access-policy changes were performed.
