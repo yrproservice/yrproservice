@@ -1458,3 +1458,23 @@ A fresh source review of the current Media Library API and UI confirmed:
 - Upload writes the R2 object before its D1 record and audit event. Confirmed failures attempt to remove the just-uploaded object; if the database record exists but audit confirmation fails, the API returns the media ID and directs the administrator to refresh before retrying. No automated cleanup of such ambiguous uploads or orphan objects is performed.
 
 No media was uploaded, archived, restored, renamed, deleted or rewritten during this review. No R2 listing or storage-check endpoint was invoked against the live Preview bucket; conclusions above are from source inspection only. Final runtime verification of multi-page inventory, orphan-scan continuation, archive/restore and ambiguous audit outcomes remains deferred to Phase H.
+
+
+## Consolidated release gates and current verification checkpoint — 20 November 2026
+
+### Build / Preview checkpoint
+- Documentation commit `7ee950f2ef33f9bd86d21380d28313578f5faf48` passed workflow [#44667390033](https://github.com/yrproservice/yrproservice/actions/runs/44667390033).
+- Documentation commit `d93304e5a94c032c40415d5dc127a9071ad6f834` passed workflow [#44667402214](https://github.com/yrproservice/yrproservice/actions/runs/44667402214).
+- Both workflows completed locked dependency installation, Vite build, Cloudflare Pages Functions build, read-only Preview D1 schema readiness check, and Preview deployment / asset verification. These are build/deployment checks, not the deferred final CMS functional, security or recovery test suite.
+- Latest branch head at this checkpoint: `d93304e5a94c032c40415d5dc127a9071ad6f834`.
+
+### Remaining release gates (must not be mistaken for completed work)
+1. **Final runtime verification (deferred by user):** complete the approved functional, regression, positive/negative Cloudflare Access, request lifecycle/history, concurrency/ambiguous-audit, pagination, media archive/restore, multi-batch orphan scan, and performance checks. Capture screenshots and image-processing checks only in the final stage as previously directed.
+2. **Backup and restore:** verify actual Cloudflare Production D1 backup/PITR availability and retention in the dashboard; take a pre-release backup/export and document/verify a restore procedure. No backup/restore was performed in this review.
+3. **Preview media operational check:** confirm the Preview R2 public base and binding operationally, then perform the deferred non-destructive inventory/storage checks. Do not delete or clean up objects without explicit authorization.
+4. **Staff access:** the source currently enforces the one configured authorized email. Any change to the approved shared-account/staff model requires the user's explicit approval.
+5. **V10 provenance:** Git recovery provides a usable historical source baseline, but the external `YR-Proservice-Visual-Blueprint-V10-Verified-Images.zip` could not be uploaded for byte-for-byte comparison. The root README says “Visual Blueprint V8” while the root commit is titled “Initial V10 website commit”; do not claim exact ZIP identity.
+6. **Release approval:** PR #2 must remain Draft/open and unmerged until explicit approval. No Production deployment, Production D1 migration, Production R2 operation, or Production configuration change is authorized by this continuation.
+
+### Scope of this checkpoint
+The two workflow results above are verified against their exact documentation commit SHAs. No tests, screenshots, image processing, migrations, database row changes, R2 mutations, backup changes, staff access changes, PR merge or Production operation was performed in this checkpoint. The current work is source/documentation preparation and Preview build verification only.
