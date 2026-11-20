@@ -1690,3 +1690,10 @@ The two workflow results above are verified against their exact documentation co
 
 - Screenshot workflow attempt [#44675041079](https://github.com/yrproservice/yrproservice/actions/runs/44675041079) reached the screenshot stage but failed before Chromium installation: GitHub's `ubuntu-latest` runner resolved to Ubuntu 26.04, which Playwright 1.56.1 does not support. This was a runner compatibility failure, not a site navigation or rendering failure; no screenshots were captured and no artifact was uploaded.
 - Workflow commit `e0e90d7b8d9b827845cfd5279b92106f977b1ea6` pins the Preview workflow runner to `ubuntu-24.04`, a supported Playwright platform. Re-run screenshot capture and verify the artifact before claiming screenshots are complete.
+
+
+## Read-only Preview request-history schema verifier — 20 November 2026
+
+- Workflow commit `e2333a57318e4b8a74507ff20fedcf3ede498e29` adds `.github/workflows/request-history-preview-schema-check.yml`. It verifies the exact Preview D1 name/UUID and then runs a read-only SELECT check for the request-history table, all seven API-required columns, the `request_id → requests.id` foreign key with `ON DELETE RESTRICT`, and both indexes.
+- The verifier triggers only when its own workflow file changes or via manual dispatch; it never applies SQL or mutates request records. This independently exercises the corrected SQLite identifier quoting without rerunning migration 0004.
+- The workflow's exact-head execution is pending. Production D1 is not a target.
