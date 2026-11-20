@@ -930,6 +930,86 @@ test("CMS media archive is blocked while a saved revision still references the i
 });
 
 
+function makeMediaArchiveDb(referenceType = null) {
+  const calls = [];
+  const batches = [];
+  const db = {
+    calls,
+    batches,
+    prepare(sql) {
+      return {
+        sql, values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          calls.push(this);
+          if (sql.includes("FROM cms_media WHERE id=? AND deleted_at IS NULL")) {
+            return { id: "media-id", storage_provider: "r2", object_key: "cms/original-image.png", public_url: "https://media.example.r2.dev/cms/original-image.png" };
+          }
+          if (sql.includes("SELECT COUNT(*) AS total FROM cms_page_versions")) return { total: referenceType === "page" ? 1 : 0 };
+          if (sql.includes("SELECT COUNT(*) AS total FROM cms_product_versions")) return { total: referenceType === "product" ? 1 : 0 };
+          if (sql.includes("SELECT COUNT(*) AS total FROM cms_site_setting_versions")) return { total: referenceType === "setting" ? 1 : 0 };
+          return { total: 0 };
+        },
+        async all() { calls.push(this); return { results: [] }; },
+      };
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map(() => ({ meta: { changes: 1 } }));
+    },
+  };
+  return db;
+}
+
+test("CMS media archive succeeds, records its audit event, and retains the original R2 object", async () => {
+  const db = makeMediaArchiveDb();
+  let deleteCalls = 0;
+  const response = await archiveCmsMedia({
+    request: new Request("https://yrproservice.test/api/cms/admin/media?id=media-id", {
+      method: "DELETE",
+      headers: { "Cf-Access-Jwt-Assertion": accessToken },
+    }),
+    env: { ...adminConfig, DB: db, CMS_MEDIA: { async delete() { deleteCalls += 1; } } },
+  });
+  const result = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(result.ok, true);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(db.batches.length, 1);
+  assert.match(db.batches[0][0].sql, /UPDATE cms_media SET deleted_at=/);
+  assert.match(db.batches[0][0].sql, /NOT EXISTS \(SELECT 1 FROM cms_page_versions/);
+  assert.match(db.batches[0][0].sql, /NOT EXISTS \(SELECT 1 FROM cms_product_versions/);
+  assert.match(db.batches[0][0].sql, /NOT EXISTS \(SELECT 1 FROM cms_site_setting_versions/);
+  assert.match(db.batches[0][1].sql, /'archive_media'/);
+  assert.equal(deleteCalls, 0);
+});
+
+for (const [referenceType, table] of [
+  ["product", "cms_product_versions"],
+  ["setting", "cms_site_setting_versions"],
+]) {
+  test(`CMS media archive is blocked while a saved ${referenceType} revision references the image`, async () => {
+    const db = makeMediaArchiveDb(referenceType);
+    const response = await archiveCmsMedia({
+      request: new Request("https://yrproservice.test/api/cms/admin/media?id=media-id", {
+        method: "DELETE",
+        headers: { "Cf-Access-Jwt-Assertion": accessToken },
+      }),
+      env: { ...adminConfig, DB: db },
+    });
+    const result = await response.json();
+
+    assert.equal(response.status, 409);
+    assert.match(result.error, /referenced by saved CMS content/i);
+    assert.equal(result.usage.total, 1);
+    assert.equal(result.usage.counts[referenceType === "setting" ? "settings" : "products"], 1);
+    assert.equal(db.batches.length, 0);
+    assert.ok(db.calls.some((call) => call.sql.includes(`FROM ${table}`)));
+  });
+}
+
+
 function makeExistingCmsDraftDb(type, { updateChanges = [1, 1, 1] } = {}) {
   const calls = [];
   const batches = [];
