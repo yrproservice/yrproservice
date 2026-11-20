@@ -1,7 +1,7 @@
 name: CMS Preview Build Check
 
-# Run automated tests and build/deploy verification for the development Preview.
-# Screenshot capture and image processing remain intentionally excluded.
+# Run automated tests, Preview build/deployment verification, and desktop viewport screenshot capture.
+# Image processing remains intentionally excluded.
 on:
   push:
     branches: [cms-development]
