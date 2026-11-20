@@ -1365,3 +1365,10 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 - Source commits: `a2f86df13d23b5fa76218da0382297f3499c063c` (cursor parsing) and `98cb39df013e83a7ae804119a11feff4e31cbce4` (control-character validation).
 - This is a source-reviewed defect correction. Runtime behavior and pagination boundaries remain for the deferred final verification; no tests were run.
 - No D1 schema/migration, customer data, media, R2, staff access, Production, or PR state was changed.
+
+
+### Request pagination cursor Preview build verification — 20 November 2026
+
+- The three exact-source build-only workflows for the request cursor correction completed successfully: [API cursor parsing #44666110325](https://github.com/yrproservice/yrproservice/actions/runs/44666110325), [control-character validation #44666132882](https://github.com/yrproservice/yrproservice/actions/runs/44666132882), and [latest documentation checkpoint #44666144896](https://github.com/yrproservice/yrproservice/actions/runs/44666144896).
+- The latest exact-head run verified locked dependency installation, Vite build, Cloudflare Pages Functions compilation, Preview D1 schema readiness and Preview deployment/asset verification. No test step ran.
+- This confirms build and Preview asset readiness for commit `f42968e7f5283f15d2350070e3d086a80a8b87f7`; it does not verify authenticated request pagination at runtime. No migration was run and Production remains untouched.
