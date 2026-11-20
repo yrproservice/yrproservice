@@ -99,3 +99,15 @@ No code change was made during this review because the inspected source did not 
 - Workflow change commit: `c0c89854c7a8357ab1d0c9db63339c3a7b02ae34`.
 - Exact-head workflow result has not yet been returned by the available commit-run lookup. Do not claim the new workflow has passed until a corresponding GitHub Actions run and its jobs are inspected.
 - Latest PR check at this checkpoint: head `c0c89854c7a8357ab1d0c9db63339c3a7b02ae34`, Open/Draft/unmerged, 1,187 commits ahead of `main`, 0 behind, 104 changed files. GitHub mergeability response is currently false; recheck before any merge attempt.
+
+## Preview operations documentation reconciliation — 20 November 2026
+
+- Reviewed the active `.github/workflows/cms-build-check.yml` against `docs/CMS-PREVIEW-OPERATIONS.md`.
+- Found and corrected stale operational documentation that still described tests and screenshots as deferred, despite the active workflow running `npm test` and capturing desktop screenshots.
+- The operations guide now documents the actual ordered stages: locked install, automated tests, Vite build, Pages Functions build, Preview D1 readiness, Preview-only deploy/asset verification, and 12 viewport screenshot captures (six routes at desktop and mobile sizes).
+- It explicitly distinguishes rendered-page screenshots from source-image processing; no catalogue/source image conversion or manipulation is performed.
+- Documentation correction commit: `c2b6f26516075f5b43216e66d3880cdfc008a0f8`.
+- Latest reviewed PR head before this documentation-only commit was `b0868fdbcf3190b2c4fc5095258de8a02ec047fd`. The PR was Open/Draft/unmerged; comparison reported 1,188 commits ahead and 0 behind, 104 changed files. GitHub mergeability returned true at that check, but no merge was attempted.
+- The available commit-workflow lookup returned no PR-triggered workflow records and combined status lookup returned no status entries for that exact head. These results do not prove that no push-triggered Actions run exists; the available connector lookup is limited and the workflow source has a push trigger. Exact-head CI and artifact status remain unverified.
+- Frontend source review continued across CMSManagement, CMSDashboard, ProductFormEditor, CMS preview pages, and admin dashboard. The reviewed paths include unsaved-change guards, request cancellation/stale-response protection, product image selection constraints, and admin request-history UI. No reproducible source defect was established from this read-only pass, so no speculative application-code patch was made.
+- Current branch head after this checkpoint update: `c2b6f26516075f5b43216e66d3880cdfc008a0f8`.
