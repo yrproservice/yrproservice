@@ -263,7 +263,7 @@ test("multiple authorised devices can use Admin APIs concurrently without a sess
   assert.equal(db.calls.some((call) => call.sql.includes("admin_session_lock")), false);
 });
 
-test("Admin entry, refresh, heartbeat and logout require only the authorised Access identity", async () => {
+test("Admin entry, refresh, heartbeat and workspace exit require only the authorised Access identity", async () => {
   const context = (path, method = "GET") => ({
     request: new Request("https://yrproservice.test" + path, { method, headers: { "Cf-Access-Jwt-Assertion": accessToken } }),
     env: adminConfig,
@@ -277,9 +277,9 @@ test("Admin entry, refresh, heartbeat and logout require only the authorised Acc
   assert.deepEqual(await started.json(), { ok: true, authorized: true });
   const heartbeat = await heartbeatAdminSession(context("/api/admin/session", "PATCH"));
   assert.deepEqual(await heartbeat.json(), { ok: true, authorized: true });
-  const loggedOut = await logoutAdminSession(context("/api/admin/session", "DELETE"));
-  assert.deepEqual(await loggedOut.json(), { ok: true, loggedOut: true });
-  assert.match(loggedOut.headers.get("Set-Cookie"), /Max-Age=0/);
+  const exited = await logoutAdminSession(context("/api/admin/session", "DELETE"));
+  assert.deepEqual(await exited.json(), { ok: true, workspaceClosed: true, accessSessionActive: true });
+  assert.equal(exited.headers.get("Set-Cookie"), null);
   const unauthorized = await startAdminSession({
     request: new Request("https://yrproservice.test/api/admin/session", { method: "POST" }),
     env: adminConfig,
