@@ -207,7 +207,7 @@ export async function onRequestPatch(context) {
     }
     if (Number(historyResults?.[1]?.meta?.changes || 0) !== 1) {
       return adminJson({
-        error: "The request status history could not be recorded. Refresh the request before trying again.",
+        error: "The request status history could not be confirmed. The status may already have changed; refresh the request and inspect its current status before retrying.",
       }, 500);
     }
     const updated = await env.DB.prepare(
