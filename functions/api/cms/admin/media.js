@@ -303,26 +303,26 @@ export async function onRequestPatch(context) {
         if (!object) return adminJson({ error: "The stored image is missing from Preview R2. It cannot be restored." }, 409);
       }
       const restoredAt = new Date().toISOString();
-      const restored = await env.DB.prepare(
-        "UPDATE cms_media SET deleted_at=NULL WHERE id=? AND deleted_at IS NOT NULL"
-      ).bind(id).run();
-      if (restored?.meta?.changes === 0) return adminJson({ error: "This media item is no longer archived." }, 409);
-      let auditRecorded = true;
-      try {
-        await env.DB.prepare(`
+      const restoreResults = await env.DB.batch([
+        env.DB.prepare(
+          "UPDATE cms_media SET deleted_at=NULL WHERE id=? AND deleted_at IS NOT NULL"
+        ).bind(id),
+        env.DB.prepare(`
           INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-          VALUES (?, ?, 'restore_media', 'media', ?, ?)
+          SELECT ?, ?, 'restore_media', 'media', ?, ?
+          WHERE changes() = 1
         `).bind(
-          crypto.randomUUID(),
-          auth.email || null,
-          id,
+          crypto.randomUUID(), auth.email || null, id,
           JSON.stringify({ objectKey: row.object_key, restoredAt })
-        ).run();
-      } catch (auditError) {
-        auditRecorded = false;
-        console.error("CMS media restore audit failed", auditError);
+        ),
+      ]);
+      if (Number(restoreResults?.[0]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "This media item is no longer archived." }, 409);
       }
-      return adminJson({ ok: true, restored: true, auditRecorded });
+      if (Number(restoreResults?.[1]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "The media restore audit record could not be saved. The restore was rolled back." }, 500);
+      }
+      return adminJson({ ok: true, restored: true, auditRecorded: true });
     } catch (error) {
       console.error("CMS media restore failed", error);
       return adminJson({ error: "Unable to restore this media item." }, 500);
@@ -403,14 +403,24 @@ export async function onRequestDelete(context) {
       }, 409);
     }
     const deletedAt = new Date().toISOString();
-    const softDelete = await env.DB.prepare(`
-      UPDATE cms_media SET deleted_at=?
-      WHERE id=? AND deleted_at IS NULL
-        AND NOT EXISTS (SELECT 1 FROM cms_page_versions WHERE instr(content_json, ?) > 0)
-        AND NOT EXISTS (SELECT 1 FROM cms_product_versions WHERE instr(product_json, ?) > 0)
-        AND NOT EXISTS (SELECT 1 FROM cms_site_setting_versions WHERE instr(value_json, ?) > 0)
-    `).bind(deletedAt, id, row.public_url, row.public_url, row.public_url).run();
-    if (Number(softDelete?.meta?.changes || 0) !== 1) {
+    const archiveResults = await env.DB.batch([
+      env.DB.prepare(`
+        UPDATE cms_media SET deleted_at=?
+        WHERE id=? AND deleted_at IS NULL
+          AND NOT EXISTS (SELECT 1 FROM cms_page_versions WHERE instr(content_json, ?) > 0)
+          AND NOT EXISTS (SELECT 1 FROM cms_product_versions WHERE instr(product_json, ?) > 0)
+          AND NOT EXISTS (SELECT 1 FROM cms_site_setting_versions WHERE instr(value_json, ?) > 0)
+      `).bind(deletedAt, id, row.public_url, row.public_url, row.public_url),
+      env.DB.prepare(`
+        INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
+        SELECT ?, ?, 'archive_media', 'media', ?, ?
+        WHERE changes() = 1
+      `).bind(
+        crypto.randomUUID(), auth.email || null, id,
+        JSON.stringify({ storageProvider: row.storage_provider, objectKey: row.object_key, publicUrl: row.public_url, archivedAt: deletedAt })
+      ),
+    ]);
+    if (Number(archiveResults?.[0]?.meta?.changes || 0) !== 1) {
       const latestUsage = await getMediaUsage(env.DB, row);
       if (latestUsage.total > 0) {
         return adminJson({
@@ -420,24 +430,12 @@ export async function onRequestDelete(context) {
       }
       return adminJson({ error: "This media item has already been removed or changed." }, 409);
     }
-    let auditRecorded = true;
-    try {
-      await env.DB.prepare(`
-        INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-        VALUES (?, ?, 'archive_media', 'media', ?, ?)
-      `).bind(
-        crypto.randomUUID(),
-        auth.email || null,
-        id,
-        JSON.stringify({ storageProvider: row.storage_provider, objectKey: row.object_key, publicUrl: row.public_url, archivedAt: deletedAt })
-      ).run();
-    } catch (auditError) {
-      auditRecorded = false;
-      console.error("CMS media archive audit failed", auditError);
+    if (Number(archiveResults?.[1]?.meta?.changes || 0) !== 1) {
+      return adminJson({ error: "The media archive audit record could not be saved. The archive was rolled back." }, 500);
     }
     // Keep the R2 object during the recovery window. The database record is
     // hidden from the active library but can be restored without re-uploading.
-    return adminJson({ ok: true, auditRecorded });
+    return adminJson({ ok: true, auditRecorded: true });
   } catch (error) {
     console.error("CMS media delete failed", error);
     return adminJson({ error: "Unable to remove this media item." }, 500);
