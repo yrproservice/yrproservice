@@ -129,10 +129,13 @@ export async function onRequestPost(context) {
       if (Number(results?.[0]?.meta?.changes || 0) !== 1) {
         return adminJson({ error: "This product draft changed in another session. Reload it before saving again." }, 409);
       }
+      if (Number(results?.[1]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "The product record update could not be confirmed. Reload the product and inspect its draft before retrying." }, 500);
+      }
       if (Number(results?.[2]?.meta?.changes || 0) !== 1) {
         return adminJson({ error: "The product draft audit record could not be confirmed. Reload the product before retrying; the draft update may have been applied." }, 500);
       }
-      return adminJson({ ok: true, productId: row.id, draftId: draft.id, draftCreatedAt: now, version: draft.version_number });
+      return adminJson({ ok: true, auditRecorded: true, productId: row.id, draftId: draft.id, draftCreatedAt: now, version: draft.version_number });
     }
     const latest = await env.DB.prepare("SELECT COALESCE(MAX(version_number), 0) AS version FROM cms_product_versions WHERE product_id = ?").bind(row.id).first();
     const version = Number(latest?.version || 0) + 1;
