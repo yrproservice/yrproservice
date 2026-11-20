@@ -1014,3 +1014,35 @@ No source change was justified in this pass. The main unresolved decision is the
 - Source review only; no CMS content was created, modified or published.
 - No code change, migration, automated test, screenshot, image processing or Production operation was performed.
 - Remaining release work includes frontend-to-public-CMS integration verification, authoritative product catalogue reconciliation, live Preview binding verification, and final-stage tests and visual/image checks after the user's deferred phase is authorized.
+
+
+## Frontend-to-public-CMS integration trace — 20 November 2026
+
+### Confirmed consumer paths
+
+- Homepage requests the published `home` page and renders it through `HomeCmsRenderer`; it retains the built-in homepage when the CMS request is unavailable. Its featured product sections use `loadPublishedCatalogue()`.
+- Product listing and related-product sections use `loadPublishedCatalogue()`, which calls `/api/cms/public/products`. Published records override matching static catalogue records; new published slugs are appended; archived slugs are removed from the fallback list.
+- Product detail routing resolves the slug, requests `/api/cms/public/products?slug=...`, merges a published product with the matching static catalogue record, and renders the product detail page. A published CMS-only slug can be resolved even when it is not in the static catalogue. A 410/archived response hides the detail route.
+- Services and Team request their respective published page keys and use the CMS-specific renderer only when the expected `services-page` or `team-page` section is present; otherwise they retain their built-in templates.
+- Site navigation and footer request their published settings keys. The header also reads the published Services page to populate service links, retaining built-in links if the CMS response is unavailable.
+- Non-built-in CMS routes are resolved by the main router through the public page route lookup and rendered by `GenericCmsRenderer`.
+
+### Integration behavior and limitations
+
+- These consumers use `cache: "no-store"` on the browser request, but the public API response still carries shared-cache headers (60 seconds plus stale-while-revalidate). Browser cache bypass therefore does not guarantee immediate global publication visibility.
+- Several consumers intentionally fall back to static content when the API is unavailable. This preserves public availability but can make a CMS publishing or API failure appear as old catalogue/page content rather than an explicit error. Preview/release operators should distinguish fallback content from a confirmed CMS-published response.
+- The product detail route starts from the static catalogue record when available and merges the published CMS data. This preserves existing product image/catalogue metadata, but means a missing CMS record for a known static product does not automatically make that product unavailable. Explicit archived/410 responses are handled separately.
+- The product listing merges CMS data with the static catalogue rather than becoming a CMS-only catalogue. New published products are appended; existing static entries remain unless their slug is explicitly reported as archived. Product owners should understand this hybrid model before treating the CMS catalogue as a complete replacement.
+- Services and Team page CMS updates are gated by the presence of their page-specific section type. A valid generic page revision without that expected section will leave the built-in page visible.
+- Source tracing confirms the principal public frontend consumers, but does not prove live Preview API responses, content correctness, browser behavior or visual parity. Those remain Preview verification and final test/visual stages.
+
+### Follow-up controls
+
+- During Preview release review, compare at least one known static product, one CMS-only product, one archived product, one Services revision, one Team revision, homepage and navigation/footer settings against their published API payloads.
+- Confirm cache behavior after publication and record the expected propagation window before declaring a content change missing.
+- Preserve fallback behavior unless the product owner approves an explicit CMS-unavailable state; do not silently remove the built-in catalogue or page templates as part of this review.
+
+### Status
+
+- Frontend integration was source-traced only; no runtime tests or Preview content changes were performed.
+- No code changes, migrations, screenshots, image processing or Production operations were performed.
