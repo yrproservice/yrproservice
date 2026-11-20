@@ -1,3 +1,5 @@
+# YR Proservice CMS — Release Readiness Audit
+
 ## Latest source and Preview build checkpoint — 20 November 2026
 
 The latest source-review continuation made focused integrity changes without running tests, screenshots or image processing:
