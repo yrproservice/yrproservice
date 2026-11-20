@@ -94,7 +94,7 @@ export async function onRequestPost(context) {
       if (expectedDraftId || expectedDraftCreatedAt) return adminJson({ error: "The product changed or was removed. Reload the product list before saving." }, 409);
       const id = crypto.randomUUID();
       const versionId = crypto.randomUUID();
-      await env.DB.batch([
+      const results = await env.DB.batch([
         env.DB.prepare("INSERT INTO cms_products (id, product_slug, updated_at) VALUES (?, ?, ?)").bind(id, slug, now),
         env.DB.prepare(
           "INSERT INTO cms_product_versions (id, product_id, version_number, state, product_json, created_by, change_note, created_at) VALUES (?, ?, 1, 'draft', ?, ?, 'Initial product draft', ?)"
@@ -103,7 +103,13 @@ export async function onRequestPost(context) {
           "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, ?, 'create_draft', 'product', ?, ?)"
         ).bind(crypto.randomUUID(), actor, id, JSON.stringify({ slug }))
       ]);
-      return adminJson({ ok: true, productId: id, draftId: versionId, draftCreatedAt: now, version: 1 }, 201);
+      if (Number(results?.[0]?.meta?.changes || 0) !== 1 || Number(results?.[1]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "The new product record or draft could not be confirmed. Reload the product list and inspect the item before retrying." }, 500);
+      }
+      if (Number(results?.[2]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "The new product and draft may have been created, but the audit record could not be confirmed. Reload the product list and inspect the item before retrying." }, 500);
+      }
+      return adminJson({ ok: true, auditRecorded: true, productId: id, draftId: versionId, draftCreatedAt: now, version: 1 }, 201);
     }
 
     const draft = await env.DB.prepare("SELECT id, version_number, created_at, product_json FROM cms_product_versions WHERE product_id = ? AND state = 'draft' LIMIT 1").bind(row.id).first();
