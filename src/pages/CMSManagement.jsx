@@ -88,6 +88,10 @@ export default function CMSManagement() {
   const historyRequestId = useRef(0);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyFailed, setHistoryFailed] = useState(false);
+  const [historyCursor, setHistoryCursor] = useState("");
+  const [historyCursorStack, setHistoryCursorStack] = useState([]);
+  const [historyNextCursor, setHistoryNextCursor] = useState("");
+  const [historyHasMore, setHistoryHasMore] = useState(false);
   const [media, setMedia] = useState([]);
   const [mediaReady, setMediaReady] = useState(false);
   const [mediaLoading, setMediaLoading] = useState(false);
@@ -523,19 +527,25 @@ export default function CMSManagement() {
       setBusy(false);
     }
   }
-  async function loadHistory(type, key) {
+  async function loadHistory(type, key, cursor = "", preserveStack = false) {
     const requestId = ++historyRequestId.current;
+    setHistoryType(type);
+    setHistoryKey(key);
+    if (!preserveStack) setHistoryCursorStack([]);
+    setHistoryCursor(cursor);
     setHistory([]);
     setHistoryLoaded(false);
     setHistoryFailed(false);
     setHistoryLoading(true);
     setError("");
     try {
-      const data = await api(
-        `/api/cms/admin/history?entityType=${type}&entityKey=${encodeURIComponent(key)}`
-      );
+      const params = new URLSearchParams({ entityType: type, entityKey: key });
+      if (cursor) params.set("cursor", cursor);
+      const data = await api(`/api/cms/admin/history?${params.toString()}`);
       if (requestId !== historyRequestId.current) return;
       setHistory(data.history || []);
+      setHistoryHasMore(Boolean(data.hasMore));
+      setHistoryNextCursor(data.nextCursor || "");
       setHistoryLoaded(true);
     } catch (loadError) {
       if (requestId !== historyRequestId.current) return;
@@ -547,6 +557,19 @@ export default function CMSManagement() {
       }
     }
   }
+  async function nextHistoryPage() {
+    if (!historyNextCursor || historyLoading || !historyKey) return;
+    setHistoryCursorStack((stack) => [...stack, historyCursor]);
+    await loadHistory(historyType, historyKey, historyNextCursor, true);
+  }
+
+  async function previousHistoryPage() {
+    if (!historyCursorStack.length || historyLoading || !historyKey) return;
+    const previous = historyCursorStack[historyCursorStack.length - 1] || "";
+    setHistoryCursorStack((stack) => stack.slice(0, -1));
+    await loadHistory(historyType, historyKey, previous, true);
+  }
+
   async function restoreRevision(type, key, id) {
     if (busy) return;
     if (type === "product" && !productsReady) {
@@ -2299,7 +2322,7 @@ export default function CMSManagement() {
     {tab === "history" && (
       <section className="cms-manager-panel">
         <h2>Revision history</h2>
-        <p>Select an existing page, product or site setting to inspect its latest 100 revisions.</p>
+        <p>Select an existing page, product or site setting to inspect its revisions in pages of 100.</p>
         <div className="cms-history-picker">
           <label>
             Content type
@@ -2352,6 +2375,15 @@ export default function CMSManagement() {
           onRestore={(id) => restoreRevision(historyType, historyKey, id)}
           onDeleteDraft={(id) => deleteDraft(historyType, historyKey, id)}
         />
+        {historyLoaded && (historyHasMore || historyCursorStack.length > 0) && (
+          <RevisionPagination
+            page={historyCursorStack.length + 1}
+            hasMore={historyHasMore}
+            loading={historyLoading}
+            onPrevious={previousHistoryPage}
+            onNext={nextHistoryPage}
+          />
+        )}
         {historyLoading && (
           <p className="cms-history-empty" role="status" aria-live="polite">Loading revision history…</p>
         )}
@@ -2423,6 +2455,16 @@ export default function CMSManagement() {
     )}
   </div></section>;
 }
+function RevisionPagination({ page, hasMore, loading, onPrevious, onNext }) {
+  return (
+    <div className="admin-pagination" aria-label="Revision history pages">
+      <button type="button" className="admin-secondary-button" onClick={onPrevious} disabled={loading || page <= 1}>Previous</button>
+      <span>Page {page}{hasMore ? " · More revisions available" : " · End of history"}</span>
+      <button type="button" className="admin-secondary-button" onClick={onNext} disabled={loading || !hasMore}>Next</button>
+    </div>
+  );
+}
+
 function RevisionList({ history, onRestore, onDeleteDraft, busy = false }) {
   return (
     <div className="cms-revision-list">
