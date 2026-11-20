@@ -136,6 +136,9 @@ export async function onRequestPost(context) {
       if (Number(results?.[0]?.meta?.changes || 0) !== 1) {
         return adminJson({ error: "This page draft changed in another session. Reload it before saving again." }, 409);
       }
+      if (Number(results?.[2]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "The page draft audit record could not be saved. The update was rolled back." }, 500);
+      }
       return adminJson({ ok: true, pageId: page.id, draftId: draft.id, draftCreatedAt: now, version: draft.version_number });
     }
 
