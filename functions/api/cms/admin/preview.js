@@ -24,7 +24,7 @@ export async function onRequestGet(context) {
     if (!contentJson) return adminJson({ error: "This page has no saved content yet." }, 404);
     return adminJson({ ok: true, page: {
       pageKey: row.page_key, title: row.title, route: row.route,
-      draftId: row.draft_id, draftVersion: row.draft_version,
+      draftId: row.draft_id, draftCreatedAt: row.draft_created_at, draftVersion: row.draft_version,
       publishedVersion: row.published_version, isDraft: Boolean(row.draft_content),
       content: JSON.parse(contentJson)
     }});
