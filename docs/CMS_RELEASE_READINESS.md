@@ -1356,3 +1356,12 @@ Treat commit `6aa40bc24e02b6f8dc42e77580459d85df69ad2e` as the **Git-recovered h
 - Source commits: API `2335fcca4a58e4d8729bd0f6f33921ac0fbe6bd0`; dashboard `0033c16da73ec7243d72ce9e7908a36bc5236a30`.
 - This is a source-reviewed correction only. Runtime behavior and query performance must be included in the deferred final verification; no tests were run in this phase.
 - No screenshots, image processing, migration execution, Production operations, PR merge or access-policy changes were performed.
+
+
+## Request pagination cursor runtime guard — 20 November 2026
+
+- Source review of the request dashboard pagination path found that the GET handler referenced `cursor` without declaring or parsing it. The first request-list load could therefore fail before returning any rows; subsequent-page requests also had no malformed-cursor validation.
+- Added explicit optional cursor parsing from the request URL, bounded input length, JSON/object shape validation, timestamp validation, and request-ID length/control-character validation. The existing keyset pagination predicate, stable ordering, 50-row page size, filters, and aggregate status-count behavior remain unchanged.
+- Source commits: `a2f86df13d23b5fa76218da0382297f3499c063c` (cursor parsing) and `98cb39df013e83a7ae804119a11feff4e31cbce4` (control-character validation).
+- This is a source-reviewed defect correction. Runtime behavior and pagination boundaries remain for the deferred final verification; no tests were run.
+- No D1 schema/migration, customer data, media, R2, staff access, Production, or PR state was changed.
