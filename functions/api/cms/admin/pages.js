@@ -142,10 +142,13 @@ export async function onRequestPost(context) {
       if (Number(results?.[0]?.meta?.changes || 0) !== 1) {
         return adminJson({ error: "This page draft changed in another session. Reload it before saving again." }, 409);
       }
+      if (Number(results?.[1]?.meta?.changes || 0) !== 1) {
+        return adminJson({ error: "The page record metadata update could not be confirmed. Reload the page and inspect its draft and route before retrying." }, 500);
+      }
       if (Number(results?.[2]?.meta?.changes || 0) !== 1) {
         return adminJson({ error: "The page draft audit record could not be confirmed. Reload the page before retrying; the draft update may have been applied." }, 500);
       }
-      return adminJson({ ok: true, pageId: page.id, draftId: draft.id, draftCreatedAt: now, version: draft.version_number });
+      return adminJson({ ok: true, auditRecorded: true, pageId: page.id, draftId: draft.id, draftCreatedAt: now, version: draft.version_number });
     }
 
     const latest = await env.DB.prepare("SELECT COALESCE(MAX(version_number), 0) AS version FROM cms_page_versions WHERE page_id = ?")
