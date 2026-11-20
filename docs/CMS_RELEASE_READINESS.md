@@ -20,7 +20,7 @@ Exact-commit build/Preview verification:
 
 ### Current branch and release gates
 
-- `cms-development` is 982 commits ahead of `main`, 0 behind, with 98 changed files. The full history and complete PR diff must be reviewed before any merge decision.
+- At this audit checkpoint, `cms-development` was 985 commits ahead of `main`, 0 behind, with 98 changed files. The full history and complete PR diff must be reviewed before any merge decision.
 - PR #2 remains Open, Draft and unmerged. No merge, Production migration or Production deployment is authorized.
 - Authenticated CMS runtime workflows, concurrency behaviour, visual inspection, screenshots, image processing and final regression/security/accessibility verification remain deferred.
 - The Admin auth implementation is Cloudflare Access JWT verification for one authorized account; it does not enforce a server-side single-device session lock. Do not claim that capability until the intended session policy is clarified and implemented.
