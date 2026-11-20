@@ -782,6 +782,7 @@ test("CMS media restore reactivates an existing R2 object and records the audit 
 
 
 import { onRequestDelete as archiveCmsMedia } from "../functions/api/cms/admin/media.js";
+import { onRequestPost as uploadCmsMedia } from "../functions/api/cms/admin/media.js";
 
 function makeRevisionRestoreDb(entityType) {
   const calls = [];
@@ -1352,4 +1353,49 @@ test("CMS settings save rejects a draft changed after the editor snapshot was lo
   assert.match(db.batches[0][1].sql, /WHERE id=\? AND setting_key=\? AND state='draft'/);
   assert.match(db.batches[0][2].sql, /WHERE changes\(\) = \?/);
   assert.equal(db.batches[0][2].values.at(-1), 1);
+});
+
+
+test("CMS media upload preserves its R2 object when the D1 batch outcome is ambiguous", async () => {
+  const bytes = new Uint8Array(24);
+  bytes.set([137, 80, 78, 71, 13, 10, 26, 10], 0);
+  bytes.set([0, 0, 0, 13, 73, 72, 68, 82], 8);
+  bytes.set([0, 0, 0, 1, 0, 0, 0, 1], 16);
+  const form = new FormData();
+  form.set("file", new Blob([bytes], { type: "image/png" }), "test-image.png");
+  form.set("altText", "Test image");
+  let putCalls = 0;
+  let deleteCalls = 0;
+  const db = {
+    prepare(sql) {
+      return { sql, bind(...values) { this.values = values; return this; } };
+    },
+    async batch() {
+      throw new Error("Simulated transport interruption after D1 batch submission");
+    },
+  };
+  const response = await uploadCmsMedia({
+    request: new Request("https://yrproservice.test/api/cms/admin/media", {
+      method: "POST",
+      headers: { "Cf-Access-Jwt-Assertion": accessToken },
+      body: form,
+    }),
+    env: {
+      ...adminConfig,
+      DB: db,
+      CMS_MEDIA_PUBLIC_BASE: "https://media.example.r2.dev",
+      CMS_MEDIA: {
+        async put() { putCalls += 1; },
+        async delete() { deleteCalls += 1; },
+      },
+    },
+  });
+  const result = await response.json();
+
+  assert.equal(response.status, 500);
+  assert.equal(result.outcome, "ambiguous");
+  assert.match(result.error, /retained to avoid breaking/i);
+  assert.ok(result.mediaId);
+  assert.equal(putCalls, 1);
+  assert.equal(deleteCalls, 0);
 });
