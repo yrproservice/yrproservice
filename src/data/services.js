@@ -69,7 +69,7 @@ export const services = [
     text: "Scheduled maintenance to identify wear, operating issues and service requirements before they become larger problems.",
     points: [
       "Routine inspection",
-      "Cleaning and adjustment",
+      "Cleaning & adjustment",
       "Maintenance records",
     ],
     detail:
@@ -92,7 +92,7 @@ export const services = [
   {
     slug: "repair-technical-support",
     number: "08",
-    title: "Repair and Technical Support",
+    title: "Repair & Technical Support",
     icon: "⚙",
     text: "Technical troubleshooting, repair coordination and practical support for dental equipment issues.",
     points: ["Fault diagnosis", "Repair support", "Technical troubleshooting"],
