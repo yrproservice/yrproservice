@@ -886,3 +886,12 @@ No source change was justified in this pass. The main unresolved decision is the
 
 - No source change or migration was justified in this pass. The concrete follow-up items are: decide whether request status changes require durable audit history; monitor failed best-effort R2 cleanup through the read-only orphan scan; and retain the current published-only public API boundary.
 - This was source inspection only. No tests, screenshots, image processing, builds, migrations, Preview deployments, or Production operations were performed. PR #2 remains Open, Draft and unmerged.
+
+
+## Exact-commit Preview build verification — 20 November 2026
+
+- Source/documentation checkpoint commit: `2633b9b8ce3b5a109ad30b6f02824bb028d91068`.
+- GitHub Actions [run #44657386917](https://github.com/yrproservice/yrproservice/actions/runs/44657386917) completed successfully for that exact commit.
+- Locked dependency installation, Vite website build, Cloudflare Pages Functions build, Preview D1 schema-readiness verification, and the workflow's Preview deployment/asset-verification step all completed successfully.
+- This was the build-only workflow. No automated tests, screenshots, image processing, or database migrations were run. The workflow result is not approval to merge PR #2 or release Production.
+- PR #2 remains Open and Draft; Production remains untouched.
