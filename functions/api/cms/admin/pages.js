@@ -226,6 +226,7 @@ export async function onRequestPost(context) {
   const content = JSON.stringify(body.content);
   const now = new Date().toISOString();
   const actor = auth.email || null;
+  let conflictSnapshot = null;
 
   try {
     let page = await env.DB.prepare("SELECT id, published_version_id FROM cms_pages WHERE page_key = ? LIMIT 1")
@@ -267,6 +268,13 @@ export async function onRequestPost(context) {
 
     const draft = await env.DB.prepare("SELECT id, version_number, created_at, content_json FROM cms_page_versions WHERE page_id = ? AND state = 'draft' LIMIT 1")
       .bind(page.id).first();
+    conflictSnapshot = {
+      pageKey,
+      pageId: page.id,
+      publishedVersionId: page.published_version_id || null,
+      expectedDraftId,
+      expectedDraftCreatedAt,
+    };
     if ((draft?.id || null) !== expectedDraftId || (draft?.created_at || null) !== expectedDraftCreatedAt) {
       return adminJson({ error: "This page draft changed in another session. Reload it before saving again." }, 409);
     }
@@ -397,6 +405,32 @@ export async function onRequestPost(context) {
     return adminJson({ ok: true, pageId: page.id, draftId: versionId, draftCreatedAt: now, version, resolvedRecoveryIds }, 201);
   } catch (error) {
     console.error("CMS page draft save failed", error);
+    if (
+      conflictSnapshot &&
+      typeof error?.message === "string" &&
+      /NOT NULL constraint failed:\\s*cms_audit_log\\.action/i.test(error.message)
+    ) {
+      try {
+        const latestPage = await env.DB.prepare(
+          "SELECT id, published_version_id FROM cms_pages WHERE page_key = ? LIMIT 1"
+        ).bind(conflictSnapshot.pageKey).first();
+        const latestDraft = latestPage
+          ? await env.DB.prepare(
+              "SELECT id, created_at FROM cms_page_versions WHERE page_id = ? AND state = 'draft' LIMIT 1"
+            ).bind(latestPage.id).first()
+          : null;
+        if (
+          (latestPage?.id || null) !== conflictSnapshot.pageId ||
+          (latestPage?.published_version_id || null) !== conflictSnapshot.publishedVersionId ||
+          (latestDraft?.id || null) !== conflictSnapshot.expectedDraftId ||
+          (latestDraft?.created_at || null) !== conflictSnapshot.expectedDraftCreatedAt
+        ) {
+          return adminJson({ error: "This page changed in another session. Nothing from this save was committed; reload the page before trying again." }, 409);
+        }
+      } catch (verificationError) {
+        console.error("CMS page save conflict verification failed", verificationError);
+      }
+    }
     return adminJson({ error: "Unable to save page draft. Check that the CMS migration is applied and the page key/route are unique." }, 500);
   }
 }
