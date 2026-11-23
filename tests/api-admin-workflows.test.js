@@ -1868,3 +1868,97 @@ test("CMS settings save rolls back draft replacement and metadata when the audit
     db.close();
   }
 });
+
+
+function seedSettingsRevisionSQLite(db) {
+  db.sqlite.prepare(
+    "INSERT INTO cms_site_settings (setting_key, updated_at) VALUES (?, ?)"
+  ).run("site.navigation", "2026-11-20T07:00:00.000Z");
+  const insert = db.sqlite.prepare(
+    "INSERT INTO cms_site_setting_versions (id, setting_key, version_number, state, value_json, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+  );
+  insert.run(
+    "settings-archived-revision", "site.navigation", 1, "archived",
+    JSON.stringify({ items: [{ label: "Products", url: "/products" }] }),
+    "2026-11-19T07:00:00.000Z"
+  );
+  insert.run(
+    "settings-current-draft", "site.navigation", 2, "draft",
+    JSON.stringify({ items: [{ label: "Services", url: "/services" }] }),
+    "2026-11-20T07:00:00.000Z"
+  );
+}
+
+function restoreSettingsRevisionSQLiteContext(db) {
+  return adminContext(
+    "/api/cms/admin/history",
+    {
+      entityType: "setting",
+      entityKey: "site.navigation",
+      versionId: "settings-archived-revision",
+      expectedDraftId: "settings-current-draft",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
+    },
+    { ...adminConfig, DB: db },
+  );
+}
+
+test("CMS settings revision restore rejects a concurrent draft timestamp change in real SQLite", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedSettingsRevisionSQLite(db);
+    db.beforeBatch = (sqlite) => {
+      sqlite.prepare("UPDATE cms_site_setting_versions SET created_at = ? WHERE id = ?")
+        .run("2026-11-21T07:00:00.000Z", "settings-current-draft");
+    };
+
+    const response = await restoreCmsRevision(restoreSettingsRevisionSQLiteContext(db));
+    const result = await response.json();
+
+    assert.equal(response.status, 409);
+    assert.match(result.error, /changed in another session/i);
+    const versions = db.sqlite.prepare(
+      "SELECT id, state, created_at FROM cms_site_setting_versions WHERE setting_key = ? ORDER BY version_number"
+    ).all("site.navigation").map((row) => ({ ...row }));
+    assert.deepEqual(versions, [
+      { id: "settings-archived-revision", state: "archived", created_at: "2026-11-19T07:00:00.000Z" },
+      { id: "settings-current-draft", state: "draft", created_at: "2026-11-21T07:00:00.000Z" },
+    ]);
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally {
+    db.close();
+  }
+});
+
+test("CMS settings revision restore rolls back the draft archive and replacement when its audit insert fails", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedSettingsRevisionSQLite(db);
+    db.beforeBatch = (sqlite) => {
+      sqlite.exec(`
+        CREATE TRIGGER fail_settings_revision_audit
+        BEFORE INSERT ON cms_audit_log
+        WHEN NEW.action = 'restore_revision_as_draft'
+        BEGIN
+          SELECT RAISE(ABORT, 'simulated revision audit storage failure');
+        END;
+      `);
+    };
+
+    const response = await restoreCmsRevision(restoreSettingsRevisionSQLiteContext(db));
+    const result = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.match(result.error, /Unable to restore this revision as a draft/i);
+    const versions = db.sqlite.prepare(
+      "SELECT id, state, created_at FROM cms_site_setting_versions WHERE setting_key = ? ORDER BY version_number"
+    ).all("site.navigation").map((row) => ({ ...row }));
+    assert.deepEqual(versions, [
+      { id: "settings-archived-revision", state: "archived", created_at: "2026-11-19T07:00:00.000Z" },
+      { id: "settings-current-draft", state: "draft", created_at: "2026-11-20T07:00:00.000Z" },
+    ]);
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally {
+    db.close();
+  }
+});
