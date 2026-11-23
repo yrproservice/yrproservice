@@ -19,7 +19,7 @@ if (!documentResponse.ok) {
     if (actual !== expected) fail("Expected " + name + ": " + expected + "; received " + (actual || "(missing)") + ".");
     else console.log("Verified document header:", name, actual);
   }
-  const permissions = (documentResponse.headers.get("permissions-policy") || "").toLowerCase().replace(/\\s+/g, "");
+  const permissions = (documentResponse.headers.get("permissions-policy") || "").toLowerCase().replace(/\s+/g, "");
   for (const feature of ["camera=()", "microphone=()", "geolocation=()"]) {
     if (!permissions.split(",").includes(feature)) fail("Permissions-Policy is missing " + feature + ".");
     else console.log("Verified Permissions-Policy:", feature);
@@ -44,7 +44,7 @@ for (const [path, label] of protectedRoutes) {
   const location = response.headers.get("location") || "";
   const accessLoginRedirect =
     [301, 302, 303, 307, 308].includes(response.status) &&
-    (/cloudflareaccess\\.com/i.test(location) || /\\/cdn-cgi\\/access\\/login/i.test(location));
+    (/cloudflareaccess\.com/i.test(location) || /\/cdn-cgi\/access\/login/i.test(location));
   if (!accessLoginRedirect) {
     fail(label + " is not demonstrably behind Cloudflare Access: HTTP " + response.status + (location ? ", Location " + location : ", no login redirect") + ".");
   } else {
