@@ -54,6 +54,7 @@ test.after(() => { globalThis.fetch = originalFetch; });
 
 function makeSQLiteD1() {
   const sqlite = new DatabaseSync(":memory:");
+  let afterDraftRead = null;
   for (const migration of [
     "../migrations/0002_create_cms.sql",
     "../migrations/0003_page_metadata_versions.sql",
@@ -68,7 +69,15 @@ function makeSQLiteD1() {
         sql,
         values: [],
         bind(...values) { this.values = values; return this; },
-        async first() { return sqlite.prepare(sql).get(...this.values) ?? null; },
+        async first() {
+          const row = sqlite.prepare(sql).get(...this.values) ?? null;
+          if (afterDraftRead && /FROM cms_page_versions/i.test(sql) && /state = 'draft'/i.test(sql)) {
+            const hook = afterDraftRead;
+            afterDraftRead = null;
+            hook(sqlite);
+          }
+          return row;
+        },
         async all() { return { results: sqlite.prepare(sql).all(...this.values) }; },
         async run() {
           const result = sqlite.prepare(sql).run(...this.values);
@@ -76,6 +85,7 @@ function makeSQLiteD1() {
         },
       };
     },
+    setAfterDraftRead(hook) { afterDraftRead = hook; },
     async batch(statements) {
       sqlite.exec("BEGIN");
       try {
@@ -267,6 +277,57 @@ test("discard rolls back the recovery status and payload when its audit insert f
       entryId: "recovery-id",
     }));
     assert.equal(response.status, 500);
+    const row = db.sqlite.prepare(
+      "SELECT status, section_json, resolved_at FROM cms_page_section_recovery WHERE id = ?"
+    ).get("recovery-id");
+    assert.equal(row.status, "active");
+    assert.equal(row.section_json, JSON.stringify(originalSection));
+    assert.equal(row.resolved_at, null);
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally { db.close(); }
+});
+
+
+test("section recovery remove rejects a draft changed after the editor snapshot was read", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedPage(db);
+    db.setAfterDraftRead((sqlite) => {
+      sqlite.prepare("UPDATE cms_page_versions SET created_at = ? WHERE id = ?")
+        .run("2026-11-23T07:05:00.000Z", "draft-id");
+    });
+    const response = await updateSectionRecovery(context(db, {
+      action: "remove",
+      entryId: "recovery-stale-draft",
+      originalIndex: 1,
+      section: originalSection,
+    }));
+    assert.equal(response.status, 409);
+    assert.match((await response.json()).error, /draft changed/i);
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_page_section_recovery").get().total, 0);
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+    assert.equal(
+      db.sqlite.prepare("SELECT created_at FROM cms_page_versions WHERE id = ?").get("draft-id").created_at,
+      "2026-11-23T07:05:00.000Z",
+    );
+  } finally { db.close(); }
+});
+
+test("section recovery discard rejects a draft changed after the editor snapshot was read", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedPage(db, { sections: [{ id: "section-hero", type: "hero" }] });
+    seedRecoveryEntry(db);
+    db.setAfterDraftRead((sqlite) => {
+      sqlite.prepare("UPDATE cms_page_versions SET created_at = ? WHERE id = ?")
+        .run("2026-11-23T07:05:00.000Z", "draft-id");
+    });
+    const response = await updateSectionRecovery(context(db, {
+      action: "discard",
+      entryId: "recovery-id",
+    }));
+    assert.equal(response.status, 409);
+    assert.match((await response.json()).error, /draft changed/i);
     const row = db.sqlite.prepare(
       "SELECT status, section_json, resolved_at FROM cms_page_section_recovery WHERE id = ?"
     ).get("recovery-id");
