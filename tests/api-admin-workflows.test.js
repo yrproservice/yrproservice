@@ -2095,7 +2095,7 @@ test("CMS product draft save rejects a concurrent timestamp change in real SQLit
     ).get("current-product-draft");
     assert.equal(draft.state, "draft");
     assert.equal(draft.created_at, "2026-11-21T07:00:00.000Z");
-    assert.equal(JSON.parse(draft.product_json).name, "Chair model");
+    assert.equal(JSON.parse(draft.product_json).name, "Current draft");
     assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
   } finally { db.close(); }
 });
@@ -2121,7 +2121,7 @@ test("CMS product draft save rolls back its data and metadata when the audit ins
     ).get("current-product-draft");
     assert.equal(draft.state, "draft");
     assert.equal(draft.created_at, "2026-11-20T07:00:00.000Z");
-    assert.equal(JSON.parse(draft.product_json).name, "Chair model");
+    assert.equal(JSON.parse(draft.product_json).name, "Current draft");
     assert.equal(
       db.sqlite.prepare("SELECT updated_at FROM cms_products WHERE id = ?").get("product-id").updated_at,
       originalProduct,
