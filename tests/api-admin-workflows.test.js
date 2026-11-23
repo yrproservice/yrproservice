@@ -1177,7 +1177,7 @@ test("CMS page save updates the existing draft snapshot and records an audit eve
   assert.equal(db.batches.length, 1);
   assert.equal(db.batches[0].length, 3);
   assert.match(db.batches[0][0].sql, /content_json = \?/);
-  assert.match(db.batches[0][2].sql, /'update_draft', 'page'/);
+  assert.match(db.batches[0][2].sql, /THEN 'update_draft' END, 'page'/);
 });
 
 test("CMS product save updates the existing draft snapshot and records an audit event", async () => {
