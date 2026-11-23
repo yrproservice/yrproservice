@@ -318,6 +318,8 @@ for (const entityType of ["page", "product", "setting"]) {
       assert.equal(batch[2].values[0], "draft-version");
     }
     assert.ok(batch[3].sql.includes("INSERT INTO cms_audit_log"));
+    assert.match(batch[2].sql, /state = 'archived'/);
+    assert.match(batch[3].sql, /CASE WHEN changes\(\) = 1 THEN 'publish' END/);
     assert.equal(batch[3].values[2], entityType);
     assert.deepEqual(JSON.parse(batch[3].values[4]), { version: 4 });
   });
@@ -778,7 +780,7 @@ test("CMS media restore reactivates an existing R2 object and records the audit 
   assert.equal(db.batches.length, 1);
   assert.equal(db.batches[0].length, 2);
   assert.match(db.batches[0][0].sql, /UPDATE cms_media SET deleted_at=NULL/);
-  assert.match(db.batches[0][1].sql, /'restore_media'/);
+  assert.match(db.batches[0][1].sql, /CASE WHEN changes\(\) = 1 THEN 'restore_media' END/);
 });
 
 
@@ -983,7 +985,7 @@ test("CMS media archive succeeds, records its audit event, and retains the origi
   assert.match(db.batches[0][0].sql, /NOT EXISTS \(SELECT 1 FROM cms_page_versions/);
   assert.match(db.batches[0][0].sql, /NOT EXISTS \(SELECT 1 FROM cms_product_versions/);
   assert.match(db.batches[0][0].sql, /NOT EXISTS \(SELECT 1 FROM cms_site_setting_versions/);
-  assert.match(db.batches[0][1].sql, /'archive_media'/);
+  assert.match(db.batches[0][1].sql, /CASE WHEN changes\(\) = 1 THEN 'archive_media' END/);
   assert.equal(deleteCalls, 0);
 });
 
@@ -1370,11 +1372,13 @@ test("CMS media upload preserves its R2 object when the D1 batch outcome is ambi
   form.set("altText", "Test image");
   let putCalls = 0;
   let deleteCalls = 0;
+  let submittedStatements = [];
   const db = {
     prepare(sql) {
       return { sql, bind(...values) { this.values = values; return this; } };
     },
-    async batch() {
+    async batch(statements) {
+      submittedStatements = statements;
       throw new Error("Simulated transport interruption after D1 batch submission");
     },
   };
@@ -1402,6 +1406,7 @@ test("CMS media upload preserves its R2 object when the D1 batch outcome is ambi
   assert.ok(result.mediaId);
   assert.equal(putCalls, 1);
   assert.equal(deleteCalls, 0);
+  assert.match(submittedStatements[1].sql, /CASE WHEN changes\(\) = 1 THEN 'upload_media' END/);
 });
 
 for (const scenario of [
