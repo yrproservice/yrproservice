@@ -237,8 +237,7 @@ export async function onRequestPost(context) {
         ),
         env.DB.prepare(`
           INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-          SELECT ?, ?, 'remove_section_recovery', 'page', ?, ?
-          WHERE changes() = 1
+          SELECT ?, ?, CASE WHEN changes() = 1 THEN 'remove_section_recovery' END, 'page', ?, ?
         `).bind(
           crypto.randomUUID(), actor, page.id,
           JSON.stringify({ pageKey, entryId: id, sectionId: body.section.id })
@@ -336,8 +335,7 @@ export async function onRequestPost(context) {
       ),
       env.DB.prepare(`
         INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-        SELECT ?, ?, 'discard_section_recovery', 'page', ?, ?
-        WHERE changes() = 1
+        SELECT ?, ?, CASE WHEN changes() = 1 THEN 'discard_section_recovery' END, 'page', ?, ?
       `).bind(
         crypto.randomUUID(), actor, page.id,
         JSON.stringify({ pageKey, entryId })
