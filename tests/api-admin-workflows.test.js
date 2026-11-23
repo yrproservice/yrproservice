@@ -763,7 +763,6 @@ test("CMS settings save rejects a newly appeared draft instead of overwriting it
 });
 
 
-import { onRequestPost as saveCmsPage } from "../functions/api/cms/admin/pages.js";
 import { onRequestPost as saveCmsProduct } from "../functions/api/cms/admin/products.js";
 
 function makeCmsCreateDb() {
