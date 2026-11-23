@@ -123,7 +123,7 @@ export async function onRequestPost(context) {
     if (
       conflictSnapshot &&
       typeof error?.message === "string" &&
-      /NOT NULL constraint failed:\\s*cms_audit_log\\.action/i.test(error.message)
+      /NOT NULL constraint failed:\s*cms_audit_log\.action/i.test(error.message)
     ) {
       try {
         const latest = await context.env.DB.prepare(
