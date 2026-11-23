@@ -1,5 +1,5 @@
-import { products as catalogueProducts } from "./products";
-import { mergePublishedProduct } from "./productImages";
+import { products as catalogueProducts } from "./products.js";
+import { mergePublishedProduct } from "./productImages.js";
 
 export function mergePublishedCatalogue(data, fallback = catalogueProducts) {
   if (!data?.ok || !Array.isArray(data.products)) throw new Error("The published product catalogue response is invalid.");
