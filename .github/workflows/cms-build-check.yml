@@ -270,6 +270,8 @@ jobs:
                 await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
                 await page.evaluate(() => document.fonts?.ready);
                 await page.evaluate(async () => {
+                  // Force lazy catalogue images to request before full-page capture.
+                  for (const image of document.images) image.loading = 'eager';
                   const step = Math.max(400, Math.floor(window.innerHeight * 0.75));
                   const height = document.documentElement.scrollHeight;
                   for (let y = 0; y < height; y += step) {
@@ -288,11 +290,11 @@ jobs:
                   ));
                   await Promise.race([
                     imageLoads,
-                    new Promise((resolve) => setTimeout(resolve, 8000)),
+                    new Promise((resolve) => setTimeout(resolve, 15000)),
                   ]);
                   await Promise.race([
                     Promise.all(Array.from(document.images, (image) => image.decode?.().catch(() => {}))),
-                    new Promise((resolve) => setTimeout(resolve, 3000)),
+                    new Promise((resolve) => setTimeout(resolve, 5000)),
                   ]);
                 });
                 await page.waitForTimeout(300);
@@ -302,7 +304,9 @@ jobs:
                   documentHeight: document.documentElement.scrollHeight,
                   imageCount: document.images.length,
                   loadedImageCount: Array.from(document.images).filter((image) => image.complete && image.naturalWidth > 0).length,
-                  failedImageCount: Array.from(document.images).filter((image) => image.complete && image.naturalWidth === 0).length,
+                  failedImageCount: Array.from(document.images).filter((image) => image.currentSrc && image.complete && image.naturalWidth === 0).length,
+                  missingImageSourceCount: Array.from(document.images).filter((image) => !image.currentSrc && !image.getAttribute('src')).length,
+                  pendingImageCount: Array.from(document.images).filter((image) => image.currentSrc && !image.complete).length,
                 }));
                 await page.screenshot({
                   path: 'preview-screenshots/' + viewport.name + '/' + name + '.png',
