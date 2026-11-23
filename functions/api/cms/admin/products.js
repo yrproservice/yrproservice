@@ -88,6 +88,7 @@ export async function onRequestPost(context) {
   const now = new Date().toISOString();
   const actor = auth.email || null;
   const json = JSON.stringify(product);
+  let conflictSnapshot = null;
   try {
     let row = await env.DB.prepare("SELECT id FROM cms_products WHERE product_slug = ? LIMIT 1").bind(slug).first();
     if (!row) {
@@ -113,6 +114,7 @@ export async function onRequestPost(context) {
     }
 
     const draft = await env.DB.prepare("SELECT id, version_number, created_at, product_json FROM cms_product_versions WHERE product_id = ? AND state = 'draft' LIMIT 1").bind(row.id).first();
+    conflictSnapshot = { productId: row.id, expectedDraftId, expectedDraftCreatedAt };
     if ((draft?.id || null) !== expectedDraftId || (draft?.created_at || null) !== expectedDraftCreatedAt) {
       return adminJson({ error: "This product draft changed in another session. Reload it before saving again." }, 409);
     }
@@ -162,6 +164,28 @@ export async function onRequestPost(context) {
     return adminJson({ ok: true, productId: row.id, draftId: versionId, draftCreatedAt: now, version }, 201);
   } catch (error) {
     console.error("CMS product draft save failed", error);
+    if (
+      conflictSnapshot &&
+      typeof error?.message === "string" &&
+      /NOT NULL constraint failed:\\s*cms_audit_log\\.action/i.test(error.message)
+    ) {
+      try {
+        const latestDraft = await env.DB.prepare(`
+          SELECT id, created_at
+          FROM cms_product_versions
+          WHERE product_id = ? AND state = 'draft'
+          LIMIT 1
+        `).bind(conflictSnapshot.productId).first();
+        if (
+          (latestDraft?.id || null) !== conflictSnapshot.expectedDraftId ||
+          (latestDraft?.created_at || null) !== conflictSnapshot.expectedDraftCreatedAt
+        ) {
+          return adminJson({ error: "This product draft changed in another session. Reload it before saving again." }, 409);
+        }
+      } catch (verificationError) {
+        console.error("CMS product draft conflict verification failed", verificationError);
+      }
+    }
     return adminJson({ error: "Unable to save product draft. Check the CMS migration and product data." }, 500);
   }
 }
