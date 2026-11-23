@@ -90,8 +90,7 @@ export async function onRequestPost(context) {
       db.prepare("UPDATE cms_site_settings SET updated_at=? WHERE setting_key=? AND changes()=1").bind(now,key),
       db.prepare(`
         INSERT INTO cms_audit_log (id,actor_email,action,entity_type,entity_id,metadata_json)
-        SELECT ?,?,'save_draft','setting',?,?
-        WHERE changes()=1
+        SELECT ?, ?, CASE WHEN changes() = 1 THEN 'save_draft' END, 'setting', ?, ?
       `).bind(
         crypto.randomUUID(), actor, key,
         JSON.stringify({ version, previousDraftVersion: draft?.version_number ?? null })
