@@ -23,6 +23,7 @@ export async function onRequestGet(context) {
   const key = clean(params.get("entityKey"), 100);
   const config = CONFIG[type];
   if (!config || !key) return adminJson({ error: "A valid entityType and entityKey are required." }, 400);
+  let conflictSnapshot = null;
   try {
     const entity = type === "setting"
       ? await env.DB.prepare(`SELECT setting_key AS id, published_version_id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first()
@@ -134,6 +135,13 @@ export async function onRequestPost(context) {
     if (expectedDraftId && !expectedDraftCreatedAt) {
       return adminJson({ error: "Reload the item history before restoring; the current draft snapshot is incomplete." }, 409);
     }
+    conflictSnapshot = {
+      versions: config.versions,
+      foreignKey: config.fk,
+      entityId: entity.id,
+      expectedDraftId,
+      expectedDraftCreatedAt,
+    };
     const draft = await env.DB.prepare(`SELECT id, version_number, created_at FROM ${config.versions} WHERE ${config.fk} = ? AND state = 'draft'`).bind(entity.id).first();
     if ((draft?.id || null) !== expectedDraftId || (draft?.created_at || null) !== expectedDraftCreatedAt) {
       return adminJson({ error: "This CMS draft changed in another session. Reload its history before restoring again." }, 409);
@@ -216,6 +224,27 @@ export async function onRequestPost(context) {
     return adminJson({ ok: true, auditRecorded: true, draftId: newId, version: nextVersion, restoredFrom: source.version_number }, 201);
   } catch (error) {
     console.error("CMS revision restore failed", error);
+    if (
+      conflictSnapshot &&
+      typeof error?.message === "string" &&
+      /NOT NULL constraint failed:\\s*cms_audit_log\\.action/i.test(error.message)
+    ) {
+      try {
+        const latest = await env.DB.prepare(`
+          SELECT id, created_at FROM ${conflictSnapshot.versions}
+          WHERE ${conflictSnapshot.foreignKey} = ? AND state = 'draft'
+          LIMIT 1
+        `).bind(conflictSnapshot.entityId).first();
+        if (
+          (latest?.id || null) !== conflictSnapshot.expectedDraftId ||
+          (latest?.created_at || null) !== conflictSnapshot.expectedDraftCreatedAt
+        ) {
+          return adminJson({ error: "This CMS draft changed in another session. Reload its history before restoring again." }, 409);
+        }
+      } catch (verificationError) {
+        console.error("CMS revision restore conflict verification failed", verificationError);
+      }
+    }
     return adminJson({ error: "Unable to restore this revision as a draft." }, 500);
   }
 }
