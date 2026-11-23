@@ -269,11 +269,30 @@ jobs:
                 }
                 await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
                 await page.evaluate(() => document.fonts?.ready);
-                await page.waitForTimeout(500);
+                await page.evaluate(async () => {
+                  const step = Math.max(400, Math.floor(window.innerHeight * 0.75));
+                  const height = document.documentElement.scrollHeight;
+                  for (let y = 0; y < height; y += step) {
+                    window.scrollTo(0, y);
+                    await new Promise((resolve) => setTimeout(resolve, 120));
+                  }
+                  window.scrollTo(0, 0);
+                  await Promise.all(Array.from(document.images, (image) =>
+                    image.complete ? Promise.resolve() : new Promise((resolve) => {
+                      image.addEventListener('load', resolve, { once: true });
+                      image.addEventListener('error', resolve, { once: true });
+                    })
+                  ));
+                  await Promise.all(Array.from(document.images, (image) => image.decode?.().catch(() => {})));
+                });
+                await page.waitForTimeout(300);
                 const dimensions = await page.evaluate(() => ({
                   viewportWidth: window.innerWidth,
                   documentWidth: document.documentElement.scrollWidth,
                   documentHeight: document.documentElement.scrollHeight,
+                  imageCount: document.images.length,
+                  loadedImageCount: Array.from(document.images).filter((image) => image.complete && image.naturalWidth > 0).length,
+                  failedImageCount: Array.from(document.images).filter((image) => image.complete && image.naturalWidth === 0).length,
                 }));
                 await page.screenshot({
                   path: 'preview-screenshots/' + viewport.name + '/' + name + '.png',
