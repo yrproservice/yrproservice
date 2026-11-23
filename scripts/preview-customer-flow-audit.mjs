@@ -77,6 +77,7 @@ async function runCase(name, execute) {
   }
 }
 
+try {
 await runCase("product cart → quotation", async () => {
   const { context, page } = await newPage();
   try {
@@ -229,16 +230,17 @@ await runCase("HR contact remains HR-only", async () => {
   }
 });
 
-try {
-  report.summary = {
-    passed: report.tests.filter((test) => test.status === "passed").length,
-    failed: report.tests.filter((test) => test.status === "failed").length,
-  };
 } catch (error) {
   failure = error;
+  report.error = { message: error.message, stack: error.stack };
+} finally {
+  await browser.close();
 }
 
-await browser.close();
+report.summary = {
+  passed: report.tests.filter((test) => test.status === "passed").length,
+  failed: report.tests.filter((test) => test.status === "failed").length,
+};
 await writeFile("preview-customer-flow-audit.json", JSON.stringify(report, null, 2) + "\n");
 if (failure) throw failure;
 console.log(JSON.stringify(report, null, 2));
