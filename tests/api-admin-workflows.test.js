@@ -868,7 +868,6 @@ test("CMS product save creates a version-one draft and an audit record", async (
 
 
 import { onRequestPost as restoreCmsRevision } from "../functions/api/cms/admin/history.js";
-import { onRequestPatch as updateCmsMedia } from "../functions/api/cms/admin/media.js";
 
 test("CMS product revision restore creates a new audited draft without publishing it", async () => {
   const calls = [];
@@ -1014,7 +1013,6 @@ test("CMS media restore reactivates an existing R2 object and records the audit 
 });
 
 
-import { onRequestDelete as archiveCmsMedia } from "../functions/api/cms/admin/media.js";
 import { onRequestPost as uploadCmsMedia } from "../functions/api/cms/admin/media.js";
 
 function makeRevisionRestoreDb(entityType) {
