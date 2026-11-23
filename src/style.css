@@ -1909,7 +1909,7 @@ h6 {
   color: #fff;
   text-align: center;
 }
-.bp-quote-help-brand strong {
+.bp-quote-help .bp-quote-help-brand strong {
   margin: 0;
   color: #fff;
   font: 800 96px/.82 Montserrat, sans-serif;
