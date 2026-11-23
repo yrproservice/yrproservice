@@ -123,7 +123,7 @@ export async function onRequestPost(context) {
         ).bind(json, actor, now, draft.id, draft.created_at, draft.product_json),
         env.DB.prepare("UPDATE cms_products SET updated_at = ? WHERE id = ? AND EXISTS (SELECT 1 FROM cms_product_versions WHERE id = ? AND state = 'draft' AND created_at = ? AND product_json = ?)").bind(now, row.id, draft.id, now, json),
         env.DB.prepare(
-          "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) SELECT ?, ?, 'update_draft', 'product', ?, ? WHERE EXISTS (SELECT 1 FROM cms_product_versions WHERE id = ? AND state = 'draft' AND created_at = ? AND product_json = ?)"
+          "INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json) SELECT ?, ?, CASE WHEN changes() = 1 THEN 'update_draft' END, 'product', ?, ?"
         ).bind(crypto.randomUUID(), actor, row.id, JSON.stringify({ version: draft.version_number }), draft.id, now, json)
       ]);
       if (Number(results?.[0]?.meta?.changes || 0) !== 1) {
