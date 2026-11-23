@@ -7,6 +7,7 @@ import { onRequestPatch as updateRequest } from "../functions/api/admin/requests
 import { onRequestGet as getAdminSession, onRequestPost as startAdminSession, onRequestPatch as heartbeatAdminSession, onRequestDelete as logoutAdminSession } from "../functions/api/admin/session.js";
 import { onRequestPost as publishCms } from "../functions/api/cms/admin/publish.js";
 import { onRequestPost as saveCmsPage } from "../functions/api/cms/admin/pages.js";
+import { onRequestPatch as updateCmsMedia, onRequestDelete as archiveCmsMedia } from "../functions/api/cms/admin/media.js";
 import { onRequestGet as previewCmsPage } from "../functions/api/cms/admin/preview.js";
 import { onRequestGet as getPublicCmsPages } from "../functions/api/cms/public/pages.js";
 import { onRequestPost as saveCmsSetting } from "../functions/api/cms/admin/settings.js";
@@ -149,6 +150,32 @@ function seedPageSaveSQLite(db) {
     "page-save-draft", "page-save-id", "Original title", "/cms-test-page",
     JSON.stringify({ sections: [] }), "2026-11-20T07:00:00.000Z"
   );
+}
+
+function seedMediaSQLite(db, { deletedAt = null } = {}) {
+  db.sqlite.prepare(`
+    INSERT INTO cms_media (
+      id, storage_provider, object_key, public_url, original_file_name,
+      mime_type, byte_size, alt_text, deleted_at
+    ) VALUES (?, 'static', ?, ?, ?, 'image/png', 24, ?, ?)
+  `).run(
+    "media-test-id", "static/test-image.png", "https://media.example.test/static/test-image.png",
+    "original.png", "Original alt text", deletedAt
+  );
+}
+
+function mediaContext(method, path, body, db) {
+  return {
+    request: new Request(`https://yrproservice.test${path}`, {
+      method,
+      headers: {
+        "Cf-Access-Jwt-Assertion": accessToken,
+        "Content-Type": "application/json",
+      },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    }),
+    env: { ...adminConfig, DB: db },
+  };
 }
 
 function pageSaveContext(db) {
@@ -1564,6 +1591,87 @@ test("CMS settings save rejects a draft changed after the editor snapshot was lo
   assert.equal(db.batches[0][2].values.at(-1), 1);
 });
 
+
+
+test("CMS media restore reports a concurrent restore as 409 after audit guard rollback", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedMediaSQLite(db, { deletedAt: "2026-11-20T07:00:00.000Z" });
+    db.beforeBatch = (sqlite) => {
+      sqlite.prepare("UPDATE cms_media SET deleted_at = NULL WHERE id = ?").run("media-test-id");
+    };
+    const response = await updateCmsMedia(mediaContext(
+      "PATCH", "/api/cms/admin/media?id=media-test-id", { action: "restore" }, db
+    ));
+    const result = await response.json();
+    assert.equal(response.status, 409);
+    assert.match(result.error, /changed in another session/i);
+    assert.equal(db.sqlite.prepare("SELECT deleted_at FROM cms_media WHERE id = ?").get("media-test-id").deleted_at, null);
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally { db.close(); }
+});
+
+test("CMS media metadata reports a concurrent edit as 409 and preserves the competing value", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedMediaSQLite(db);
+    db.beforeBatch = (sqlite) => {
+      sqlite.prepare("UPDATE cms_media SET alt_text = ? WHERE id = ?")
+        .run("Changed in another session", "media-test-id");
+    };
+    const response = await updateCmsMedia(mediaContext(
+      "PATCH", "/api/cms/admin/media?id=media-test-id", { altText: "My new alt text" }, db
+    ));
+    const result = await response.json();
+    assert.equal(response.status, 409);
+    assert.match(result.error, /changed in another session/i);
+    assert.equal(db.sqlite.prepare("SELECT alt_text FROM cms_media WHERE id = ?").get("media-test-id").alt_text, "Changed in another session");
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally { db.close(); }
+});
+
+test("CMS media archive reports a newly referenced image as 409 and keeps the active media row", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedMediaSQLite(db);
+    db.beforeBatch = (sqlite) => {
+      sqlite.prepare("INSERT INTO cms_pages (id, page_key, title, route) VALUES (?, ?, ?, ?)")
+        .run("media-page-id", "media-page", "Media page", "/media-page");
+      sqlite.prepare("INSERT INTO cms_page_versions (id, page_id, version_number, state, content_json) VALUES (?, ?, 1, 'published', ?)")
+        .run("media-page-version", "media-page-id", JSON.stringify({ sections: [], image: "https://media.example.test/static/test-image.png" }));
+    };
+    const response = await archiveCmsMedia(mediaContext(
+      "DELETE", "/api/cms/admin/media?id=media-test-id", undefined, db
+    ));
+    const result = await response.json();
+    assert.equal(response.status, 409);
+    assert.match(result.error, /became referenced/i);
+    assert.equal(result.usage.total, 1);
+    assert.equal(db.sqlite.prepare("SELECT deleted_at FROM cms_media WHERE id = ?").get("media-test-id").deleted_at, null);
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally { db.close(); }
+});
+
+test("CMS media metadata rolls back its update when audit storage fails", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedMediaSQLite(db);
+    db.beforeBatch = (sqlite) => sqlite.exec(`
+      CREATE TRIGGER fail_media_metadata_audit
+      BEFORE INSERT ON cms_audit_log
+      WHEN NEW.action = 'update_media_metadata'
+      BEGIN
+        SELECT RAISE(ABORT, 'simulated audit storage failure');
+      END;
+    `);
+    const response = await updateCmsMedia(mediaContext(
+      "PATCH", "/api/cms/admin/media?id=media-test-id", { altText: "Updated alt text" }, db
+    ));
+    assert.equal(response.status, 500);
+    assert.equal(db.sqlite.prepare("SELECT alt_text FROM cms_media WHERE id = ?").get("media-test-id").alt_text, "Original alt text");
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally { db.close(); }
+});
 
 test("CMS media upload preserves its R2 object when the D1 batch outcome is ambiguous", async () => {
   const bytes = new Uint8Array(24);
