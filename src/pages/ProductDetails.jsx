@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
-import { products } from "../data/products";
 import { loadPublishedCatalogue } from "../data/publishedCatalogue";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { products } from "../src/data/products.js";
+import { mergePublishedCatalogue, loadPublishedCatalogue } from "../src/data/publishedCatalogue.js";
 
 test("every assigned product image uses the local catalogue", () => {
   for (const product of products) {
@@ -112,4 +113,24 @@ test("Mocom M7 M8 and M9 stool records link to the matching manufacturer catalog
   assert.ok(m8.specifications.includes("Memory Foam padding: Not available"));
   assert.ok(m9.specifications.includes("Balance system: Standard"));
   assert.ok(m9.specifications.includes("Memory Foam padding: Optional"));
+});
+
+
+test("published catalogue loader rejects an unavailable CMS API instead of silently returning static products", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({ error: "Preview API unavailable" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
+    await assert.rejects(loadPublishedCatalogue(), /HTTP 503/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("published catalogue merge preserves the catalogue base only for a valid CMS response", () => {
+  assert.throws(() => mergePublishedCatalogue({ ok: false, products: [] }), /response is invalid/i);
+  const merged = mergePublishedCatalogue({ ok: true, products: [], archivedSlugs: [] });
+  assert.equal(merged.length, products.length);
 });
