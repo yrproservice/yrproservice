@@ -2129,3 +2129,54 @@ test("CMS product draft save rolls back its data and metadata when the audit ins
     assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
   } finally { db.close(); }
 });
+
+
+test("CMS media archive rolls back its archive state when the audit insert fails in real SQLite", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedMediaSQLite(db);
+    db.sqlite.exec(`
+      CREATE TRIGGER fail_media_archive_audit
+      BEFORE INSERT ON cms_audit_log
+      WHEN NEW.action = 'archive_media'
+      BEGIN
+        SELECT RAISE(ABORT, 'simulated media archive audit failure');
+      END;
+    `);
+    const response = await archiveCmsMedia(mediaContext(
+      "DELETE", "/api/cms/admin/media?id=media-test-id", undefined, db
+    ));
+    assert.equal(response.status, 500);
+    assert.match((await response.json()).error, /Unable to remove this media item/i);
+    assert.equal(
+      db.sqlite.prepare("SELECT deleted_at FROM cms_media WHERE id = ?").get("media-test-id").deleted_at,
+      null,
+    );
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally { db.close(); }
+});
+
+test("CMS media restore rolls back its archive-state change when the audit insert fails in real SQLite", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedMediaSQLite(db, { deletedAt: "2026-11-20T07:00:00.000Z" });
+    db.sqlite.exec(`
+      CREATE TRIGGER fail_media_restore_audit
+      BEFORE INSERT ON cms_audit_log
+      WHEN NEW.action = 'restore_media'
+      BEGIN
+        SELECT RAISE(ABORT, 'simulated media restore audit failure');
+      END;
+    `);
+    const response = await updateCmsMedia(mediaContext(
+      "PATCH", "/api/cms/admin/media?id=media-test-id", { action: "restore" }, db
+    ));
+    assert.equal(response.status, 500);
+    assert.match((await response.json()).error, /Unable to restore this media item/i);
+    assert.equal(
+      db.sqlite.prepare("SELECT deleted_at FROM cms_media WHERE id = ?").get("media-test-id").deleted_at,
+      "2026-11-20T07:00:00.000Z",
+    );
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally { db.close(); }
+});
