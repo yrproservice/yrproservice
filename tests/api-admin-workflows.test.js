@@ -517,7 +517,7 @@ test("CMS settings save creates an audited draft when no prior draft exists", as
   };
   const response = await saveCmsSetting(adminContext(
     "/api/cms/admin/settings",
-    { key: "site.navigation", value, expectedDraftId: null, changeNote: "Navigation update" },
+    { key: "site.navigation", value, expectedDraftId: null, expectedDraftCreatedAt: null, changeNote: "Navigation update" },
     { ...adminConfig, DB: db },
   ));
   const result = await response.json();
@@ -537,7 +537,7 @@ test("CMS settings save creates an audited draft when no prior draft exists", as
 
 test("CMS settings save rejects a newly appeared draft instead of overwriting it", async () => {
   const db = makeSettingsSaveDb({
-    existingDraft: { id: "concurrent-draft", version_number: 3 },
+    existingDraft: { id: "concurrent-draft", version_number: 3, created_at: "2026-11-20T07:00:00.000Z" },
   });
   const response = await saveCmsSetting(adminContext(
     "/api/cms/admin/settings",
@@ -1292,7 +1292,7 @@ function makeSettingsExistingDraftDb({ batchChanges = [1, 1, 1, 1, 1], latestVer
         bind(...values) { this.values = values; return this; },
         async first() {
           if (sql.includes("FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'")) {
-            return { id: "current-navigation-draft", version_number: 3 };
+            return { id: "current-navigation-draft", version_number: 3, created_at: "2026-11-20T07:00:00.000Z" };
           }
           if (sql.includes("COALESCE(MAX(version_number),0)")) return { version: latestVersion };
           return null;
@@ -1314,6 +1314,7 @@ test("CMS settings save archives the exact expected draft before creating its re
       key: "site.navigation",
       value: { items: [{ label: "Products", url: "/products" }, { label: "Team", url: "/team" }] },
       expectedDraftId: "current-navigation-draft",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
       changeNote: "Replace navigation draft",
     },
     { ...adminConfig, DB: db },
@@ -1342,6 +1343,7 @@ test("CMS settings save rejects a draft changed after the editor snapshot was lo
       key: "site.navigation",
       value: { items: [{ label: "Services", url: "/services" }] },
       expectedDraftId: "current-navigation-draft",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
     },
     { ...adminConfig, DB: db },
   ));
