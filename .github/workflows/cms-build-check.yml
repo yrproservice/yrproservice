@@ -278,7 +278,13 @@ jobs:
                     window.scrollTo(0, y);
                     await new Promise((resolve) => setTimeout(resolve, 120));
                   }
-                  window.scrollTo(0, 0);
+                  // Disable the site's smooth-scroll rule so full-page screenshots start at the real top.
+                  document.documentElement.style.scrollBehavior = 'auto';
+                  document.body.style.scrollBehavior = 'auto';
+                  window.scrollTo({ top: 0, behavior: 'auto' });
+                  await new Promise((resolve) => requestAnimationFrame(() =>
+                    requestAnimationFrame(resolve)
+                  ));
 
                   // A lazy image can remain incomplete without emitting load/error.
                   // Bound both waits so one stalled request cannot block the audit.
@@ -300,6 +306,7 @@ jobs:
                 await page.waitForTimeout(300);
                 const dimensions = await page.evaluate(() => ({
                   viewportWidth: window.innerWidth,
+                  scrollY: window.scrollY,
                   documentWidth: document.documentElement.scrollWidth,
                   documentHeight: document.documentElement.scrollHeight,
                   imageCount: document.images.length,
