@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
-import { onRequestPost as updateSectionRecovery } from "../functions/api/cms/admin/section-recovery.js";
+import { onRequestGet as listSectionRecovery, onRequestPost as updateSectionRecovery } from "../functions/api/cms/admin/section-recovery.js";
 
 const cryptoApi = globalThis.crypto || webcrypto;
 const signingKey = await cryptoApi.subtle.generateKey(
@@ -122,7 +122,7 @@ function seedPage(db, content = { sections: [{ id: "section-hero", type: "hero",
   ).run("draft-id", "page-id", "Home", "/", JSON.stringify(content), "2026-11-23T07:00:00.000Z");
 }
 
-function context(db, body) {
+function context(db, body, retentionEnabled = "false") {
   return {
     request: new Request("https://yrproservice.test/api/cms/admin/section-recovery", {
       method: "POST",
@@ -137,7 +137,7 @@ function context(db, body) {
         ...body,
       }),
     }),
-    env: { ...adminConfig, DB: db },
+    env: { ...adminConfig, DB: db, CMS_RECOVERY_RETENTION_ENABLED: retentionEnabled },
   };
 }
 
@@ -335,5 +335,144 @@ test("section recovery discard rejects a draft changed after the editor snapshot
     assert.equal(row.section_json, JSON.stringify(originalSection));
     assert.equal(row.resolved_at, null);
     assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally { db.close(); }
+});
+
+
+function listContext(db, retentionEnabled = "false") {
+  return {
+    request: new Request("https://yrproservice.test/api/cms/admin/section-recovery?pageKey=home", {
+      method: "GET",
+      headers: { "Cf-Access-Jwt-Assertion": accessToken },
+    }),
+    env: { ...adminConfig, DB: db, CMS_RECOVERY_RETENTION_ENABLED: retentionEnabled },
+  };
+}
+
+function seedRecoveryRow(db, {
+  id,
+  status = "active",
+  expiresAt,
+  section = originalSection,
+  resolvedAt = null,
+  resolvedBy = null,
+}) {
+  db.sqlite.prepare(`
+    INSERT INTO cms_page_section_recovery (
+      id, page_key, draft_id, draft_created_at, original_index,
+      section_json, status, created_at, expires_at, resolved_at, resolved_by
+    ) VALUES (?, 'home', 'draft-id', '2026-11-23T07:00:00.000Z', 1, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    JSON.stringify(section),
+    status,
+    "2026-11-23T07:01:00.000Z",
+    expiresAt,
+    resolvedAt,
+    resolvedBy,
+  );
+}
+
+test("section recovery remove sets a 30-day expiry for the exact saved payload", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedPage(db);
+    const response = await updateSectionRecovery(context(db, {
+      action: "remove",
+      entryId: "recovery-30-days",
+      originalIndex: 1,
+      section: originalSection,
+    }));
+    assert.equal(response.status, 201);
+    const { entry } = await response.json();
+    const retention = Date.parse(entry.expiresAt) - Date.parse(entry.createdAt);
+    assert.ok(retention >= 30 * 24 * 60 * 60 * 1000);
+    assert.ok(retention <= 30 * 24 * 60 * 60 * 1000 + 2000);
+    assert.deepEqual(entry.section, originalSection);
+  } finally { db.close(); }
+});
+
+test("Preview retention purges expired payloads and hides them from the recovery list", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedRecoveryRow(db, {
+      id: "expired-active",
+      expiresAt: "2000-01-01T00:00:00.000Z",
+    });
+    seedRecoveryRow(db, {
+      id: "expired-discarded",
+      status: "discarded",
+      expiresAt: "2000-01-01T00:00:00.000Z",
+      resolvedAt: "2026-11-22T00:00:00.000Z",
+      resolvedBy: "admin@example.test",
+    });
+    seedRecoveryRow(db, {
+      id: "still-active",
+      expiresAt: "2999-01-01T00:00:00.000Z",
+    });
+
+    const response = await listSectionRecovery(listContext(db, "true"));
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.deepEqual(body.entries.map((entry) => entry.id), ["still-active"]);
+    assert.equal(body.retentionDays, 30);
+
+    const expiredActive = db.sqlite.prepare(
+      "SELECT status, section_json, resolved_at, resolved_by FROM cms_page_section_recovery WHERE id = ?"
+    ).get("expired-active");
+    assert.equal(expiredActive.status, "discarded");
+    assert.equal(expiredActive.section_json, "{}");
+    assert.ok(expiredActive.resolved_at);
+    assert.equal(expiredActive.resolved_by, "retention");
+
+    const expiredDiscarded = db.sqlite.prepare(
+      "SELECT status, section_json, resolved_at, resolved_by FROM cms_page_section_recovery WHERE id = ?"
+    ).get("expired-discarded");
+    assert.equal(expiredDiscarded.status, "discarded");
+    assert.equal(expiredDiscarded.section_json, "{}");
+    assert.equal(expiredDiscarded.resolved_at, "2026-11-22T00:00:00.000Z");
+    assert.equal(expiredDiscarded.resolved_by, "admin@example.test");
+  } finally { db.close(); }
+});
+
+test("recovery listing hides expired entries without purging payloads when retention is disabled", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedRecoveryRow(db, {
+      id: "expired-retained",
+      expiresAt: "2000-01-01T00:00:00.000Z",
+    });
+    const response = await listSectionRecovery(listContext(db, "false"));
+    assert.equal(response.status, 200);
+    assert.deepEqual((await response.json()).entries, []);
+    const row = db.sqlite.prepare(
+      "SELECT status, section_json, resolved_at, resolved_by FROM cms_page_section_recovery WHERE id = ?"
+    ).get("expired-retained");
+    assert.equal(row.status, "active");
+    assert.equal(row.section_json, JSON.stringify(originalSection));
+    assert.equal(row.resolved_at, null);
+    assert.equal(row.resolved_by, null);
+  } finally { db.close(); }
+});
+
+test("expired recovery entries cannot be restored when automatic retention is disabled", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedPage(db, { sections: [{ id: "section-hero", type: "hero" }] });
+    seedRecoveryRow(db, {
+      id: "expired-restore",
+      expiresAt: "2000-01-01T00:00:00.000Z",
+    });
+    const response = await updateSectionRecovery(context(db, {
+      action: "prepare_restore",
+      entryId: "expired-restore",
+    }, "false"));
+    assert.equal(response.status, 410);
+    assert.match((await response.json()).error, /expired|resolved/i);
+    const row = db.sqlite.prepare(
+      "SELECT status, section_json FROM cms_page_section_recovery WHERE id = ?"
+    ).get("expired-restore");
+    assert.equal(row.status, "active");
+    assert.equal(row.section_json, JSON.stringify(originalSection));
   } finally { db.close(); }
 });
