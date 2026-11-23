@@ -1769,3 +1769,102 @@ for (const scenario of [
     assert.equal(putCalls, 0);
   });
 }
+
+
+function seedSettingsSQLite(db) {
+  db.sqlite.prepare(
+    "INSERT INTO cms_site_settings (setting_key, updated_at) VALUES (?, ?)"
+  ).run("site.navigation", "2026-11-20T07:00:00.000Z");
+  db.sqlite.prepare(
+    "INSERT INTO cms_site_setting_versions (id, setting_key, version_number, state, value_json, created_at) VALUES (?, ?, 1, 'draft', ?, ?)"
+  ).run(
+    "settings-draft", "site.navigation",
+    JSON.stringify({ items: [{ label: "Products", url: "/products" }] }),
+    "2026-11-20T07:00:00.000Z"
+  );
+}
+
+function settingsSaveSQLiteContext(db) {
+  return adminContext(
+    "/api/cms/admin/settings",
+    {
+      key: "site.navigation",
+      value: { items: [{ label: "Services", url: "/services" }] },
+      expectedDraftId: "settings-draft",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
+    },
+    { ...adminConfig, DB: db },
+  );
+}
+
+test("CMS settings save detects a concurrent timestamp change using real SQLite and preserves the competing draft", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedSettingsSQLite(db);
+    db.beforeBatch = (sqlite) => {
+      sqlite.prepare("UPDATE cms_site_setting_versions SET created_at = ? WHERE id = ?")
+        .run("2026-11-21T07:00:00.000Z", "settings-draft");
+    };
+
+    const response = await saveCmsSetting(settingsSaveSQLiteContext(db));
+    const result = await response.json();
+
+    assert.equal(response.status, 409);
+    assert.match(result.error, /changed in another session/i);
+    const versions = db.sqlite.prepare(
+      "SELECT id, state, created_at FROM cms_site_setting_versions WHERE setting_key = ? ORDER BY version_number"
+    ).all("site.navigation");
+    assert.deepEqual(versions, [{
+      id: "settings-draft",
+      state: "draft",
+      created_at: "2026-11-21T07:00:00.000Z",
+    }]);
+    assert.equal(
+      db.sqlite.prepare("SELECT updated_at FROM cms_site_settings WHERE setting_key = ?")
+        .get("site.navigation").updated_at,
+      "2026-11-20T07:00:00.000Z",
+    );
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally {
+    db.close();
+  }
+});
+
+test("CMS settings save rolls back draft replacement and metadata when the audit insert fails in real SQLite", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedSettingsSQLite(db);
+    db.beforeBatch = (sqlite) => {
+      sqlite.exec(`
+        CREATE TRIGGER fail_settings_save_audit
+        BEFORE INSERT ON cms_audit_log
+        WHEN NEW.action = 'save_draft'
+        BEGIN
+          SELECT RAISE(ABORT, 'simulated settings audit storage failure');
+        END;
+      `);
+    };
+
+    const response = await saveCmsSetting(settingsSaveSQLiteContext(db));
+    const result = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.match(result.error, /Unable to save settings draft/i);
+    const versions = db.sqlite.prepare(
+      "SELECT id, state, value_json FROM cms_site_setting_versions WHERE setting_key = ? ORDER BY version_number"
+    ).all("site.navigation");
+    assert.deepEqual(versions, [{
+      id: "settings-draft",
+      state: "draft",
+      value_json: JSON.stringify({ items: [{ label: "Products", url: "/products" }] }),
+    }]);
+    assert.equal(
+      db.sqlite.prepare("SELECT updated_at FROM cms_site_settings WHERE setting_key = ?")
+        .get("site.navigation").updated_at,
+      "2026-11-20T07:00:00.000Z",
+    );
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally {
+    db.close();
+  }
+});
