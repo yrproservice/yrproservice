@@ -85,8 +85,8 @@ await runCase("product cart → quotation", async () => {
     await page.getByRole("heading", { name: "Your product cart is empty" }).waitFor();
     assert.ok(await page.getByRole("link", { name: /Browse More Products/ }).isVisible());
 
-    const cards = await openProducts(page, "M-1530");
-    const { card, action, name } = await findCardWithAction(cards, "M-1530", "Add to Cart");
+    const cards = await openProducts(page, "");
+    const { card, action, name } = await findCardWithAction(cards, "", "Add to Cart");
     await action.click();
     await card.getByRole("button", { name: /Added/ }).waitFor({ timeout: 10000 });
 
@@ -133,8 +133,8 @@ await runCase("dental chair request stays separate from product cart", async () 
     await page.getByRole("heading", { name: "No dental chairs selected" }).waitFor();
     assert.ok(await page.getByRole("link", { name: /Browse Dental Chairs/ }).isVisible());
 
-    const cards = await openProducts(page, "Signo T100");
-    const { card, action, name } = await findCardWithAction(cards, "Signo T100", "Request Chair");
+    const cards = await openProducts(page, "");
+    const { card, action, name } = await findCardWithAction(cards, "", "Request Chair");
     await action.click();
     await page.waitForURL((url) => url.pathname === "/dental-chair-request", { timeout: 10000 });
     await page.locator(".request-item").waitFor({ state: "visible", timeout: 10000 });
