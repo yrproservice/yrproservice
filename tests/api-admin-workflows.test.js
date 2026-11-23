@@ -2060,3 +2060,72 @@ for (const type of ["page", "product"]) {
     } finally { db.close(); }
   });
 }
+
+
+function productSaveSQLiteContext(db) {
+  return adminContext(
+    "/api/cms/admin/products",
+    {
+      product: {
+        slug: "chair-model",
+        name: "Updated chair model",
+        purchaseType: "cart",
+        requestFlow: "cart",
+      },
+      expectedDraftId: "current-product-draft",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
+    },
+    { ...adminConfig, DB: db },
+  );
+}
+
+test("CMS product draft save rejects a concurrent timestamp change in real SQLite", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedRevisionRestoreSQLite(db, "product");
+    db.beforeBatch = (sqlite) => {
+      sqlite.prepare("UPDATE cms_product_versions SET created_at = ? WHERE id = ?")
+        .run("2026-11-21T07:00:00.000Z", "current-product-draft");
+    };
+    const response = await saveCmsProduct(productSaveSQLiteContext(db));
+    assert.equal(response.status, 409);
+    assert.match((await response.json()).error, /changed in another session/i);
+    const draft = db.sqlite.prepare(
+      "SELECT product_json, created_at, state FROM cms_product_versions WHERE id = ?"
+    ).get("current-product-draft");
+    assert.equal(draft.state, "draft");
+    assert.equal(draft.created_at, "2026-11-21T07:00:00.000Z");
+    assert.equal(JSON.parse(draft.product_json).name, "Chair model");
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally { db.close(); }
+});
+
+test("CMS product draft save rolls back its data and metadata when the audit insert fails in real SQLite", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedRevisionRestoreSQLite(db, "product");
+    const originalProduct = db.sqlite.prepare(
+      "SELECT updated_at FROM cms_products WHERE id = ?"
+    ).get("product-id").updated_at;
+    db.sqlite.exec(`
+      CREATE TRIGGER fail_product_save_audit
+      BEFORE INSERT ON cms_audit_log
+      WHEN NEW.action = 'update_draft'
+      BEGIN SELECT RAISE(ABORT, 'simulated product audit failure'); END;
+    `);
+    const response = await saveCmsProduct(productSaveSQLiteContext(db));
+    assert.equal(response.status, 500);
+    assert.match((await response.json()).error, /Unable to save product draft/i);
+    const draft = db.sqlite.prepare(
+      "SELECT product_json, created_at, state FROM cms_product_versions WHERE id = ?"
+    ).get("current-product-draft");
+    assert.equal(draft.state, "draft");
+    assert.equal(draft.created_at, "2026-11-20T07:00:00.000Z");
+    assert.equal(JSON.parse(draft.product_json).name, "Chair model");
+    assert.equal(
+      db.sqlite.prepare("SELECT updated_at FROM cms_products WHERE id = ?").get("product-id").updated_at,
+      originalProduct,
+    );
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally { db.close(); }
+});
