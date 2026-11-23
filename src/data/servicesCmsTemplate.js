@@ -44,7 +44,7 @@ export const servicesCmsTemplate = {
         serviceButton: "Request a Service",
         serviceUrl: "/service-request",
         quoteButton: "Contact Us",
-        quoteUrl: "/contact"
+        quoteUrl: "/quote"
       }
     },
     layout: { variant: "original-services-layout" }
@@ -62,7 +62,13 @@ export function getServicesCmsContent(content) {
     intro: { ...base.intro, ...(incoming.intro || {}) },
     listing: { ...base.listing, ...(incoming.listing || {}), items },
     process: { ...base.process, ...(incoming.process || {}), steps },
-    cta: { ...base.cta, ...(incoming.cta || {}) },
+    // The /contact route is reserved for HR enquiries; service-page contact CTAs
+    // must use the quotation/contact workflow instead of sending customers to HR.
+    cta: {
+      ...base.cta,
+      ...(incoming.cta || {}),
+      quoteUrl: incoming.cta?.quoteUrl === "/contact" ? "/quote" : (incoming.cta?.quoteUrl || base.cta.quoteUrl),
+    },
     design: content?.design || {},
     sectionOrder: Array.isArray(content?.sectionOrder) ? content.sectionOrder : ["hero", "intro", "listing", "process", "cta"]
   };
