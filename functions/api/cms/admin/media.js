@@ -5,6 +5,11 @@ function safeName(value) {
   return String(value || "upload").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(-100) || "upload";
 }
 
+function isAuditActionGuardFailure(error) {
+  return typeof error?.message === "string" &&
+    /NOT NULL constraint failed:\s*cms_audit_log\.action/i.test(error.message);
+}
+
 async function getMediaUsage(db, media) {
   const [pages, products, settings, pageCount, productCount, settingCount] = await Promise.all([
     db.prepare(`
@@ -423,6 +428,18 @@ export async function onRequestPatch(context) {
       return adminJson({ ok: true, restored: true, auditRecorded: true });
     } catch (error) {
       console.error("CMS media restore failed", error);
+      if (restoreSnapshot && isAuditActionGuardFailure(error)) {
+        try {
+          const latest = await env.DB.prepare(
+            "SELECT id, deleted_at FROM cms_media WHERE id=?"
+          ).bind(restoreSnapshot.id).first();
+          if (!latest || latest.deleted_at === null) {
+            return adminJson({ error: "This media item changed in another session. Reload the Media Library before retrying." }, 409);
+          }
+        } catch (verificationError) {
+          console.error("CMS media restore conflict verification failed", verificationError);
+        }
+      }
       return adminJson({ error: "Unable to restore this media item." }, 500);
     }
   }
@@ -443,11 +460,17 @@ export async function onRequestPatch(context) {
     values.push(body.originalFileName.trim());
   }
   if (!updates.length) return adminJson({ error: "Provide at least one supported metadata field." }, 400);
+  let metadataSnapshot = null;
   try {
     const previous = await env.DB.prepare(
       "SELECT id, original_file_name, alt_text FROM cms_media WHERE id=? AND deleted_at IS NULL"
     ).bind(id).first();
     if (!previous) return adminJson({ error: "Media item not found." }, 404);
+    metadataSnapshot = {
+      id: previous.id,
+      originalFileName: previous.original_file_name,
+      altText: previous.alt_text,
+    };
     const nextValues = {
       original_file_name: Object.prototype.hasOwnProperty.call(body, "originalFileName") ? body.originalFileName.trim() : previous.original_file_name,
       alt_text: Object.prototype.hasOwnProperty.call(body, "altText") ? body.altText.trim() : previous.alt_text,
@@ -481,6 +504,23 @@ export async function onRequestPatch(context) {
     return adminJson({ ok: true, media, changed: Object.keys(changes).length > 0 });
   } catch (error) {
     console.error("CMS media metadata update failed", error);
+    if (metadataSnapshot && isAuditActionGuardFailure(error)) {
+      try {
+        const latest = await env.DB.prepare(
+          "SELECT id, original_file_name, alt_text, deleted_at FROM cms_media WHERE id=?"
+        ).bind(metadataSnapshot.id).first();
+        if (
+          !latest ||
+          latest.deleted_at !== null ||
+          latest.original_file_name !== metadataSnapshot.originalFileName ||
+          latest.alt_text !== metadataSnapshot.altText
+        ) {
+          return adminJson({ error: "This media item changed in another session. Reload the Media Library before saving metadata again." }, 409);
+        }
+      } catch (verificationError) {
+        console.error("CMS media metadata conflict verification failed", verificationError);
+      }
+    }
     return adminJson({ error: "Unable to update image metadata." }, 500);
   }
 }
@@ -492,9 +532,11 @@ export async function onRequestDelete(context) {
   if (!env.DB) return adminJson({ error: "CMS database is not configured." }, 503);
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return adminJson({ error: "Media ID is required." }, 400);
+  let archiveSnapshot = null;
   try {
     const row = await env.DB.prepare("SELECT id, storage_provider, object_key, public_url FROM cms_media WHERE id=? AND deleted_at IS NULL").bind(id).first();
     if (!row) return adminJson({ error: "Media item not found." }, 404);
+    archiveSnapshot = { id: row.id, publicUrl: row.public_url };
     const usage = await getMediaUsage(env.DB, row);
     if (usage.total > 0) {
       return adminJson({
@@ -537,6 +579,28 @@ export async function onRequestDelete(context) {
     return adminJson({ ok: true, auditRecorded: true });
   } catch (error) {
     console.error("CMS media delete failed", error);
+    if (archiveSnapshot && isAuditActionGuardFailure(error)) {
+      try {
+        const latest = await env.DB.prepare(
+          "SELECT id, deleted_at FROM cms_media WHERE id=?"
+        ).bind(archiveSnapshot.id).first();
+        const latestUsage = await getMediaUsage(env.DB, { public_url: archiveSnapshot.publicUrl });
+        if (
+          !latest ||
+          latest.deleted_at !== null ||
+          latestUsage.total > 0
+        ) {
+          return adminJson({
+            error: latestUsage.total > 0
+              ? "This image became referenced by saved CMS content or revision history. The media file has been kept."
+              : "This media item changed in another session. Reload the Media Library before retrying.",
+            ...(latestUsage.total > 0 ? { usage: latestUsage } : {}),
+          }, 409);
+        }
+      } catch (verificationError) {
+        console.error("CMS media archive conflict verification failed", verificationError);
+      }
+    }
     return adminJson({ error: "Unable to remove this media item." }, 500);
   }
 }
