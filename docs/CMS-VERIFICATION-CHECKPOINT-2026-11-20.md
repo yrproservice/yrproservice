@@ -65,3 +65,19 @@ PR #2 remains Draft and unmerged. Do not merge or deploy Production until the re
 - PR #2 remains Open/Draft/unmerged. Compare against `main`: 1,219 commits ahead, 0 behind, 105 changed files; `main` is the actual merge base.
 - The actual V10 ZIP was not present in the available Library search. Services/Team content mismatches have been recorded in `docs/LIMIT_SAFE_RECOVERY_CHECKPOINT.md`; no UI/content edits were made without the V10 source.
 - Production remains untouched. Image processing remains prohibited.
+
+
+## Visual Preview screenshot review — 23 November 2026
+
+- Screenshot artifact for exact source commit `74d02ce806ee73087e7186d458e9aa77055c915c`: artifact ID `14618517104`, 12 desktop/mobile screenshots (Home, Products, Signo T100, Services, Team, HR Contact), 3.65 MB; expires 27 November 2026.
+- Exact-head checks are complete: all 11 workflow steps passed, including automated tests, Vite build, Pages Functions build, Preview D1 schema readiness, Pages Preview deployment, desktop/mobile screenshot capture and artifact upload.
+- Cloudflare Workers Build ID `4c9e86e0-b29c-4ffa-a0ec-3c8630c55613` completed successfully. Its exact details URL is under `/production/previews/cms-development/builds/`; it is a Preview build, not a Production build.
+- Visual screenshot review confirms the HR Contact page is dedicated to careers/HR enquiries and offers an email action. Product detail displays “Price on request” and “Availability to be updated”; no fabricated price or stock value was visible in the captured view.
+- Team page screenshot displays a prominent group photograph at `/assets/about-team.jpg` and the template labels it “YR Proservice dental equipment team”. The people/photo have not been verified as actual, approved YR Proservice staff imagery. This remains a content-approval blocker under the no-invented-employees/no-random-photos requirement; no replacement was made.
+- Services screenshot shows the CMS-rendered Services hero and technical-services listing. The prior source review still flags the Services CMS fallback/CTA content for reconciliation against the user's original Services information and required “Request a Service” / “Contact Us” actions. Do not rewrite it from assumptions.
+- The desktop screenshots are viewport captures, not a complete end-to-end review of every section or interaction. Authenticated Preview CMS editing against live D1/R2 is still not verified.
+- Current compare is `cms-development` 1,220 commits ahead of `main`, 0 behind, 105 changed files. The full commit history and 105-file diff remain a mandatory merge-review gate.
+- `wrangler.toml` recheck confirms the `CMS_MEDIA_PUBLIC_BASE` variable and `CMS_MEDIA` R2 binding are under `[env.preview]`; Production has neither CMS media binding nor Preview public-base setting. A distinct Production media bucket/public URL remains a release prerequisite.
+- Branch-protection API inspection returned 403 (not accessible to the connected integration); branch protection is therefore unverified, not presumed absent or configured.
+- No application source, UI, content, database, binding or Production configuration was changed during this screenshot/source audit. No image processing was performed.
+- PR #2 remains Open, Draft and unmerged. No Production migration, merge or deployment was performed.
