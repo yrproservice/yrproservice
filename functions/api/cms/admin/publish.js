@@ -1,4 +1,5 @@
 import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
+import { validateProductMediaReferences } from "../../../_utils/cms-product-media-validation.js";
 import { validatePageDestinations, validateSettingDestinations } from "../../../_utils/cms-route-validation.js";
 import { validatePageContent, validatePageRoute, validateProductContent } from "../../../_utils/cms-content-validation.js";
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
@@ -73,6 +74,8 @@ export async function onRequestPost(context) {
       if (product.slug !== entityKey) {
         return adminJson({ error: "Product slug does not match the CMS product record." }, 400);
       }
+      const mediaError = await validateProductMediaReferences(env.DB, env, product);
+      if (mediaError) return adminJson({ error: mediaError }, 409);
     }
     if (entityType === "page") {
       let content;
