@@ -43,6 +43,7 @@ export async function onRequestPost(context) {
   if (validationError) return adminJson({ error: validationError }, 400);
   const json = JSON.stringify(body.value);
   if (new TextEncoder().encode(json).byteLength > 50000) return adminJson({ error: "Setting value is too large." }, 413);
+  let conflictSnapshot = null;
   try {
     const db = context.env.DB, now = new Date().toISOString(), actor = auth.email || null;
     if (!Object.prototype.hasOwnProperty.call(body, "expectedDraftId")) {
@@ -60,6 +61,7 @@ export async function onRequestPost(context) {
     if (expectedDraftId && !expectedDraftCreatedAt) {
       return adminJson({ error: "Reload the settings list before saving; the current draft snapshot is incomplete." }, 409);
     }
+    conflictSnapshot = { key, expectedDraftId, expectedDraftCreatedAt };
     const draft = await db.prepare("SELECT id, version_number, created_at FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'").bind(key).first();
     if ((draft?.id || null) !== expectedDraftId || (draft?.created_at || null) !== expectedDraftCreatedAt) {
       return adminJson({ error: "This setting draft changed in another session. Reload the setting before saving again." }, 409);
@@ -118,6 +120,25 @@ export async function onRequestPost(context) {
     return adminJson({ ok: true, auditRecorded: true, draftId: id, version }, 201);
   } catch (error) {
     console.error("CMS settings save failed", error);
+    if (
+      conflictSnapshot &&
+      typeof error?.message === "string" &&
+      /NOT NULL constraint failed:\\s*cms_audit_log\\.action/i.test(error.message)
+    ) {
+      try {
+        const latest = await context.env.DB.prepare(
+          "SELECT id, created_at FROM cms_site_setting_versions WHERE setting_key=? AND state='draft' LIMIT 1"
+        ).bind(conflictSnapshot.key).first();
+        if (
+          (latest?.id || null) !== conflictSnapshot.expectedDraftId ||
+          (latest?.created_at || null) !== conflictSnapshot.expectedDraftCreatedAt
+        ) {
+          return adminJson({ error: "This setting draft changed in another session. Reload the setting before saving again." }, 409);
+        }
+      } catch (verificationError) {
+        console.error("CMS settings conflict verification failed", verificationError);
+      }
+    }
     return adminJson({ error: "Unable to save settings draft." }, 500);
   }
 }
