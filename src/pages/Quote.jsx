@@ -181,7 +181,11 @@ export default function Quote({ navigate }) {
           </button>
         </form>
         <aside className="bp-quote-help">
-          <img src="/assets/about-team.jpg" alt="YR Proservice team" />
+          <div className="bp-quote-help-brand" role="img" aria-label="YR Proservice brand graphic">
+            <strong>YR</strong>
+            <span>YR PROSERVICE</span>
+            <small>DENTAL EQUIPMENT · TECHNICAL SUPPORT</small>
+          </div>
           <div>
             <p className="bp-eyebrow">NEED HELP?</p>
             <h3>Our team can help clarify the requirement.</h3>
