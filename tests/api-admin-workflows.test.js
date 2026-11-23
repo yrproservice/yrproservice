@@ -1129,7 +1129,7 @@ function makeExistingCmsDraftDb(type, { updateChanges = [1, 1, 1] } = {}) {
         bind(...values) { this.values = values; return this; },
         async first() {
           calls.push(this);
-          if (type === "page" && sql.includes("SELECT id FROM cms_pages WHERE page_key")) return { id: entityId };
+          if (type === "page" && sql.includes("FROM cms_pages WHERE page_key")) return { id: entityId, published_version_id: null };
           if (type === "product" && sql.includes("SELECT id FROM cms_products WHERE product_slug")) return { id: entityId };
           if (sql.includes("SELECT p.id") && sql.includes("LEFT JOIN cms_page_versions")) return null;
           if (type === "page" && sql.includes("FROM cms_page_versions WHERE page_id = ? AND state = 'draft'")) {
