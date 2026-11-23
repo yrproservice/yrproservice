@@ -163,6 +163,54 @@ jobs:
           path: preview-product-image-audit.json
           if-no-files-found: error
           retention-days: 7
+      - name: Verify affected static catalogue image URLs
+        if: success()
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const origin = 'https://cms-development.yrproservice.pages.dev';
+          const paths = [
+            '/catalog/enhanced/mocom/dental%20chair/mocom%20v10.jpg',
+            '/catalog/enhanced/mocom/dental%20chair/mocom%20f10.jpg',
+            '/catalog/mocom/handpiece/mocom%20goldspeed%20evo%20e4.jfif',
+            '/catalog/westcode/handpiece/westcode%20ap31.jfif',
+            '/catalog/westcode/handpiece/westcode%20ja20.webp',
+          ];
+          const results = [];
+          for (const path of paths) {
+            const response = await fetch(new URL(path, origin), { method: 'GET', cache: 'no-store' });
+            const result = {
+              path,
+              status: response.status,
+              contentType: response.headers.get('content-type'),
+              contentLength: response.headers.get('content-length'),
+            };
+            results.push(result);
+            console.log(JSON.stringify(result));
+            if (!response.ok || !/^image\//i.test(result.contentType || '')) {
+              throw new Error('Preview static catalogue image failed: ' + path + ' (' + response.status + ', ' + result.contentType + ')');
+            }
+            await response.arrayBuffer();
+          }
+          const fs = await import('node:fs/promises');
+          await fs.writeFile('preview-static-image-url-audit.json', JSON.stringify(results, null, 2) + '\\n');
+          await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, [
+            '### Preview static catalogue image URL audit',
+            '',
+            '| Asset path | HTTP | Content type |',
+            '|---|---:|---|',
+            ...results.map((item) => '| ' + item.path + ' | ' + item.status + ' | ' + item.contentType + ' |'),
+            '',
+          ].join('\\n'));
+          NODE
+      - name: Upload Preview static image URL audit
+        if: always() && hashFiles('preview-static-image-url-audit.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-static-image-url-audit-${{ github.sha }}
+          path: preview-static-image-url-audit.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Capture Preview desktop and mobile screenshots
         if: success()
         id: screenshots
