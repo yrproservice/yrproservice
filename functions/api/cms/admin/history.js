@@ -23,7 +23,6 @@ export async function onRequestGet(context) {
   const key = clean(params.get("entityKey"), 100);
   const config = CONFIG[type];
   if (!config || !key) return adminJson({ error: "A valid entityType and entityKey are required." }, 400);
-  let conflictSnapshot = null;
   try {
     const entity = type === "setting"
       ? await env.DB.prepare(`SELECT setting_key AS id, published_version_id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first()
@@ -76,6 +75,7 @@ export async function onRequestPost(context) {
   const type = clean(body.entityType, 20), key = clean(body.entityKey, 100), versionId = clean(body.versionId, 80);
   const config = CONFIG[type];
   if (!config || !key || !versionId) return adminJson({ error: "A valid entityType, entityKey and versionId are required." }, 400);
+  let conflictSnapshot = null;
   try {
     const entity = type === "setting"
       ? await env.DB.prepare(`SELECT setting_key AS id FROM ${config.table} WHERE ${config.key} = ? LIMIT 1`).bind(key).first()
