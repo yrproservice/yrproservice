@@ -545,6 +545,7 @@ test("CMS settings save rejects a newly appeared draft instead of overwriting it
       key: "site.navigation",
       value: { items: [{ label: "Products", url: "/products" }] },
       expectedDraftId: null,
+      expectedDraftCreatedAt: null,
     },
     { ...adminConfig, DB: db },
   ));
