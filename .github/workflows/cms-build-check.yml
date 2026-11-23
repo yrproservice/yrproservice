@@ -277,13 +277,23 @@ jobs:
                     await new Promise((resolve) => setTimeout(resolve, 120));
                   }
                   window.scrollTo(0, 0);
-                  await Promise.all(Array.from(document.images, (image) =>
+
+                  // A lazy image can remain incomplete without emitting load/error.
+                  // Bound both waits so one stalled request cannot block the audit.
+                  const imageLoads = Promise.all(Array.from(document.images, (image) =>
                     image.complete ? Promise.resolve() : new Promise((resolve) => {
                       image.addEventListener('load', resolve, { once: true });
                       image.addEventListener('error', resolve, { once: true });
                     })
                   ));
-                  await Promise.all(Array.from(document.images, (image) => image.decode?.().catch(() => {})));
+                  await Promise.race([
+                    imageLoads,
+                    new Promise((resolve) => setTimeout(resolve, 8000)),
+                  ]);
+                  await Promise.race([
+                    Promise.all(Array.from(document.images, (image) => image.decode?.().catch(() => {}))),
+                    new Promise((resolve) => setTimeout(resolve, 3000)),
+                  ]);
                 });
                 await page.waitForTimeout(300);
                 const dimensions = await page.evaluate(() => ({
