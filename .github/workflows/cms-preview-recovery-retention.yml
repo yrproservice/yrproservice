@@ -15,7 +15,7 @@ concurrency:
 jobs:
   purge-expired-preview-payloads:
     name: Purge expired payloads from Preview D1 only
-    if: github.ref == 'refs/heads/cms-development'
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/cms-development')
     runs-on: ubuntu-latest
     steps:
       - name: Check out workflow configuration
