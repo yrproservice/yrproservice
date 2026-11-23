@@ -6,6 +6,7 @@ import { DatabaseSync } from "node:sqlite";
 import { onRequestPatch as updateRequest } from "../functions/api/admin/requests.js";
 import { onRequestGet as getAdminSession, onRequestPost as startAdminSession, onRequestPatch as heartbeatAdminSession, onRequestDelete as logoutAdminSession } from "../functions/api/admin/session.js";
 import { onRequestPost as publishCms } from "../functions/api/cms/admin/publish.js";
+import { onRequestPost as saveCmsPage } from "../functions/api/cms/admin/pages.js";
 import { onRequestGet as previewCmsPage } from "../functions/api/cms/admin/preview.js";
 import { onRequestGet as getPublicCmsPages } from "../functions/api/cms/public/pages.js";
 import { onRequestPost as saveCmsSetting } from "../functions/api/cms/admin/settings.js";
@@ -137,6 +138,94 @@ function seedPublishSQLite(db) {
   insertVersion.run("previous-version", 1, "published", JSON.stringify({ sections: [] }), "2026-11-19T00:00:00.000Z");
   insertVersion.run("draft-version", 2, "draft", JSON.stringify({ sections: [] }), "2026-11-20T00:00:00.000Z");
 }
+
+function seedPageSaveSQLite(db) {
+  db.sqlite.prepare(
+    "INSERT INTO cms_pages (id, page_key, title, route) VALUES (?, ?, ?, ?)"
+  ).run("page-save-id", "cms-test-page", "Original title", "/cms-test-page");
+  db.sqlite.prepare(
+    "INSERT INTO cms_page_versions (id, page_id, version_number, state, title, route, content_json, created_at) VALUES (?, ?, 1, 'draft', ?, ?, ?, ?)"
+  ).run(
+    "page-save-draft", "page-save-id", "Original title", "/cms-test-page",
+    JSON.stringify({ sections: [] }), "2026-11-20T07:00:00.000Z"
+  );
+}
+
+function pageSaveContext(db) {
+  return adminContext(
+    "/api/cms/admin/pages",
+    {
+      pageKey: "cms-test-page",
+      title: "Updated title",
+      route: "/cms-test-page",
+      content: { sections: [] },
+      expectedDraftId: "page-save-draft",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
+    },
+    { ...adminConfig, DB: db },
+  );
+}
+
+test("CMS page save reports a concurrent draft change as 409 after the D1 batch rolls back", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedPageSaveSQLite(db);
+    db.beforeBatch = (sqlite) => {
+      sqlite.prepare("UPDATE cms_page_versions SET created_at = ? WHERE id = ?")
+        .run("2026-11-21T07:00:00.000Z", "page-save-draft");
+    };
+    const response = await saveCmsPage(pageSaveContext(db));
+    const result = await response.json();
+
+    assert.equal(response.status, 409);
+    assert.match(result.error, /changed in another session/i);
+    const draft = db.sqlite.prepare(
+      "SELECT title, content_json, created_at FROM cms_page_versions WHERE id = ?"
+    ).get("page-save-draft");
+    const page = db.sqlite.prepare("SELECT title FROM cms_pages WHERE id = ?").get("page-save-id");
+    assert.equal(draft.title, "Original title");
+    assert.equal(draft.content_json, JSON.stringify({ sections: [] }));
+    assert.equal(draft.created_at, "2026-11-21T07:00:00.000Z");
+    assert.equal(page.title, "Original title");
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally {
+    db.close();
+  }
+});
+
+test("CMS page save returns 500 and rolls back all writes when the audit insert fails", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedPageSaveSQLite(db);
+    db.beforeBatch = (sqlite) => {
+      sqlite.exec(`
+        CREATE TRIGGER fail_page_save_audit
+        BEFORE INSERT ON cms_audit_log
+        WHEN NEW.action = 'update_draft'
+        BEGIN
+          SELECT RAISE(ABORT, 'simulated audit storage failure');
+        END;
+      `);
+    };
+    const response = await saveCmsPage(pageSaveContext(db));
+    const result = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.match(result.error, /Unable to save page draft/i);
+    const draft = db.sqlite.prepare(
+      "SELECT title, content_json, created_at FROM cms_page_versions WHERE id = ?"
+    ).get("page-save-draft");
+    const page = db.sqlite.prepare("SELECT title FROM cms_pages WHERE id = ?").get("page-save-id");
+    assert.equal(draft.title, "Original title");
+    assert.equal(draft.content_json, JSON.stringify({ sections: [] }));
+    assert.equal(draft.created_at, "2026-11-20T07:00:00.000Z");
+    assert.equal(page.title, "Original title");
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+  } finally {
+    db.close();
+  }
+});
+
 
 function makeRequestDb({ exists = true } = {}) {
   const calls = [];
