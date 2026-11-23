@@ -179,18 +179,25 @@ jobs:
           const results = [];
           for (const path of paths) {
             const response = await fetch(new URL(path, origin), { method: 'GET', cache: 'no-store' });
+            const bytes = new Uint8Array(await response.arrayBuffer());
+            const isJpeg = bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+            const isPng = bytes.length >= 8 && [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((value, index) => bytes[index] === value);
+            const isWebp = bytes.length >= 12 &&
+              String.fromCharCode(...bytes.slice(0, 4)) === 'RIFF' &&
+              String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP';
             const result = {
               path,
               status: response.status,
               contentType: response.headers.get('content-type'),
               contentLength: response.headers.get('content-length'),
+              signature: isJpeg ? 'jpeg' : isPng ? 'png' : isWebp ? 'webp' : 'unknown',
+              validImageBytes: isJpeg || isPng || isWebp,
             };
             results.push(result);
             console.log(JSON.stringify(result));
-            if (!response.ok || !/^image\//i.test(result.contentType || '')) {
-              throw new Error('Preview static catalogue image failed: ' + path + ' (' + response.status + ', ' + result.contentType + ')');
+            if (!response.ok || !result.validImageBytes) {
+              throw new Error('Preview static catalogue image failed byte validation: ' + path + ' (' + response.status + ', ' + result.signature + ', ' + result.contentType + ')');
             }
-            await response.arrayBuffer();
           }
           const fs = await import('node:fs/promises');
           await fs.writeFile('preview-static-image-url-audit.json', JSON.stringify(results, null, 2) + '\\n');
