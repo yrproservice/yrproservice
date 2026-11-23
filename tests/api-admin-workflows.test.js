@@ -1140,7 +1140,7 @@ function makeExistingCmsDraftDb(type, { updateChanges = [1, 1, 1] } = {}) {
             return { id: draftId, version_number: 2, created_at: "2026-11-20T07:00:00.000Z", product_json: draftContent };
           }
           if (type === "setting" && sql.includes("FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'")) {
-            return { id: draftId, version_number: 2 };
+            return { id: draftId, version_number: 2, created_at: "2026-11-20T07:00:00.000Z" };
           }
           if (type === "setting" && sql.includes("COALESCE(MAX(version_number),0)")) return { version: 2 };
           return null;
@@ -1217,6 +1217,7 @@ test("CMS navigation setting save replaces the exact current draft with an audit
       key: "site.navigation",
       value: { items: [{ label: "Products", url: "/products" }, { label: "Services", url: "/services" }] },
       expectedDraftId: "setting-draft-id",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
       changeNote: "Update navigation",
     },
     { ...adminConfig, DB: db },
