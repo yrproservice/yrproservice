@@ -396,11 +396,13 @@ export async function onRequestPatch(context) {
     return adminJson({ error: "Send a valid media action object." }, 400);
   }
   if (body.action === "restore") {
+    let restoreSnapshot = null;
     try {
       const row = await env.DB.prepare(
         "SELECT id, storage_provider, object_key FROM cms_media WHERE id=? AND deleted_at IS NOT NULL"
       ).bind(id).first();
       if (!row) return adminJson({ error: "Archived media item not found." }, 404);
+      restoreSnapshot = { id: row.id };
       if (row.storage_provider === "r2") {
         if (!env.CMS_MEDIA) return adminJson({ error: "Preview R2 storage is unavailable. The media item remains archived." }, 503);
         const object = await env.CMS_MEDIA.head(row.object_key);
