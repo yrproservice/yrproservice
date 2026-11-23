@@ -1777,8 +1777,14 @@ h6 {
   color: #d9e9f1;
   font: 700 10px Montserrat;
 }
+
+/* Service requests use a light form surface, so keep field labels readable. */
+.service-request-form label {
+  color: var(--yr-text);
+}
 .form input,
 .form textarea,
+.service-request-form select,
 .bp-form input,
 .bp-form textarea,
 .bp-form select,
@@ -1797,6 +1803,7 @@ h6 {
 }
 .form input:focus,
 .form textarea:focus,
+.service-request-form select:focus,
 .bp-form input:focus,
 .bp-form textarea:focus,
 .bp-form select:focus,
