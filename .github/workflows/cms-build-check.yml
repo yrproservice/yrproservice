@@ -278,13 +278,19 @@ jobs:
                     window.scrollTo(0, y);
                     await new Promise((resolve) => setTimeout(resolve, 120));
                   }
-                  // Disable the site's smooth-scroll rule so full-page screenshots start at the real top.
-                  document.documentElement.style.scrollBehavior = 'auto';
-                  document.body.style.scrollBehavior = 'auto';
-                  window.scrollTo({ top: 0, behavior: 'auto' });
+                  // Cancel any in-flight smooth scroll and force the capture to the document origin.
+                  document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
+                  document.body.style.setProperty('scroll-behavior', 'auto', 'important');
+                  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+                  if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
+                  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
                   await new Promise((resolve) => requestAnimationFrame(() =>
                     requestAnimationFrame(resolve)
                   ));
+                  if (window.scrollY !== 0) {
+                    if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
+                    await new Promise((resolve) => requestAnimationFrame(resolve));
+                  }
 
                   // A lazy image can remain incomplete without emitting load/error.
                   // Bound both waits so one stalled request cannot block the audit.
