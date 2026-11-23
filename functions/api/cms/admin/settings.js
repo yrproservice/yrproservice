@@ -51,8 +51,17 @@ export async function onRequestPost(context) {
     const expectedDraftId = typeof body.expectedDraftId === "string" && body.expectedDraftId
       ? body.expectedDraftId.slice(0, 80)
       : null;
-    const draft = await db.prepare("SELECT id, version_number FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'").bind(key).first();
-    if ((draft?.id || null) !== expectedDraftId) {
+    if (!Object.prototype.hasOwnProperty.call(body, "expectedDraftCreatedAt")) {
+      return adminJson({ error: "Reload the settings list before saving; the current draft timestamp was not supplied." }, 409);
+    }
+    const expectedDraftCreatedAt = typeof body.expectedDraftCreatedAt === "string" && body.expectedDraftCreatedAt
+      ? body.expectedDraftCreatedAt.slice(0, 64)
+      : null;
+    if (expectedDraftId && !expectedDraftCreatedAt) {
+      return adminJson({ error: "Reload the settings list before saving; the current draft snapshot is incomplete." }, 409);
+    }
+    const draft = await db.prepare("SELECT id, version_number, created_at FROM cms_site_setting_versions WHERE setting_key=? AND state='draft'").bind(key).first();
+    if ((draft?.id || null) !== expectedDraftId || (draft?.created_at || null) !== expectedDraftCreatedAt) {
       return adminJson({ error: "This setting draft changed in another session. Reload the setting before saving again." }, 409);
     }
     const latest = await db.prepare("SELECT COALESCE(MAX(version_number),0) AS version FROM cms_site_setting_versions WHERE setting_key=?").bind(key).first();
