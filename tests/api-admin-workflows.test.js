@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { DatabaseSync } from "node:sqlite";
 import { onRequestPatch as updateRequest } from "../functions/api/admin/requests.js";
 import { onRequestGet as getAdminSession, onRequestPost as startAdminSession, onRequestPatch as heartbeatAdminSession, onRequestDelete as logoutAdminSession } from "../functions/api/admin/session.js";
 import { onRequestPost as publishCms } from "../functions/api/cms/admin/publish.js";
@@ -79,6 +81,62 @@ const adminConfig = {
   ACCESS_AUD: "admin-api-audience",
   ADMIN_EMAILS: "yr.proservice@gmail.com",
 };
+
+// SQLite-backed D1 adapter for transaction-integrity tests. Unlike the unit
+// mocks, it executes real SQLite statements and rolls back the entire batch.
+function makeSQLiteD1() {
+  const sqlite = new DatabaseSync(":memory:");
+  sqlite.exec(readFileSync(new URL("../migrations/0002_create_cms.sql", import.meta.url), "utf8"));
+  sqlite.exec(readFileSync(new URL("../migrations/0003_page_metadata_versions.sql", import.meta.url), "utf8"));
+  return {
+    sqlite,
+    beforeBatch: null,
+    prepare(sql) {
+      return {
+        sql,
+        values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() { return sqlite.prepare(sql).get(...this.values) ?? null; },
+        async all() { return { results: sqlite.prepare(sql).all(...this.values) }; },
+        async run() {
+          const result = sqlite.prepare(sql).run(...this.values);
+          return { meta: { changes: Number(result.changes) } };
+        },
+      };
+    },
+    async batch(statements) {
+      if (this.beforeBatch) {
+        const hook = this.beforeBatch;
+        this.beforeBatch = null;
+        hook(sqlite);
+      }
+      sqlite.exec("BEGIN");
+      try {
+        const results = statements.map((statement) => {
+          const result = sqlite.prepare(statement.sql).run(...statement.values);
+          return { meta: { changes: Number(result.changes) } };
+        });
+        sqlite.exec("COMMIT");
+        return results;
+      } catch (error) {
+        sqlite.exec("ROLLBACK");
+        throw error;
+      }
+    },
+    close() { sqlite.close(); },
+  };
+}
+
+function seedPublishSQLite(db) {
+  db.sqlite.prepare(
+    "INSERT INTO cms_pages (id, page_key, title, route, published_version_id) VALUES (?, ?, ?, ?, ?)"
+  ).run("page-id", "home", "Home", "/", "previous-version");
+  const insertVersion = db.sqlite.prepare(
+    "INSERT INTO cms_page_versions (id, page_id, version_number, state, title, route, content_json, created_at) VALUES (?, 'page-id', ?, ?, 'Home', '/', ?, ?)"
+  );
+  insertVersion.run("previous-version", 1, "published", JSON.stringify({ sections: [] }), "2026-11-19T00:00:00.000Z");
+  insertVersion.run("draft-version", 2, "draft", JSON.stringify({ sections: [] }), "2026-11-20T00:00:00.000Z");
+}
 
 function makeRequestDb({ exists = true } = {}) {
   const calls = [];
@@ -324,6 +382,63 @@ for (const entityType of ["page", "product", "setting"]) {
     assert.deepEqual(JSON.parse(batch[3].values[4]), { version: 4 });
   });
 }
+
+test("CMS publish returns 409 when another publisher wins the compare-and-swap", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedPublishSQLite(db);
+    db.sqlite.prepare(
+      "INSERT INTO cms_page_versions (id, page_id, version_number, state, title, route, content_json, created_at) VALUES ('winner-version', 'page-id', 3, 'archived', 'Home', '/', ?, '2026-11-21T00:00:00.000Z')"
+    ).run(JSON.stringify({ sections: [] }));
+    db.beforeBatch = (sqlite) => {
+      sqlite.prepare("UPDATE cms_page_versions SET state='archived' WHERE id='draft-version'").run();
+      sqlite.prepare("UPDATE cms_page_versions SET state='archived' WHERE id='previous-version'").run();
+      sqlite.prepare("UPDATE cms_page_versions SET state='published' WHERE id='winner-version'").run();
+      sqlite.prepare("UPDATE cms_pages SET published_version_id='winner-version' WHERE id='page-id'").run();
+    };
+
+    const response = await publishCms(adminContext(
+      "/api/cms/admin/publish",
+      { entityType: "page", entityKey: "home", versionId: "draft-version", expectedDraftCreatedAt: "2026-11-20T00:00:00.000Z" },
+      { ...adminConfig, DB: db },
+    ));
+    const result = await response.json();
+
+    assert.equal(response.status, 409);
+    assert.match(result.error, /changed while publishing/i);
+    assert.equal(db.sqlite.prepare("SELECT published_version_id FROM cms_pages WHERE id='page-id'").get().published_version_id, "winner-version");
+    assert.equal(db.sqlite.prepare("SELECT state FROM cms_page_versions WHERE id='draft-version'").get().state, "archived");
+    assert.equal(db.sqlite.prepare("SELECT state FROM cms_page_versions WHERE id='previous-version'").get().state, "archived");
+    assert.equal(db.sqlite.prepare("SELECT state FROM cms_page_versions WHERE id='winner-version'").get().state, "published");
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS count FROM cms_audit_log").get().count, 0);
+  } finally {
+    db.close();
+  }
+});
+
+test("CMS publish rolls back every earlier write when the audit insert fails", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedPublishSQLite(db);
+    db.sqlite.exec("CREATE TRIGGER reject_publish_audit BEFORE INSERT ON cms_audit_log WHEN NEW.action = 'publish' BEGIN SELECT RAISE(ABORT, 'simulated audit storage failure'); END;");
+
+    const response = await publishCms(adminContext(
+      "/api/cms/admin/publish",
+      { entityType: "page", entityKey: "home", versionId: "draft-version", expectedDraftCreatedAt: "2026-11-20T00:00:00.000Z" },
+      { ...adminConfig, DB: db },
+    ));
+    const result = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.match(result.error, /unable to publish/i);
+    assert.equal(db.sqlite.prepare("SELECT published_version_id FROM cms_pages WHERE id='page-id'").get().published_version_id, "previous-version");
+    assert.equal(db.sqlite.prepare("SELECT state FROM cms_page_versions WHERE id='draft-version'").get().state, "draft");
+    assert.equal(db.sqlite.prepare("SELECT state FROM cms_page_versions WHERE id='previous-version'").get().state, "published");
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS count FROM cms_audit_log").get().count, 0);
+  } finally {
+    db.close();
+  }
+});
 
 test("CMS publishing rejects archived revisions and revisions belonging to another item", async () => {
   const archivedDb = makeCmsDb({ entityType: "page", targetState: "archived" });
