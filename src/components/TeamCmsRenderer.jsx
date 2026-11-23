@@ -99,21 +99,29 @@ function TeamSection({ sectionKey, data, design, navigate }) {
       <div className="container">
         <div className="about-people-heading"><p className="eyebrow">{people.eyebrow}</p><h2>{people.title}</h2><p>{people.description}</p></div>
         <div className="about-people-grid">
-          {(people.items || []).map((item, index) => (
-            <article
-              className={`about-person person-${index + 1}`}
-              key={index}
-            >
-              <div className="about-person-image">
-                <img src={item.image} alt={item.imageAlt || ""} />
-              </div>
-              <div className="about-person-copy">
-                <span>0{index + 1}</span>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </div>
-            </article>
-          ))}
+          {(people.items || [])
+            .map((item, originalIndex) => ({ item, originalIndex }))
+            .filter(({ item }) =>
+              item?.approvedForPublication === true &&
+              typeof item.image === "string" &&
+              item.image.trim() &&
+              item.approvedImageUrl === item.image
+            )
+            .map(({ item, originalIndex }) => (
+              <article
+                className={`about-person person-${originalIndex + 1}`}
+                key={item.title}
+              >
+                <div className="about-person-image">
+                  <img src={item.image} alt={item.imageAlt || ""} />
+                </div>
+                <div className="about-person-copy">
+                  <span>0{originalIndex + 1}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </div>
+              </article>
+            ))}
         </div>
       </div>
     </section>;

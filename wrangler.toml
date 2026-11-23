@@ -18,6 +18,7 @@ ACCESS_AUD = "e146bf36a1dd4d895c0f772288e2af1713bcf8b4e23a2c3ae01c69879f20cdf9"
 ACCESS_TEAM_DOMAIN = "yr-proservice.cloudflareaccess.com"
 ADMIN_EMAILS = "yr.proservice@gmail.com"
 CMS_MEDIA_PUBLIC_BASE = "https://pub-64b2b23602564b2ca2ced6d0fa39041f.r2.dev"
+CMS_RECOVERY_RETENTION_ENABLED = "true"
 
 [[env.preview.d1_databases]]
 binding = "DB"

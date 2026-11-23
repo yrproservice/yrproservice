@@ -6,6 +6,7 @@ on:
     paths:
       - migrations/0002_create_cms.sql
       - migrations/0003_page_metadata_versions.sql
+      - migrations/0005_page_section_recovery.sql
   workflow_dispatch:
 
 permissions:
@@ -165,6 +166,33 @@ jobs:
             throw new Error('Preview page metadata migration verification failed: ' + JSON.stringify(row));
           }
           console.log('Verified Preview page metadata columns, index and backfill:', row);
+          NODE
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Apply section recovery migration to Preview database
+        run: |
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --file=migrations/0005_page_section_recovery.sql
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Verify section recovery migration in Preview database
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'cms_page_section_recovery') AS recovery_table, (SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'idx_cms_page_section_recovery_page_status') AS recovery_index;" --json > recovery-schema-verification.json
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const parsed = JSON.parse(fs.readFileSync('recovery-schema-verification.json', 'utf8'));
+          const resultSets = Array.isArray(parsed) ? parsed : [parsed];
+          const rows = resultSets.flatMap((result) => Array.isArray(result?.results) ? result.results : []);
+          if (rows.length !== 1 || Number(rows[0].recovery_table) !== 1 ||
+              Number(rows[0].recovery_index) !== 1) {
+            throw new Error('Preview section recovery schema verification failed: ' + JSON.stringify(rows));
+          }
+          console.log('Verified Preview section recovery table and index.');
           NODE
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}

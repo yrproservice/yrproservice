@@ -213,9 +213,14 @@ export default function CMSDashboard({ onAdminLogout }) {
   const [notice, setNotice] = useState("");
   const [previewDevice, setPreviewDevice] = useState("desktop");
   const [removedSections, setRemovedSections] = useState([]);
+  const [pendingRecoveryRestores, setPendingRecoveryRestores] = useState([]);
+  const [recoveryCursor, setRecoveryCursor] = useState(null);
+  const [recoveryHasMore, setRecoveryHasMore] = useState(false);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [structuredJson, setStructuredJson] = useState("{}");
   const dragSectionId = React.useRef(null);
   const sectionMediaUsageRequestId = React.useRef(0);
+  const recoveryRequestId = React.useRef(0);
   const historyRef = React.useRef({ past: [], future: [], previous: JSON.stringify({ sections: [] }), suppressNext: false });
   const [, setHistoryRevision] = useState(0);
   const homeDesign = content.design || {};
@@ -297,6 +302,18 @@ export default function CMSDashboard({ onAdminLogout }) {
     setHistoryRevision((revision) => revision + 1);
   }
 
+  function retainPendingRestoresPresentIn(nextContent) {
+    const sectionIds = new Set(
+      Array.isArray(nextContent?.sections)
+        ? nextContent.sections.map((section) => section?.id).filter(Boolean)
+        : []
+    );
+    setPendingRecoveryRestores((current) => current.filter((entryId) => {
+      const entry = removedSections.find((item) => item.id === entryId);
+      return entry && sectionIds.has(entry.section?.id);
+    }));
+  }
+
   function applyHistorySnapshot(direction) {
     if (busy) return;
     const history = historyRef.current;
@@ -309,6 +326,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       history.previous = previous;
       const restored = JSON.parse(previous);
       setContent(restored);
+      retainPendingRestoresPresentIn(restored);
       const selected = restored.sections?.find((section) => section.id === selectedSectionId) || restored.sections?.[0];
       setSelectedSectionId(selected?.id || "");
       setStructuredJson(JSON.stringify(selected?.content || {}, null, 2));
@@ -320,6 +338,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       history.previous = next;
       const restored = JSON.parse(next);
       setContent(restored);
+      retainPendingRestoresPresentIn(restored);
       const selected = restored.sections?.find((section) => section.id === selectedSectionId) || restored.sections?.[0];
       setSelectedSectionId(selected?.id || "");
       setStructuredJson(JSON.stringify(selected?.content || {}, null, 2));
@@ -365,6 +384,54 @@ export default function CMSDashboard({ onAdminLogout }) {
       active = false;
     };
   }, []);
+
+  async function loadSectionRecovery(key, { cursor = null, append = false } = {}) {
+    const requestId = ++recoveryRequestId.current;
+    if (!key) {
+      setRemovedSections([]);
+      setRecoveryCursor(null);
+      setRecoveryHasMore(false);
+      setRecoveryLoading(false);
+      return;
+    }
+    if (!append) {
+      setRemovedSections([]);
+      setRecoveryCursor(null);
+      setRecoveryHasMore(false);
+    }
+    setRecoveryLoading(true);
+    try {
+      const search = new URLSearchParams({ pageKey: key });
+      if (cursor) {
+        search.set("cursorCreatedAt", cursor.createdAt);
+        search.set("cursorId", cursor.id);
+      }
+      const response = await fetch(
+        `/api/cms/admin/section-recovery?${search.toString()}`,
+        { headers: { Accept: "application/json" }, cache: "no-store" }
+      );
+      const result = await response.json().catch(() => ({}));
+      if (response.ok && result.ok) {
+        if (requestId !== recoveryRequestId.current) return;
+        const entries = Array.isArray(result.entries) ? result.entries : [];
+        setRemovedSections((current) => append
+          ? [...current, ...entries.filter((entry) => !current.some((item) => item.id === entry.id))]
+          : entries
+        );
+        setRecoveryCursor(result.nextCursor || null);
+        setRecoveryHasMore(Boolean(result.hasMore && result.nextCursor));
+      } else if (response.status !== 404) {
+        if (requestId !== recoveryRequestId.current) return;
+        setError(result.error || "Unable to load persistent removed sections.");
+      }
+    } catch {
+      if (requestId === recoveryRequestId.current) {
+        setError("Unable to load persistent removed sections.");
+      }
+    } finally {
+      if (requestId === recoveryRequestId.current) setRecoveryLoading(false);
+    }
+  }
 
   function confirmDiscardPageEdits(action) {
     if (!hasUnsavedChanges) return true;
@@ -416,6 +483,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       setPageKey(pageData.pageKey);
       setPageTitle(pageData.title);
       setRoute(pageData.route);
+      setPendingRecoveryRestores([]);
       resetEditorHistory(pageData.content);
       setContent(pageData.content);
       setDraftId(pageData.draftId || "");
@@ -434,6 +502,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       setStructuredJson(
         JSON.stringify(firstSection?.content || {}, null, 2)
       );
+      await loadSectionRecovery(pageData.pageKey);
     } catch (loadError) {
       setError(loadError.message || "Unable to load this page.");
     } finally {
@@ -460,6 +529,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     setRoute("/");
     setContent(initial);
     setSelectedSectionId(firstSection.id);
+    setPendingRecoveryRestores([]);
     setDraftId("");
     setDraftCreatedAt(null);
     setDraftVersion(null);
@@ -502,6 +572,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     setRoute(pageRoute);
     setContent(initial);
     setSelectedSectionId(firstSection.id);
+    setPendingRecoveryRestores([]);
     setDraftId("");
     setDraftCreatedAt(null);
     setDraftVersion(null);
@@ -656,7 +727,7 @@ export default function CMSDashboard({ onAdminLogout }) {
     updateSection("proofItems", currentItems.filter((_, itemIndex) => itemIndex !== index));
   }
 
-  function removeSectionToRecoveryBin() {
+  async function removeSectionToRecoveryBin() {
     if (busy) return;
     if (!selectedSection || !pageKey) return;
 
@@ -667,35 +738,70 @@ export default function CMSDashboard({ onAdminLogout }) {
       pageKey
     );
     if (!result.entry) return;
-
-    setRemovedSections((current) => [
-      ...current.filter(
-        (item) =>
-          !(
-            item.pageKey === pageKey &&
-            item.section.id === selectedSection.id
-          )
-      ),
-      result.entry,
-    ]);
-    setContent(result.content);
-
-    const nextSelected =
-      result.content.sections.find(
+    const pendingEntry = removedSections.find(
+      (item) =>
+        item.pageKey === pageKey &&
+        item.section?.id === selectedSection.id &&
+        pendingRecoveryRestores.includes(item.id)
+    );
+    if (pendingEntry) {
+      setContent(result.content);
+      setPendingRecoveryRestores((current) =>
+        current.filter((entryId) => entryId !== pendingEntry.id)
+      );
+      const nextSelected = result.content.sections.find(
         (section) => section.id === result.nextSelectedId
       ) || null;
-
-    setSelectedSectionId(nextSelected?.id || "");
-    setStructuredJson(
-      JSON.stringify(nextSelected?.content || {}, null, 2)
-    );
-    setNotice(
-      "Section moved to the recovery bin. You can restore it or use Undo."
-    );
+      setSelectedSectionId(nextSelected?.id || "");
+      setStructuredJson(JSON.stringify(nextSelected?.content || {}, null, 2));
+      setNotice("Restoration canceled. The section remains available in the recovery bin.");
+      return;
+    }
+    setBusy(true);
     setError("");
+    try {
+      const response = await fetch("/api/cms/admin/section-recovery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          action: "remove",
+          pageKey,
+          entryId: result.entry.id,
+          expectedDraftId: draftId || null,
+          expectedDraftCreatedAt: draftCreatedAt || null,
+          section: result.entry.section,
+          originalIndex: result.entry.originalIndex,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.error || "Unable to save the removed section.");
+
+      setRemovedSections((current) => [
+        ...current.filter(
+          (item) => !(item.pageKey === pageKey && item.section.id === selectedSection.id)
+        ),
+        data.entry,
+      ]);
+      setContent(result.content);
+
+      const nextSelected =
+        result.content.sections.find(
+          (section) => section.id === result.nextSelectedId
+        ) || null;
+
+      setSelectedSectionId(nextSelected?.id || "");
+      setStructuredJson(
+        JSON.stringify(nextSelected?.content || {}, null, 2)
+      );
+      setNotice("Section moved to the persistent recovery bin. It remains available after reload.");
+    } catch (removeError) {
+      setError(removeError.message || "Unable to save the removed section.");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function restoreRemovedSection(entry) {
+  async function restoreRemovedSection(entry) {
     if (busy) return;
     if (!entry) return;
 
@@ -705,21 +811,46 @@ export default function CMSDashboard({ onAdminLogout }) {
 
     if (entry.pageKey !== pageKey || alreadyExists) return;
 
-    setContent((current) =>
-      restoreSectionToContent(current, entry, pageKey)
-    );
-    setSelectedSectionId(entry.section.id);
-    setStructuredJson(
-      JSON.stringify(entry.section.content || {}, null, 2)
-    );
-    setNotice(
-      "Section restored to its original position. Save the Preview draft to keep this change."
-    );
+    setBusy(true);
     setError("");
+    try {
+      const response = await fetch("/api/cms/admin/section-recovery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          action: "prepare_restore",
+          pageKey,
+          entryId: entry.id,
+          expectedDraftId: draftId || null,
+          expectedDraftCreatedAt: draftCreatedAt || null,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.error || "Unable to restore the removed section.");
+      if (!data.section || data.section.id !== entry.section.id) {
+        throw new Error("The recovery entry changed. Reload the page before restoring it.");
+      }
+      const pendingEntry = { ...entry, section: data.section };
+      setContent((current) => restoreSectionToContent(current, pendingEntry, pageKey));
+      setPendingRecoveryRestores((current) =>
+        current.includes(entry.id) ? current : [...current, entry.id]
+      );
+      setSelectedSectionId(data.section.id);
+      setStructuredJson(JSON.stringify(data.section.content || {}, null, 2));
+      setNotice("Section restored in the editor. Save the Preview draft to complete the recovery.");
+    } catch (restoreError) {
+      setError(restoreError.message || "Unable to restore the removed section.");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function permanentlyDiscardRemovedSection(entry) {
+  async function permanentlyDiscardRemovedSection(entry) {
     if (busy) return;
+    if (pendingRecoveryRestores.includes(entry.id)) {
+      setError("Save the restored section or remove it from the editor before discarding its recovery entry.");
+      return;
+    }
     const label =
       entry.section.content?.heading || entry.section.type || "this section";
     const confirmed = window.confirm(
@@ -727,11 +858,29 @@ export default function CMSDashboard({ onAdminLogout }) {
     );
 
     if (!confirmed) return;
-
-    setRemovedSections((current) =>
-      current.filter((item) => item.id !== entry.id)
-    );
-    setNotice("Removed section permanently discarded from this editor session.");
+    setBusy(true);
+    setError("");
+    fetch("/api/cms/admin/section-recovery", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        action: "discard",
+        pageKey,
+        entryId: entry.id,
+        expectedDraftId: draftId || null,
+        expectedDraftCreatedAt: draftCreatedAt || null,
+      }),
+    })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) throw new Error(data.error || "Unable to discard the removed section.");
+        setRemovedSections((current) => current.filter((item) => item.id !== entry.id));
+        setNotice("Removed section permanently discarded.");
+      })
+      .catch((discardError) => {
+        setError(discardError.message || "Unable to discard the removed section.");
+      })
+      .finally(() => setBusy(false));
   }
 
   function addSection(type) {
@@ -878,6 +1027,7 @@ export default function CMSDashboard({ onAdminLogout }) {
       setRoute(snapshot.route);
       resetEditorHistory(snapshot.content);
       setContent(snapshot.content);
+      retainPendingRestoresPresentIn(snapshot.content);
       const selected = snapshot.content.sections?.find((section) => section.id === selectedSectionId) || snapshot.content.sections?.[0];
       setSelectedSectionId(selected?.id || "");
       setStructuredJson(JSON.stringify(selected?.content || {}, null, 2));
@@ -932,6 +1082,7 @@ export default function CMSDashboard({ onAdminLogout }) {
           changeNote: "Visual editor update",
           expectedDraftId: draftId || null,
           expectedDraftCreatedAt: draftCreatedAt || null,
+          recoveryEntryIds: pendingRecoveryRestores,
         }),
         cache: "no-store",
       });
@@ -944,11 +1095,21 @@ export default function CMSDashboard({ onAdminLogout }) {
       setDraftId(result.draftId);
       setDraftCreatedAt(result.draftCreatedAt || null);
       setDraftVersion(result.version);
+      const resolvedRecoveryIds = Array.isArray(result.resolvedRecoveryIds)
+        ? result.resolvedRecoveryIds
+        : [];
+      setRemovedSections((current) =>
+        current.filter((entry) => !resolvedRecoveryIds.includes(entry.id))
+      );
+      setPendingRecoveryRestores((current) =>
+        current.filter((entryId) => !resolvedRecoveryIds.includes(entryId))
+      );
       setSavedSnapshot(
         JSON.stringify({ pageKey, pageTitle, route, content })
       );
       setNotice(
-        `Draft V${result.version} saved. The Preview website has not changed.`
+        `Draft V${result.version} saved. The Preview website has not changed.` +
+          (resolvedRecoveryIds.length ? " Restored sections are now saved." : "")
       );
       await loadPages();
     } catch (saveError) {
@@ -1182,25 +1343,36 @@ export default function CMSDashboard({ onAdminLogout }) {
 
 
             <details className="cms-recovery-bin">
-              <summary>Removed sections · {removedSections.filter((item) => item.pageKey === pageKey).length}</summary>
+              <summary>Removed sections · {removedSections.filter((item) => item.pageKey === pageKey).length}{recoveryHasMore ? "+" : ""}</summary>
               <p className="cms-recovery-note">
-                This recovery bin lasts for this editor session only. Restoring
-                preserves section content, ID, styling reference and original
-                position. Save the Preview draft to keep the restored version.
+                This recovery bin is persistent for 30 days and scoped to this page.
+                Restoring preserves section content, ID, design, and original position.
+                Save the restored section without editing it to complete recovery; you can edit it after saving.
               </p>
               {removedSections.filter((item) => item.pageKey === pageKey).length === 0
-                ? <p className="cms-recovery-empty">No removed sections for this page.</p>
+                ? recoveryLoading
+                  ? <p className="cms-recovery-empty">Loading removed sections…</p>
+                  : <p className="cms-recovery-empty">No removed sections for this page.</p>
                 : <ul className="cms-recovery-list">{removedSections.filter((item) => item.pageKey === pageKey).map((entry) => {
                   const alreadyPresent = content.sections.some((section) => section.id === entry.section.id);
+                  const restorePending = pendingRecoveryRestores.includes(entry.id);
                   const label = entry.section.content?.heading || SECTION_TYPES.find((type) => type.value === entry.section.type)?.label || entry.section.type;
                   return <li key={entry.id}>
-                    <div><strong>{label}</strong><small>Original position: {entry.originalIndex + 1}{alreadyPresent ? " · Already in page" : ""}</small></div>
+                    <div><strong>{label}</strong><small>Original position: {entry.originalIndex + 1}{restorePending ? " · Restored in editor; save to complete" : alreadyPresent ? " · Already in page" : ""}</small></div>
                     <div className="cms-recovery-actions">
                       <button type="button" className="admin-secondary-button" onClick={() => restoreRemovedSection(entry)} disabled={alreadyPresent || busy}>Restore</button>
-                      <button type="button" className="cms-recovery-discard" onClick={() => permanentlyDiscardRemovedSection(entry)} disabled={busy}>Discard</button>
+                      <button type="button" className="cms-recovery-discard" onClick={() => permanentlyDiscardRemovedSection(entry)} disabled={busy || restorePending}>Discard</button>
                     </div>
                   </li>;
                 })}</ul>}
+              {recoveryHasMore && <button
+                type="button"
+                className="admin-secondary-button"
+                onClick={() => loadSectionRecovery(pageKey, { cursor: recoveryCursor, append: true })}
+                disabled={busy || recoveryLoading}
+              >
+                {recoveryLoading ? "Loading…" : "Load more removed sections"}
+              </button>}
             </details>
             {pageKey === "home" && <details className="cms-home-design-panel" open>
               <summary>Visual Design Studio</summary>
@@ -1546,7 +1718,7 @@ export default function CMSDashboard({ onAdminLogout }) {
               </label>
               <label>
                 Layout variant
-                <input
+                <select
                   value={selectedSection.layout?.variant || "standard"}
                   onChange={(event) => {
                     if (busy) return;
@@ -1565,7 +1737,13 @@ export default function CMSDashboard({ onAdminLogout }) {
                       ),
                     }));
                   }}
-                />
+                >
+                  <option value="standard">Standard</option>
+                  <option value="split">Split</option>
+                  <option value="banner">Banner</option>
+                  <option value="original-services-layout">Original Services layout</option>
+                  <option value="original-team-layout">Original Team layout</option>
+                </select>
               </label>
               <label>Eyebrow / overline<input value={selectedSection.content?.eyebrow || ""} onChange={(event) => updateSection("eyebrow", event.target.value)} placeholder="SECTION LABEL" /></label>
               <label>Heading<input value={selectedSection.content?.heading || ""} onChange={(event) => updateSection("heading", event.target.value)} /></label>

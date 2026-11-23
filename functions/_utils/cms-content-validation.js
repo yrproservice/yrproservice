@@ -1,6 +1,7 @@
 const SECTION_TYPES = new Set([
   "hero", "text", "image-text", "product-grid", "feature-grid",
   "editorial", "brand-grid", "services-banner", "benefits-grid", "cta",
+  "services-page", "team-page",
 ]);
 const TEXT_FIELDS = [
   "eyebrow", "heading", "headingHighlight", "description", "imageAlt",
@@ -41,6 +42,112 @@ function validApprovedProductImage(value) {
   }
 }
 
+const DESIGN_FONT_KEYS = new Set(["headingFont", "bodyFont"]);
+const DESIGN_LENGTH_KEYS = new Set(["headingScale", "bodySize", "headingWeight", "headingLetterSpacing", "contentWidth", "sectionSpacing"]);
+const DESIGN_SECTION_KEYS = new Set(["backgroundColor", "textColor", "accentColor", "textAlign", "cardColumns"]);
+const HOME_HERO_LAYOUTS = new Set(["overlay-left", "overlay-center", "overlay-right", "overlay-bottom"]);
+const SPLIT_LAYOUTS = new Set(["split-right", "split-left", "balanced", "stacked"]);
+const SECTION_LAYOUT_VARIANTS = new Set([
+  "split", "standard", "banner", "original-services-layout", "original-team-layout",
+]);
+const TEAM_SECTION_ORDER = new Set(["hero", "story", "process", "capabilities", "people", "cta"]);
+const SERVICES_SECTION_ORDER = new Set(["hero", "intro", "listing", "process", "cta"]);
+const REQUIRED_TEAM_ROLE_IDENTITIES = [
+  "Technical Support",
+  "Installation & Service",
+  "Customer Support",
+  "Project Coordination",
+];
+
+function validImagePosition(value) {
+  if (["center", "top", "bottom", "left", "right"].includes(value)) return true;
+  if (typeof value !== "string" || value.length > 32) return false;
+  const match = /^(\d{1,3}(?:\.\d+)?)%\s+(\d{1,3}(?:\.\d+)?)%$/.exec(value);
+  return Boolean(match && Number(match[1]) <= 100 && Number(match[2]) <= 100);
+}
+
+function validateDesignValue(label, key, value) {
+  if (DESIGN_FONT_KEYS.has(key)) {
+    return ["Montserrat", "Inter", "Arial"].includes(value)
+      ? null
+      : label + ' field "' + key + '" uses an unsupported font.';
+  }
+  if (key === "headingScale") {
+    return typeof value === "number" && Number.isFinite(value) && value >= 0.8 && value <= 1.25
+      ? null : label + " headingScale must be between 0.8 and 1.25.";
+  }
+  if (key === "bodySize") {
+    return Number.isInteger(value) && value >= 13 && value <= 20
+      ? null : label + " bodySize must be a whole number between 13 and 20.";
+  }
+  if (key === "headingWeight") {
+    return Number.isInteger(value) && value >= 300 && value <= 900 && value % 100 === 0
+      ? null : label + " headingWeight must be a supported font weight.";
+  }
+  if (key === "headingLetterSpacing") {
+    return typeof value === "number" && Number.isFinite(value) && value >= -0.1 && value <= 0.1
+      ? null : label + " headingLetterSpacing must be between -0.1 and 0.1.";
+  }
+  if (key === "contentWidth") {
+    return ["compact", "standard", "wide"].includes(value)
+      ? null : label + " contentWidth must be compact, standard or wide.";
+  }
+  if (key === "sectionSpacing") {
+    return Number.isInteger(value) && value >= 36 && value <= 120
+      ? null : label + " sectionSpacing must be a whole number between 36 and 120.";
+  }
+  if (key === "cardColumns") {
+    return ["auto", "2", "3", "4"].includes(value)
+      ? null : label + " cardColumns must be auto, 2, 3 or 4.";
+  }
+  if (key === "textAlign") {
+    return ["left", "center", "right"].includes(value)
+      ? null : label + " textAlign must be left, center or right.";
+  }
+  if (["backgroundColor", "textColor", "accentColor"].includes(key)) {
+    return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value)
+      ? null : label + ' field "' + key + '" must be a six-digit hex colour.';
+  }
+  if (!DESIGN_LENGTH_KEYS.has(key) && !DESIGN_FONT_KEYS.has(key) &&
+      !DESIGN_SECTION_KEYS.has(key) && key !== "cardColumns") {
+    return label + ' uses unsupported property "' + key + '".';
+  }
+  return null;
+}
+
+function validateDesign(label, design) {
+  if (design === undefined) return null;
+  if (!isRecord(design)) return label + " must be an object.";
+  const allowedTopLevel = new Set(["global", "sections"]);
+  for (const key of Object.keys(design)) {
+    if (!allowedTopLevel.has(key)) return label + ' uses unsupported property "' + key + '".';
+  }
+  if (design.global !== undefined) {
+    if (!isRecord(design.global)) return label + " global must be an object.";
+    for (const [key, value] of Object.entries(design.global)) {
+      if (!DESIGN_FONT_KEYS.has(key) && !DESIGN_LENGTH_KEYS.has(key)) {
+        return label + ' global uses unsupported property "' + key + '".';
+      }
+      const error = validateDesignValue(label + " global", key, value);
+      if (error) return error;
+    }
+  }
+  if (design.sections !== undefined) {
+    if (!isRecord(design.sections)) return label + " sections must be an object.";
+    for (const [sectionId, sectionDesign] of Object.entries(design.sections)) {
+      if (!isRecord(sectionDesign)) return label + ' section "' + sectionId + '" design must be an object.';
+      for (const [key, value] of Object.entries(sectionDesign)) {
+        if (!DESIGN_SECTION_KEYS.has(key)) {
+          return label + ' section "' + sectionId + '" uses unsupported property "' + key + '".';
+        }
+        const error = validateDesignValue(label + ' section "' + sectionId + '"', key, value);
+        if (error) return error;
+      }
+    }
+  }
+  return null;
+}
+
 function validateSectionItem(item, index) {
   if (!isRecord(item)) return "Section item " + (index + 1) + " must be an object.";
   for (const field of ["id", "slug", "number", "title", "heading", "description", "text", "icon"]) {
@@ -55,10 +162,47 @@ function validateSectionItem(item, index) {
   return null;
 }
 
-export function validatePageContent(value) {
+function validateTeamRoleIdentities(content) {
+  const items = content?.people?.items;
+  if (!Array.isArray(items) || items.length !== REQUIRED_TEAM_ROLE_IDENTITIES.length) {
+    return "All four required Team role identities must be present.";
+  }
+  for (let index = 0; index < REQUIRED_TEAM_ROLE_IDENTITIES.length; index += 1) {
+    if (!isRecord(items[index]) ||
+        items[index].title !== REQUIRED_TEAM_ROLE_IDENTITIES[index]) {
+      return "Team roles must appear in their required order: Technical Support, Installation & Service, Customer Support, and Project Coordination.";
+    }
+  }
+  return null;
+}
+
+export function validatePageContent(value, requireTeamPage = false) {
   if (!isRecord(value)) return "Page content must be a JSON object.";
   if (!Array.isArray(value.sections)) return "Page content must contain a sections array.";
   if (value.sections.length > 80) return "A page cannot contain more than 80 sections.";
+  const contentDesignError = validateDesign("Page content design", value.design);
+  if (contentDesignError) return contentDesignError;
+  const teamPageSections = value.sections.filter((section) => section?.type === "team-page");
+  if ((requireTeamPage && teamPageSections.length !== 1) || teamPageSections.length > 1) {
+    return "A Team page must contain exactly one Team page section.";
+  }
+  const hasTeamPage = teamPageSections.length === 1;
+  const hasServicesPage = value.sections.some((section) => section?.type === "services-page");
+  if (hasTeamPage && hasServicesPage) {
+    return "A page cannot combine Team and Services page templates.";
+  }
+  const supportedSectionOrder = hasTeamPage
+    ? TEAM_SECTION_ORDER
+    : hasServicesPage
+      ? SERVICES_SECTION_ORDER
+      : new Set();
+  if (value.sectionOrder !== undefined &&
+      (!Array.isArray(value.sectionOrder) || value.sectionOrder.length > 80 ||
+       !value.sectionOrder.every((key) => typeof key === "string" &&
+         supportedSectionOrder.has(key)) ||
+       new Set(value.sectionOrder).size !== value.sectionOrder.length)) {
+    return "Page sectionOrder must be an array of supported section keys.";
+  }
 
   const ids = new Set();
   for (let index = 0; index < value.sections.length; index += 1) {
@@ -81,9 +225,54 @@ export function validatePageContent(value) {
     if (section.layout !== undefined && !isRecord(section.layout)) {
       return label + " layout must be an object.";
     }
+    if (isRecord(section.layout)) {
+      for (const key of Object.keys(section.layout)) {
+        if (!["variant", "columns", "align", "imagePosition", "imageHeight", "imageFit", "heroLayout"].includes(key)) {
+          return label + ' layout uses unsupported property "' + key + '".';
+        }
+      }
+      if (section.layout.variant !== undefined &&
+          (typeof section.layout.variant !== "string" ||
+           !SECTION_LAYOUT_VARIANTS.has(section.layout.variant))) {
+        return label + " layout variant is not supported.";
+      }
+      if (section.layout.columns !== undefined &&
+          !["auto", "2", "3", "4"].includes(section.layout.columns)) {
+        return label + " layout columns must be auto, 2, 3 or 4.";
+      }
+      if (section.layout.align !== undefined &&
+          !["left", "center", "right"].includes(section.layout.align)) {
+        return label + " layout align must be left, center or right.";
+      }
+      if (section.layout.imageHeight !== undefined &&
+          (!Number.isInteger(section.layout.imageHeight) ||
+           section.layout.imageHeight < 200 ||
+           section.layout.imageHeight > 1200)) {
+        return label + " layout imageHeight must be a whole number between 200 and 1200.";
+      }
+      if (section.layout.imageFit !== undefined &&
+          !["cover", "contain", "original"].includes(section.layout.imageFit)) {
+        return label + " layout imageFit must be cover, contain or original.";
+      }
+      if (section.layout.imagePosition !== undefined &&
+          !validImagePosition(section.layout.imagePosition)) {
+        return label + " layout imagePosition must be a supported position.";
+      }
+      if (section.layout.heroLayout !== undefined &&
+          !HOME_HERO_LAYOUTS.has(section.layout.heroLayout) &&
+          !SPLIT_LAYOUTS.has(section.layout.heroLayout)) {
+        return label + " layout heroLayout is not supported.";
+      }
+    }
+    const sectionDesignError = validateDesign(label + " design", section.design);
+    if (sectionDesignError) return sectionDesignError;
     if (!isRecord(section.content)) return label + " content must be an object.";
 
     const content = section.content;
+    if (section.type === "team-page") {
+      const roleError = validateTeamRoleIdentities(content);
+      if (roleError) return label + ": " + roleError;
+    }
     for (const field of TEXT_FIELDS) {
       if (content[field] !== undefined &&
           (typeof content[field] !== "string" || content[field].length > 4000)) {
@@ -97,6 +286,51 @@ export function validatePageContent(value) {
     }
     if (content.imageUrl && !validImageUrl(content.imageUrl)) {
       return label + " imageUrl must be a site path or HTTPS image URL.";
+    }
+    if (content.imageHeight !== undefined &&
+        (!Number.isInteger(content.imageHeight) || content.imageHeight < 200 || content.imageHeight > 1200)) {
+      return label + " imageHeight must be a whole number between 200 and 1200.";
+    }
+    if (content.imageFit !== undefined &&
+        !["cover", "contain", "original"].includes(content.imageFit)) {
+      return label + " imageFit must be cover, contain or original.";
+    }
+    if (content.imagePosition !== undefined &&
+        !validImagePosition(content.imagePosition)) {
+      return label + " imagePosition must be a supported position.";
+    }
+    if (content.layout !== undefined) {
+      const allowedLayouts = section.type === "hero"
+        ? HOME_HERO_LAYOUTS
+        : section.type === "editorial" || section.type === "services-banner"
+          ? SPLIT_LAYOUTS
+          : null;
+      if (!allowedLayouts || !allowedLayouts.has(content.layout)) {
+        return label + " content layout is not supported for this section type.";
+      }
+    }
+    if (section.type === "team-page" || section.type === "services-page") {
+      if (content.hero !== undefined && !isRecord(content.hero)) {
+        return label + " hero settings must be an object.";
+      }
+      const hero = content.hero;
+      if (hero) {
+        const allowedHeroLayouts = SPLIT_LAYOUTS;
+        if (hero.layout !== undefined &&
+            (typeof hero.layout !== "string" || !allowedHeroLayouts.has(hero.layout))) {
+          return label + " hero layout is not supported.";
+        }
+        if (hero.imageHeight !== undefined &&
+            (!Number.isInteger(hero.imageHeight) || hero.imageHeight < 200 || hero.imageHeight > 1200)) {
+          return label + " hero imageHeight must be a whole number between 200 and 1200.";
+        }
+        if (hero.imagePosition !== undefined && !validImagePosition(hero.imagePosition)) {
+          return label + " hero imagePosition must be a supported position.";
+        }
+        if (hero.imageUrl !== undefined && hero.imageUrl !== "" && !validImageUrl(hero.imageUrl)) {
+          return label + " hero imageUrl must be a site path or HTTPS image URL.";
+        }
+      }
     }
     if (content.productSlugs !== undefined &&
         (!Array.isArray(content.productSlugs) || content.productSlugs.length > 100 ||
@@ -131,6 +365,27 @@ export function validatePageContent(value) {
           if (itemError) return label + ": " + itemError;
         }
       }
+    }
+  }
+  return null;
+}
+
+export function validateTeamPublishApproval(value, required = false) {
+  if (!isRecord(value) || !Array.isArray(value.sections)) return null;
+  const teamSection = value.sections.find((section) => section?.type === "team-page");
+  if (!teamSection) {
+    return required ? "A Team page section is required before publishing." : null;
+  }
+  const roleError = validateTeamRoleIdentities(teamSection.content);
+  if (roleError) return roleError;
+  const people = teamSection.content.people;
+  for (let index = 0; index < people.items.length; index += 1) {
+    const item = people.items[index];
+    if (!isRecord(item) || typeof item.image !== "string" || !item.image.trim() || !validImageUrl(item.image)) {
+      return "Team role image " + (index + 1) + " must be a valid site or HTTPS image before publishing.";
+    }
+    if (item.approvedForPublication !== true || item.approvedImageUrl !== item.image) {
+      return "Team role image " + (index + 1) + " must be explicitly approved for its current image before publishing.";
     }
   }
   return null;

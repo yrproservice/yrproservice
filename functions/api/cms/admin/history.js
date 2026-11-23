@@ -88,7 +88,7 @@ export async function onRequestPost(context) {
       return adminJson({ error: "This archived revision contains invalid JSON and cannot be restored." }, 400);
     }
     const restoreError = type === "page"
-      ? validatePageContent(restoredValue)
+      ? validatePageContent(restoredValue, key === "team")
       : type === "product"
         ? validateProductContent(restoredValue)
         : type === "setting"

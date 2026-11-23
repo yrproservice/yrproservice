@@ -43,8 +43,8 @@ export const servicesCmsTemplate = {
         body: "Whether you need planning, repair, maintenance or compliance support, tell us what you need and our team can review the requirement with you.",
         serviceButton: "Request a Service",
         serviceUrl: "/service-request",
-        quoteButton: "Request a Quotation",
-        quoteUrl: "/quote"
+        quoteButton: "Contact Us",
+        quoteUrl: "/contact"
       }
     },
     layout: { variant: "original-services-layout" }

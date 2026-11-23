@@ -56,10 +56,10 @@ export const teamCmsTemplate = {
         title: "People behind the service.",
         description: "Different functions work together to support equipment, service and customer requirements.",
         items: [
-          { image: "/assets/team-1.jpg", imageAlt: "", title: "Technical Support", text: "Equipment guidance, troubleshooting and practical technical assistance." },
-          { image: "/assets/team-2.jpg", imageAlt: "", title: "Installation & Service", text: "Installation coordination, servicing and on-site technical support." },
-          { image: "/assets/team-3.jpg", imageAlt: "", title: "Customer Support", text: "Quotations, product enquiries and coordination with dental clinics." },
-          { image: "/assets/team-4.jpg", imageAlt: "", title: "Project Coordination", text: "Planning and coordination for dental equipment and clinic requirements." }
+          { image: "/assets/team-1.jpg", imageAlt: "", title: "Technical Support", text: "Equipment guidance, troubleshooting and practical technical assistance.", approvedForPublication: false, approvedImageUrl: "" },
+          { image: "/assets/team-2.jpg", imageAlt: "", title: "Installation & Service", text: "Installation coordination, servicing and on-site technical support.", approvedForPublication: false, approvedImageUrl: "" },
+          { image: "/assets/team-3.jpg", imageAlt: "", title: "Customer Support", text: "Quotations, product enquiries and coordination with dental clinics.", approvedForPublication: false, approvedImageUrl: "" },
+          { image: "/assets/team-4.jpg", imageAlt: "", title: "Project Coordination", text: "Planning and coordination for dental equipment and clinic requirements.", approvedForPublication: false, approvedImageUrl: "" }
         ]
       },
       cta: {

@@ -28,7 +28,7 @@ export async function onRequestGet({ request, env }) {
     }
     if (pageKey) {
       const row = await env.DB.prepare(`
-        SELECT p.page_key, p.title, p.route, v.version_number, v.content_json
+        SELECT p.page_key, v.title, v.route, v.version_number, v.content_json
         FROM cms_pages p
         JOIN cms_page_versions v ON v.id = p.published_version_id
         WHERE p.page_key = ? AND v.state = 'published'
@@ -38,7 +38,7 @@ export async function onRequestGet({ request, env }) {
       return publicJson({ ok: true, page: { ...row, content: JSON.parse(row.content_json) } });
     }
     const result = await env.DB.prepare(`
-      SELECT p.page_key, p.title, p.route, v.version_number, v.content_json
+      SELECT p.page_key, v.title, v.route, v.version_number, v.content_json
       FROM cms_pages p
       JOIN cms_page_versions v ON v.id = p.published_version_id
       WHERE v.state = 'published'

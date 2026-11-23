@@ -126,9 +126,40 @@ export default function TeamManager({ onUnsavedChange }) {
       sections: current.sections.map((section) => {
         if (section.type !== "team-page") return section;
         const items = [...(section.content[group][arrayKey] || [])];
-        items[index] = { ...items[index], [field]: value };
+        items[index] = {
+          ...items[index],
+          [field]: value,
+          ...(group === "people" && field === "image" && items[index]?.image !== value
+            ? { approvedForPublication: false, approvedImageUrl: "" }
+            : {}),
+        };
         return { ...section, content: { ...section.content, [group]: { ...section.content[group], [arrayKey]: items } } };
       })
+    }));
+  }
+
+  function updateImageApproval(index, approved) {
+    if (busy || !contentReady || reloadRequired) return;
+    setContent((current) => ({
+      ...current,
+      sections: current.sections.map((section) => {
+        if (section.type !== "team-page") return section;
+        const items = [...(section.content.people.items || [])];
+        const item = items[index];
+        if (!item) return section;
+        items[index] = {
+          ...item,
+          approvedForPublication: approved,
+          approvedImageUrl: approved ? item.image : "",
+        };
+        return {
+          ...section,
+          content: {
+            ...section.content,
+            people: { ...section.content.people, items },
+          },
+        };
+      }),
     }));
   }
 
@@ -623,8 +654,9 @@ export default function TeamManager({ onUnsavedChange }) {
         <summary>5. People behind the service · {data.people.items.length} team functions</summary>
         <p className="cms-team-guidance">
           These are the existing role/function cards, not named employee profiles.
-          No staff names or identities have been added. Keep the current approved
-          imagery unless you deliberately select another image.
+          No staff names or identities have been added. Existing role imagery is
+          not assumed to be approved: explicitly approve each image before it
+          can be published. Unapproved cards remain hidden on the public Team page.
         </p>
         <div className="cms-services-fields">
           <Field label="Eyebrow" value={data.people.eyebrow} onChange={(v) => update("people", "eyebrow", v)} />
@@ -635,10 +667,23 @@ export default function TeamManager({ onUnsavedChange }) {
           <details className="cms-services-entry" key={index} open={index === 0}>
             <summary><span>0{index + 1} · {item.title}</span><small>Role / team function</small></summary>
             <div className="cms-services-fields">
-              <Field label="Role title" value={item.title} onChange={(v) => updateItem("people", index, "title", v)} />
+              <div className="cms-services-field">
+                <span>Required role identity</span>
+                <strong>{item.title}</strong>
+                <small>The role identity is fixed. Description and image may be edited.</small>
+              </div>
               <Field label="Description" value={item.text} onChange={(v) => updateItem("people", index, "text", v)} multiline rows={3} />
               <Field label="Image alt text" value={item.imageAlt} onChange={(v) => updateItem("people", index, "imageAlt", v)} />
               <MediaPicker media={media} label="Role card image" value={item.image} onSelect={(v) => updateItem("people", index, "image", v)} />
+              <label className="cms-team-approval">
+                <input
+                  type="checkbox"
+                  checked={item.approvedForPublication === true && item.approvedImageUrl === item.image}
+                  disabled={!item.image}
+                  onChange={(event) => updateImageApproval(index, event.target.checked)}
+                />
+                <span>Approve this exact image for publication</span>
+              </label>
             </div>
           </details>
         ))}

@@ -1,0 +1,73 @@
+name: Retain CMS Recovery Payloads on Preview D1
+
+on:
+  schedule:
+    - cron: "23 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cms-preview-d1-recovery-retention
+  cancel-in-progress: false
+
+jobs:
+  purge-expired-preview-payloads:
+    name: Purge expired payloads from Preview D1 only
+    if: github.ref == 'refs/heads/cms-development'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out workflow configuration
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify Preview database identity (fail closed)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4.157.0 d1 info yr-proservice-test-db --json > d1-preview-info.json
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const expectedName = 'yr-proservice-test-db';
+          const expectedId = '7fca4ad0-3baa-4148-ad28-bfd2ef416c16';
+          const info = JSON.parse(fs.readFileSync('d1-preview-info.json', 'utf8'));
+          const values = [];
+          const visit = (value) => {
+            if (typeof value === 'string') values.push(value);
+            else if (Array.isArray(value)) value.forEach(visit);
+            else if (value && typeof value === 'object') Object.values(value).forEach(visit);
+          };
+          visit(info);
+          if (!values.includes(expectedName) || !values.includes(expectedId)) {
+            throw new Error('Preview D1 identity mismatch; refusing recovery retention cleanup.');
+          }
+          console.log('Verified Preview D1 identity:', expectedName, expectedId);
+          NODE
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Purge expired section payloads on Preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "UPDATE cms_page_section_recovery SET status = CASE WHEN status = 'active' THEN 'discarded' ELSE status END, resolved_at = CASE WHEN status = 'active' THEN strftime('%Y-%m-%dT%H:%M:%fZ', 'now') ELSE resolved_at END, resolved_by = CASE WHEN status = 'active' THEN 'retention' ELSE resolved_by END, section_json = '{}' WHERE expires_at <= strftime('%Y-%m-%dT%H:%M:%fZ', 'now') AND section_json <> '{}';"
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT COUNT(*) AS remaining_expired_payloads FROM cms_page_section_recovery WHERE expires_at <= strftime('%Y-%m-%dT%H:%M:%fZ', 'now') AND section_json <> '{}';" --json > recovery-retention-verification.json
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const parsed = JSON.parse(fs.readFileSync('recovery-retention-verification.json', 'utf8'));
+          const resultSets = Array.isArray(parsed) ? parsed : [parsed];
+          const rows = resultSets.flatMap((result) => Array.isArray(result?.results) ? result.results : []);
+          if (rows.length !== 1 || Number(rows[0].remaining_expired_payloads) !== 0) {
+            throw new Error('Preview recovery retention verification failed: ' + JSON.stringify(rows));
+          }
+          console.log('Verified expired Preview recovery payloads were purged.');
+          NODE
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
