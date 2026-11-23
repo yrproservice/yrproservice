@@ -8,6 +8,11 @@ function clean(value, max = 100) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
+function isAuditActionGuardFailure(error) {
+  return typeof error?.message === "string" &&
+    /NOT NULL constraint failed:\s*cms_audit_log\.action/i.test(error.message);
+}
+
 export async function onRequestPost(context) {
   const auth = await requireAdmin(context);
   if (!auth.ok) return auth.response;
@@ -35,6 +40,7 @@ export async function onRequestPost(context) {
       ? { table: "cms_products", keyColumn: "product_slug", versions: "cms_product_versions", foreignKey: "product_id", label: "product" }
       : { table: "cms_site_settings", keyColumn: "setting_key", versions: "cms_site_setting_versions", foreignKey: "setting_key", label: "setting" };
 
+  let publishSnapshot = null;
   try {
     const entity = entityType === "setting"
       ? await env.DB.prepare(`SELECT setting_key AS id, published_version_id FROM ${config.table} WHERE ${config.keyColumn} = ? LIMIT 1`).bind(entityKey).first()
@@ -118,6 +124,18 @@ export async function onRequestPost(context) {
     const batch = [];
     const entityKeyColumn = entityType === "setting" ? "setting_key" : "id";
     const expectedPublishedId = entity.published_version_id || null;
+    publishSnapshot = {
+      table: config.table,
+      keyColumn: config.keyColumn,
+      versions: config.versions,
+      foreignKey: config.foreignKey,
+      entityId: entity.id,
+      entityKey,
+      versionId,
+      expectedPublishedId,
+      expectedDraftCreatedAt,
+      version: target.version_number,
+    };
 
     // Make the first write conditional on the published pointer still matching
     // the revision read above. D1 batches are transactional and execute in order:
@@ -199,6 +217,40 @@ export async function onRequestPost(context) {
     return adminJson({ ok: true, entityType, entityKey, version: target.version_number, publishedAt: now });
   } catch (error) {
     console.error("CMS publish failed", error);
+    if (isAuditActionGuardFailure(error) && publishSnapshot) {
+      try {
+        // The audit NOT NULL failure is also the intentional batch-abort signal
+        // for a failed compare-and-swap. D1 has rolled the batch back before
+        // this read, so classify a conflict only when the saved snapshot moved.
+        const latest = await env.DB.prepare(`
+          SELECT e.published_version_id, v.state, v.created_at
+          FROM ${publishSnapshot.table} e
+          LEFT JOIN ${publishSnapshot.versions} v
+            ON v.id = ? AND v.${publishSnapshot.foreignKey} = ?
+          WHERE e.${publishSnapshot.keyColumn} = ?
+          LIMIT 1
+        `).bind(publishSnapshot.versionId, publishSnapshot.entityId, publishSnapshot.entityId).first();
+        if (latest?.published_version_id === publishSnapshot.versionId && latest?.state === "published") {
+          return adminJson({
+            ok: true,
+            alreadyPublished: true,
+            version: publishSnapshot.version,
+          });
+        }
+        if (
+          !latest ||
+          (latest.published_version_id || null) !== publishSnapshot.expectedPublishedId ||
+          latest.state !== "draft" ||
+          latest.created_at !== publishSnapshot.expectedDraftCreatedAt
+        ) {
+          return adminJson({
+            error: "This draft or published version changed while publishing. Refresh the item and try again.",
+          }, 409);
+        }
+      } catch (verificationError) {
+        console.error("CMS publish conflict verification failed", verificationError);
+      }
+    }
     return adminJson({ error: "Unable to publish this CMS revision." }, 500);
   }
 }
