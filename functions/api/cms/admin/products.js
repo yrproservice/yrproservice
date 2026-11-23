@@ -150,8 +150,7 @@ export async function onRequestPost(context) {
       env.DB.prepare("UPDATE cms_products SET updated_at = ? WHERE id = ? AND changes() = 1").bind(now, row.id),
       env.DB.prepare(`
         INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-        SELECT ?, ?, 'create_draft', 'product', ?, ?
-        WHERE changes() = 1
+        SELECT ?, ?, CASE WHEN changes() = 1 THEN 'create_draft' END, 'product', ?, ?
       `).bind(crypto.randomUUID(), actor, row.id, JSON.stringify({ version }))
     ]);
     if (Number(results?.[1]?.meta?.changes || 0) !== 1) {
