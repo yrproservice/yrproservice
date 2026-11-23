@@ -149,29 +149,29 @@ export async function onRequestPost(context) {
         UPDATE ${config.table} SET published_version_id = ?, updated_at = ?
         WHERE setting_key = ? AND published_version_id IS ?
           AND EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'published')
-      `).bind(versionId, now, entity.id, expectedPublishedId, versionId));
+          AND (? IS NULL OR EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'archived'))
+      `).bind(versionId, now, entity.id, expectedPublishedId, versionId, expectedPublishedId, expectedPublishedId));
     } else if (entityType === "page") {
       batch.push(env.DB.prepare(`
         UPDATE cms_pages SET title = ?, route = ?, published_version_id = ?, updated_at = ?
         WHERE id = ? AND published_version_id IS ?
           AND EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'published')
-      `).bind(target.title, target.route, versionId, now, entity.id, expectedPublishedId, versionId));
+          AND (? IS NULL OR EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'archived'))
+      `).bind(target.title, target.route, versionId, now, entity.id, expectedPublishedId, versionId, expectedPublishedId, expectedPublishedId));
     } else {
       batch.push(env.DB.prepare(`
         UPDATE ${config.table} SET published_version_id = ?, updated_at = ?
         WHERE id = ? AND published_version_id IS ?
           AND EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'published')
-      `).bind(versionId, now, entity.id, expectedPublishedId, versionId));
+          AND (? IS NULL OR EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'archived'))
+      `).bind(versionId, now, entity.id, expectedPublishedId, versionId, expectedPublishedId, expectedPublishedId));
     }
     batch.push(env.DB.prepare(`
       INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-      SELECT ?, ?, 'publish', ?, ?, ?
-      WHERE EXISTS (SELECT 1 FROM ${config.versions} WHERE id = ? AND state = 'published')
-        AND EXISTS (SELECT 1 FROM ${config.table}
-          WHERE ${entityKeyColumn} = ? AND published_version_id = ?)
+      SELECT ?, ?, CASE WHEN changes() = 1 THEN 'publish' END, ?, ?, ?
     `).bind(
       crypto.randomUUID(), auth.email || null, entityType, entity.id,
-      JSON.stringify({ version: target.version_number }), versionId, entity.id, versionId
+      JSON.stringify({ version: target.version_number })
     ));
 
     const results = await env.DB.batch(batch);
