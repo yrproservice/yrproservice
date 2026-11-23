@@ -218,14 +218,19 @@ jobs:
           path: preview-static-image-url-audit.json
           if-no-files-found: error
           retention-days: 7
+      - name: Install Playwright for Preview browser audits
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install chromium --with-deps
       - name: Capture Preview desktop and mobile screenshots
         if: success()
         id: screenshots
         shell: bash
         run: |
           set -euo pipefail
-          npm install --no-save --package-lock=false playwright@1.56.1
-          npx playwright install chromium --with-deps
           mkdir -p preview-screenshots/desktop preview-screenshots/mobile
           node --input-type=module <<'NODE'
           import { chromium } from 'playwright';
@@ -333,8 +338,22 @@ jobs:
             await browser.close();
           }
           NODE
+      - name: Audit Preview customer request journeys
+        if: success()
+        shell: bash
+        env:
+          PREVIEW_BASE_URL: https://cms-development.yrproservice.pages.dev
+        run: node scripts/preview-customer-flow-audit.mjs
+      - name: Upload Preview customer-flow audit
+        if: always() && hashFiles('preview-customer-flow-audit.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-customer-flow-audit-${{ github.sha }}
+          path: preview-customer-flow-audit.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Upload Preview screenshots
-        if: always() && steps.screenshots.outcome == 'success'
+        if: always() && hashFiles('preview-screenshots/**/*.png') != ''
         uses: actions/upload-artifact@v4
         with:
           name: cms-preview-screenshots-${{ github.sha }}
