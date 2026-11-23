@@ -30,6 +30,9 @@ jobs:
       - name: Install locked dependencies
         id: install
         run: npm ci
+      - name: Audit locked npm dependencies
+        if: ${{ steps.install.outcome == 'success' }}
+        run: npm audit --audit-level=high
       - name: Run automated tests
         if: ${{ steps.install.outcome == 'success' }}
         run: npm test
@@ -111,6 +114,9 @@ jobs:
         env:
           CLOUDFLARE_PAGES_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Audit Preview security headers and Access boundaries
+        if: success()
+        run: node scripts/preview-security-audit.mjs
       - name: Audit Preview published product image fields
         if: success()
         shell: bash
