@@ -133,16 +133,36 @@ jobs:
             throw new Error('Preview public catalogue returned an invalid response.');
           }
           const bySlug = new Map(data.products.map((product) => [product.slug, product]));
-          for (const slug of slugs) {
+          const report = slugs.map((slug) => {
             const product = bySlug.get(slug);
-            console.log(JSON.stringify({
+            return {
               slug,
               published: Boolean(product),
               archived: Array.isArray(data.archivedSlugs) && data.archivedSlugs.includes(slug),
               image: typeof product?.img === 'string' ? product.img : null,
-            }));
-          }
+            };
+          });
+          const fs = await import('node:fs/promises');
+          await fs.writeFile('preview-product-image-audit.json', JSON.stringify(report, null, 2) + '\\n');
+          const summary = [
+            '### Preview published product image audit',
+            '',
+            '| Product slug | Published | Archived | Published image |',
+            '|---|---:|---:|---|',
+            ...report.map((item) => '| ' + item.slug + ' | ' + item.published + ' | ' + item.archived + ' | ' + (item.image || '(empty)') + ' |'),
+            '',
+          ].join('\\n');
+          await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
+          for (const item of report) console.log(JSON.stringify(item));
           NODE
+      - name: Upload Preview product image audit
+        if: always() && hashFiles('preview-product-image-audit.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-product-image-audit-${{ github.sha }}
+          path: preview-product-image-audit.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Capture Preview desktop and mobile screenshots
         if: success()
         id: screenshots
