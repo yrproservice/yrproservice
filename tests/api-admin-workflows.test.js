@@ -1962,3 +1962,100 @@ test("CMS settings revision restore rolls back the draft archive and replacement
     db.close();
   }
 });
+
+
+function seedRevisionRestoreSQLite(db, type) {
+  const productContent = {
+    slug: "chair-model",
+    name: "Chair model",
+    purchaseType: "cart",
+  };
+  if (type === "product") {
+    db.sqlite.prepare(
+      "INSERT INTO cms_products (id, product_slug) VALUES (?, ?)"
+    ).run("product-id", "chair-model");
+    const insert = db.sqlite.prepare(
+      "INSERT INTO cms_product_versions (id, product_id, version_number, state, product_json, created_at) VALUES (?, 'product-id', ?, ?, ?, ?)"
+    );
+    insert.run("source-product-version", 2, "archived", JSON.stringify(productContent), "2026-11-19T07:00:00.000Z");
+    insert.run("current-product-draft", 4, "draft", JSON.stringify({ ...productContent, name: "Current draft" }), "2026-11-20T07:00:00.000Z");
+    return;
+  }
+
+  db.sqlite.prepare(
+    "INSERT INTO cms_pages (id, page_key, title, route) VALUES (?, ?, ?, ?)"
+  ).run("restore-page-id", "home", "Home", "/");
+  const insert = db.sqlite.prepare(
+    "INSERT INTO cms_page_versions (id, page_id, version_number, state, title, route, content_json, created_at) VALUES (?, 'restore-page-id', ?, ?, ?, ?, ?, ?)"
+  );
+  insert.run("source-page-version", 2, "archived", "Home", "/", JSON.stringify({ sections: [] }), "2026-11-19T07:00:00.000Z");
+  insert.run("current-page-draft", 4, "draft", "Home", "/", JSON.stringify({ sections: [{ id: "current-section", type: "hero" }] }), "2026-11-20T07:00:00.000Z");
+}
+
+function revisionRestoreSQLiteContext(db, type) {
+  return adminContext(
+    "/api/cms/admin/history",
+    {
+      entityType: type,
+      entityKey: type === "page" ? "home" : "chair-model",
+      versionId: type === "page" ? "source-page-version" : "source-product-version",
+      expectedDraftId: type === "page" ? "current-page-draft" : "current-product-draft",
+      expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
+    },
+    { ...adminConfig, DB: db },
+  );
+}
+
+for (const type of ["page", "product"]) {
+  test(`CMS ${type} revision restore rejects a concurrent draft change in real SQLite`, async () => {
+    const db = makeSQLiteD1();
+    try {
+      seedRevisionRestoreSQLite(db, type);
+      db.beforeBatch = (sqlite) => {
+        const table = type === "page" ? "cms_page_versions" : "cms_product_versions";
+        sqlite.prepare(`UPDATE ${table} SET created_at = ? WHERE id = ?`)
+          .run("2026-11-21T07:00:00.000Z", type === "page" ? "current-page-draft" : "current-product-draft");
+      };
+      const response = await restoreCmsRevision(revisionRestoreSQLiteContext(db, type));
+      assert.equal(response.status, 409);
+      assert.match((await response.json()).error, /changed in another session/i);
+
+      const table = type === "page" ? "cms_page_versions" : "cms_product_versions";
+      const draftId = type === "page" ? "current-page-draft" : "current-product-draft";
+      const draft = db.sqlite.prepare(`SELECT state, created_at FROM ${table} WHERE id = ?`).get(draftId);
+      assert.equal(draft.state, "draft");
+      assert.equal(draft.created_at, "2026-11-21T07:00:00.000Z");
+      assert.equal(db.sqlite.prepare(`SELECT COUNT(*) AS total FROM ${table} WHERE state = 'draft'`).get().total, 1);
+      assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+    } finally { db.close(); }
+  });
+
+  test(`CMS ${type} revision restore rolls back the draft archive and replacement when its audit insert fails in real SQLite`, async () => {
+    const db = makeSQLiteD1();
+    try {
+      seedRevisionRestoreSQLite(db, type);
+      db.sqlite.exec(`
+        CREATE TRIGGER fail_revision_restore_audit
+        BEFORE INSERT ON cms_audit_log
+        WHEN NEW.action = 'restore_revision_as_draft'
+        BEGIN SELECT RAISE(ABORT, 'simulated revision restore audit failure'); END;
+      `);
+      const response = await restoreCmsRevision(revisionRestoreSQLiteContext(db, type));
+      assert.equal(response.status, 500);
+      assert.match((await response.json()).error, /Unable to restore this revision/i);
+
+      const table = type === "page" ? "cms_page_versions" : "cms_product_versions";
+      const draftId = type === "page" ? "current-page-draft" : "current-product-draft";
+      const draft = db.sqlite.prepare(`SELECT state, created_at FROM ${table} WHERE id = ?`).get(draftId);
+      assert.equal(draft.state, "draft");
+      assert.equal(draft.created_at, "2026-11-20T07:00:00.000Z");
+      assert.equal(db.sqlite.prepare(`SELECT COUNT(*) AS total FROM ${table} WHERE state = 'draft'`).get().total, 1);
+      assert.equal(db.sqlite.prepare(`SELECT COUNT(*) AS total FROM ${table} WHERE version_number = 5`).get().total, 0);
+      assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
+      if (type === "page") {
+        const page = db.sqlite.prepare("SELECT title, route FROM cms_pages WHERE id = ?").get("restore-page-id");
+        assert.deepEqual(page, { title: "Home", route: "/" });
+      }
+    } finally { db.close(); }
+  });
+}
