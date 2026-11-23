@@ -1897,6 +1897,37 @@ h6 {
   height: 235px;
   object-fit: cover;
 }
+.bp-quote-help-brand {
+  min-height: 235px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: linear-gradient(135deg, #0b4a88 0%, #1e7ed8 100%);
+  color: #fff;
+  text-align: center;
+}
+.bp-quote-help-brand strong {
+  margin: 0;
+  color: #fff;
+  font: 800 96px/.82 Montserrat, sans-serif;
+  letter-spacing: -0.09em;
+}
+.bp-quote-help-brand span {
+  color: #fff;
+  font: 800 12px Montserrat, sans-serif;
+  letter-spacing: 0.18em;
+}
+.bp-quote-help-brand small {
+  color: #d2e6f0;
+  font: 600 10px Inter, sans-serif;
+  letter-spacing: 0.08em;
+}
+.bp-quote-help > .bp-quote-help-brand {
+  padding: 0;
+}
 .bp-quote-help > div {
   padding: 25px;
 }
