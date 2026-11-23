@@ -111,6 +111,38 @@ jobs:
         env:
           CLOUDFLARE_PAGES_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Audit Preview published product image fields
+        if: success()
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const origin = 'https://cms-development.yrproservice.pages.dev';
+          const slugs = [
+            'mocom-v10',
+            'mocom-f10',
+            'mocom-goldspeed-evo-e4',
+            'westcode-ap31',
+            'westcode-ja20',
+          ];
+          const response = await fetch(origin + '/api/cms/public/products', { cache: 'no-store' });
+          if (!response.ok) {
+            throw new Error('Preview public catalogue request failed: HTTP ' + response.status);
+          }
+          const data = await response.json();
+          if (!data?.ok || !Array.isArray(data.products)) {
+            throw new Error('Preview public catalogue returned an invalid response.');
+          }
+          const bySlug = new Map(data.products.map((product) => [product.slug, product]));
+          for (const slug of slugs) {
+            const product = bySlug.get(slug);
+            console.log(JSON.stringify({
+              slug,
+              published: Boolean(product),
+              archived: Array.isArray(data.archivedSlugs) && data.archivedSlugs.includes(slug),
+              image: typeof product?.img === 'string' ? product.img : null,
+            }));
+          }
+          NODE
       - name: Capture Preview desktop and mobile screenshots
         if: success()
         id: screenshots
