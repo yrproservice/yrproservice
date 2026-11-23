@@ -77,8 +77,8 @@ export async function onRequestPost(context) {
     // proceeds only when that guard affected exactly one (or zero) rows.
     if (expectedDraftId) {
       statements.push(
-        db.prepare("UPDATE cms_site_setting_versions SET state='archived' WHERE id=? AND setting_key=? AND state='draft'")
-          .bind(expectedDraftId, key)
+        db.prepare("UPDATE cms_site_setting_versions SET state='archived' WHERE id=? AND setting_key=? AND state='draft' AND created_at=?")
+          .bind(expectedDraftId, key, expectedDraftCreatedAt)
       );
     } else {
       statements.push(
