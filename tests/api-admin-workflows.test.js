@@ -1813,7 +1813,7 @@ test("CMS settings save detects a concurrent timestamp change using real SQLite 
     assert.match(result.error, /changed in another session/i);
     const versions = db.sqlite.prepare(
       "SELECT id, state, created_at FROM cms_site_setting_versions WHERE setting_key = ? ORDER BY version_number"
-    ).all("site.navigation");
+    ).all("site.navigation").map((row) => ({ ...row }));
     assert.deepEqual(versions, [{
       id: "settings-draft",
       state: "draft",
@@ -1852,7 +1852,7 @@ test("CMS settings save rolls back draft replacement and metadata when the audit
     assert.match(result.error, /Unable to save settings draft/i);
     const versions = db.sqlite.prepare(
       "SELECT id, state, value_json FROM cms_site_setting_versions WHERE setting_key = ? ORDER BY version_number"
-    ).all("site.navigation");
+    ).all("site.navigation").map((row) => ({ ...row }));
     assert.deepEqual(versions, [{
       id: "settings-draft",
       state: "draft",
