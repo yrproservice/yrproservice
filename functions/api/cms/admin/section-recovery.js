@@ -146,6 +146,7 @@ export async function onRequestPost(context) {
   }
   if (!expected) return adminJson({ error: "Invalid expected draft snapshot." }, 400);
 
+  let conflictSnapshot = null;
   try {
     const now = new Date().toISOString();
     await purgeExpiredPayloads(env.DB, env.CMS_RECOVERY_RETENTION_ENABLED);
@@ -163,6 +164,14 @@ export async function onRequestPost(context) {
       return adminJson({ error: "This page draft changed in another session. Reload the page before changing section recovery." }, 409);
     }
 
+    conflictSnapshot = {
+      pageId: page.id,
+      action,
+      entryId,
+      expectedDraftId: expected.expectedDraftId,
+      expectedDraftCreatedAt: expected.expectedDraftCreatedAt,
+      sectionId: action === "remove" && isRecord(body.section) ? clean(body.section.id, 100) : null,
+    };
     const actor = auth.email || null;
     if (action === "remove") {
       if (!isRecord(body.section) ||
@@ -350,6 +359,42 @@ export async function onRequestPost(context) {
     return adminJson({ ok: true, resolved: true, status: "discarded" });
   } catch (error) {
     console.error("CMS section recovery action failed", error);
+    if (
+      conflictSnapshot &&
+      typeof error?.message === "string" &&
+      /NOT NULL constraint failed:\\s*cms_audit_log\\.action/i.test(error.message)
+    ) {
+      try {
+        const latestDraft = await env.DB.prepare(`
+          SELECT id, created_at FROM cms_page_versions
+          WHERE page_id = ? AND state = 'draft' LIMIT 1
+        `).bind(conflictSnapshot.pageId).first();
+        const draftChanged =
+          (latestDraft?.id || null) !== conflictSnapshot.expectedDraftId ||
+          (latestDraft?.created_at || null) !== conflictSnapshot.expectedDraftCreatedAt;
+        let recoveryConflict = false;
+        if (conflictSnapshot.action === "remove" && conflictSnapshot.sectionId) {
+          const duplicate = await env.DB.prepare(`
+            SELECT id FROM cms_page_section_recovery
+            WHERE page_key = ? AND status = 'active'
+              AND expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+              AND json_extract(section_json, '$.id') = ?
+            LIMIT 1
+          `).bind(pageKey, conflictSnapshot.sectionId).first();
+          recoveryConflict = Boolean(duplicate);
+        } else if (conflictSnapshot.action === "discard") {
+          const currentEntry = await env.DB.prepare(
+            "SELECT status FROM cms_page_section_recovery WHERE id = ? AND page_key = ? LIMIT 1"
+          ).bind(conflictSnapshot.entryId, pageKey).first();
+          recoveryConflict = !currentEntry || currentEntry.status !== "active";
+        }
+        if (draftChanged || recoveryConflict) {
+          return adminJson({ error: "This recovery entry or page draft changed. Reload the page before trying again." }, 409);
+        }
+      } catch (verificationError) {
+        console.error("CMS section recovery conflict verification failed", verificationError);
+      }
+    }
     return adminJson({ error: "Unable to update the removed-section recovery entry." }, 500);
   }
 }
