@@ -1242,6 +1242,7 @@ export default function CMSManagement() {
           key: settingKey,
           value,
           expectedDraftId: settings.find((row) => row.setting_key === settingKey)?.draft_id || null,
+          expectedDraftCreatedAt: settings.find((row) => row.setting_key === settingKey)?.draft_created_at || null,
         }),
       });
 
