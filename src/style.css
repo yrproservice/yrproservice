@@ -2397,6 +2397,40 @@ h6 {
   position: relative;
   height: 350px;
 }
+.about-editorial-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(circle at 72% 28%, rgba(0, 194, 255, 0.32), transparent 36%),
+    radial-gradient(circle at 24% 78%, rgba(30, 126, 216, 0.48), transparent 42%),
+    linear-gradient(135deg, #082f57, #0b4a88 62%, #123b68);
+}
+.about-editorial-placeholder-mark {
+  color: rgba(255, 255, 255, 0.94);
+  font: 700 clamp(100px, 17vw, 210px)/0.85 Montserrat, sans-serif;
+  letter-spacing: -0.09em;
+}
+.about-editorial-placeholder-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  text-align: center;
+  color: #fff;
+}
+.about-editorial-placeholder-copy span {
+  font: 700 11px Montserrat, sans-serif;
+  letter-spacing: 0.2em;
+}
+.about-editorial-placeholder-copy b {
+  color: #a9eaff;
+  font: 600 9px Inter, sans-serif;
+  letter-spacing: 0.12em;
+}
 .about-editorial-image img {
   width: 100%;
   height: 100%;

@@ -113,8 +113,15 @@ export default function TeamManager({ onUnsavedChange }) {
     if (busy || !contentReady || reloadRequired) return;
     setContent((current) => ({
       ...current,
-      sections: current.sections.map((section) => section.type !== "team-page" ? section : {
-        ...section, content: { ...section.content, [group]: { ...section.content[group], [field]: value } }
+      sections: current.sections.map((section) => {
+        if (section.type !== "team-page") return section;
+        const currentGroup = section.content[group] || {};
+        const nextGroup = { ...currentGroup, [field]: value };
+        if (group === "hero" && field === "imageUrl" && currentGroup.imageUrl !== value) {
+          nextGroup.imageApproved = false;
+          nextGroup.approvedImageUrl = "";
+        }
+        return { ...section, content: { ...section.content, [group]: nextGroup } };
       })
     }));
   }
@@ -135,6 +142,28 @@ export default function TeamManager({ onUnsavedChange }) {
         };
         return { ...section, content: { ...section.content, [group]: { ...section.content[group], [arrayKey]: items } } };
       })
+    }));
+  }
+
+  function updateHeroImageApproval(approved) {
+    if (busy || !contentReady || reloadRequired) return;
+    setContent((current) => ({
+      ...current,
+      sections: current.sections.map((section) => {
+        if (section.type !== "team-page") return section;
+        const hero = section.content.hero || {};
+        return {
+          ...section,
+          content: {
+            ...section.content,
+            hero: {
+              ...hero,
+              imageApproved: approved,
+              approvedImageUrl: approved ? hero.imageUrl || "" : "",
+            },
+          },
+        };
+      }),
     }));
   }
 
@@ -588,6 +617,16 @@ export default function TeamManager({ onUnsavedChange }) {
           <Field label="Image overlay label" value={data.hero.imageLabel} onChange={(v) => update("hero", "imageLabel", v)} />
           <Field label="Image overlay sub-label" value={data.hero.imageSubLabel} onChange={(v) => update("hero", "imageSubLabel", v)} />
           <MediaPicker media={media} label="Hero image" value={data.hero.imageUrl} onSelect={(v) => update("hero", "imageUrl", v)} />
+          <label className="cms-team-approval">
+            <input
+              type="checkbox"
+              checked={data.hero.imageApproved === true && Boolean(data.hero.imageUrl) && data.hero.approvedImageUrl === data.hero.imageUrl}
+              disabled={!data.hero.imageUrl}
+              onChange={(event) => updateHeroImageApproval(event.target.checked)}
+            />
+            <span>Approve this exact YR Proservice team image for publication</span>
+          </label>
+          <p className="cms-team-guidance">Only approve a genuine, authorised YR Proservice team photo. Unapproved images are replaced by the brand graphic on the public Team page.</p>
         </div>
         {(data.hero.meta || []).map((item, index) => (
           <div className="cms-services-step" key={index}>

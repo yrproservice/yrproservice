@@ -24,6 +24,9 @@ function TeamSection({ sectionKey, data, design, navigate }) {
   const style = sectionStyle(design, sectionKey);
   if (sectionKey === "hero") {
     const hero = data.hero || {};
+    const heroImageApproved = hero.imageApproved === true &&
+      typeof hero.imageUrl === "string" && hero.imageUrl.trim() &&
+      hero.approvedImageUrl === hero.imageUrl;
     return <section className="about-editorial-hero team-pattern-hero team-cms-section team-cms-hero" style={style} data-layout={hero.layout || "split-right"}>
       <div className="about-orbit orbit-one" /><div className="about-orbit orbit-two" />
       <div className="container about-editorial-grid">
@@ -39,10 +42,17 @@ function TeamSection({ sectionKey, data, design, navigate }) {
           ))}
         </div>
         </div>
-        <div className="about-editorial-image" style={{height: hero.imageHeight ? `${hero.imageHeight}px` : undefined}}>
-          <img src={hero.imageUrl} alt={hero.imageAlt || ""} style={{objectPosition: hero.imagePosition || "center"}} />
-          <div className="about-image-label"><span>{hero.imageLabel}</span><b>{hero.imageSubLabel}</b></div>
-        </div>
+        {heroImageApproved ? (
+          <div className="about-editorial-image" style={{height: hero.imageHeight ? `${hero.imageHeight}px` : undefined}}>
+            <img src={hero.imageUrl} alt={hero.imageAlt || ""} style={{objectPosition: hero.imagePosition || "center"}} />
+            <div className="about-image-label"><span>{hero.imageLabel}</span><b>{hero.imageSubLabel}</b></div>
+          </div>
+        ) : (
+          <div className="about-editorial-image about-editorial-image-placeholder" style={{height: hero.imageHeight ? `${hero.imageHeight}px` : undefined}} aria-label="YR Proservice brand graphic">
+            <strong className="about-editorial-placeholder-mark">YR</strong>
+            <div className="about-editorial-placeholder-copy"><span>YR PROSERVICE</span><b>DENTAL EQUIPMENT · TECHNICAL SUPPORT</b></div>
+          </div>
+        )}
       </div>
     </section>;
   }

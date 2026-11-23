@@ -15,8 +15,10 @@ export const teamCmsTemplate = {
           { number: "02", label: "Installation" },
           { number: "03", label: "Technical support" }
         ],
-        imageUrl: "/assets/about-team.jpg",
-        imageAlt: "YR Proservice dental equipment team",
+        imageUrl: "",
+        imageAlt: "",
+        imageApproved: false,
+        approvedImageUrl: "",
         imageLabel: "YR PROSERVICE",
         imageSubLabel: "DENTAL EQUIPMENT"
       },
