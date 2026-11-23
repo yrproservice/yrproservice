@@ -114,9 +114,11 @@ export default function CMSDesignPreview() {
             const productData = await productResponse.json().catch(() => ({}));
             if (productResponse.ok && productData.ok && productData.product) {
               if (active) setSelectedProduct(mergePublishedProduct(products.find((item) => item.slug === slug), productData.product));
-            } else {
+            } else if (productResponse.status === 404 && productData.code === "CMS_PRODUCT_NOT_FOUND") {
               const staticProduct = products.find((item) => item.slug === slug);
               if (active) setSelectedProduct(staticProduct || null);
+            } else {
+              throw new Error(productData.error || "Unable to load the CMS product preview.");
             }
           }
         }
@@ -135,10 +137,12 @@ export default function CMSDesignPreview() {
     try {
       const response = await fetch("/api/cms/admin/product-preview?slug=" + encodeURIComponent(slug), { headers: { Accept: "application/json" }, cache: "no-store" });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok || !result.product) {
+      if (response.status === 404 && result.code === "CMS_PRODUCT_NOT_FOUND") {
         const staticProduct = products.find((item) => item.slug === slug);
-        if (!staticProduct) throw new Error(result.error || "Unable to load this product preview.");
+        if (!staticProduct) throw new Error(result.error || "This product is not in the CMS or static catalogue.");
         if (requestId === productPreviewRequest.current) setSelectedProduct(staticProduct);
+      } else if (!response.ok || !result.ok || !result.product) {
+        throw new Error(result.error || "Unable to load this CMS product preview.");
       } else if (requestId === productPreviewRequest.current) {
         setSelectedProduct(mergePublishedProduct(products.find((item) => item.slug === slug), result.product));
       }

@@ -16,9 +16,9 @@ export async function onRequestGet(context) {
       LEFT JOIN cms_product_versions pv ON pv.id = p.published_version_id AND pv.state = 'published'
       WHERE p.product_slug = ? LIMIT 1
     `).bind(slug).first();
-    if (!row) return adminJson({ error: "CMS product not found." }, 404);
+    if (!row) return adminJson({ error: "CMS product not found.", code: "CMS_PRODUCT_NOT_FOUND" }, 404);
     const productJson = row.draft_product || row.published_product;
-    if (!productJson) return adminJson({ error: "This product has no saved draft or published version to preview." }, 404);
+    if (!productJson) return adminJson({ error: "This product has no saved draft or published version to preview.", code: "CMS_PRODUCT_VERSION_MISSING" }, 409);
     return adminJson({
       ok: true,
       product: JSON.parse(productJson),

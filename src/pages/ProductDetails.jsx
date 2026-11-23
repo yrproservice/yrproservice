@@ -85,12 +85,17 @@ export default function ProductDetails({ product, navigate, previewMode = false 
   const [tab, setTab] = useState("description");
   const [activeProductImage, setActiveProductImage] = useState(product.img || "");
   useEffect(() => { setActiveProductImage(product.img || ""); }, [product.slug, product.img]);
-  const [catalogueProducts, setCatalogueProducts] = useState(products);
+  const [catalogueProducts, setCatalogueProducts] = useState([]);
+  const [catalogueError, setCatalogueError] = useState("");
   useEffect(() => {
     let active = true;
-    loadPublishedCatalogue().then((catalogue) => {
-      if (active) setCatalogueProducts(catalogue);
-    });
+    loadPublishedCatalogue()
+      .then((catalogue) => {
+        if (active) setCatalogueProducts(catalogue);
+      })
+      .catch((error) => {
+        if (active) setCatalogueError(error.message || "Unable to load related products.");
+      });
     return () => { active = false; };
   }, []);
   const requestFlow = getProductRequestFlow(product);
@@ -354,7 +359,9 @@ export default function ProductDetails({ product, navigate, previewMode = false 
         </aside>
       </section>
 
-      {related.length > 0 && (
+      {catalogueError ? (
+        <section className="bp-related"><div className="container"><p role="status">{catalogueError}</p></div></section>
+      ) : related.length > 0 && (
         <section className="bp-related">
           <div className="container">
             <div className="bp-section-head">

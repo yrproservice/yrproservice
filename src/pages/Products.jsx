@@ -11,12 +11,21 @@ import { matchesProductSearch } from "../data/productSearch";
 
 export default function Products({ navigate }) {
   const [search, setSearch] = useState("");
-  const [catalogueProducts, setCatalogueProducts] = useState(products);
+  const [catalogueProducts, setCatalogueProducts] = useState([]);
+  const [catalogueLoading, setCatalogueLoading] = useState(true);
+  const [catalogueError, setCatalogueError] = useState("");
   useEffect(() => {
     let active = true;
-    loadPublishedCatalogue().then((catalogue) => {
-      if (active) setCatalogueProducts(catalogue);
-    });
+    loadPublishedCatalogue()
+      .then((catalogue) => {
+        if (active) setCatalogueProducts(catalogue);
+      })
+      .catch((error) => {
+        if (active) setCatalogueError(error.message || "Unable to load the published product catalogue.");
+      })
+      .finally(() => {
+        if (active) setCatalogueLoading(false);
+      });
     return () => { active = false; };
   }, []);
 
@@ -25,6 +34,13 @@ export default function Products({ navigate }) {
   const [addedSlug, setAddedSlug] = useState("");
   const { addToCart } = useCart();
   const { addChair } = useChairRequests();
+
+  if (catalogueLoading) {
+    return <main className="bp-products"><div className="container bp-empty"><p>Loading published products…</p></div></main>;
+  }
+  if (catalogueError) {
+    return <main className="bp-products"><div className="container bp-empty"><h2>Product catalogue unavailable</h2><p>{catalogueError}</p><button className="button" type="button" onClick={() => window.location.reload()}>Reload Catalogue</button></div></main>;
+  }
 
   const categories = [
     "All",

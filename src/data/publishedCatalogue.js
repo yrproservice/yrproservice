@@ -2,7 +2,7 @@ import { products as catalogueProducts } from "./products";
 import { mergePublishedProduct } from "./productImages";
 
 export function mergePublishedCatalogue(data, fallback = catalogueProducts) {
-  if (!data?.ok || !Array.isArray(data.products)) return fallback;
+  if (!data?.ok || !Array.isArray(data.products)) throw new Error("The published product catalogue response is invalid.");
 
   const published = data.products.filter((item) =>
     item && typeof item === "object" && !Array.isArray(item) &&
@@ -31,10 +31,11 @@ export function mergePublishedCatalogue(data, fallback = catalogueProducts) {
 export async function loadPublishedCatalogue() {
   try {
     const response = await fetch("/api/cms/public/products", { cache: "no-store" });
-    if (!response.ok) return catalogueProducts;
+    if (!response.ok) throw new Error(`Unable to load the published product catalogue (HTTP ${response.status}).`);
     const data = await response.json();
     return mergePublishedCatalogue(data);
-  } catch {
-    return catalogueProducts;
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Unable to load the published product catalogue.");
   }
 }
