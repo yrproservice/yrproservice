@@ -195,8 +195,7 @@ export async function onRequestPost(context) {
         INSERT INTO cms_audit_log (
           id, actor_email, action, entity_type, entity_id, metadata_json
         )
-        SELECT ?, ?, 'restore_revision_as_draft', ?, ?, ?
-        WHERE changes() = 1
+        SELECT ?, ?, CASE WHEN changes() = 1 THEN 'restore_revision_as_draft' END, ?, ?, ?
       `).bind(
         crypto.randomUUID(), actor, type, entity.id,
         JSON.stringify({ sourceVersion: source.version_number, newVersion: nextVersion })
