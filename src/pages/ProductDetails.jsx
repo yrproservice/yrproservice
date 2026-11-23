@@ -76,27 +76,34 @@ function formatProductPrice(price) {
   }).format(numericPrice);
 }
 
-export default function ProductDetails({ product, navigate, previewMode = false }) {
+export default function ProductDetails({ product: initialProduct, navigate, previewMode = false }) {
   const { addToCart } = useCart();
   const { addChair } = useChairRequests();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [tab, setTab] = useState("description");
-  const [activeProductImage, setActiveProductImage] = useState(product.img || "");
-  useEffect(() => { setActiveProductImage(product.img || ""); }, [product.slug, product.img]);
-  const [catalogueProducts, setCatalogueProducts] = useState([]);
+  const [catalogueProducts, setCatalogueProducts] = useState(previewMode ? [initialProduct] : []);
+  const [catalogueLoading, setCatalogueLoading] = useState(!previewMode);
   const [catalogueError, setCatalogueError] = useState("");
   useEffect(() => {
     let active = true;
+    if (previewMode) return () => { active = false; };
     loadPublishedCatalogue()
       .then((catalogue) => {
         if (active) setCatalogueProducts(catalogue);
       })
       .catch((error) => {
-        if (active) setCatalogueError(error.message || "Unable to load related products.");
+        if (active) setCatalogueError(error.message || "Unable to load the published product catalogue.");
+      })
+      .finally(() => {
+        if (active) setCatalogueLoading(false);
       });
     return () => { active = false; };
-  }, []);
+  }, [previewMode, initialProduct?.slug]);
+  const publishedProduct = catalogueProducts.find((item) => item.slug === initialProduct?.slug);
+  const product = previewMode ? initialProduct : publishedProduct || initialProduct;
+  const [activeProductImage, setActiveProductImage] = useState(initialProduct?.img || "");
+  useEffect(() => { setActiveProductImage(product?.img || ""); }, [product?.slug, product?.img]);
   const requestFlow = getProductRequestFlow(product);
   const chair = requestFlow === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR;
   const related = catalogueProducts
@@ -138,6 +145,16 @@ export default function ProductDetails({ product, navigate, previewMode = false 
     : product.img || galleryImages[0]?.url || "";
 
   const manufacturerSource = safeHttpsUrl(product.manufacturerSource);
+
+  if (catalogueLoading) {
+    return <main className="bp-detail"><div className="container bp-empty"><p>Loading published product details…</p></div></main>;
+  }
+  if (catalogueError) {
+    return <main className="bp-detail"><div className="container bp-empty"><h2>Product details unavailable</h2><p>{catalogueError}</p><button className="button" type="button" onClick={() => window.location.reload()}>Reload Product</button></div></main>;
+  }
+  if (!previewMode && !publishedProduct && !initialProduct?.name) {
+    return <main className="bp-detail"><div className="container bp-empty"><h2>Product not found</h2><p>This product is not available in the published catalogue.</p><Link to="/products" navigate={navigate}>Browse Products</Link></div></main>;
+  }
 
   return (
     <main className="bp-detail">
