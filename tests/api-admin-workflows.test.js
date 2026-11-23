@@ -2054,7 +2054,8 @@ for (const type of ["page", "product"]) {
       assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
       if (type === "page") {
         const page = db.sqlite.prepare("SELECT title, route FROM cms_pages WHERE id = ?").get("restore-page-id");
-        assert.deepEqual(page, { title: "Home", route: "/" });
+        assert.equal(page.title, "Home");
+        assert.equal(page.route, "/");
       }
     } finally { db.close(); }
   });
