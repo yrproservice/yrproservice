@@ -322,9 +322,7 @@ export async function onRequestPost(context) {
         .bind(id,key,url,originalFileName,contentType,file.size,dimensions?.width || null,dimensions?.height || null,alt,auth.email || null),
       env.DB.prepare(`
         INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-        SELECT ?, ?, 'upload_media', 'media', ?, ?
-        FROM cms_media
-        WHERE id = ? AND changes() = 1
+        SELECT ?, ?, CASE WHEN changes() = 1 THEN 'upload_media' END, 'media', ?, ?
       `).bind(
         crypto.randomUUID(),
         auth.email || null,
@@ -339,7 +337,6 @@ export async function onRequestPost(context) {
           height: dimensions?.height || null,
           uploadedAt: new Date().toISOString(),
         }),
-        id,
       ),
     ]);
     databaseBatchCompleted = true;
@@ -411,8 +408,7 @@ export async function onRequestPatch(context) {
         ).bind(id),
         env.DB.prepare(`
           INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-          SELECT ?, ?, 'restore_media', 'media', ?, ?
-          WHERE changes() = 1
+          SELECT ?, ?, CASE WHEN changes() = 1 THEN 'restore_media' END, 'media', ?, ?
         `).bind(
           crypto.randomUUID(), auth.email || null, id,
           JSON.stringify({ objectKey: row.object_key, restoredAt })
@@ -468,8 +464,7 @@ export async function onRequestPatch(context) {
           .bind(...values, id, previous.original_file_name, previous.alt_text),
         env.DB.prepare(`
           INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-          SELECT ?, ?, 'update_media_metadata', 'media', ?, ?
-          WHERE changes() = 1
+          SELECT ?, ?, CASE WHEN changes() = 1 THEN 'update_media_metadata' END, 'media', ?, ?
         `).bind(crypto.randomUUID(), auth.email || null, id, JSON.stringify({ changes })),
       ];
       const results = await env.DB.batch(statements);
@@ -518,8 +513,7 @@ export async function onRequestDelete(context) {
       `).bind(deletedAt, id, row.public_url, row.public_url, row.public_url),
       env.DB.prepare(`
         INSERT INTO cms_audit_log (id, actor_email, action, entity_type, entity_id, metadata_json)
-        SELECT ?, ?, 'archive_media', 'media', ?, ?
-        WHERE changes() = 1
+        SELECT ?, ?, CASE WHEN changes() = 1 THEN 'archive_media' END, 'media', ?, ?
       `).bind(
         crypto.randomUUID(), auth.email || null, id,
         JSON.stringify({ storageProvider: row.storage_provider, objectKey: row.object_key, publicUrl: row.public_url, archivedAt: deletedAt })
