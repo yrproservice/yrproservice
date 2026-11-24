@@ -1,3 +1,23 @@
+## Services content restoration — 24 November 2026
+
+A source review found that `src/data/services.js` contained an eight-item replacement catalogue (dental chair installation, equipment installation, compressor installation, dental suction installation, underfloor piping, preventive maintenance, equipment relocation, and repair/technical support), contrary to the user's previously approved requirement to preserve the original four Services categories.
+
+Restored the original four-category content in commit `dc697df7255ab916533e80078dc513c297678ac8`:
+1. **Installation & Site Planning** — Floor-plan consultation; Chair & unit setup; System calibration.
+2. **Emergency Repair** — On-site diagnostics; Repair support; Loaner equipment.
+3. **Preventative Maintenance** — Quarterly check-ups; Wear-part replacement; Performance logging.
+4. **Compliance & Safety Audits** — X-ray calibration; Water-line testing; Sterilization audits.
+
+The Services page layout, hero/intro/process/CTA sections, and Contact Us → `/quote` routing were retained. The source data descriptions are limited to the approved original service bullets; no additional service claims were invented.
+
+Added regression coverage in commit `6f2676f2e21e0b8afa8402366b9e5426d8dda2cf` to assert the exact four titles and point lists, preserve the page sections/layout, and retain the HR Contact route protection. **The new test has not yet been executed**; the exact-head workflow/deployment must be checked before claiming it passed.
+
+Important runtime caveat: `getServicesCmsContent()` intentionally uses saved CMS `listing.items` when present, and the Services Manager says route slugs are fixed to preserve existing detail URLs. Therefore this static-template correction does not prove the currently published Preview CMS record has been restored. Read the authenticated Preview CMS content first and reconcile it safely; do not overwrite saved/published content blindly. The intended original four service entries must be preserved, with route slug compatibility checked.
+
+No product images, catalogue assets, image references, CMS image assignments, database records, or Production resources were changed.
+
+---
+
 ## Live Git and Preview deployment checkpoint — 24 November 2026
 
 - Current `cms-development` / PR #2 head at inspection: `35b90b4970e39d9d568251be02acecfd8ddd4079`.
