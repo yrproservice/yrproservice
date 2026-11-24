@@ -51,6 +51,12 @@ export const servicesCmsTemplate = {
   }]
 };
 
+export function getServiceBySlug(content, slug) {
+  if (typeof slug !== "string" || !slug) return null;
+  const page = getServicesCmsContent(content);
+  return page?.listing?.items?.find((item) => item?.slug === slug) || null;
+}
+
 export function getServicesCmsContent(content) {
   const incoming = content?.sections?.find((section) => section?.type === "services-page")?.content;
   if (!incoming || typeof incoming !== "object") return null;
