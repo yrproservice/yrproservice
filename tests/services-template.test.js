@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { servicesCmsTemplate, getServicesCmsContent } from "../src/data/servicesCmsTemplate.js";
+import { servicesCmsTemplate, getServicesCmsContent, getServiceBySlug } from "../src/data/servicesCmsTemplate.js";
 import { services } from "../src/data/services.js";
 
 const originalServices = [
@@ -56,4 +56,31 @@ test("legacy published Services CTA targeting the HR-only Contact page is safely
   });
   assert.equal(content.cta.quoteButton, "Contact Us");
   assert.equal(content.cta.quoteUrl, "/quote");
+});
+
+test("CMS-managed service detail items resolve by saved slug even when absent from the static fallback list", () => {
+  const cmsContent = {
+    ...servicesCmsTemplate,
+    sections: servicesCmsTemplate.sections.map((section) => ({
+      ...section,
+      content: {
+        ...section.content,
+        listing: {
+          ...section.content.listing,
+          items: [{
+            slug: "legacy-cms-service",
+            number: "09",
+            title: "Legacy CMS Service",
+            text: "Saved CMS service detail",
+            icon: "✓",
+            points: ["Verified service detail"],
+            detail: "Saved service detail content",
+          }],
+        },
+      },
+    })),
+  };
+
+  assert.equal(getServiceBySlug(cmsContent, "legacy-cms-service")?.title, "Legacy CMS Service");
+  assert.equal(getServiceBySlug(cmsContent, "unknown-service"), null);
 });
