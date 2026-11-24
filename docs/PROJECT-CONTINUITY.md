@@ -361,3 +361,20 @@ For every substantial work session, add a dated section at the top of this file 
 - Explicit statement that Production and PR state were not changed when applicable.
 
 Never write “complete”, “verified”, “passed”, “deployed”, “safe”, or “published” without the matching evidence. Distinguish source inspection, static tests, automated tests, browser tests, Preview deployment, authenticated runtime checks and Production readiness.
+
+
+## Automatic product-image acquisition disabled — 24 November 2026
+
+The user's current instruction is to abandon product-image acquisition and leave all product-image sourcing, selection, processing and assignment to the user so launch work can proceed without that dependency. This includes automated import workflows, not only manual image sourcing.
+
+To enforce this instruction, the following were removed from `cms-development`:
+- `.github/workflows/import-cattani-images.yml` — a push-triggered workflow with `contents: write` that downloaded Cattani AC400Q/AC600Q images, assigned them in product records and the media catalogue, committed the assets and pushed them to the branch.
+- `scripts/import-cattani-images.mjs` — the download/validation/file-write script used by that workflow.
+
+Deletion commits:
+- `4f04dbfaa23d7756961735c29cd75169e2607d3e` — remove the automatic image-import workflow.
+- `e7a5b8b69dc7e666180e2fe7138aa7d166b6d9fe` — remove the automatic image-import script.
+
+This removes the automatic acquisition/assignment path. It does **not** delete or alter existing product image assets, product records, image paths, catalogue entries or CMS media. No image asset or product image reference was changed by these deletion commits. Informational image audits remain non-blocking; safe image-reference validation may remain as code quality/security validation, but must not source, acquire, assign, replace or publish images. Do not reintroduce an automatic product-image importer unless the user explicitly changes the instruction.
+
+The documentation commits are being verified by the normal Preview build workflow. Production remains untouched and PR #2 remains Draft/unmerged.
