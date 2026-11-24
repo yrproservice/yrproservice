@@ -223,6 +223,7 @@ test("section recovery rejects a duplicate active section without replacing its 
       section: competing,
     }));
     assert.equal(response.status, 409);
+    assert.match((await response.json()).error, /already has an active recovery entry/i);
     const rows = db.sqlite.prepare(
       "SELECT id, section_json, status FROM cms_page_section_recovery"
     ).all().map((row) => ({ ...row }));
