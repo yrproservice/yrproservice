@@ -36,7 +36,10 @@ function validPageInput(body) {
   const route = clean(body.route, 160);
   if (!KEY_PATTERN.test(pageKey)) return "Page key must use lowercase letters, numbers and hyphens.";
   if (!title) return "Page title is required.";
-  const routeError = pageKey === "home" && route === "/" ? null : validatePageRoute(route);
+  const isExistingServicesRoute = pageKey === "services" && route === "/services";
+  const routeError = pageKey === "home" && route === "/" || isExistingServicesRoute
+    ? null
+    : validatePageRoute(route);
   if (routeError) return routeError;
   const contentError = validatePageContent(body.content, pageKey === "team");
   if (contentError) return contentError;
@@ -231,6 +234,9 @@ export async function onRequestPost(context) {
   try {
     let page = await env.DB.prepare("SELECT id, published_version_id FROM cms_pages WHERE page_key = ? LIMIT 1")
       .bind(pageKey).first();
+    if (!page && pageKey === "services" && route === "/services") {
+      return adminJson({ error: "The existing Services page record could not be found. Reload the CMS page list before saving." }, 409);
+    }
     const conflict = await env.DB.prepare(`
       SELECT p.id
       FROM cms_pages p

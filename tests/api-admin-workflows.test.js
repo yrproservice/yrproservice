@@ -7,6 +7,7 @@ import { onRequestPatch as updateRequest } from "../functions/api/admin/requests
 import { onRequestGet as getAdminSession, onRequestPost as startAdminSession, onRequestPatch as heartbeatAdminSession, onRequestDelete as logoutAdminSession } from "../functions/api/admin/session.js";
 import { onRequestPost as publishCms } from "../functions/api/cms/admin/publish.js";
 import { onRequestPost as saveCmsPage } from "../functions/api/cms/admin/pages.js";
+import { servicesCmsTemplate } from "../src/data/servicesCmsTemplate.js";
 import { onRequestPatch as updateCmsMedia, onRequestDelete as archiveCmsMedia } from "../functions/api/cms/admin/media.js";
 import { onRequestGet as previewCmsPage } from "../functions/api/cms/admin/preview.js";
 import { onRequestGet as getPublicCmsPages } from "../functions/api/cms/public/pages.js";
@@ -1409,6 +1410,44 @@ test("CMS page save updates the existing draft snapshot and records an audit eve
   assert.equal(db.batches[0].length, 3);
   assert.match(db.batches[0][0].sql, /content_json = \?/);
   assert.match(db.batches[0][2].sql, /THEN 'update_draft' END, 'page'/);
+});
+
+test("CMS Services page can save its reserved /services route only for its existing page record", async () => {
+  const content = JSON.parse(JSON.stringify(servicesCmsTemplate));
+  const db = makeExistingCmsDraftDb("page");
+  const response = await saveCmsPage(adminContext("/api/cms/admin/pages", {
+    pageKey: "services", title: "Services", route: "/services", content,
+    expectedDraftId: "page-draft-id", expectedDraftCreatedAt: "2026-11-20T07:00:00.000Z",
+  }, { ...adminConfig, DB: db }));
+  const result = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(result.ok, true);
+  assert.equal(result.auditRecorded, true);
+  assert.equal(result.version, 2);
+  assert.equal(db.batches.length, 1);
+});
+
+test("CMS cannot create a new page on the reserved /services route", async () => {
+  const db = makeCmsCreateDb();
+  const response = await saveCmsPage(adminContext("/api/cms/admin/pages", {
+    pageKey: "new-services-page", title: "New Services Page", route: "/services", content: { sections: [] },
+  }, { ...adminConfig, DB: db }));
+  const result = await response.json();
+  assert.equal(response.status, 400);
+  assert.match(result.error, /route is reserved/i);
+  assert.equal(db.batches.length, 0);
+});
+
+test("CMS cannot recreate the Services page when its existing page record is missing", async () => {
+  const db = makeCmsCreateDb();
+  const response = await saveCmsPage(adminContext("/api/cms/admin/pages", {
+    pageKey: "services", title: "Services", route: "/services",
+    content: JSON.parse(JSON.stringify(servicesCmsTemplate)),
+  }, { ...adminConfig, DB: db }));
+  const result = await response.json();
+  assert.equal(response.status, 409);
+  assert.match(result.error, /existing Services page record could not be found/i);
+  assert.equal(db.batches.length, 0);
 });
 
 test("CMS product save updates the existing draft snapshot and records an audit event", async () => {
