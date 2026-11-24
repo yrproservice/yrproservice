@@ -57,7 +57,28 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Check whether customer session email column exists
+        id: customer-session-email-column
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT COUNT(*) AS email_column FROM pragma_table_info('customer_request_access_sessions') WHERE name = 'email';" --json > customer-session-email-column.json
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const parsed = JSON.parse(fs.readFileSync('customer-session-email-column.json', 'utf8'));
+          const sets = Array.isArray(parsed) ? parsed : [parsed];
+          const rows = sets.flatMap((item) => Array.isArray(item?.results) ? item.results : []);
+          if (rows.length !== 1) throw new Error('Customer session email-column check returned an unexpected result.');
+          const count = Number(rows[0].email_column);
+          if (count !== 0 && count !== 1) throw new Error('Customer session email-column check returned an invalid count.');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'present=' + (count === 1 ? 'true' : 'false') + '\\n');
+          console.log('Customer session email column present:', count === 1);
+          NODE
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Apply customer session email migration to Preview only
+        if: steps.customer-session-email-column.outputs.present == 'false'
         run: npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --file=migrations/0007_customer_request_session_email.sql
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
