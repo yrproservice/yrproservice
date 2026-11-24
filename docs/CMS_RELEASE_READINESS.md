@@ -1,3 +1,24 @@
+## Live Git and Preview deployment checkpoint — 24 November 2026
+
+- Current `cms-development` / PR #2 head at inspection: `35b90b4970e39d9d568251be02acecfd8ddd4079`.
+- PR #2 is Open, Draft, unmerged, base `main`; GitHub reported mergeable=true at this inspection. Current comparison is 1,348 commits ahead, 0 behind, 132 changed files, 29,507 additions and 1,761 deletions. The large history/diff remains a mandatory complete review gate; mergeability does not mean release-ready.
+- GitHub combined commit status returned no status entries and the connector's workflow-run lookup returned no PR-triggered run records for this SHA. This connector's workflow lookup is limited to PR-triggered runs, so those empty results do not establish that no push-triggered workflow exists.
+- Cloudflare Pages deployment bot comment was refreshed at 07:55:30 UTC and reports exact commit `35b90b4` **Deploy successful**. Preview URL: `https://c532858a.yrproservice.pages.dev`; branch URL: `https://cms-development.yrproservice.pages.dev`. This confirms a Pages Preview deployment for the exact SHA, not authenticated CMS workflows or Production readiness.
+- Separate GitHub Actions workflow [#45350267061](https://github.com/yrproservice/yrproservice/actions/runs/45350267061), associated with JA20 static correction commit `2f230daf80957f02b2e9282754cc523d0914c9e9`, ended cancelled. Locked install, npm audit, tests, Vite build, Pages Functions build, Preview D1 schema check, Preview deployment/asset verification, security/Access audit, and image-status/URL audit steps completed successfully; Playwright install was cancelled and browser screenshots/customer-flow steps were skipped. Do not claim a full workflow pass.
+- Product images remain excluded from assistant work by the new user instruction. The Pages deployment success does not verify product image completeness or require image remediation.
+- No Production D1/R2, binding, secret, Access setting or deployment was changed. PR #2 was not merged.
+
+### Launch work still required (non-image scope)
+
+1. Re-run/complete exact-head automated tests, Vite and Pages Functions builds, Preview checks, Playwright screenshots and customer-flow audit on the latest source head. Record exact run results.
+2. Complete authenticated Preview CMS workflows: save draft, preview draft, publish to Preview, revision history, restore-as-new-draft, delete draft, media upload/archive/restore/reference protection, and concurrent/stale-edit conflict handling. Product-image acquisition/assignment is excluded; test media mechanics only with safe non-product test files if needed and do not change catalogue images or product references.
+3. Verify Admin Access/session behaviour and clarify/document the existing limitation: Access JWT + allowlist is enforced, but no server-side single-device lock/revocation registry is confirmed.
+4. Review Services and Team CMS defaults against the approved original content. Do not invent replacement service claims, staff names, biographies or photos; preserve unresolved items and seek verified source rather than fabricate.
+5. Complete Preview D1/R2 backup/restore and reference-integrity drills with exact resource identity and recovery proof. Do not perform Production data operations.
+6. Complete security, accessibility, responsive layout and performance review; compare to V10 only if the approved V10 source is actually available.
+7. Review all 132 changed files and 1,348-commit delta against `main`, check branch protection and CI requirements, and produce a clear release/rollback assessment.
+8. Production blockers remain: Production R2 bucket/binding/public base absent or unconfirmed in `wrangler.toml`; Production CMS D1 schema/migrations unverified; backup/PITR/restore proof unconfirmed; Access coverage for actual Production hostname unverified; `main` branch protection previously reported disabled. Production must remain untouched until separately authorized and all release gates pass.
+
 # Launch-readiness scope change — 24 November 2026
 
 The user has instructed us to proceed with all work required for a quick launch **except product-image acquisition and assignment**, which the user will handle. Do not source, acquire, generate, replace, assign, curate or otherwise change product images, image assets, paths or CMS image references. Preserve them as-is. Missing/unassigned product images are user-owned content tasks and must not block the assistant's code/CMS/security/Preview launch-readiness work. Do not invent or substitute product facts or imagery.
