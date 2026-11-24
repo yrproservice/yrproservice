@@ -224,7 +224,7 @@ function Router() {
 
   const serviceMatch = path.match(/^\/services\/([^/]+)$/);
   const servicePage = serviceMatch
-    ? services.find((service) => service.slug === serviceMatch[1])
+    ? services.find((service) => service.slug === serviceMatch[1]) || { slug: serviceMatch[1] }
     : null;
 
   const productMatch = path.match(/^\/products\/([^/]+)$/);
