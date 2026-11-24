@@ -16,7 +16,8 @@ const sources = [
     slug: "cattani-ac-600-q",
     model: "AC 600 Q",
     urls: [
-      "https://cattani.com.au/wp-content/uploads/2018/03/AC600Q_Front-1.png",
+      "      "https://www.cattani.com.au/wp-content/uploads/2025/06/013557-main.png",
+      "https://www.cattani.com.au/wp-content/uploads/2018/03/AC600Q_Front-1.png"",
     ],
   },
 ];
