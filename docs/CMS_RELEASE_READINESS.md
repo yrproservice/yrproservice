@@ -1,3 +1,15 @@
+# Launch-readiness scope change — 24 November 2026
+
+The user has instructed us to proceed with all work required for a quick launch **except product-image acquisition and assignment**, which the user will handle. Do not source, acquire, generate, replace, assign, curate or otherwise change product images, image assets, paths or CMS image references. Preserve them as-is. Missing/unassigned product images are user-owned content tasks and must not block the assistant's code/CMS/security/Preview launch-readiness work. Do not invent or substitute product facts or imagery.
+
+Continue non-image launch readiness: functional fixes, verified product text/specifications, authenticated CMS workflows, customer journeys, security, accessibility, responsive layout, performance, Preview D1/R2 integrity/recovery, deployment checks and full release-gate review. Existing automated image status reports may be noted without remediation.
+
+Workflow [#45350267061](https://github.com/yrproservice/yrproservice/actions/runs/45350267061) ended **cancelled**, not passed. Its steps 1–15 completed successfully; Playwright installation was cancelled and screenshot/customer-flow steps were skipped. Re-run relevant checks on the current exact branch head before making a launch-readiness claim. PR #2 remains Open/Draft/unmerged; Production remains untouched and requires separate explicit release approval.
+
+Permanent handover: [PROJECT-CONTINUITY.md](./PROJECT-CONTINUITY.md).
+
+---
+
 # Continuity pointer — 24 November 2026
 
 The repository's permanent start-here handover is now [docs/PROJECT-CONTINUITY.md](./PROJECT-CONTINUITY.md). Read it before continuing from a new conversation; it records the durable instructions, current JA20 work, safety boundaries, evidence links and next steps.
