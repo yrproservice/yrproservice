@@ -236,13 +236,6 @@ export default function DentalChairRequest({ navigate }) {
             <aside className="bp-cart-summary request-form-card">
               <p className="bp-eyebrow bp-eyebrow-light">CHAIR QUOTATION</p>
               <h2>Tell Us About Your Clinic</h2>
-              <Link
-                to="/quote"
-                navigate={navigate}
-                className="bp-btn bp-btn-outline-blue request-quote-link"
-              >
-                Continue to Quotation →
-              </Link>
               <form className="form" onSubmit={handleSubmit}>
                 <input
                   type="hidden"
