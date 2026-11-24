@@ -13,6 +13,7 @@ permissions:
 jobs:
   verify-preview-schema:
     name: Read-only request history schema check
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/cms-development'
     runs-on: ubuntu-24.04
     steps:
       - name: Check out selected branch
