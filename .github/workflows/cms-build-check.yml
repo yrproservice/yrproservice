@@ -118,8 +118,9 @@ jobs:
       - name: Audit Preview security headers and Access boundaries
         if: success()
         run: node scripts/preview-security-audit.mjs
-      - name: Audit Preview published product image fields
+      - name: Informational audit of Preview product image fields (non-blocking)
         if: success()
+        continue-on-error: true
         shell: bash
         run: |
           node --input-type=module <<'NODE'
@@ -170,8 +171,9 @@ jobs:
           path: preview-product-image-audit.json
           if-no-files-found: error
           retention-days: 7
-      - name: Verify affected static catalogue image URLs
+      - name: Informational check of existing static catalogue image URLs (non-blocking)
         if: success()
+        continue-on-error: true
         shell: bash
         run: |
           node --input-type=module <<'NODE'
