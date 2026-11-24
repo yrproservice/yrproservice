@@ -1,3 +1,13 @@
+## Verified automated core checks — 24 November 2026, 08:12 UTC
+
+- GitHub Actions push workflow run: `45353899185` — [CMS Preview Build Check](https://github.com/yrproservice/yrproservice/actions/runs/45353899185).
+- Exact tested commit: `cd79fa21d946f4139ae65bd24a8f2450b5920287`.
+- At inspection, these steps were completed with `success`: locked `npm ci`; `npm audit --audit-level=high`; `npm test`; Vite `npm run build`; Cloudflare Pages Functions build; Preview D1 schema readiness query; Preview branch deployment/asset verification; Preview security headers and Access boundaries audit.
+- The informational Preview product image fields audit and static image URL audit also completed; these are non-blocking and do not create image acquisition or assignment tasks. Product images remain user-owned.
+- Playwright installation was still `in_progress` at the latest step inspection. Desktop/mobile screenshots, customer request journey audit and artifact uploads were pending. Overall run status was still `in_progress`; do not call the workflow fully passed until the final run conclusion is `success`.
+- This is the first confirmed exact-head automated evidence for the Services API/routing tests and product-image gate exclusions.
+- No Preview D1/R2 content was changed by the verification steps. Production remains untouched. PR #2 remains Open, Draft and unmerged.
+
 ## Post-review deployment and PR status refresh — 24 November 2026, 08:11 UTC
 
 - Documentation commits: `6938754375ba184ad6945d93581fd2384fceddc8` (continuity) and `735f99d793d11a8e2c46b0aa3800e990d826d5de` (release readiness).
