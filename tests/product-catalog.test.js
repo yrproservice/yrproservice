@@ -26,10 +26,7 @@ test("every assigned catalogue image exists in the repository", () => {
 
 test("only exact-model image gaps remain unassigned", () => {
   const missing = products.filter((product) => !product.img).map((product) => product.slug).sort();
-  assert.deepEqual(missing, [
-    "cattani-ac-400-q",
-    "cattani-ac-600-q",
-  ]);
+  assert.deepEqual(missing, []);
 });
 
 
@@ -50,8 +47,8 @@ test("Cattani AC 400 Q and AC 600 Q use exact manufacturer technical data", () =
   assert.equal(ac400q.manufacturerSource, "https://cattaniasia.com/wp-content/uploads/2026/01/2026-Catalogue-Asia_Region-1_web.pdf");
   assert.ok(ac600q.specifications.includes("Air delivery at 5 bar: 476 N l/min"));
   assert.ok(ac600q.specifications.includes("Sound pressure level: 70.4 dB(A)"));
-  assert.equal(ac400q.img, "");
-  assert.equal(ac600q.img, "");
+  assert.equal(ac400q.img, "/catalog/cattani/images/ac-400-q.png?v=20261021-official");
+  assert.equal(ac600q.img, "/catalog/cattani/images/ac-600-q.png?v=20261021-official");
 });
 
 test("Fussen imaging plate scanner is matched to the official F200 model and specifications", () => {
