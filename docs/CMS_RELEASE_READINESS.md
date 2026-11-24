@@ -1825,3 +1825,16 @@ Release blockers remain unchanged: Production CMS R2 binding/public base is not 
 - The README was corrected in this checkpoint to describe the current test/build/screenshot pipeline and distinguish automated checks from outstanding authenticated runtime/recovery checks.
 - Authenticated Preview browser workflows, concurrent editor testing, live Preview D1/R2 recovery and reference-integrity drills, accessibility/performance review, visual comparison against V10, full PR history/diff review, and backup/recovery evidence remain open gates.
 - Production release remains **not approved**. Production D1/R2, deployment, data, bindings and Access configuration were not changed. PR #2 remains unmerged and Draft.
+
+
+## Preview workflow dispatch safety — 24 November 2026
+
+- Current source checkpoint before this documentation update: `b41d339affc491c3bfe51d0c3fe411c6188737c7` on `cms-development`.
+- Added a job-level manual-dispatch ref guard to the Preview build, CMS migration, customer-request-access migration, request-history migration, and request-history schema-check workflows. Manual `workflow_dispatch` runs are allowed only when `github.ref == 'refs/heads/cms-development'`.
+- The scheduled recovery-retention workflow retains its separate schedule allowance and its existing restriction on manual dispatch to `cms-development`.
+- Removed the customer-request-access migration workflow's self-file path from `push.paths`, so workflow-only edits do not trigger that migration.
+- Added a read-only Preview D1 column check before migration 0007; the `ALTER TABLE ... ADD COLUMN email` migration now runs only when the column is absent. Migration 0006 uses `CREATE TABLE/INDEX IF NOT EXISTS`.
+- **Execution caveat:** intermediate commit `ea2001d8f1b4f6ffc02a834f21e9e54ce8b2c43a` changed the customer-access workflow while its previous version still included its own path in `push.paths`. That commit matched the old push filter and may have queued the Preview migration workflow. The available GitHub connector exposes only PR-triggered workflow runs, not push-triggered run history or cancellation; whether the automatic run executed is therefore unverified. If it ran, 0006 is idempotent and 0007 may have failed at the duplicate-column step if the column was already present. Both target only `yr-proservice-test-db` and retain the exact Preview database identity check. Production is not a target.
+- No manual migration dispatch was performed. Do not report migration execution as absent or successful until Actions history and the Preview schema are checked.
+- PR #2 remains Open, Draft, and unmerged. No Production D1/R2, binding, secret, or deployment change was made.
+- Exact-head combined status and the connector's PR-filtered workflow-run lookup returned no entries; current push-triggered CI/Preview result remains unverified.
