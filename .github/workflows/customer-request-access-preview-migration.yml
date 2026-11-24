@@ -6,7 +6,6 @@ on:
     paths:
       - migrations/0006_customer_request_access.sql
       - migrations/0007_customer_request_session_email.sql
-      - .github/workflows/customer-request-access-preview-migration.yml
   workflow_dispatch:
 
 permissions:
