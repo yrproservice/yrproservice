@@ -1,3 +1,23 @@
+## Admin authentication and CMS media recovery source review — 24 November 2026
+
+- Reviewed `functions/_utils/admin-auth.js`, `tests/admin-auth.test.js`, `functions/api/cms/admin/media.js`, and the Preview security audit script at branch head `0c9543d0bcbaddcbefa944d1d59587f9738014f7`.
+- Admin API source validates the Cloudflare Access RS256 JWT signature using the Access certificate set, requires the configured issuer and audience, checks expiry and not-before, enforces the one configured authorized email, and fails closed when Access configuration or certificate retrieval is unavailable. Existing unit-test source covers malformed tokens, wrong algorithm/issuer/audience/expiry/not-before, unknown signing keys, invalid signatures, unauthorized email, missing/broadened admin configuration, valid token and certificate-fetch failure.
+- This is source inspection only. The auth test file was not executed in this session, and actual Preview Access challenge / authenticated Admin API tests still require workflow or authenticated browser evidence. No claim is made that the full security audit passed.
+- Admin session is still not a server-side single-device lock or revocation registry. Concurrent use of the approved shared account remains possible; do not describe local browser state as a security boundary.
+- Media API source validates uploaded image bytes and detected MIME type, rejects SVG/unknown formats, limits uploads to 12 MiB, and records R2 metadata/audit events with ambiguous D1 outcomes handled conservatively.
+- Media archive is a soft archive: before archive it checks references in saved page, product and site-setting versions; the D1 update repeats the reference guard to cover a concurrent reference; R2 object is retained for recovery. Restore checks that the R2 object exists before unarchiving. No product image files, image paths, product CMS references, or media objects were changed.
+- Media history/reference inspection is source-reviewed, not runtime-tested against Preview. Media API regression coverage for archive/restore/reference races and R2 object recovery remains to be verified.
+- No D1 or R2 records were mutated in this review. Production remains untouched; PR #2 remains Draft and unmerged.
+
+### Current verified repository / deployment checkpoint
+
+- Branch: `cms-development`.
+- Exact branch head at start of this review: `0c9543d0bcbaddcbefa944d1d59587f9738014f7`.
+- Cloudflare Pages bot confirmed deployment success for exact commit `0c9543d`; branch Preview URL: `https://cms-development.yrproservice.pages.dev`; immutable deployment URL: `https://b82f9a11.yrproservice.pages.dev`.
+- PR #2: Open, Draft, unmerged; GitHub reported mergeable at the previous check; 132 changed files, 1,374 commits ahead of `main`, 0 behind. This history delta and full diff review remain release blockers.
+- The GitHub connector available in this session does not expose workflow-dispatch or general push-run listing. Its commit workflow lookup is limited to PR-triggered runs. No exact-head npm test/build/Playwright run result could be retrieved; empty PR-run/status results must not be interpreted as a pass.
+- Next: obtain exact-head CI evidence through Actions, inspect screenshot/customer-flow artifacts, then authenticated read-only Preview CMS verification and runtime draft/revision/media/backup-recovery tests. Keep image acquisition/assignment user-owned and do not block launch checks on missing product images.
+
 ## Launch-readiness verification checkpoint — 24 November 2026, 08:04 UTC
 
 - Exact `cms-development` head at inspection: `aa16d4c48814edd2b87ef0b2a1706fa35cf28546`.
