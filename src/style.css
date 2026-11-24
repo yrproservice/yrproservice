@@ -5296,3 +5296,24 @@ h6 {
   .customer-request-status { white-space: normal; }
   .customer-reference-tracking { padding: 14px; }
 }
+
+.customer-request-access-notice {
+  margin: 4px 0 0;
+  padding: 12px 14px;
+  border: 1px solid #b8d9ef;
+  border-radius: 10px;
+  background: #eaf6fd;
+  color: #0b3157;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.customer-request-access-form input:disabled {
+  cursor: not-allowed;
+  background: #f5f7fa;
+  color: #687280;
+  opacity: 1;
+}
+.customer-request-access-form button:disabled {
+  cursor: not-allowed;
+  opacity: .58;
+}
