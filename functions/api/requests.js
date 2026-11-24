@@ -228,7 +228,7 @@ export async function onRequest({ request, env }) {
               : "Quotation request submitted without additional message."),
           location ? `Location: ${location}` : "",
           productSelection
-            ? `${requestType === "dental_chair" ? "Dental Chair Models" : "Products / Chairs"}: ${productSelection}`
+            ? `${requestType === "dental_chair" ? "Dental Chair Models" : "Products"}: ${productSelection}`
             : "",
         ]
           .filter(Boolean)
