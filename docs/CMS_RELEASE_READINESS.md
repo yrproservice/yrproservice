@@ -1,3 +1,12 @@
+## Product-image completeness removed from launch test gates — 24 November 2026
+
+- Test change commit: `7758f298bf6b0e2f59a26b782d54c0567702c1a1`.
+- In `tests/product-catalog.test.js`, image file-existence, "all product image gaps assigned", and the MELAG image assignment checks are now explicitly skipped with reasons stating that product-image acquisition/completeness is user-owned and not a launch gate.
+- Manufacturer/product specification assertions remain active. The existing static image path policy and CMS image URL/security validation tests remain active because they validate safe reference handling, not image sourcing or acquisition.
+- No product images, files, paths, references, or CMS image assignments were changed. Existing product records are preserved. The product cards already render a neutral "Product image unavailable" placeholder when an image is blank or fails, so missing product images need not block core browsing.
+- This is a test-source change only; it has not yet been executed by an exact-head workflow. Do not claim it passed until verified.
+- The previous workflow's two image audit steps remain informational/non-blocking (`continue-on-error: true`).
+
 ## Non-blocking product-image audit workflow adjustment — 24 November 2026
 
 - Workflow commit `8e59ecbaacbffb3e9f21ac789ffadefde14ec53f` changes the Preview product-image-field audit and existing static catalogue image URL check to `continue-on-error: true`. The checks may still report their findings for visibility, but failures in product-image status/URL checks no longer stop the rest of the build/browser/customer-flow pipeline.
