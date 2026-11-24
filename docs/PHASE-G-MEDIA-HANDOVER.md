@@ -1913,3 +1913,12 @@ The media lifecycle audit wording above has been corrected: a zero-row condition
 ## Superseding pagination note — 20 November 2026
 
 The earlier “Media library list: maximum 300 loaded records” note above is outdated. Current source uses keyset pagination with **100 records per page**, with Previous/Next navigation; this is a page-size limit, not a total library cap. The R2 orphan scan is independently bounded to 100 objects per request and can continue with its cursor. See `docs/CMS_RELEASE_READINESS.md` → “Media recovery and inventory continuation — 20 November 2026” for the current source-review details. This correction does not represent a live R2 inventory or runtime verification.
+
+
+## Preview workflow dispatch hardening handover — 24 November 2026
+
+- Source checkpoint: `b41d339affc491c3bfe51d0c3fe411c6188737c7` on `cms-development`.
+- Manual dispatch is now restricted to `cms-development` for the Preview build and Preview D1 migration/schema-check workflows. The scheduled recovery-retention workflow keeps its schedule path and branch-restricted manual dispatch.
+- Customer-access migration workflow no longer self-triggers on its own file edit; migration 0007 is conditionally applied only if the Preview customer-session `email` column is absent.
+- Important unresolved verification: intermediate commit `ea2001d8f1b4f6ffc02a834f21e9e54ce8b2c43a` matched the then-existing self-file push path and may have queued the Preview customer-access migration workflow. Push-triggered run history and cancellation are not exposed by the available GitHub connector. Check the Actions run history and Preview D1 schema before asserting whether it ran. Production is not a target.
+- PR #2 remains Open/Draft/unmerged. Production remains untouched. Exact-head push-workflow result is unverified.
