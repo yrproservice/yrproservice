@@ -66,6 +66,7 @@ export default function ServicesManager({ onUnsavedChange }) {
   const [savedContentJson, setSavedContentJson] = useState(() => JSON.stringify(cloneTemplate()));
   const [media, setMedia] = useState([]);
   const [draftId, setDraftId] = useState("");
+  const [draftCreatedAt, setDraftCreatedAt] = useState(null);
   const [draftVersion, setDraftVersion] = useState(null);
   const [publishedVersion, setPublishedVersion] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -95,6 +96,7 @@ export default function ServicesManager({ onUnsavedChange }) {
         setContent(page.page.content);
         setSavedContentJson(JSON.stringify(page.page.content));
         setDraftId(page.page.draftId || "");
+        setDraftCreatedAt(page.page.draftCreatedAt || null);
         setDraftVersion(page.page.draftVersion || null);
         setPublishedVersion(page.page.publishedVersion || null);
         setNotice(page.page.draftId ? `Loaded saved Services draft V${page.page.draftVersion}.` : "Loaded the published Services content. Save changes to create a draft.");
@@ -204,9 +206,10 @@ export default function ServicesManager({ onUnsavedChange }) {
     try {
       const result = await request("/api/cms/admin/pages", {
         method: "POST",
-        body: JSON.stringify({ pageKey: "services", title: "Services", route: "/services", content, changeNote: "Services Manager draft" })
+        body: JSON.stringify({ pageKey: "services", title: "Services", route: "/services", content, changeNote: "Services Manager draft", expectedDraftId: draftId || null, expectedDraftCreatedAt: draftCreatedAt || null })
       });
       setDraftId(result.draftId);
+      setDraftCreatedAt(result.draftCreatedAt || null);
       setDraftVersion(result.version);
       setSavedContentJson(JSON.stringify(content));
       setNotice(`Services draft V${result.version} saved. The public page has not changed.`);
@@ -228,9 +231,10 @@ export default function ServicesManager({ onUnsavedChange }) {
     try {
       const result = await request("/api/cms/admin/draft", {
         method: "DELETE",
-        body: JSON.stringify({ entityType: "page", entityKey: "services", versionId: draftId })
+        body: JSON.stringify({ entityType: "page", entityKey: "services", versionId: draftId, expectedDraftCreatedAt: draftCreatedAt })
       });
       setDraftId("");
+      setDraftCreatedAt(null);
       setDraftVersion(null);
       try {
         const refreshed = await request("/api/cms/admin/preview?key=services");
@@ -266,9 +270,10 @@ export default function ServicesManager({ onUnsavedChange }) {
     try {
       const result = await request("/api/cms/admin/publish", {
         method: "POST",
-        body: JSON.stringify({ entityType: "page", entityKey: "services", versionId: draftId })
+        body: JSON.stringify({ entityType: "page", entityKey: "services", versionId: draftId, expectedDraftCreatedAt: draftCreatedAt })
       });
       setDraftId("");
+      setDraftCreatedAt(null);
       setDraftVersion(null);
       setPublishedVersion(result.version);
       setNotice(`Services revision V${result.version} published to Preview. Production has not changed.`);
