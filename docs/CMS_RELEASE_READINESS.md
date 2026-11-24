@@ -1,3 +1,13 @@
+## Exact-head Preview browser verification — 24 November 2026, 08:30 UTC
+
+- Workflow run [#45355842812](https://github.com/yrproservice/yrproservice/actions/runs/45355842812) completed **successfully** on source commit `443921cdfc2fdc09abfd6da7a8c638a62166fb11`.
+- The previously failing Playwright installation step now passes after changing the workflow command from `npx playwright install chromium --with-deps` to `npx playwright install chromium`. Desktop/mobile screenshot capture and customer request journey audit also completed.
+- Customer journey artifact: **4/4 passed, 0 failed** — product cart to quotation; separate dental chair request; service request validation/submission; HR-only contact. Request POSTs were intercepted and no test customer request was written to Preview D1.
+- Screenshot artifact: 10 desktop and 9 mobile PNGs across the main customer routes. Desktop Home, Product Cart and Dental Chair Request were visually spot-checked. This is not a full V10 comparison or visual sign-off; screenshot states are empty-state captures for the cart/request pages while populated submission paths are covered by the separate journey audit.
+- Informational product-image and static image URL audits were uploaded. They do not authorize image changes. Per the user's explicit scope decision, product image sourcing, acquisition, processing, replacement, assignment and publication are excluded and remain user-owned.
+- Branch was confirmed at the exact tested commit at inspection. PR #2 remains Open, Draft and unmerged. Production was not changed.
+- This checkpoint verifies the automated workflow and the listed browser journeys only. It does not close the outstanding authenticated CMS editor, Preview D1/R2 backup/restore, security/accessibility/performance, full V10 visual comparison, or Production readiness gates.
+
 ## Verified automated core checks — 24 November 2026, 08:12 UTC
 
 - GitHub Actions push workflow run: `45353899185` — [CMS Preview Build Check](https://github.com/yrproservice/yrproservice/actions/runs/45353899185).
