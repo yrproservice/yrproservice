@@ -757,6 +757,15 @@ export default function CMSDashboard({ onAdminLogout }) {
       setNotice("Restoration canceled. The section remains available in the recovery bin.");
       return;
     }
+    const existingRecoveryEntry = removedSections.find(
+      (item) =>
+        item.pageKey === pageKey &&
+        item.section?.id === selectedSection.id
+    );
+    if (existingRecoveryEntry) {
+      setError("This section already has an active recovery entry. If a previous restoration was not saved, discard that existing recovery entry instead of moving the section again.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
