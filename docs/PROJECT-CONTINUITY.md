@@ -1,8 +1,30 @@
+## Priority change — launch readiness; product images owned by user — 24 November 2026
+
+**New explicit user instruction:** Proceed with all work required to get the website ready to launch quickly, except product-image acquisition. The user will handle all product images.
+
+This instruction supersedes earlier task lists that assigned product-image acquisition, sourcing, matching, replacement or assignment to the assistant. From this checkpoint onward:
+- Do not search for, acquire, source, generate, create, replace, assign, curate or otherwise perform product-image work. Do not edit product-image files, catalogue assets, CMS image assignments, image paths or product image references.
+- Leave all product-image acquisition and assignment to the user. Preserve the existing files and references as-is.
+- Do not make missing product images or unassigned CMS image fields a blocker to the launch-readiness work. Record them as user-owned post/parallel-launch content tasks, not as code defects.
+- Do not invent or substitute product imagery. Do not alter image assets as part of this scope.
+- Continue non-image work that materially affects launch readiness: code fixes, verified product text/specification corrections, customer journeys, CMS/editor runtime behaviour, authentication/authorization, security, accessibility, responsive layout, performance, Preview D1/R2 integrity and recovery, deployment verification, operational documentation and release-gate review. If a workflow automatically reports image status, record it for visibility only; do not remediate image content.
+- Product facts still require official manufacturer evidence. If exact product identity/specifications cannot be verified, keep the relevant text/data conservative or explicitly pending rather than inventing facts.
+- Maintain the approved V10 design and the existing Preview/Production isolation rules.
+
+### Immediate checkpoint status
+
+- PR #2 remains Open, Draft and unmerged; no merge or Production deployment is authorized by this launch-priority instruction.
+- Exact correction workflow [#45350267061](https://github.com/yrproservice/yrproservice/actions/runs/45350267061) did **not** pass: its job ended with conclusion `cancelled`. Steps 1–15 (locked install, npm audit, tests, Vite build, Pages Functions build, Preview D1 readiness, Preview deploy/asset verification, security/Access audit, image-field/static image URL audits and artifact uploads) completed successfully; Playwright installation was cancelled, and screenshot/customer-flow steps were skipped. Do not represent this run as a full pass.
+- Re-run the current exact branch head through the relevant non-image test/build/browser checks, with screenshots and customer-flow tests retained where they support launch readiness. Do not add image sourcing/assignment work to the workflow.
+- Product-image work is explicitly excluded from the assistant's launch scope and remains with the user.
+
+---
+
 # YR Proservice — Permanent Project Continuity Record
 
 **Purpose:** This file is the repository-resident handover for work that must survive loss of ChatGPT conversation history. Read this file at the start of every new work session, then read the linked source-of-truth documents and verify the live GitHub state before acting. Keep it updated in the same branch whenever instructions, decisions, progress, risks, or next steps materially change.
 
-**Last updated:** 24 November 2026  
+**Last updated:** 24 November 2026 (launch-readiness priority; product images user-owned)  
 **Repository:** `yrproservice/yrproservice`  
 **Working branch:** `cms-development`  
 **Pull request:** [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
