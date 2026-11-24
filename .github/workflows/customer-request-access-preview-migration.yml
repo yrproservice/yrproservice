@@ -19,6 +19,7 @@ concurrency:
 jobs:
   migrate-preview:
     name: Apply customer access schema to yr-proservice-test-db only
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/cms-development'
     runs-on: ubuntu-24.04
     steps:
       - name: Check out selected branch
