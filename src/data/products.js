@@ -60,7 +60,7 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-400-q",
     model: "AC 400 Q",
-    image: "",
+    image: "ac-400-q.png",
     airDelivery: "320 N l/min",
     dimensions: "W 1200 × D 650 × H 890 mm",
     noiseOptions: "Noise-reducing plastic covers and two air dryers.",
@@ -83,7 +83,7 @@ const cattaniCompressors = [
   {
     slug: "cattani-ac-600-q",
     model: "AC 600 Q",
-    image: "",
+    image: "ac-600-q.png",
     airDelivery: "476 N l/min",
     dimensions: "W 1320 × D 770 × H 1040 mm",
     noiseOptions: "Noise-reducing plastic covers and two air dryers.",

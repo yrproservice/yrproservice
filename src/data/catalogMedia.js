@@ -64,6 +64,20 @@ export const catalogMedia = [
     "category": "images"
   },
   {
+    "src": "/catalog/cattani/images/ac-600-q.png",
+    "file": "ac-600-q.png",
+    "folder": "cattani/images",
+    "brand": "cattani",
+    "category": "images"
+  },
+  {
+    "src": "/catalog/cattani/images/ac-400-q.png",
+    "file": "ac-400-q.png",
+    "folder": "cattani/images",
+    "brand": "cattani",
+    "category": "images"
+  },
+  {
     "src": "/catalog/cattani/images/turbo-jet-1-modular.jpg",
     "file": "turbo-jet-1-modular.jpg",
     "folder": "cattani/images",
