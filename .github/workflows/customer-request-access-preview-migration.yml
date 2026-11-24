@@ -71,7 +71,7 @@ jobs:
           if (rows.length !== 1) throw new Error('Customer session email-column check returned an unexpected result.');
           const count = Number(rows[0].email_column);
           if (count !== 0 && count !== 1) throw new Error('Customer session email-column check returned an invalid count.');
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'present=' + (count === 1 ? 'true' : 'false') + '\\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'present=' + (count === 1 ? 'true' : 'false') + '\n');
           console.log('Customer session email column present:', count === 1);
           NODE
         env:
