@@ -388,8 +388,16 @@ export async function onRequestPost(context) {
           ).bind(conflictSnapshot.entryId, pageKey).first();
           recoveryConflict = !currentEntry || currentEntry.status !== "active";
         }
-        if (draftChanged || recoveryConflict) {
-          return adminJson({ error: "This recovery entry or page draft changed. Reload the page before trying again." }, 409);
+        if (recoveryConflict && conflictSnapshot.action === "remove") {
+          return adminJson({
+            error: "This section already has an active recovery entry. Use the existing recovery entry instead of moving the section again.",
+          }, 409);
+        }
+        if (draftChanged) {
+          return adminJson({ error: "The page draft changed in another session. Reload the page before trying again." }, 409);
+        }
+        if (recoveryConflict) {
+          return adminJson({ error: "This recovery entry was already resolved. Reload the page before trying again." }, 409);
         }
       } catch (verificationError) {
         console.error("CMS section recovery conflict verification failed", verificationError);
