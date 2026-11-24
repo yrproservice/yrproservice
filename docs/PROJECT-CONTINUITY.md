@@ -1,3 +1,27 @@
+## Service request API slug compatibility fix — 24 November 2026
+
+Source review found a launch-blocking mismatch after restoring the approved four Services categories: the public `/api/requests` endpoint's `ALLOWED_SERVICE_SLUGS` contained only the prior eight legacy service slugs. The four current Services options would therefore have been rejected with HTTP 400 despite appearing in the request form.
+
+Fixed in commits:
+- `23e9816c1b57416f7762205d38d683110ca598d3` — add the four approved slugs to the server allowlist.
+- `6aa920745d570126fe479ad97f90d3144a7765d1` — add API regression coverage for all four current categories.
+
+The previous eight slugs are retained temporarily for compatibility with any existing published Preview CMS Services content until that record can be inspected and safely reconciled. This prevents an existing CMS page from offering a service option the API rejects. No request data was written and no CMS/database record was changed. The new API tests have not yet been executed; await exact-head workflow evidence.
+
+---
+
+## CMS-managed Service detail route compatibility — 24 November 2026
+
+A separate source review found that `/services/:slug` routing only resolved slugs present in the static fallback array. The Services listing is CMS-driven and may contain saved CMS slugs that differ from the current static fallback; clicking such a service could produce a blank/not-found detail page even though the CMS contained its content.
+
+Fixed in commits:
+- `f6916d1408667b52197d925edd67898e5ae98cef` — add `getServiceBySlug()` to resolve saved CMS listing items.
+- `ac69f4044a084c0b91829b00e4a97d2b13af19c3` — load CMS-managed service detail content, show a loading state, and provide a Back to Services fallback if no matching item exists.
+- `d10e8fa4ef4dc36ce3f1e95b2c86836acf786aec` — route non-static service slugs to the CMS-backed detail resolver.
+- `0dbdcb23d9df7d464cf78ba47364619f27130567` — regression test for resolving a saved CMS slug not in the static fallback list.
+
+These changes preserve CMS-managed content and existing known static routes; they do not overwrite the saved Services CMS page. The test source has not yet been executed. No product image, image path, CMS image reference, request data or database record was changed.
+
 ## Product-image completeness removed from launch test gates — 24 November 2026
 
 - Test change commit: `7758f298bf6b0e2f59a26b782d54c0567702c1a1`.
