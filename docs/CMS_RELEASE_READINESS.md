@@ -1,3 +1,17 @@
+## Services restoration Preview deployment checkpoint — 24 November 2026
+
+- Static Services catalogue restoration commit: `dc697df7255ab916533e80078dc513c297678ac8`.
+- Regression-test addition commit: `6f2676f2e21e0b8afa8402366b9e5426d8dda2cf`.
+- Cloudflare Pages deployment bot reports **Deploy successful** for exact commit `6f2676f` at 07:57:17 UTC, with branch Preview URL `https://cms-development.yrproservice.pages.dev` and deployment URL `https://0905d63c.yrproservice.pages.dev`. This confirms the source update reached Preview; it does not prove the new Node test ran or that the currently published CMS Services record was reconciled.
+- PR #2 head after documentation-only follow-ups: `511025e8aa7c2e5f7777ab7068c5689d41562882`; Open, Draft, unmerged, 132 changed files, 1,354 commits ahead of `main`, 0 behind. Latest GitHub mergeability response was true; full history/diff review is still required.
+- GitHub combined status and PR-triggered workflow lookup returned no check entries for the latest docs head. The connector's workflow lookup is PR-triggered-only; do not interpret empty results as proof that no push workflow ran.
+- No test result is available for the new Services regression test. The separate workflow run #45350267061 remains cancelled and predates the Services correction.
+- No product-image assets, catalogue files, product image paths/references or CMS image assignments were changed. No CMS database record was edited. Production remains untouched.
+
+Next: obtain an exact-head test result for `6f2676f` or the latest code-equivalent head; then perform an authenticated, read-only inspection of the Preview Services CMS page before reconciling saved content. Preserve the original four categories and existing route compatibility; do not overwrite published content without a verified recovery path.
+
+---
+
 ## Services content restoration — 24 November 2026
 
 A source review found that `src/data/services.js` contained an eight-item replacement catalogue (dental chair installation, equipment installation, compressor installation, dental suction installation, underfloor piping, preventive maintenance, equipment relocation, and repair/technical support), contrary to the user's previously approved requirement to preserve the original four Services categories.
