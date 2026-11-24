@@ -1,3 +1,23 @@
+## Launch-readiness verification checkpoint — 24 November 2026, 08:04 UTC
+
+- Exact `cms-development` head at inspection: `aa16d4c48814edd2b87ef0b2a1706fa35cf28546`.
+- Cloudflare Pages deployment bot reports **Deploy successful** for exact head `aa16d4c`. Preview URL: `https://cms-development.yrproservice.pages.dev`; deployment URL: `https://b86de21a.yrproservice.pages.dev`.
+- This deployment includes the CMS-managed Services detail-route fallback, current four-service API allowlist compatibility, and the product-image non-blocking test/audit changes. It confirms Preview deployment only; it is not a substitute for Node tests, Playwright screenshots, customer journey verification, authenticated CMS tests or Production readiness.
+- PR #2 remains Open, Draft, unmerged; GitHub reported `mergeable=true` at this check. The PR currently contains 132 changed files and is 1,372 commits ahead of `main`, 0 behind. The unusually large history delta and full file diff remain a mandatory review gate.
+- GitHub combined commit status and the connector's PR-triggered workflow-run lookup returned no check entries for the tested head. The workflow lookup only returns PR-triggered runs; these empty responses do not prove the push-triggered build workflow passed.
+- Service request API now accepts the current approved slugs and temporarily retains the eight prior CMS slugs for backward compatibility. The exact saved Preview Services page still requires authenticated inspection before its content is reconciled.
+- Team template uses function/role labels, not invented employee names. Its people cards remain hidden unless each image is explicitly approved for publication; the server-side Team publish gate requires each role image to be valid and explicitly approved. Do not invent staff or use unapproved/random photos.
+- Product-image acquisition, replacement and completeness remain user-owned. Image completeness checks are skipped/non-blocking; missing product images display a neutral placeholder. No image files or product image references were changed.
+- No Preview D1/R2 data was mutated in this stage. Production resources remain untouched; PR #2 was not merged.
+
+### Immediate next steps
+
+1. Obtain the exact-head automated test/build workflow result and inspect the Playwright screenshot/customer-flow artifacts.
+2. Use authenticated Preview access to inspect the saved Services CMS page and the five unpublished product records read-only; do not edit/publish until facts and rollback paths are confirmed.
+3. Complete CMS draft/preview/publish/history/restore/delete and media mechanics tests, with only non-product test media where necessary.
+4. Complete Preview D1/R2 backup/restore and reference-integrity verification, then security/accessibility/performance and full PR diff review.
+5. Keep Production untouched and PR #2 Draft/unmerged pending explicit release approval.
+
 ## Service request API slug compatibility fix — 24 November 2026
 
 Source review found a launch-blocking mismatch after restoring the approved four Services categories: the public `/api/requests` endpoint's `ALLOWED_SERVICE_SLUGS` contained only the prior eight legacy service slugs. The four current Services options would therefore have been rejected with HTTP 400 despite appearing in the request form.
