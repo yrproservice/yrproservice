@@ -66,3 +66,8 @@ Historical Preview browser verification on an earlier build confirmed the Cloudf
 Outstanding release items include authenticated current-head Preview browser verification, live D1/R2 recovery and concurrency drills, accessibility/performance review, visual comparison against V10, review of remaining catalogue/source/specification gaps, confirmation of the HR email destination, and a tested backup/recovery drill. The current release-readiness document is the authoritative dated record; older entries below it are historical checkpoints, not current status.
 
 **Production release status: not approved.** Do not merge PR #2 or deploy Production until the release gates in `docs/CMS_RELEASE_READINESS.md` are resolved or explicitly accepted and the user approves the release.
+
+
+## Permanent project continuity
+
+For continuation across lost or unavailable ChatGPT conversations, start with [docs/PROJECT-CONTINUITY.md](./docs/PROJECT-CONTINUITY.md). It records the durable instructions, safety boundaries, current checkpoint, unresolved work, evidence links, and the required handover update format. Keep it updated and committed on `cms-development` whenever material progress or decisions change.
