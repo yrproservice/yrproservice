@@ -1,3 +1,16 @@
+# Continuity pointer — 24 November 2026
+
+The repository's permanent start-here handover is now [docs/PROJECT-CONTINUITY.md](./PROJECT-CONTINUITY.md). Read it before continuing from a new conversation; it records the durable instructions, current JA20 work, safety boundaries, evidence links and next steps.
+
+Latest documentation commits:
+- `28831c01d51f7226fda50a4876881d660eaabcd7` — created the permanent continuity record.
+- `01696a73ce0baa415efe0dc2d9c251e50d01c203` — linked it from the README.
+- This pointer is being added to the release-readiness document. It does not change application code or release authorization.
+
+Current JA20 correction workflow [#45350267061](https://github.com/yrproservice/yrproservice/actions/runs/45350267061) was last inspected with tests/build/Preview schema/asset/security/image URL audit steps successful, while Playwright installation remained in progress and screenshot/customer-flow stages were pending. Recheck the exact run before updating its final status. PR #2 must remain Open/Draft/unmerged; Production remains untouched.
+
+---
+
 # YR Proservice CMS — Release Readiness Audit
 
 ## Authorization and limit-safe continuation update — 20 November 2026
