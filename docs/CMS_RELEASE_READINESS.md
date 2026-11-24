@@ -1,3 +1,13 @@
+## Current launch checkpoint — 24 November 2026, 08:00 UTC
+
+- Current PR #2 / `cms-development` head: `ce33cba9d0dd115a9c429c03243e6bc8fc8706ab`; PR remains Open, Draft, unmerged. GitHub currently reports `mergeable=false`; do not attempt a merge. PR scope is 132 changed files and 1,356 commits ahead of `main`, 0 behind. The complete PR history/diff review remains required.
+- Cloudflare Pages reports deployment success for commit `0cf490411dd94843f95737632e4cb57d905ed5da` (the Services code/test plus continuity checkpoint) at 07:57:59 UTC. Preview branch URL: `https://cms-development.yrproservice.pages.dev`; deployment URL: `https://8c02fc8e.yrproservice.pages.dev`.
+- The later head `ce33cba...` is a documentation-only update after the deployed code checkpoint. Do not claim that exact documentation head has its own completed deployment until the Cloudflare status is refreshed.
+- Exact GitHub Actions workflow evidence for the Services test remains unavailable: the commit-status and PR-triggered run lookups returned no entries, and the earlier run #45350267061 was cancelled before Playwright/screenshots/customer-flow checks. The test source is committed, but the test itself is **not yet verified as executed**.
+- Services fallback data now has the original four approved categories and exact original point lists. Existing saved Preview CMS content remains unverified because authenticated CMS/API access is not available through the current GitHub integration; do not overwrite it blindly.
+- Product-image work remains user-owned and excluded. No product image or image reference was modified.
+- Production remains untouched. No PR merge, Production migration, binding change, or Production deployment occurred.
+
 ## Services restoration Preview deployment checkpoint — 24 November 2026
 
 - Static Services catalogue restoration commit: `dc697df7255ab916533e80078dc513c297678ac8`.
