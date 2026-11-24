@@ -183,6 +183,19 @@ export async function onRequestPost(context) {
           body.originalIndex > 80) {
         return adminJson({ error: "A valid removed section and original position are required." }, 400);
       }
+      const activeEntry = await env.DB.prepare(`
+        SELECT id
+        FROM cms_page_section_recovery
+        WHERE page_key = ? AND status = 'active'
+          AND expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+          AND json_extract(section_json, '$.id') = ?
+        LIMIT 1
+      `).bind(pageKey, body.section.id).first();
+      if (activeEntry) {
+        return adminJson({
+          error: "This section already has an active recovery entry. Use the existing recovery entry instead of moving the section again.",
+        }, 409);
+      }
       const id = clean(body.entryId, 80) || crypto.randomUUID();
       const sectionJson = JSON.stringify(body.section);
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
