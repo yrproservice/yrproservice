@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 
 const root = process.cwd();
@@ -110,6 +111,12 @@ function addCatalogMediaEntry(content, fileName) {
 }
 
 const downloaded = await Promise.all(sources.map(downloadExactImage));
+const imageHashes = downloaded.map((item) =>
+  createHash("sha256").update(item.buffer).digest("hex")
+);
+if (new Set(imageHashes).size !== downloaded.length) {
+  throw new Error("The AC400Q and AC600Q image downloads are byte-identical; refusing to assign one image to two different models.");
+}
 let products = await readFile(join(root, "src/data/products.js"), "utf8");
 let catalogue = await readFile(join(root, "src/data/catalogMedia.js"), "utf8");
 
@@ -125,7 +132,7 @@ for (const item of downloaded) {
   const target = join(root, "public/catalog/cattani/images", item.fileName);
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, item.buffer);
-  console.log("Verified", item.model, item.fileName, item.width + "x" + item.height, item.buffer.length + " bytes", "source:", item.url);
+  console.log("Verified", item.model, item.fileName, item.width + "x" + item.height, item.buffer.length + " bytes", "SHA-256:", imageHashes[downloaded.indexOf(item)], "source:", item.url);
 }
 
 await writeFile(join(root, "src/data/products.js"), products);
