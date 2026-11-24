@@ -124,6 +124,32 @@ test("service request validation requires contact details, a valid email and an 
   assert.equal(invalidService.status, 400);
 });
 
+
+test("all four current approved Services categories are accepted by the request API", async () => {
+  const currentServiceSlugs = [
+    "installation-site-planning",
+    "emergency-repair",
+    "preventative-maintenance",
+    "compliance-safety-audits",
+  ];
+
+  for (const service of currentServiceSlugs) {
+    const response = await submitRequest({
+      request: postRequest({
+        requestType: "service",
+        name: "Clinic Manager",
+        clinic: "Example Dental",
+        phone: "0123456789",
+        email: "clinic@example.com",
+        service,
+        message: "Please contact us about this service.",
+      }),
+      env: { DB: makeDb() },
+    });
+    assert.equal(response.status, 201, service);
+  }
+});
+
 test("quotation and dental-chair requests require a product selection", async () => {
   for (const requestType of ["quotation", "dental_chair"]) {
     const response = await submitRequest({
