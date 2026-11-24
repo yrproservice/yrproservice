@@ -1,26 +1,43 @@
 import React, { useEffect, useState } from "react";
-import { getServicesCmsContent } from "../data/servicesCmsTemplate";
+import { getServiceBySlug } from "../data/servicesCmsTemplate";
 import { Link } from "../components/Layout";
 
 export default function ServiceDetails({ service: fallbackService, navigate }) {
-  const [service, setService] = useState(fallbackService || null);
+  const [service, setService] = useState(fallbackService?.title ? fallbackService : null);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     let active = true;
+    if (!fallbackService?.slug) {
+      setLoading(false);
+      return () => { active = false; };
+    }
     fetch("/api/cms/public/pages?key=services", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
       .then((result) => {
-        if (!active || !result?.ok) return;
-        const page = getServicesCmsContent(result.page?.content);
-        const current = page?.listing?.items?.find((item) => item.slug === fallbackService?.slug);
-        if (current) setService(current);
+        if (!active) return;
+        const current = result?.ok
+          ? getServiceBySlug(result.page?.content, fallbackService.slug)
+          : null;
+        setService(current || (fallbackService?.title ? fallbackService : null));
+        setLoading(false);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!active) return;
+        setService(fallbackService?.title ? fallbackService : null);
+        setLoading(false);
+      });
     return () => { active = false; };
   }, [fallbackService?.slug]);
   useEffect(() => {
     if (service?.title) document.title = `${service.title} | YR Proservice`;
   }, [service?.title]);
-  if (!service) return null;
+  if (loading) return <section className="page-section container center" role="status"><p>Loading service…</p></section>;
+  if (!service) return (
+    <section className="page-section container center">
+      <p>This service could not be found.</p>
+      <Link to="/services" navigate={navigate} className="button secondary">Back to Services</Link>
+    </section>
+  );
   return (
     <section className="service-detail-page">
       <div className="service-detail-hero">
