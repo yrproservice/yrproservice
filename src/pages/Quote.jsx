@@ -149,13 +149,13 @@ export default function Quote({ navigate }) {
               <input name="location" placeholder="City / State" />
             </label>
             <label>
-              Product / Chair Selection
+              Product Selection
               <textarea
                 name="product"
                 rows="4"
                 value={selected}
                 onChange={(e) => setProduct(e.target.value)}
-                placeholder="Your selected products will appear here..."
+                placeholder="Your selected catalogue products will appear here..."
               />
             </label>
           </div>
@@ -190,10 +190,12 @@ export default function Quote({ navigate }) {
             <p className="bp-eyebrow">NEED HELP?</p>
             <h3>Our team can help clarify the requirement.</h3>
             <p>
-              For product and service questions, use this quotation route. For
-              other enquiries, call or email our team using the contact details
-              in the page footer.
+              This quotation form is for catalogue products only. Dental chairs use
+              the separate Dental Chair Request form.
             </p>
+            <Link to="/dental-chair-request" navigate={navigate} className="bp-summary-link">
+              Dental Chair Requests →
+            </Link>
             <strong>
               <a href="tel:+601116080623">011-1608 0623</a>
             </strong>
