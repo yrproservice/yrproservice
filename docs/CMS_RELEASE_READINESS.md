@@ -1838,3 +1838,14 @@ Release blockers remain unchanged: Production CMS R2 binding/public base is not 
 - No manual migration dispatch was performed. Do not report migration execution as absent or successful until Actions history and the Preview schema are checked.
 - PR #2 remains Open, Draft, and unmerged. No Production D1/R2, binding, secret, or deployment change was made.
 - Exact-head combined status and the connector's PR-filtered workflow-run lookup returned no entries; current push-triggered CI/Preview result remains unverified.
+
+
+## Follow-up: confirmed customer-access migration run outcome — 24 November 2026
+
+- GitHub Actions run [#45347227246](https://github.com/yrproservice/yrproservice/actions/runs/45347227246), triggered by push commit `ea2001d8f1b4f6ffc02a834f21e9e54ce8b2c43a`, did execute the Preview customer-access migration workflow.
+- The fail-closed identity check confirmed the target was Preview D1 `yr-proservice-test-db` (UUID `7fca4ad0-3baa-4148-ad28-bfd2ef416c16`). Migration 0006 completed successfully and reported 5 queries with 0 rows written / no database change.
+- Migration 0007 then failed with `duplicate column name: email`. This confirms the column already existed before that `ALTER TABLE ADD COLUMN` was attempted. The run did not complete its final schema-verification step. The failure was isolated to the duplicate-column migration attempt; the log reports no Production target.
+- The separate read-only request-history schema-check run [#45347240863](https://github.com/yrproservice/yrproservice/actions/runs/45347240863) completed successfully against Preview D1 shortly afterward.
+- The workflow was subsequently hardened: it checks `pragma_table_info('customer_request_access_sessions')` and skips migration 0007 when the column exists. The corrected workflow is present at the current branch head.
+- This was a failed Preview workflow, not evidence of data loss. No Production D1/R2 or deployment was touched.
+- Current exact-head Preview build run [#45347491083](https://github.com/yrproservice/yrproservice/actions/runs/45347491083) is progressing through Playwright installation after tests, both builds, Preview D1 readiness, Preview deployment/verification, security-header/Access audit, product image field audit, and static catalogue URL checks all passed. Screenshot capture and customer request journey audit are still pending; do not call this run successful until it completes.
