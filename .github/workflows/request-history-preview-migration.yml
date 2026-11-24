@@ -17,6 +17,7 @@ concurrency:
 jobs:
   migrate-preview:
     name: Apply request history schema to yr-proservice-test-db only
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/cms-development'
     runs-on: ubuntu-latest
     steps:
       - name: Check out selected branch
