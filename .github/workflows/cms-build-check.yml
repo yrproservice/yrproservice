@@ -17,6 +17,7 @@ concurrency:
 jobs:
   build:
     name: Install, test and build website
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/cms-development'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
