@@ -1,3 +1,13 @@
+## Non-blocking product-image audit workflow adjustment — 24 November 2026
+
+- Workflow commit `8e59ecbaacbffb3e9f21ac789ffadefde14ec53f` changes the Preview product-image-field audit and existing static catalogue image URL check to `continue-on-error: true`. The checks may still report their findings for visibility, but failures in product-image status/URL checks no longer stop the rest of the build/browser/customer-flow pipeline.
+- This is a workflow-only accommodation of the user's instruction that product-image acquisition and assignment are user-owned and must not delay launch. No image assets, product image paths/references, CMS image assignments or image content were edited.
+- The screenshot step already records image load counts without asserting that every image is loaded; that behavior is unchanged.
+- The workflow adjustment has been re-fetched and confirmed in the branch. Exact-head GitHub Actions execution is still pending/unverified; do not claim it ran or passed until its exact push-triggered workflow result is available.
+- All non-image tests, builds, security checks, browser screenshots and customer-flow checks remain part of launch readiness.
+
+---
+
 ## Current launch checkpoint — 24 November 2026, 08:00 UTC
 
 - Current PR #2 / `cms-development` head: `ce33cba9d0dd115a9c429c03243e6bc8fc8706ab`; PR remains Open, Draft, unmerged. GitHub currently reports `mergeable=false`; do not attempt a merge. PR scope is 132 changed files and 1,356 commits ahead of `main`, 0 behind. The complete PR history/diff review remains required.
