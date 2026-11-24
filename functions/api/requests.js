@@ -1,4 +1,10 @@
 const ALLOWED_SERVICE_SLUGS = new Set([
+  // Current approved Services categories.
+  "installation-site-planning",
+  "emergency-repair",
+  "preventative-maintenance",
+  "compliance-safety-audits",
+  // Retain legacy published CMS slugs until the saved Preview page is reconciled.
   "dental-chair-installation",
   "equipment-installation",
   "compressor-installation",
