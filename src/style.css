@@ -1833,6 +1833,9 @@ h6 {
   background: #fff;
   border: 1px solid var(--yr-border);
 }
+.bp-success .bp-actions {
+  justify-content: center;
+}
 .bp-success h1,
 .bp-success h2 {
   color: var(--yr-navy);
