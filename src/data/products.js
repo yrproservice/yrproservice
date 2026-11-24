@@ -2620,7 +2620,7 @@ const rawProducts = [
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
-    subcategory: "Optic / LED (confirm model configuration)",
+    subcategory: "Non-Optic",
     manufacturerSource:
       "https://www.westcodedental.com/products/ja20-20-1-implant-contra-angle-handpiece-w-and-h-interface-reference-non-optic/",
   },
@@ -2633,13 +2633,13 @@ const rawProducts = [
     purchaseType: "cart",
     img: "/catalog/westcode/handpiece/westcode ja20.webp",
     summary:
-      "Westcode JA20 20:1 implant contra-angle handpiece in the W&H-interface-reference non-optic configuration.",
+      "Westcode JA20 20:1 implant contra-angle handpiece in the W&H-interface-reference light configuration.",
     description:
-      "Westcode identifies JA20-WH-NO as a 20:1 implant contra-angle handpiece with a non-optic W&H-interface reference. Confirm the motor connection and destination-market documentation before ordering.",
+      "Westcode identifies JA20 as a 20:1 implant contra-angle handpiece in the W&H-interface-reference light configuration, code JA20-WH-AL. Its illumination uses cellular-glass optics. Confirm the required interface and destination-market documentation before ordering.",
     highlights: [],
     specifications: [
       "Catalog product ID: JA20",
-      "Configuration code: JA20-WH-NO (W&H-interface reference, non-optic)",
+      "Configuration code: JA20-WH-AL (W&H-interface reference, light configuration)",
       "Transmission ratio: 20:1 reduction",
       "Maximum speed: 2,000 rpm",
       "Maximum torque: 80 N·cm",
@@ -2647,9 +2647,10 @@ const rawProducts = [
       "Chuck: push-button",
       "Cooling: external and internal",
       "Sealing system: double sealing",
+      "Optics: cellular glass optics",
     ],
     docs: [],
-    manufacturerSource: "https://www.westcodedental.com/products/ja20-20-1-implant-contra-angle-handpiece-w-and-h-interface-reference-non-optic/",
+    manufacturerSource: "https://www.westcodedental.com/products/ja20-20-1-implant-contra-angle-handpiece-w-and-h-interface-reference-light-configuration/",
     price: null,
     stockStatus: "pending",
     reviewStatus: "No customer reviews published yet.",
