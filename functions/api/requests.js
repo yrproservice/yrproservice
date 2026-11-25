@@ -1,10 +1,5 @@
 const ALLOWED_SERVICE_SLUGS = new Set([
-  // Current approved Services categories.
-  "installation-site-planning",
-  "emergency-repair",
-  "preventative-maintenance",
-  "compliance-safety-audits",
-  // Retain legacy published CMS slugs until the saved Preview page is reconciled.
+  // Eight established service destinations from the original V10 Services page.
   "dental-chair-installation",
   "equipment-installation",
   "compressor-installation",
@@ -13,6 +8,13 @@ const ALLOWED_SERVICE_SLUGS = new Set([
   "preventive-maintenance",
   "equipment-relocation",
   "repair-technical-support",
+  // Temporary compatibility for previously saved Preview CMS content using the
+  // superseded four-category draft. Remove only after the published CMS record
+  // has been inspected and safely reconciled.
+  "installation-site-planning",
+  "emergency-repair",
+  "preventative-maintenance",
+  "compliance-safety-audits",
 ]);
 
 function json(data, status = 200, extraHeaders = {}) {
