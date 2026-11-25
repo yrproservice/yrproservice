@@ -1,5 +1,6 @@
 import { validateSiteSetting } from "../../../_utils/cms-settings-validation.js";
 import { validateProductMediaReferences } from "../../../_utils/cms-product-media-validation.js";
+import { validatePageMediaReferences } from "../../../_utils/cms-page-media-validation.js";
 import { validatePageDestinations, validateSettingDestinations } from "../../../_utils/cms-route-validation.js";
 import { validatePageContent, validatePageRoute, validateProductContent, validateTeamPublishApproval } from "../../../_utils/cms-content-validation.js";
 import { adminJson, requireAdmin } from "../../../_utils/admin-auth.js";
@@ -92,6 +93,8 @@ export async function onRequestPost(context) {
       if (validationError) return adminJson({ error: validationError }, 400);
       const teamApprovalError = validateTeamPublishApproval(content, entityKey === "team");
       if (teamApprovalError) return adminJson({ error: teamApprovalError }, 409);
+      const mediaError = await validatePageMediaReferences(env.DB, env, content);
+      if (mediaError) return adminJson({ error: mediaError }, 409);
       const destinationError = await validatePageDestinations(env.DB, content, target.route);
       if (destinationError) return adminJson({ error: destinationError }, 400);
       if (typeof target.title !== "string" || !target.title.trim() || target.title.length > 120) {
