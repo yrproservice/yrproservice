@@ -48,16 +48,6 @@ async function checkSubmissionRateLimit(db, request, email) {
   const ipHash = ip ? await hashValue(ip) : "";
   const emailHash = await hashValue(email.toLowerCase());
 
-  await db.prepare(`
-    CREATE TABLE IF NOT EXISTS request_submission_attempts (
-      id TEXT PRIMARY KEY,
-      ip_hash TEXT,
-      email_hash TEXT NOT NULL,
-      created_at INTEGER NOT NULL
-    )
-  `).run();
-  await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_submission_ip_time ON request_submission_attempts(ip_hash, created_at)").run();
-  await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_submission_email_time ON request_submission_attempts(email_hash, created_at)").run();
   await db.prepare("DELETE FROM request_submission_attempts WHERE created_at < ?").bind(now - 86400).run();
 
   // Keep the limit check and attempt insertion in one SQLite statement.
