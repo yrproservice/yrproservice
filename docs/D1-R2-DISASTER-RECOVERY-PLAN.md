@@ -134,3 +134,38 @@ As of this plan's creation:
 - Cloudflare account-level backup/PITR configuration and retention remain unverified.
 
 Update this section only with verifiable execution evidence. Keep credentials and customer data out of the record.
+
+
+## 8. Cloudflare platform capabilities checked against official documentation
+
+Official Cloudflare documentation was reviewed on 25 November 2026. This is product-level documentation, **not account-specific verification**.
+
+### D1 Time Travel
+
+Cloudflare documents D1 Time Travel as automatically enabled for databases on its production storage subsystem. It provides point-in-time restore to any minute within the plan's retention window: 7 days on Workers Free or 30 days on Workers Paid. The database's `version` from `wrangler d1 info` distinguishes the production storage subsystem from legacy alpha storage. The current YR Proservice database versions and account plan have not been retrieved, so the actual applicable retention for either YR Proservice database is still unverified.
+
+A Time Travel restore overwrites the target database in place. It is not a safe rehearsal mechanism against Production. It also does not provide an independent long-term export by itself. A separate export to R2 is documented by Cloudflare for retention beyond the Time Travel window.
+
+References:
+- [D1 Time Travel and backups](https://developers.cloudflare.com/d1/reference/time-travel/)
+- [D1 limits](https://developers.cloudflare.com/d1/platform/limits/)
+
+### R2 durability and bucket locks
+
+Cloudflare documents R2 as storing redundant copies/erasure-coded data across multiple data centers within a region, with strong consistency. This is infrastructure durability, not protection against an authorized or accidental object overwrite/deletion. Cloudflare separately provides R2 bucket-lock rules that can prevent overwrites and deletions for a specified period or indefinitely. A bucket lock is a retention guard, not a second independent backup copy; it can also block intended cleanup and must be designed carefully.
+
+The account's current R2 bucket-lock configuration has not been inspected. Do not enable a lock rule on Preview or Production as part of this planning step.
+
+References:
+- [R2 durability](https://developers.cloudflare.com/r2/reference/durability/)
+- [R2 bucket locks](https://developers.cloudflare.com/r2/buckets/bucket-locks/)
+- [R2 consistency](https://developers.cloudflare.com/r2/reference/consistency/)
+
+### Revised verification actions
+
+- [ ] Run read-only `wrangler d1 info` for each database and record its storage `version`; verify the actual account plan before assigning the 7-day/30-day Time Travel retention.
+- [ ] Confirm current Time Travel bookmark retrieval works for each database without invoking restore.
+- [ ] For any recovery rehearsal, restore/export into a separate isolated database; never use the in-place Production restore command as a test.
+- [ ] Confirm the supported D1 export-to-R2 process and whether the export destination is independent of the source account/bucket.
+- [ ] Inspect the actual R2 bucket-lock configuration read-only for each relevant bucket; decide whether a retention rule is appropriate only after reviewing upload, replacement, archive and cleanup behavior.
+- [ ] Design an independent R2 object copy and manifest. R2's built-in durability and bucket locks do not replace this copy.
