@@ -95,21 +95,22 @@ function captureRealRequestSubmission(page, identity) {
   const submissionPromise = page.waitForResponse((response) =>
     response.url().endsWith("/api/requests") && response.request().method() === "POST"
   ).then(async (response) => {
-    const payload = await response.json();
-    assert.equal(response.status(), 201, `${identity.type} real Preview submission failed: ${JSON.stringify(payload)}`);
-    assert.equal(payload.ok, true);
-    assert.match(payload.reference, /^(YRS|YRQ|YRC)-\d{8}-[A-F0-9]{16}$/);
-    created.push({ ...identity, reference: payload.reference });
+    const responseBody = await response.json();
+    const payload = response.request().postDataJSON();
+    assert.equal(response.status(), 201, `${identity.type} real Preview submission failed: ${JSON.stringify(responseBody)}`);
+    assert.equal(responseBody.ok, true);
+    assert.match(responseBody.reference, /^(YRS|YRQ|YRC)-\d{8}-[A-F0-9]{16}$/);
+    created.push({ ...identity, reference: responseBody.reference });
     const trackingUrl = new URL("/api/track", origin);
-    trackingUrl.searchParams.set("reference", payload.reference);
+    trackingUrl.searchParams.set("reference", responseBody.reference);
     trackingUrl.searchParams.set("email", identity.email);
     const trackingResponse = await fetch(trackingUrl, { signal: AbortSignal.timeout(20000) });
     const tracking = await trackingResponse.json();
     assert.equal(trackingResponse.status, 200, `${identity.type} tracking failed: ${JSON.stringify(tracking)}`);
-    assert.equal(tracking.request.reference, payload.reference);
+    assert.equal(tracking.request.reference, responseBody.reference);
     assert.equal(tracking.request.requestType, identity.type);
     assert.equal(tracking.request.status, "received");
-    return payload;
+    return { ...payload, reference: responseBody.reference };
   });
   return () => submissionPromise;
 }
@@ -312,9 +313,11 @@ if (previewIdentityVerified) {
       });
       if (conditions.length) {
         runD1(`DELETE FROM requests WHERE (${conditions.join(" OR ")}) AND NOT EXISTS (SELECT 1 FROM request_status_history h WHERE h.request_id = requests.id);`);
-        const hashes = identities.map((item) => sqlString(hashEmail(item.email))).join(", ");
-        runD1(`DELETE FROM request_submission_attempts WHERE email_hash IN (${hashes});`);
-        runD1(`DELETE FROM request_tracking_attempts WHERE email_hash IN (${hashes});`);
+      }
+      const hashes = identities.map((item) => sqlString(hashEmail(item.email))).join(", ");
+      runD1(`DELETE FROM request_submission_attempts WHERE email_hash IN (${hashes});`);
+      runD1(`DELETE FROM request_tracking_attempts WHERE email_hash IN (${hashes});`);
+      if (conditions.length) {
         const remaining = runD1(`SELECT COUNT(*) AS total FROM requests WHERE ${conditions.join(" OR ")};`);
         assert.equal(Number(remaining[0]?.total), 0, "Synthetic browser request records remain after cleanup.");
       }
