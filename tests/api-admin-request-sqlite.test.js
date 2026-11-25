@@ -103,6 +103,7 @@ function makeRequestDatabase({ beforeBatch = null } = {}) {
     },
     prepare(sql) {
       return {
+        sql,
         values: [],
         bind(...values) { this.values = values; return this; },
         async first() {
