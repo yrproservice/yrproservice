@@ -79,6 +79,7 @@ const cases = [
 });
 
 let primaryError = null;
+let previewIdentityVerified = false;
 const created = [];
 
 try {
@@ -95,6 +96,7 @@ try {
   visit(info);
   assert.ok(identityValues.includes(databaseName), "Preview D1 name did not match; refusing to write.");
   assert.ok(identityValues.includes(databaseId), "Preview D1 UUID did not match; refusing to write.");
+  previewIdentityVerified = true;
 
   const schema = runD1(`
     SELECT
@@ -160,34 +162,36 @@ try {
 } catch (error) {
   primaryError = error;
 } finally {
-  const cleanupConditions = cases.map((item) =>
-    `(email = ${sqlString(item.email)} AND customer_name = ${sqlString(item.name)} AND request_type = ${sqlString(item.type)} AND details_json LIKE ${sqlString("%website-" + (item.type === "service" ? "service-request" : item.type === "quotation" ? "quotation-request" : "dental-chair-request") + "%")})`
-  ).join(" OR ");
-  const emailHashes = cases.map((item) => sqlString(hashEmail(item.email))).join(", ");
-  try {
-    // Never delete a request that acquired status history. This test does not
-    // change status, and cleanup is restricted to this run's unique marker/email.
-    runD1(`
-      DELETE FROM requests
-      WHERE (${cleanupConditions})
-        AND NOT EXISTS (
-          SELECT 1 FROM request_status_history h
-          WHERE h.request_id = requests.id
-        );
-      DELETE FROM request_submission_attempts WHERE email_hash IN (${emailHashes});
-      DELETE FROM request_tracking_attempts WHERE email_hash IN (${emailHashes});
-    `);
-    const remaining = runD1(`
-      SELECT COUNT(*) AS total
-      FROM requests
-      WHERE ${cleanupConditions};
-    `);
-    assert.equal(Number(remaining[0]?.total), 0, "Synthetic Preview request records remain after cleanup.");
-  } catch (cleanupError) {
-    if (primaryError) {
-      console.error("Primary integration test error:", primaryError);
+  if (previewIdentityVerified) {
+    const cleanupConditions = cases.map((item) =>
+      `(email = ${sqlString(item.email)} AND customer_name = ${sqlString(item.name)} AND request_type = ${sqlString(item.type)} AND details_json LIKE ${sqlString("%website-" + (item.type === "service" ? "service-request" : item.type === "quotation" ? "quotation-request" : "dental-chair-request") + "%")})`
+    ).join(" OR ");
+    const emailHashes = cases.map((item) => sqlString(hashEmail(item.email))).join(", ");
+    try {
+      // Never delete a request that acquired status history. This test does not
+      // change status, and cleanup is restricted to this run's unique marker/email.
+      runD1(`DELETE FROM requests
+        WHERE (${cleanupConditions})
+          AND NOT EXISTS (
+            SELECT 1 FROM request_status_history h
+            WHERE h.request_id = requests.id
+          );`);
+      runD1(`DELETE FROM request_submission_attempts WHERE email_hash IN (${emailHashes});`);
+      runD1(`DELETE FROM request_tracking_attempts WHERE email_hash IN (${emailHashes});`);
+      const remaining = runD1(`
+        SELECT COUNT(*) AS total
+        FROM requests
+        WHERE ${cleanupConditions};
+      `);
+      assert.equal(Number(remaining[0]?.total), 0, "Synthetic Preview request records remain after cleanup.");
+    } catch (cleanupError) {
+      if (primaryError) {
+        console.error("Primary integration test error:", primaryError);
+      }
+      throw new Error("Preview integration test cleanup could not be confirmed. Inspect only records with marker " + marker + ". " + cleanupError.message);
     }
-    throw new Error("Preview integration test cleanup could not be confirmed. Inspect only records with marker " + marker + ". " + cleanupError.message);
+  } else {
+    console.error("Preview D1 identity was not verified; cleanup and all database mutations were skipped.");
   }
 }
 
