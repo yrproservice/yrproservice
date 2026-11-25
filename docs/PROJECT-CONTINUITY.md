@@ -1,3 +1,14 @@
+## Request-persistence integration test remains pending — 25 November 2026
+
+- Starting branch head: 4d683b1f714687237a6c9db298a9ff524c7c5670; repository default branch confirmed as main.
+- Inspected the three relevant files on cms-development: the main Preview build workflow, the dedicated manual integration workflow and its test script.
+- Both workflow definitions are absent from main; the default branch currently has only .github/workflows/worker-preview.yml. A workflow_dispatch file present only on cms-development is not exposed for manual dispatch in GitHub Actions.
+- No workaround was committed. Do not move workflow definitions to main without explicit approval, and do not add synthetic request writes to every Preview push.
+- The guarded script has not run. It would submit three synthetic requests (service, quotation, dental chair), verify tracking and actual Preview D1 persistence, then clean up only its unique records. It verifies exact Preview D1 name/UUID and Preview HTTPS hostname before writing. Required GitHub secrets are CLOUDFLARE_D1_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
+- The existing customer-flow browser test intercepts POST requests; it is not evidence of D1 persistence. Keep the real request-persistence integration gate pending.
+- No D1/R2 data, customer requests, Production settings, workflow files or PR metadata were changed. PR #2 remains Draft/unmerged; Production remains untouched.
+- Next decision needed only when scheduling this test: approve a narrowly scoped default-branch workflow entry point, or run the already guarded script locally with credentials. No action is taken on main by default.
+
 ## Exact-head Preview verification and current release boundary — 25 November 2026
 
 - Current branch: `cms-development`; exact head `942f3961dd546c8555d1eadc1614fd21e6136cd6`.
