@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT (SELECT COUNT(*) FROM pragma_table_info('cms_page_versions') WHERE name = 'title') AS title_column, (SELECT COUNT(*) FROM pragma_table_info('cms_page_versions') WHERE name = 'route') AS route_column, (SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'idx_cms_page_versions_route_state') AS route_index, (SELECT COUNT(*) FROM cms_page_versions WHERE title IS NULL OR route IS NULL) AS null_metadata;" --json > preview-schema.json
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT (SELECT COUNT(*) FROM pragma_table_info('cms_page_versions') WHERE name = 'title') AS title_column, (SELECT COUNT(*) FROM pragma_table_info('cms_page_versions') WHERE name = 'route') AS route_column, (SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'idx_cms_page_versions_route_state') AS route_index, (SELECT COUNT(*) FROM cms_page_versions WHERE title IS NULL OR route IS NULL) AS null_metadata, (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name IN ('request_submission_attempts', 'request_tracking_attempts')) AS rate_limit_tables, (SELECT COUNT(*) FROM pragma_table_info('request_submission_attempts') WHERE name IN ('id', 'ip_hash', 'email_hash', 'created_at')) AS submission_columns, (SELECT COUNT(*) FROM pragma_table_info('request_tracking_attempts') WHERE name IN ('id', 'ip_hash', 'email_hash', 'created_at')) AS tracking_columns, (SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name IN ('idx_request_submission_ip_time', 'idx_request_submission_email_time', 'idx_request_tracking_ip_time', 'idx_request_tracking_email_time')) AS rate_limit_indexes;" --json > preview-schema.json
           node --input-type=commonjs <<'NODE'
           const fs = require('node:fs');
           const parsed = JSON.parse(fs.readFileSync('preview-schema.json', 'utf8'));
@@ -57,7 +57,9 @@ jobs:
           if (rows.length !== 1) throw new Error('Preview schema check returned an unexpected result.');
           const row = rows[0];
           if (Number(row.title_column) !== 1 || Number(row.route_column) !== 1 ||
-              Number(row.route_index) !== 1 || Number(row.null_metadata) !== 0) {
+              Number(row.route_index) !== 1 || Number(row.null_metadata) !== 0 ||
+              Number(row.rate_limit_tables) !== 2 || Number(row.submission_columns) !== 4 ||
+              Number(row.tracking_columns) !== 4 || Number(row.rate_limit_indexes) !== 4) {
             throw new Error('Preview D1 is not release-ready: ' + JSON.stringify(row));
           }
           console.log('Preview D1 schema is ready:', row);
