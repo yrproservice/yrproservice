@@ -1,3 +1,14 @@
+## Request-persistence integration test dispatch constraint — 25 November 2026
+
+- Reviewed the exact workflow and script sources on cms-development at starting head 4d683b1f714687237a6c9db298a9ff524c7c5670: .github/workflows/cms-build-check.yml, .github/workflows/preview-request-persistence-integration.yml, and scripts/preview-request-persistence-integration.mjs.
+- The dedicated request-persistence workflow is workflow_dispatch only and exists on cms-development, but not on the repository default branch main. The default branch currently contains only .github/workflows/worker-preview.yml. Therefore GitHub does not expose that feature-branch-only workflow for manual dispatch.
+- The existing CMS Preview Build Check also exists only on cms-development; it cannot serve as a manual-dispatch entry point until its workflow definition exists on the default branch. No workflow file was changed to work around this constraint.
+- Do not add or change workflow definitions on main solely to expose this test. Do not run the synthetic-write test automatically on every push: it creates service, quotation and dental-chair test requests in Preview D1 before verifying tracking/persistence and cleaning up only its unique test records.
+- The test has not been executed. Request persistence in real Preview D1 remains an open verification gap; the customer-flow Playwright audit intercepts request POSTs and does not prove D1 persistence.
+- The test script safeguards require HTTPS host cms-development.yrproservice.pages.dev and exact Preview D1 name/UUID yr-proservice-test-db / 7fca4ad0-3baa-4148-ad28-bfd2ef416c16. Its workflow also requires CLOUDFLARE_D1_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets.
+- No request records, D1 rows, Production resources, workflow files, PR state or Cloudflare configuration were changed during this inspection. PR #2 remains Open, Draft and unmerged; Production remains untouched.
+- Next safe route: arrange a deliberately initiated run from a workflow available on the default branch only after the user explicitly approves the required workflow change to main, or run the guarded script manually in a controlled local environment with the required credentials. Until then, keep this gate pending, not passed.
+
 ## Exact-head Preview verification and release-gate refresh — 25 November 2026
 
 - Exact branch head: `942f3961dd546c8555d1eadc1614fd21e6136cd6` on `cms-development`.
