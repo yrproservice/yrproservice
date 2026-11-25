@@ -175,7 +175,34 @@ export function adminJson(data, status = 200) {
   });
 }
 
+function validateMutationOrigin(request) {
+  if (["GET", "HEAD", "OPTIONS"].includes(request.method.toUpperCase())) return null;
+
+  const requestOrigin = new URL(request.url).origin;
+  const origin = request.headers.get("Origin");
+  if (origin) {
+    try {
+      if (new URL(origin).origin !== requestOrigin) {
+        return jsonError("Cross-origin Admin changes are not allowed.", 403);
+      }
+    } catch {
+      return jsonError("The Admin request origin is invalid.", 403);
+    }
+  }
+
+  // Fetch Metadata is an additional browser-side CSRF signal. Requests from
+  // trusted server-side automation may omit both headers; browsers mark
+  // cross-site unsafe requests explicitly.
+  if (!origin && request.headers.get("Sec-Fetch-Site")?.toLowerCase() === "cross-site") {
+    return jsonError("Cross-origin Admin changes are not allowed.", 403);
+  }
+  return null;
+}
+
 export async function requireAdmin(context) {
+  const originError = validateMutationOrigin(context.request);
+  if (originError) return { ok: false, response: originError };
+
   const token = context.request.headers.get("Cf-Access-Jwt-Assertion");
   if (!token)
     return { ok: false, response: jsonError("Authentication required.", 401) };
