@@ -5317,3 +5317,19 @@ h6 {
   cursor: not-allowed;
   opacity: .58;
 }
+
+
+/* Draft showroom-card preview — reuses the public card component without actions */
+.cms-product-preview-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cms-product-preview-switch{display:flex;gap:4px;padding:4px;border:1px solid #dce7ef;border-radius:7px;background:#f5f8fb}
+.cms-product-preview-switch button{border:1px solid transparent;border-radius:5px;padding:7px 10px;background:transparent;color:#344456;font:600 12px Inter,sans-serif;cursor:pointer}
+.cms-product-preview-switch button.active{border-color:#c9dce9;background:#fff;color:#0b4a88;box-shadow:0 1px 3px rgba(8,38,66,.08)}
+.cms-product-card-preview{max-width:1100px;margin:0 auto;padding:28px 22px}
+.cms-product-card-preview-heading{display:flex;flex-direction:column;gap:5px;margin-bottom:18px}
+.cms-product-card-preview-heading strong{color:#0b3155;font:700 15px Inter,sans-serif}
+.cms-product-card-preview-heading span{color:#687280;font:400 12px Inter,sans-serif}
+.cms-product-card-preview-stage{display:flex;justify-content:center;padding:24px;background:#f5f7fa;border:1px solid #e1e8ef;border-radius:10px}
+.cms-product-card-preview-item{width:min(100%,360px);pointer-events:none}
+.cms-product-card-preview-item .bp-catalog-card{height:100%}
+.cms-product-card-preview-item .bp-card-actions{display:none}
+@media(max-width:600px){.cms-full-preview-bar{align-items:flex-start;flex-direction:column}.cms-product-preview-tools{width:100%;justify-content:space-between}.cms-product-card-preview{padding:20px 14px}.cms-product-card-preview-stage{padding:12px}}
