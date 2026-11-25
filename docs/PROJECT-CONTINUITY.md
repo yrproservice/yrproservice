@@ -433,3 +433,16 @@ The documentation commits are being verified by the normal Preview build workflo
 - Exact-head CI: 180 tests (177 pass, 0 fail, 3 intentionally skipped); both builds, Preview D1 schema, Preview deployment/assets, security/Access, 20 desktop/mobile screenshots and 4/4 customer-flow checks passed. Screenshots show no horizontal overflow or failed/missing/pending images at tested viewports. Customer-flow POSTs are intercepted; use separate run [#45569677497](https://github.com/yrproservice/yrproservice/actions/runs/45569677497) for actual browser-to-Preview-D1 persistence evidence.
 - Product-image work remains user-owned and excluded; price/stock remain user-managed. Production was untouched.
 - Actual V10 ZIP is not present in the connected Library; V10 visual comparison remains unverified. Remaining release gates include supported-setting live restore, D1/R2 recovery, Production bindings/Access/backup, branch protection, full PR review and V10 visual sign-off.
+
+
+## GitHub Actions Node 24 compatibility update — 25 November 2026
+
+- Updated all 9 workflows on `cms-development` to current Node 24 action releases: `actions/checkout@v7.0.1`, `actions/setup-node@v7.1.0`, and `actions/upload-artifact@v7.0.2` where used.
+- Repository-wide scan of the 9 workflow files confirmed no remaining v4-v6 references for checkout, setup-node or upload-artifact.
+- The action release manifests were checked and each selected version declares the Node 24 runtime.
+- Exact-head workflow [#45578847576](https://github.com/yrproservice/yrproservice/actions/runs/45578847576) passed for commit `a10301ab1d181c3aa2eebcabc9feb3ebf2f3e187`; all 24 workflow steps succeeded.
+- Test suite: 180 tests, 177 passed, 0 failed, 3 intentionally skipped. Vite and Cloudflare Functions builds, Preview D1 schema, Preview deployment/assets, security/Access audit, read-only Services audit, desktop/mobile screenshot capture and customer-flow audit all passed.
+- Browser capture: 20 screenshots across 10 routes at 1440px desktop and 390px mobile. All route responses were HTTP 200; measured document widths equaled viewport widths; all captured image requests loaded; no failed, missing-source or pending images.
+- Customer-flow audit: 4 passed, 0 failed. These requests are intercepted and are not evidence of D1 persistence; retain separate browser-to-Preview-D1 evidence [#45569677497](https://github.com/yrproservice/yrproservice/actions/runs/45569677497).
+- Workflow log no longer contains the prior GitHub Actions Node 20 deprecation warning. Node SQLite experimental warnings remain visible and are not test failures.
+- No Production code, D1/R2 data, binding, secret, Access configuration or deployment was changed. PR #2 remains Draft/unmerged.
