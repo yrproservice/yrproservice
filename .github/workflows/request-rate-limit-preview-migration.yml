@@ -21,9 +21,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Check out selected branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7.1.0
         with:
           node-version: 22
       - name: Verify Preview database identity (fail closed)
