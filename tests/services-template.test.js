@@ -3,33 +3,30 @@ import assert from "node:assert/strict";
 import { servicesCmsTemplate, getServicesCmsContent, getServiceBySlug } from "../src/data/servicesCmsTemplate.js";
 import { services } from "../src/data/services.js";
 
-const originalServices = [
-  {
-    title: "Installation & Site Planning",
-    points: ["Floor-plan consultation", "Chair & unit setup", "System calibration"],
-  },
-  {
-    title: "Emergency Repair",
-    points: ["On-site diagnostics", "Repair support", "Loaner equipment"],
-  },
-  {
-    title: "Preventative Maintenance",
-    points: ["Quarterly check-ups", "Wear-part replacement", "Performance logging"],
-  },
-  {
-    title: "Compliance & Safety Audits",
-    points: ["X-ray calibration", "Water-line testing", "Sterilization audits"],
-  },
+const originalServiceDestinations = [
+  ["dental-chair-installation", "Dental Chair Installation"],
+  ["equipment-installation", "Equipment Installation"],
+  ["compressor-installation", "Compressor Installation"],
+  ["dental-suction-installation", "Dental Suction Installation"],
+  ["underfloor-piping", "Underfloor Piping"],
+  ["preventive-maintenance", "Preventive Maintenance"],
+  ["equipment-relocation", "Equipment Relocation"],
+  ["repair-technical-support", "Repair and Technical Support"],
 ];
 
-test("Services template preserves the original four service categories and details", () => {
+test("Services template preserves all eight established service destinations and their original content", () => {
   const items = servicesCmsTemplate.sections[0].content.listing.items;
-  assert.equal(services.length, 4);
-  assert.equal(items.length, originalServices.length);
+  assert.equal(services.length, 8);
   assert.deepEqual(
-    items.map(({ title, points }) => ({ title, points })),
-    originalServices,
+    services.map(({ slug, title }) => [slug, title]),
+    originalServiceDestinations,
   );
+  assert.deepEqual(items, services);
+  for (const service of items) {
+    assert.ok(service.text);
+    assert.ok(service.detail);
+    assert.ok(Array.isArray(service.points) && service.points.length > 0);
+  }
 });
 
 test("Services page design and non-catalogue sections remain present", () => {
