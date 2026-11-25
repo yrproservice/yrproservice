@@ -2219,3 +2219,47 @@ test("CMS media restore rolls back its archive-state change when the audit inser
     assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS total FROM cms_audit_log").get().total, 0);
   } finally { db.close(); }
 });
+
+
+test("CMS revision restore rejects an unsupported site-setting key before creating a draft", async () => {
+  const batches = [];
+  const db = {
+    prepare(sql) {
+      return {
+        values: [],
+        bind(...values) { this.values = values; return this; },
+        async first() {
+          if (sql.includes("FROM cms_site_settings WHERE setting_key = ?")) {
+            return { id: "revision-check-1" };
+          }
+          if (sql.includes("FROM cms_site_setting_versions WHERE id = ? AND setting_key = ?")) {
+            return {
+              version_number: 1,
+              content: JSON.stringify({ enabled: true }),
+            };
+          }
+          return null;
+        },
+      };
+    },
+    async batch(statements) {
+      batches.push(statements);
+      return statements.map(() => ({ meta: { changes: 1 } }));
+    },
+  };
+
+  const response = await restoreCmsRevision(adminContext(
+    "/api/cms/admin/history",
+    {
+      entityType: "setting",
+      entityKey: "revision-check-1",
+      versionId: "archived-v1",
+    },
+    { ...adminConfig, DB: db },
+  ));
+  const result = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.match(result.error, /CMS setting key is not supported/i);
+  assert.equal(batches.length, 0);
+});
