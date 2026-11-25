@@ -134,6 +134,59 @@ test("Admin authentication rejects a valid Access identity outside the approved 
   assert.equal(result.response.status, 403);
 });
 
+test("Admin mutations reject a mismatched Origin before accepting an Access JWT", async () => {
+  const token = await tokenFor();
+  const request = new Request("https://yrproservice.test/api/cms/admin/media", {
+    method: "POST",
+    headers: {
+      "Cf-Access-Jwt-Assertion": token,
+      Origin: "https://attacker.example",
+    },
+  });
+  const result = await requireAdmin({ request, env: config });
+  assert.equal(result.ok, false);
+  assert.equal(result.response.status, 403);
+  assert.match(await result.response.text(), /Cross-origin Admin changes/);
+});
+
+test("Admin mutations reject cross-site Fetch Metadata when Origin is absent", async () => {
+  const request = new Request("https://yrproservice.test/api/cms/admin/media", {
+    method: "POST",
+    headers: {
+      "Cf-Access-Jwt-Assertion": await tokenFor(),
+      "Sec-Fetch-Site": "cross-site",
+    },
+  });
+  const result = await requireAdmin({ request, env: config });
+  assert.equal(result.ok, false);
+  assert.equal(result.response.status, 403);
+});
+
+test("Admin mutations accept same-origin browser requests", async () => {
+  const request = new Request("https://yrproservice.test/api/cms/admin/media", {
+    method: "POST",
+    headers: {
+      "Cf-Access-Jwt-Assertion": await tokenFor(),
+      Origin: "https://yrproservice.test",
+      "Sec-Fetch-Site": "same-origin",
+    },
+  });
+  const result = await requireAdmin({ request, env: config });
+  assert.deepEqual(result, { ok: true, email: "yr.proservice@gmail.com" });
+});
+
+test("Admin read-only requests remain compatible with cross-origin navigation", async () => {
+  const request = new Request("https://yrproservice.test/api/cms/admin/pages", {
+    method: "GET",
+    headers: {
+      "Cf-Access-Jwt-Assertion": await tokenFor(),
+      Origin: "https://attacker.example",
+    },
+  });
+  const result = await requireAdmin({ request, env: config });
+  assert.deepEqual(result, { ok: true, email: "yr.proservice@gmail.com" });
+});
+
 test("Admin authentication returns the approved identity for a valid signed Access JWT", async () => {
   const result = await requireAdmin(context(await tokenFor()));
   assert.deepEqual(result, { ok: true, email: "yr.proservice@gmail.com" });
