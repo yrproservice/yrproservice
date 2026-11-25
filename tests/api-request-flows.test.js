@@ -125,15 +125,44 @@ test("service request validation requires contact details, a valid email and an 
 });
 
 
-test("all four current approved Services categories are accepted by the request API", async () => {
-  const currentServiceSlugs = [
+test("all eight established V10 Services destinations are accepted by the request API", async () => {
+  const originalServiceSlugs = [
+    "dental-chair-installation",
+    "equipment-installation",
+    "compressor-installation",
+    "dental-suction-installation",
+    "underfloor-piping",
+    "preventive-maintenance",
+    "equipment-relocation",
+    "repair-technical-support",
+  ];
+
+  for (const service of originalServiceSlugs) {
+    const response = await submitRequest({
+      request: postRequest({
+        requestType: "service",
+        name: "Clinic Manager",
+        clinic: "Example Dental",
+        phone: "0123456789",
+        email: "clinic@example.com",
+        service,
+        message: "Please contact us about this service.",
+      }),
+      env: { DB: makeDb() },
+    });
+    assert.equal(response.status, 201, service);
+  }
+});
+
+test("superseded four-category Preview service slugs remain temporarily compatible", async () => {
+  const compatibilitySlugs = [
     "installation-site-planning",
     "emergency-repair",
     "preventative-maintenance",
     "compliance-safety-audits",
   ];
 
-  for (const service of currentServiceSlugs) {
+  for (const service of compatibilitySlugs) {
     const response = await submitRequest({
       request: postRequest({
         requestType: "service",
