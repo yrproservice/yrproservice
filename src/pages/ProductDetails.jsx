@@ -125,7 +125,8 @@ export default function ProductDetails({ product: initialProduct, navigate, prev
     window.setTimeout(() => setAdded(false), 1500);
   }
 
-  const description = product.description || product.summary;
+  const summary = product.summary || "";
+  const description = product.description || "";
   const specifications = Array.isArray(product.specifications)
     ? product.specifications
     : Array.isArray(product.highlights) ? product.highlights : [];
@@ -212,7 +213,7 @@ export default function ProductDetails({ product: initialProduct, navigate, prev
               </strong>
             </div>
           </div>
-          <p className="bp-detail-summary">{description}</p>
+          <p className="bp-detail-summary">{summary}</p>
           {!previewMode && <div className="bp-detail-qty">
             <span>Quantity</span>
             <button
