@@ -2110,3 +2110,13 @@ Release blockers remain unchanged: Production CMS R2 binding/public base is not 
 - This confirms automated regression coverage and the exact-head Preview workflow. It does **not** confirm a live supported-setting restore in the authenticated CMS.
 - Live restore remains open until a supported setting with a known archived revision is identified and its current draft state is checked. Any manual acceptance must restore as a draft only; do not publish. Never retry unsupported key `revision-check-1`.
 - No Production code, Production D1, Production deployment, or PR merge occurred. PR #2 remains Draft/unmerged. Product image acquisition and assignment remain user-owned and excluded.
+
+
+## Exact-head CI and PR governance status — 25 November 2026
+
+- Documentation commit under verification: `6bbb75b1e41a58778efbd5a777de3308a8c49d41`.
+- Exact-head GitHub Actions run [#45574884724](https://github.com/yrproservice/yrproservice/actions/runs/45574884724) completed with conclusion `success`. All 21 workflow steps passed, including tests, dependency audit, Vite and Cloudflare Pages Functions builds, Preview D1 schema readiness, Preview deployment verification, security/Access checks, desktop/mobile screenshots, customer request journey audit, and artifact uploads.
+- Current PR #2 metadata: Open, Draft, unmerged; base `main`; head `cms-development` at `6bbb75b1e41a58778efbd5a777de3308a8c49d41`; GitHub reports `mergeable=false`; 176 changed files, 32,259 additions, 1,843 deletions, and 1,460 commits. These counts are a review warning, not a reason to merge or force-update branches. The full history/diff and merge conflict state require deliberate investigation before any release decision.
+- GitHub branch metadata reports `main.protected=false` and `cms-development.protected=false`; the repository rulesets endpoint returned an empty list. Required review/check enforcement is therefore not evidenced by branch protection/rulesets at this check.
+- Do not merge PR #2, force-push, rewrite history, or change branch protection/rulesets as part of this checkpoint. Governance changes require a separately reviewed plan and explicit approval.
+- No Production code, Production D1/R2, deployment, or binding was changed. Product image acquisition and assignment remain user-owned and excluded. Live supported-setting revision restore in the authenticated CMS remains unverified.
