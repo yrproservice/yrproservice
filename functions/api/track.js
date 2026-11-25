@@ -31,16 +31,6 @@ async function checkTrackingRateLimit(db, request, email) {
   const ipHash = ip ? await hashValue(ip) : "";
   const emailHash = validEmail(email) ? await hashValue(email.toLowerCase()) : "";
 
-  await db.prepare(`
-    CREATE TABLE IF NOT EXISTS request_tracking_attempts (
-      id TEXT PRIMARY KEY,
-      ip_hash TEXT,
-      email_hash TEXT,
-      created_at INTEGER NOT NULL
-    )
-  `).run();
-  await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_tracking_ip_time ON request_tracking_attempts(ip_hash, created_at)").run();
-  await db.prepare("CREATE INDEX IF NOT EXISTS idx_request_tracking_email_time ON request_tracking_attempts(email_hash, created_at)").run();
   await db.prepare("DELETE FROM request_tracking_attempts WHERE created_at < ?").bind(now - 86400).run();
 
   if (!ipHash && !emailHash) return true;
