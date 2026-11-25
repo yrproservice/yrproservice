@@ -2092,3 +2092,11 @@ Release blockers remain unchanged: Production CMS R2 binding/public base is not 
 - This supersedes earlier statements in this file that authenticated CMS page publishing had not yet been attempted. Other authenticated CMS checks remain open unless separately evidenced.
 - Production application code, Production D1, and Production website were not changed. PR #2 remains unmerged. Product image work remains excluded and user-owned.
 
+## Revision-restore regression test and exact-head Preview workflow — 25 November 2026
+
+- Commit: `7445289d567f53138ecc6c721226614f75ac313b` — `test(cms): cover unsupported revision restore rejection`.
+- Added endpoint-level regression coverage proving that a restore request for unsupported site-setting key `revision-check-1` is rejected with HTTP 400 before any database batch is created. This preserves the supported-setting allowlist; the synthetic key was not added to production validation.
+- Exact-head GitHub Actions run [#45572889563](https://github.com/yrproservice/yrproservice/actions/runs/45572889563) completed with conclusion `success`. All 21 workflow steps passed, including automated tests, dependency audit, Vite and Cloudflare Pages Functions builds, Preview D1 schema readiness, Preview deployment verification, security/Access audit, desktop/mobile screenshot capture, customer request journey audit, and artifact uploads.
+- This is automated CI and Preview workflow evidence; it does not establish that a supported site-setting revision has been restored in the live CMS.
+- The prior Preview test target `revision-check-1` remains unsupported. Do not retry it or expand the allowlist to accommodate it. A live restore test still requires an exact supported setting key and a known archived revision, with its current draft state checked first; any test must restore as a draft only and must not publish.
+- No Production code, Production D1, Production deployment, or PR merge occurred. PR #2 remains Draft/unmerged. Product image acquisition and assignment remain user-owned and excluded.
