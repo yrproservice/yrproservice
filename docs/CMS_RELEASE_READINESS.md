@@ -1,3 +1,13 @@
+## Exact-head Preview verification and release-gate refresh — 25 November 2026
+
+- Exact branch head: `942f3961dd546c8555d1eadc1614fd21e6136cd6` on `cms-development`.
+- GitHub Actions run [#45559421022](https://github.com/yrproservice/yrproservice/actions/runs/45559421022) completed successfully. All 20 workflow steps passed, including locked dependency install, high-severity dependency audit, automated tests, Vite build, Cloudflare Pages Functions build, Preview D1 schema readiness, Preview deployment/asset verification, Preview security/Access audit, desktop/mobile screenshot capture, customer request journey audit, and artifact uploads.
+- The earlier documentation-head run [#45559284324](https://github.com/yrproservice/yrproservice/actions/runs/45559284324) was cancelled during screenshot capture; it is superseded by the successful exact-current-head run above.
+- PR #2 remains Open, Draft, and unmerged, targeting `main`. Latest GitHub PR metadata reports mergeable=true, 175 changed files, and 1,448 commits. The PR has no submitted reviews or review threads at this check. Branch protection is not enabled on either `main` or `cms-development` (previous ruleset inspection also returned none). A green Preview workflow and mergeable flag do not resolve the required full diff/history review or release gates.
+- The current D1/R2 recovery plan is committed at [docs/D1-R2-DISASTER-RECOVERY-PLAN.md](https://github.com/yrproservice/yrproservice/blob/cms-development/docs/D1-R2-DISASTER-RECOVERY-PLAN.md). Official Cloudflare product documentation has been incorporated, but account-specific database versions/plan, Time Travel bookmark retrieval, R2 bucket-lock settings, and independent backup/restore evidence remain unverified. No Cloudflare account connector or Cloudflare-specific action was available in the connected tool inventory; no account configuration was changed.
+- No Production migration, export, restore, R2 copy, binding change, or deployment was performed. Product-image sourcing, processing, assignment, replacement, and publication remain explicitly user-owned and excluded.
+- Next priority: obtain authenticated, read-only Preview CMS access evidence and complete safe draft/preview/publish/history/recovery/media runtime checks using isolated non-product test media. In parallel, obtain read-only Cloudflare D1/R2 account facts needed to complete the recovery plan. Do not merge PR #2 or change Production.
+
 ## Exact-head Preview browser verification — 24 November 2026, 08:30 UTC
 
 - Workflow run [#45355842812](https://github.com/yrproservice/yrproservice/actions/runs/45355842812) completed **successfully** on source commit `443921cdfc2fdc09abfd6da7a8c638a62166fb11`.
