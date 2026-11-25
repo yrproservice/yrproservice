@@ -183,6 +183,11 @@ test("a valid service request is rate-limited, stored and returns a reference", 
   assert.equal(response.status, 201);
   assert.equal(result.ok, true);
   assert.match(result.reference, /^YRS-\d{8}-[A-F0-9]{16}$/);
+  assert.equal(
+    db.statements.some((item) => /^\s*CREATE\s+(TABLE|INDEX)/i.test(item.sql)),
+    false,
+    "Request submission must not mutate database schema at runtime.",
+  );
   const insert = db.statements.find((item) => item.sql.includes("INSERT INTO requests"));
   assert.ok(insert);
   assert.equal(insert.values[2], "service");
@@ -245,6 +250,11 @@ test("tracking returns only the matching request status for reference and email"
       createdAt: "2026-11-16T02:00:00.000Z",
     },
   });
+  assert.equal(
+    db.statements.some((item) => /^\s*CREATE\s+(TABLE|INDEX)/i.test(item.sql)),
+    false,
+    "Request tracking must not mutate database schema at runtime.",
+  );
 });
 
 test("tracking does not reveal a request when the reference and email do not match", async () => {
