@@ -1,3 +1,13 @@
+## Exact-head Preview verification and current release boundary — 25 November 2026
+
+- Current branch: `cms-development`; exact head `942f3961dd546c8555d1eadc1614fd21e6136cd6`.
+- GitHub Actions run [#45559421022](https://github.com/yrproservice/yrproservice/actions/runs/45559421022) passed all 20 steps, including dependencies/audit, tests, both builds, Preview D1 schema check, Preview deploy/asset check, security/Access audit, desktop/mobile screenshots, customer request journey audit, and artifact uploads.
+- Run [#45559284324](https://github.com/yrproservice/yrproservice/actions/runs/45559284324) was cancelled during screenshot capture and is superseded by the successful current-head run.
+- PR #2 remains Open, Draft, unmerged, targeting `main`. Current PR metadata: mergeable=true, 175 changed files, 1,448 commits; no submitted reviews or review threads. `main` and `cms-development` are not branch-protected. These facts do not authorize merging; the complete diff/history and release gates remain outstanding.
+- The D1/R2 recovery plan is updated with Cloudflare's documented D1 Time Travel and R2 durability/bucket-lock capabilities. Actual YR Proservice D1 storage versions and plan, Time Travel bookmark retrieval, R2 bucket-lock configuration, independent backups, and isolated restore drill are still unverified. No Cloudflare account access/action was available in the connected tools; no Cloudflare settings or data were changed.
+- Production remains untouched. No Production export, restore, migration, R2 copy, binding change, or deployment was performed. Product-image acquisition/processing/assignment/replacement/publication remains user-owned.
+- Next: authenticated read-only Preview CMS verification; safe isolated CMS draft/revision/media/recovery runtime tests; read-only Cloudflare D1/R2 configuration evidence; then full PR diff/history and remaining release gates. Keep PR #2 Draft and do not change Production.
+
 ## Exact-head Preview browser verification and durable user instructions — 24 November 2026, 08:30 UTC
 
 - Starting branch head: `443921cdfc2fdc09abfd6da7a8c638a62166fb11`. Branch remains `cms-development`.
