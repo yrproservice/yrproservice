@@ -2263,3 +2263,41 @@ test("CMS revision restore rejects an unsupported site-setting key before creati
   assert.match(result.error, /CMS setting key is not supported/i);
   assert.equal(batches.length, 0);
 });
+
+test("CMS supported site-setting revision restore creates a new draft and preserves the archived source in real SQLite", async () => {
+  const db = makeSQLiteD1();
+  try {
+    seedSettingsRevisionSQLite(db);
+    const response = await restoreCmsRevision(restoreSettingsRevisionSQLiteContext(db));
+    const result = await response.json();
+
+    assert.equal(response.status, 201);
+    assert.equal(result.ok, true);
+    assert.equal(result.auditRecorded, true);
+    assert.equal(result.version, 3);
+    assert.equal(result.restoredFrom, 1);
+
+    const versions = db.sqlite.prepare(
+      "SELECT id, version_number, state, value_json FROM cms_site_setting_versions WHERE setting_key = ? ORDER BY version_number"
+    ).all("site.navigation").map((row) => ({ ...row }));
+    assert.equal(versions.length, 3);
+    assert.deepEqual(versions.map(({ id, version_number, state }) => ({ id, version_number, state })), [
+      { id: "settings-archived-revision", version_number: 1, state: "archived" },
+      { id: "settings-current-draft", version_number: 2, state: "archived" },
+      { id: result.draftId, version_number: 3, state: "draft" },
+    ]);
+    assert.deepEqual(JSON.parse(versions[2].value_json), {
+      items: [{ label: "Products", url: "/products" }],
+    });
+
+    const audit = db.sqlite.prepare(
+      "SELECT action, entity_type, entity_id, metadata_json FROM cms_audit_log"
+    ).get();
+    assert.equal(audit.action, "restore_revision_as_draft");
+    assert.equal(audit.entity_type, "setting");
+    assert.equal(audit.entity_id, "site.navigation");
+    assert.deepEqual(JSON.parse(audit.metadata_json), { sourceVersion: 1, newVersion: 3 });
+  } finally {
+    db.close();
+  }
+});
