@@ -4,7 +4,7 @@ Status: **Read-only audit in progress — no Production or Cloudflare changes pe
 
 Repository: `yrproservice/yrproservice`  
 Branch reviewed: `cms-development`  
-Reviewed head: `90bfbc6197482552f880593450895742ca935539`  
+Reviewed head: `ac08f791e21adb8b225622d285d519fd0fa5c94f`  
 Pull request: [#2 — Build YR Proservice Visual CMS foundation](https://github.com/yrproservice/yrproservice/pull/2)
 
 ## 1. Safety boundary
@@ -20,9 +20,7 @@ This checkpoint is an inspection and release-planning record only.
 
 ## 2. Exact-head Preview verification
 
-The documentation commit reviewed here is `90bfbc6197482552f880593450895742ca935539`.
-
-Exact-head GitHub Actions run [#45582946265](https://github.com/yrproservice/yrproservice/actions/runs/45582946265) completed with conclusion **success**. Its single job completed all 24 steps successfully, including:
+The audit was first committed as `ac08f791e21adb8b225622d285d519fd0fa5c94f`. Its exact-head GitHub Actions run [#45584215505](https://github.com/yrproservice/yrproservice/actions/runs/45584215505) was still running when this follow-up evidence was prepared. The prior documentation checkpoint `90bfbc6197482552f880593450895742ca935539` had exact-head run [#45582946265](https://github.com/yrproservice/yrproservice/actions/runs/45582946265) complete with conclusion **success**, all 24 steps. Check the exact-head run for the current commit before treating this updated audit as CI-verified.
 
 - Locked dependency installation and dependency audit.
 - Automated tests.
@@ -96,7 +94,7 @@ The large accumulated change set remains a material release-review risk. A contr
 ## 8. Outstanding release gates
 
 - [ ] Review remaining high-impact PR changes and history, including UI routes, customer requests, CMS settings, media and migration behavior.
-- [ ] Perform authenticated live Preview CMS media upload/metadata/archive/restore acceptance with the user; automated tests and source review are not a substitute.
+- [x] Authenticated live Preview CMS Media Library acceptance — user confirmed successful completion on 25 November 2026: temporary non-product test image upload, Media Library metadata verification, archive, restore, and confirmation that the image was accessible again. Evidence source: user's confirmation in chat; the assistant did not independently replay or witness the browser session. This closes the manual acceptance checklist item.
 - [ ] Complete a supported-setting Revision History restore test in Preview, restoring to a draft only.
 - [ ] Complete Preview D1 + R2 backup/restore and media-reference integrity evidence.
 - [ ] Obtain V10 visual sign-off. The authoritative `YR-Proservice-Visual-Blueprint-V10-Verified-Images.zip` was not present in the connected Library during the previous search, so full comparison against that ZIP is not claimed.
@@ -106,7 +104,11 @@ The large accumulated change set remains a material release-review risk. A contr
 - [ ] Decide and approve repository branch protection/required-check governance separately.
 - [ ] Obtain explicit user approval for any Production deployment, Production database mutation, Cloudflare configuration change, or PR merge.
 
-## 9. Current decision
+## 9. User-confirmed Preview CMS Media Library acceptance
+
+On 25 November 2026, the user confirmed that the authenticated Preview CMS Media Library acceptance test had already been completed successfully. The confirmed test scope was the temporary non-product image upload, metadata verification, archive, restore, and accessibility check after restoration. This is recorded as **user-confirmed evidence**, not as an independently witnessed assistant browser test. The manual Preview CMS Media acceptance gate is therefore closed; it does not establish Production R2 readiness or backup/restore readiness.
+
+## 10. Current decision
 
 **Production release is not yet ready to execute based on the evidence reviewed here.** The concrete repository-level blocker is the missing Production CMS R2 binding/public base. Other important Production facts—especially database schema, account backup settings, and actual bucket configuration—remain unverified rather than presumed absent.
 
