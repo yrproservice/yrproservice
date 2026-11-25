@@ -120,6 +120,18 @@ jobs:
       - name: Audit Preview security headers and Access boundaries
         if: success()
         run: node scripts/preview-security-audit.mjs
+      - name: Read-only audit of published Preview Services content
+        if: success()
+        continue-on-error: true
+        run: node scripts/preview-services-content-audit.mjs
+      - name: Upload Preview Services content audit
+        if: always() && hashFiles('preview-services-content-audit.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-services-content-audit-${{ github.sha }}
+          path: preview-services-content-audit.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Informational audit of Preview product image fields (non-blocking)
         if: success()
         continue-on-error: true
