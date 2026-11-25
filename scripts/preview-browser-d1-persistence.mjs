@@ -92,15 +92,13 @@ async function findCardWithAction(cards, expectedName, expectedAction) {
 }
 
 function captureRealRequestSubmission(page, identity) {
-  const responsePromise = page.waitForResponse((response) =>
+  const submissionPromise = page.waitForResponse((response) =>
     response.url().endsWith("/api/requests") && response.request().method() === "POST"
-  );
-  return async () => {
-    const response = await responsePromise;
+  ).then(async (response) => {
     const payload = await response.json();
     assert.equal(response.status(), 201, `${identity.type} real Preview submission failed: ${JSON.stringify(payload)}`);
     assert.equal(payload.ok, true);
-    assert.match(payload.reference, /^(YRS|YRQ|YRC)-\\d{8}-[A-F0-9]{16}$/);
+    assert.match(payload.reference, /^(YRS|YRQ|YRC)-\d{8}-[A-F0-9]{16}$/);
     created.push({ ...identity, reference: payload.reference });
     const trackingUrl = new URL("/api/track", origin);
     trackingUrl.searchParams.set("reference", payload.reference);
@@ -112,9 +110,9 @@ function captureRealRequestSubmission(page, identity) {
     assert.equal(tracking.request.requestType, identity.type);
     assert.equal(tracking.request.status, "received");
     return payload;
-  };
+  });
+  return () => submissionPromise;
 }
-
 async function runCase(name, execute) {
   try {
     const details = await execute();
