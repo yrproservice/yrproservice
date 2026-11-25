@@ -1,3 +1,11 @@
+## Current-head Preview workflow confirmation — 25 November 2026
+
+- Current branch head: `2c56ce6dca2b1c20dd59e326038df84c178b7319` on `cms-development`.
+- GitHub Actions run [#45562660485](https://github.com/yrproservice/yrproservice/actions/runs/45562660485) completed with conclusion `success` for that exact head. Its single job completed all 20 workflow steps successfully: locked dependency installation, dependency audit, automated tests, Vite and Pages Functions builds, Preview D1 schema readiness, Preview deployment/assets verification, Preview security/Access audit, informational image audits, desktop/mobile screenshots, customer request journey audit and artifact uploads.
+- This confirms automated Preview build and browser-audit workflow success for the exact current head. It does not establish actual D1 request persistence; the customer journey audit intercepts request POSTs.
+- Authenticated CMS editor/runtime verification remains open. The connected tool inventory exposes GitHub repository/workflow access but no Cloudflare account/D1/R2 action or authenticated browser/Playwright interaction. Therefore no live CMS draft/preview/publish/history/recovery/media operation was attempted or claimed.
+- No D1/R2 content, customer requests, Production resources, workflow definitions, or PR state were changed in this verification. Keep PR #2 Draft/unmerged and Production untouched.
+
 ## Request-persistence integration test dispatch constraint — 25 November 2026
 
 - Reviewed the exact workflow and script sources on cms-development at starting head 4d683b1f714687237a6c9db298a9ff524c7c5670: .github/workflows/cms-build-check.yml, .github/workflows/preview-request-persistence-integration.yml, and scripts/preview-request-persistence-integration.mjs.
