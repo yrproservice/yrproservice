@@ -1,6 +1,7 @@
 -- Public request and request-tracking rate-limit storage.
 -- Keep runtime request handlers free of schema mutations.
 -- Hashes are stored instead of raw client IP addresses or email addresses.
+-- Applied only to Preview by the guarded request-rate-limit migration workflow.
 
 CREATE TABLE IF NOT EXISTS request_submission_attempts (
   id TEXT PRIMARY KEY,
