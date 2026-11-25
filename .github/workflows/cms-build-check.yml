@@ -22,9 +22,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7.1.0
         with:
           node-version: 22
           cache: npm
@@ -126,7 +126,7 @@ jobs:
         run: node scripts/preview-services-content-audit.mjs
       - name: Upload Preview Services content audit
         if: always() && hashFiles('preview-services-content-audit.json') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: preview-services-content-audit-${{ github.sha }}
           path: preview-services-content-audit.json
@@ -179,7 +179,7 @@ jobs:
           NODE
       - name: Upload Preview product image audit
         if: always() && hashFiles('preview-product-image-audit.json') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: preview-product-image-audit-${{ github.sha }}
           path: preview-product-image-audit.json
@@ -235,7 +235,7 @@ jobs:
           NODE
       - name: Upload Preview static image URL audit
         if: always() && hashFiles('preview-static-image-url-audit.json') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: preview-static-image-url-audit-${{ github.sha }}
           path: preview-static-image-url-audit.json
@@ -369,7 +369,7 @@ jobs:
         run: node scripts/preview-customer-flow-audit.mjs
       - name: Upload Preview customer-flow audit
         if: always() && hashFiles('preview-customer-flow-audit.json') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: preview-customer-flow-audit-${{ github.sha }}
           path: preview-customer-flow-audit.json
@@ -377,7 +377,7 @@ jobs:
           retention-days: 7
       - name: Upload Preview screenshots
         if: always() && hashFiles('preview-screenshots/**/*.png') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: cms-preview-screenshots-${{ github.sha }}
           path: preview-screenshots/**/*.png
