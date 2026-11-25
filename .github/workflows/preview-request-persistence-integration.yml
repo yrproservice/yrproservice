@@ -1,0 +1,67 @@
+name: Preview Request Persistence Integration Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-request-persistence-integration
+  cancel-in-progress: false
+
+jobs:
+  preview-request-integration:
+    name: Verify synthetic request persistence in Preview D1 only
+    if: github.ref == 'refs/heads/cms-development'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out selected branch
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify exact Preview D1 identity and schema before testing
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx wrangler@4.157.0 d1 info yr-proservice-test-db --json > preview-d1-info.json
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const info = JSON.parse(fs.readFileSync('preview-d1-info.json', 'utf8'));
+          const values = [];
+          const visit = (value) => {
+            if (typeof value === 'string') values.push(value);
+            else if (Array.isArray(value)) value.forEach(visit);
+            else if (value && typeof value === 'object') Object.values(value).forEach(visit);
+          };
+          visit(info);
+          if (!values.includes('yr-proservice-test-db') ||
+              !values.includes('7fca4ad0-3baa-4148-ad28-bfd2ef416c16')) {
+            throw new Error('Preview D1 identity mismatch. No integration-test writes were made.');
+          }
+          console.log('Exact Preview D1 identity verified.');
+          NODE
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "SELECT (SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='requests') AS requests_table, (SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='request_status_history') AS history_table, (SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name IN ('request_submission_attempts','request_tracking_attempts')) AS rate_limit_tables;" --json > preview-request-schema.json
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const parsed = JSON.parse(fs.readFileSync('preview-request-schema.json', 'utf8'));
+          const sets = Array.isArray(parsed) ? parsed : [parsed];
+          const rows = sets.flatMap((set) => Array.isArray(set?.results) ? set.results : []);
+          if (rows.length !== 1 || Number(rows[0].requests_table) !== 1 ||
+              Number(rows[0].history_table) !== 1 || Number(rows[0].rate_limit_tables) !== 2) {
+            throw new Error('Preview request schema is not ready. No integration-test writes were made.');
+          }
+          console.log('Preview request schema verified.');
+          NODE
+      - name: Submit, verify, track and clean up synthetic requests
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PREVIEW_BASE_URL: https://cms-development.yrproservice.pages.dev
+        run: node scripts/preview-request-persistence-integration.mjs
