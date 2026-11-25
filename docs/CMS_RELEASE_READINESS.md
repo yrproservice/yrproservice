@@ -2078,3 +2078,17 @@ Release blockers remain unchanged: Production CMS R2 binding/public base is not 
 - The workflow was subsequently hardened: it checks `pragma_table_info('customer_request_access_sessions')` and skips migration 0007 when the column exists. The corrected workflow is present at the current branch head.
 - This was a failed Preview workflow, not evidence of data loss. No Production D1/R2 or deployment was touched.
 - Current exact-head Preview build run [#45347491083](https://github.com/yrproservice/yrproservice/actions/runs/45347491083) is progressing through Playwright installation after tests, both builds, Preview D1 readiness, Preview deployment/verification, security-header/Access audit, product image field audit, and static catalogue URL checks all passed. Screenshot capture and customer request journey audit are still pending; do not call this run successful until it completes.
+
+## Authenticated CMS Preview page-publishing acceptance — 25 November 2026
+
+- The user completed the authenticated Preview browser test for `CMS Preview Test` at `/cms-preview-test`, revision V1.
+- **Save Preview draft** succeeded.
+- **Preview saved draft** showed the expected heading and description and explicitly stated `Not published · Public website unchanged`.
+- The user confirmed **Publish to Preview** after the CMS confirmation stated that only the isolated Preview website would be changed and Production would not be changed.
+- The CMS reported: `Page revision V1 published to this Preview environment only. Production remains unchanged.`
+- The user then opened and reloaded the published Preview route and confirmed success.
+- Detailed test record: [CMS Preview Publishing Acceptance Test](CMS-PREVIEW-PUBLISHING-ACCEPTANCE-TEST-25-NOV-2026.md).
+- Evidence is user-confirmed from the authenticated browser session; it was not independently replayed by the assistant. This closes the specific page draft-save → draft-preview → publish-to-Preview → published-route reload check for this test page only. It does not verify other content types or Production publishing.
+- This supersedes earlier statements in this file that authenticated CMS page publishing had not yet been attempted. Other authenticated CMS checks remain open unless separately evidenced.
+- Production application code, Production D1, and Production website were not changed. PR #2 remains unmerged. Product image work remains excluded and user-owned.
+
