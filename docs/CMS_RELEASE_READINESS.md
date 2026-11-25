@@ -2100,3 +2100,13 @@ Release blockers remain unchanged: Production CMS R2 binding/public base is not 
 - This is automated CI and Preview workflow evidence; it does not establish that a supported site-setting revision has been restored in the live CMS.
 - The prior Preview test target `revision-check-1` remains unsupported. Do not retry it or expand the allowlist to accommodate it. A live restore test still requires an exact supported setting key and a known archived revision, with its current draft state checked first; any test must restore as a draft only and must not publish.
 - No Production code, Production D1, Production deployment, or PR merge occurred. PR #2 remains Draft/unmerged. Product image acquisition and assignment remain user-owned and excluded.
+
+
+## Supported site-setting revision restore regression — 25 November 2026
+
+- Commit: `810f156d5f57a0c14ada6401f47973517862505c` — `test(cms): cover supported site-setting revision restore`.
+- Added a real-SQLite happy-path endpoint test for restoring an archived supported setting revision as a new draft. It verifies HTTP 201, the new version number and source-version metadata, preservation of the archived source, archival of the prior draft, creation of the restored draft content, and the `restore_revision_as_draft` audit record.
+- Exact-head GitHub Actions run [#45573824550](https://github.com/yrproservice/yrproservice/actions/runs/45573824550) completed with conclusion `success` for the exact commit above. All 21 workflow steps passed, including automated tests, dependency audit, Vite and Cloudflare Pages Functions builds, Preview D1 schema readiness, Preview deployment verification, security/Access audit, desktop/mobile screenshot capture, customer request journey audit, and artifact uploads.
+- This confirms automated regression coverage and the exact-head Preview workflow. It does **not** confirm a live supported-setting restore in the authenticated CMS.
+- Live restore remains open until a supported setting with a known archived revision is identified and its current draft state is checked. Any manual acceptance must restore as a draft only; do not publish. Never retry unsupported key `revision-check-1`.
+- No Production code, Production D1, Production deployment, or PR merge occurred. PR #2 remains Draft/unmerged. Product image acquisition and assignment remain user-owned and excluded.
