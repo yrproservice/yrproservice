@@ -53,7 +53,12 @@ async function accessToken() {
 
 function makeSQLiteD1() {
   const sqlite = new DatabaseSync(":memory:");
-  sqlite.exec(readFileSync(new URL("../migrations/0002_create_cms.sql", import.meta.url), "utf8"));
+  for (const migration of [
+    "../migrations/0002_create_cms.sql",
+    "../migrations/0003_page_metadata_versions.sql",
+  ]) {
+    sqlite.exec(readFileSync(new URL(migration, import.meta.url), "utf8"));
+  }
   return {
     sqlite,
     prepare(sql) {
@@ -187,7 +192,7 @@ test("CMS media archive blocks saved revision references and keeps the object", 
     db.sqlite.prepare("INSERT INTO cms_media (id,storage_provider,object_key,public_url,original_file_name,mime_type,byte_size,width,height) VALUES ('media-1','r2',?,?, 'reference.png','image/png',24,1,1)")
       .run(key, publicUrl);
     db.sqlite.prepare("INSERT INTO cms_pages (id,page_key,title,route) VALUES ('page-1','home','Home','/')").run();
-    db.sqlite.prepare("INSERT INTO cms_page_versions (id,page_id,version_number,state,title,route,content_json) VALUES ('version-1','page-1',1,'published','Home','/ ',?)")
+    db.sqlite.prepare("INSERT INTO cms_page_versions (id,page_id,version_number,state,title,route,content_json) VALUES ('version-1','page-1',1,'published','Home','/',?)")
       .run(JSON.stringify({ sections: [{ id: "hero", type: "hero", content: { imageUrl: publicUrl } }] }));
     const context = await adminContext({
       db, r2, method: "DELETE", path: "/api/cms/admin/media?id=media-1",
