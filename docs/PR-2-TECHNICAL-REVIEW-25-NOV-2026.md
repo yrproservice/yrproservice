@@ -77,3 +77,14 @@
 - No confirmed exploitable defect was found in this focused review. Automated customer-access tests verify disabled-by-default behavior, cross-origin rejection, session requirement, unsupported methods and cookie clearing; they do not constitute an end-to-end mailer delivery or enabled customer-history acceptance test.
 - Privacy note retained: public submission/tracking rate-limit tables use plain SHA-256 hashes of email/IP values; predictable values can be guessed offline. Customer email-access identifiers use keyed HMAC via the private secret. Consider keyed HMAC for public rate-limit identifiers as a privacy-hardening follow-up before broader rollout.
 - No code, customer data, D1/R2 resources, bindings, secrets or Production configuration was changed. Product image work remains excluded and user-owned.
+
+
+## Visual CMS section-recovery and retention review — 26 November 2026
+
+- Reviewed `functions/api/cms/admin/section-recovery.js`, `src/utils/sectionRecovery.js`, `migrations/0005_page_section_recovery.sql`, `tests/cms-section-recovery-sqlite.test.js`, `tests/section-recovery.test.js` and `.github/workflows/cms-preview-recovery-retention.yml`.
+- Section removal verifies the page's saved draft or published snapshot, checks that the section exists exactly once, rejects an already-active recovery entry, and uses a conditional D1 batch to persist the recovery payload and audit event together.
+- Recovery entries are page-scoped, expire after 30 days, and are paged in bounded batches. Restore preparation checks that the entry remains active/unexpired and rejects a section ID already present in the saved page. Discard is conditional on the expected draft snapshot and active recovery entry.
+- SQLite tests cover atomic persistence/audit rollback, duplicate active entries, intact section payload restoration, page ownership, and draft-concurrency behavior. Existing user-confirmed manual Recovery Bin tests remain separate acceptance evidence.
+- The scheduled retention workflow verifies the exact Preview D1 name/UUID before clearing expired payloads. It never targets Production D1. Once this workflow is present on the repository's default branch, the schedule will run against the explicitly named Preview database; this is not a backup mechanism.
+- No confirmed defect was found in this focused review. No Preview or Production data was changed and no retention job was dispatched.
+- This review does not close the independent D1/R2 backup and restore rehearsal requirement.
