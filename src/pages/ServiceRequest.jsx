@@ -106,7 +106,7 @@ export default function ServiceRequest({ navigate }) {
         <div className="container service-request-success center">
           <p className="eyebrow">Request received</p>
           <h1>Thank you for your service enquiry.</h1>
-          <p>Your request has been saved and sent to YR Proservice.</p>
+          <p>Your request has been saved. Keep the reference below to check its status.</p>
           {submittedReference && (
             <p>
               <strong>Reference:</strong> {submittedReference}
