@@ -81,8 +81,9 @@ export default function TrackRequest() {
           <p className="eyebrow">Request Tracking</p>
           <h1>Track your requests.</h1>
           <p className="lead">
-            View your product quotations, dental chair requests and service requests together.
-            Verify the email address used when submitting your requests.
+            Check the status of an individual request using its reference number
+            and the email address used when submitting it. Viewing all requests
+            by email is not available yet.
           </p>
         </div>
 
