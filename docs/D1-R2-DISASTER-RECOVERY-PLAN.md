@@ -202,3 +202,19 @@ The user does not yet own a business custom domain. The user selected the option
 No backup/export, object copy, migration, restore, or data write has been performed. The Recovery D1 and R2 resources are provisioned but empty/unverified; their existence is not evidence of a backup. No Cloudflare API token or GitHub secret has been supplied or configured. Do not create a scheduled or executable backup workflow until its least-privilege credential design, exact resource identity checks, consistency procedure, and retention/RPO/RTO approvals are in place.
 
 The next safe steps are to verify the Recovery R2 bucket's access configuration in the dashboard, then design and review the isolated Preview-to-Recovery backup procedure. Production remains out of scope for this rehearsal. Keep PR #2 Draft and unmerged; do not perform Production configuration or release operations without explicit approval.
+
+
+## 11. Recovery R2 access-settings verification — 26 November 2026
+
+The user inspected the Cloudflare dashboard Settings page for `yrproservice-cms-recovery` and supplied the following settings:
+
+- Custom Domains: no custom domain assigned.
+- Public Development URL: disabled.
+- Basin Catalog: disabled.
+- CORS: no policy defined.
+- Object Lifecycle Rules: the default multipart-abort rule is enabled and aborts incomplete multipart uploads after 7 days.
+- Bucket Lock Rules: none defined.
+
+These are user-reported dashboard observations, not an independent API inspection. The bucket is not publicly exposed through either a custom domain or the R2 development URL. No CORS policy is currently configured; do not add one unless a specific browser-based recovery workflow requires it. The multipart-abort rule applies to incomplete multipart uploads and is not a completed-object backup retention policy. No bucket lock is currently configured; do not add one until object overwrite, restore, and cleanup behavior has been designed and tested.
+
+Recovery R2 access settings are acceptable for the planned private recovery destination at this stage. The bucket remains empty/unverified until an actual backup is written and independently checked. No backup, object copy, restore, or Production operation was performed as part of this verification.
