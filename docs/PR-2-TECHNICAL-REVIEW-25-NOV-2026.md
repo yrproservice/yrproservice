@@ -204,3 +204,12 @@
 - Production CMS R2 binding/public URL configuration remains outstanding. No Cloudflare Production configuration or resource was changed.
 - Product image acquisition/assignment remains explicitly excluded and user-owned.
 - PR #2 remains Open/Draft/unmerged. No Production deployment, PR merge, or customer data write was performed during this verification.
+
+
+## Customer tracking copy correction and Services CTA review — 26 November 2026
+
+- Commit `c6e7fd5d6576fa4b78e877d1012070d87bfd6cb1` updated the Request Tracking introduction to explain that customers can check one request using its reference and submission email; email-based history is not enabled.
+- Commit `18c0c3c6294024cc8453319e8ae8177dc51bb5b4` removed the inactive email-history email field and disabled Continue button, replacing them with a clear availability notice. The active reference-based lookup remains available.
+- Exact-head Preview workflow #2141 for `18c0c3c6294024cc8453319e8ae8177dc51bb5b4` was still in progress at the time of this note: https://github.com/yrproservice/yrproservice/actions/runs/45757923664. Do not treat the changes as CI-passed until that run completes successfully.
+- Read-only Services review confirmed the five-section CMS template, all eight established service entries, and the primary CTA labels “Request a Service” and “Contact Us”. The Contact Us CTA routes to `/quote`, preserving `/contact` for HR-only enquiries. Existing `tests/services-template.test.js` explicitly covers the CTA destination and legacy `/contact` normalization.
+- No additional Services code change was needed. No Production deployment/configuration, customer submission, database write, R2 change, PR merge, or product-image work was performed.
