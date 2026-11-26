@@ -138,10 +138,11 @@ than proceeding with local OAuth.
 If separately approved by the operator, the manual runbook is:
 
 1. Use VS Code's **local** PowerShell terminal, not a Codespace, remote
-   container, CI runner, or shared machine. Confirm `CLOUDFLARE_API_TOKEN` is
-   not set in the terminal so it cannot override OAuth. Set the non-secret
-   `CLOUDFLARE_ACCOUNT_ID` for the intended YR Proservice account. Do not put
-   these values in a project file.
+   container, CI runner, or shared machine. Confirm
+   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_API_KEY`, and `CLOUDFLARE_EMAIL` are
+   not set so environment credentials cannot override OAuth. Do not print or
+   copy their values. Set the non-secret `CLOUDFLARE_ACCOUNT_ID` for the
+   intended YR Proservice account. Do not put these values in a project file.
 2. If a local OAuth login is needed, review `--scopes-list` first. Proceed
    only if you can select a permission set you have approved; pass that
    reviewed set explicitly with `--scopes` and `--use-keyring`. Wrangler's
