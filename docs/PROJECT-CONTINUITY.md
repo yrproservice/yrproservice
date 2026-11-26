@@ -1,3 +1,22 @@
+# CURRENT SCOPE OVERRIDE — 26 November 2026
+
+**This section supersedes older scope statements below that say product-image sourcing/acquisition is user-owned or disabled.** The user's current instruction explicitly authorizes weekly catalogue image-source monitoring/auditing and retrieval of exact manufacturer binaries, subject to the safeguards below.
+
+- Continue the weekly YR Proservice website/Full Visual CMS progress review and manufacturer-source image audit.
+- Image priority: Fussen F200; Cattani AC400Q/AC600Q; MELAG Vacuclave 118; then the six legacy Mocom Silent Power variants and Morita Veraview iX/X800; then remaining cropped, low-resolution, or wrong-model catalogue images.
+- Search manufacturer sources first, then official catalogues/manuals, then reliable regional distributors. Verify exact model/variant, regional applicability, source, dimensions, full-product visibility, and aspect ratio.
+- A product reference may only be changed after the exact binary is retrieved, saved in the repository, and visually inspected. No generated substitutes, hotlinks, approximate models, or old-image fallback.
+- Keep all work on `cms-development` and Preview. No merge, Production publish/deploy, Production D1/R2 binding/data changes, or Production configuration changes without separate explicit approval.
+- At review start, branch head was `69eba2ecabc21a1925d966dd95d5579bd29569d6`, main was `0c86d03d3c479a511c48f33f1b9eedbfbd050cd6`; branch comparison was 1,480 ahead / 0 behind, 182 changed files. PR #2 remains open and Draft.
+- Exact-head Preview workflow [#45588343400](https://github.com/yrproservice/yrproservice/actions/runs/45588343400) passed all 24 steps: 188 tests (185 passed, 0 failed, 3 skipped), Vite and Pages Functions builds, Preview D1 schema, security/Access checks, exact-head Preview asset verification, 20 public-route screenshots, and customer-flow audit 4/4. Separate isolated-branch Preview D1 persistence workflow [#45569677497](https://github.com/yrproservice/yrproservice/actions/runs/45569677497) passed 4/4 real browser submissions and cleaned all synthetic records; it was not run on the current branch head.
+- The 25 November user-confirmed AC100 V6 draft preview and Media Library upload/archive/restore acceptance remain user-reported Preview evidence; AC100 V6 remains unpublished and V4 remains published. Do not alter that state.
+- The current source includes beforeunload and tab-switch unsaved-change guards, but current-head browser verification of refresh/tab-close prompts remains outstanding. The Preview Services audit found no published CMS Services page; the public route still uses the static fallback.
+- The 26 November image audit found the existing Cattani binaries are Australasia-source files, not verified Region 1 files. The Malaysia-applicable Region 1 catalogue lists AC400Q code 013449 on printed page 20 (not page 19; page 19 is AC400-1P code 013404) and AC600Q code 013549 on printed page 23. Neither Region 1 binary has been extracted. Existing Fussen/MELAG/Mocom/Morita image findings are recorded in `docs/CMS_RELEASE_READINESS.md` and `docs/CATTANI-IMAGE-SOURCES.md`.
+- The V10 ZIP was not found in the connected Library during this review; no direct V10 visual comparison was possible. Production R2/public media binding remains absent. Do not configure it without approval.
+- Next bounded step: retrieve and inspect the official Fussen F200 image binary, then continue with the Malaysia-specific Cattani Region 1 binaries. If a source is inaccessible, record the exact URL and blocker rather than guessing or installing a substitute.
+
+---
+
 ## Request-persistence integration test remains pending — 25 November 2026
 
 - Starting branch head: 4d683b1f714687237a6c9db298a9ff524c7c5670; repository default branch confirmed as main.
