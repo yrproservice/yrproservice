@@ -1,7 +1,7 @@
 # Preview D1 Backup — Permissions and Safety Review
 
-Review date: 26 November 2026  
-Reviewed branch head: `cms-development` at `2bb1c3cccec26f67886ac63d7bdd6c7c038559eb`  
+Review date: 26 November 2026\
+Reviewed branch head: `cms-development` at `2bb1c3cccec26f67886ac63d7bdd6c7c038559eb`\
 Status: **Review only — no workflow, credential, backup, or Cloudflare setting was created or changed**
 
 ## Scope and resources
