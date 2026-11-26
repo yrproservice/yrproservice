@@ -53,12 +53,17 @@ function postRequest(body, options = {}) {
   });
 }
 
-function getTrackingRequest(reference = "YRS-20261116-ABC123", email = "clinic@example.com") {
-  const url = new URL("https://yrproservice.test/api/track");
-  if (reference !== null) url.searchParams.set("reference", reference);
-  if (email !== null) url.searchParams.set("email", email);
-  return new Request(url, {
-    headers: { "CF-Connecting-IP": "203.0.113.10" },
+function getTrackingRequest(reference = "YRS-20261116-ABC123", email = "clinic@example.com", options = {}) {
+  return new Request("https://yrproservice.test/api/track", {
+    method: options.method || "POST",
+    headers: {
+      "CF-Connecting-IP": "203.0.113.10",
+      "Content-Type": options.contentType || "application/json",
+      ...(options.headers || {}),
+    },
+    body: options.method === "GET" || options.method === "HEAD"
+      ? undefined
+      : options.rawBody ?? JSON.stringify({ reference, email }),
   });
 }
 
@@ -242,7 +247,7 @@ test("request submission returns 429 when the email submission limit is reached"
 
 test("tracking validates method and requires configured request storage", async () => {
   const method = await trackRequest({
-    request: new Request("https://yrproservice.test/api/track", { method: "POST" }),
+    request: getTrackingRequest(undefined, undefined, { method: "GET" }),
     env: { DB: makeDb() },
   });
   assert.equal(method.status, 405);
@@ -252,6 +257,44 @@ test("tracking validates method and requires configured request storage", async 
     env: {},
   });
   assert.equal(unavailable.status, 503);
+});
+
+test("tracking requires JSON POST and rejects malformed or cross-origin requests", async () => {
+  const wrongType = await trackRequest({
+    request: getTrackingRequest(undefined, undefined, { contentType: "text/plain" }),
+    env: { DB: makeDb() },
+  });
+  assert.equal(wrongType.status, 415);
+
+  const malformed = await trackRequest({
+    request: getTrackingRequest(undefined, undefined, { rawBody: "{broken" }),
+    env: { DB: makeDb() },
+  });
+  assert.equal(malformed.status, 400);
+
+  const crossOrigin = await trackRequest({
+    request: getTrackingRequest(undefined, undefined, {
+      headers: { Origin: "https://attacker.example" },
+    }),
+    env: { DB: makeDb() },
+  });
+  assert.equal(crossOrigin.status, 403);
+
+  const crossSite = await trackRequest({
+    request: getTrackingRequest(undefined, undefined, {
+      headers: { "Sec-Fetch-Site": "cross-site" },
+    }),
+    env: { DB: makeDb() },
+  });
+  assert.equal(crossSite.status, 403);
+});
+
+test("tracking rejects oversized JSON bodies", async () => {
+  const response = await trackRequest({
+    request: getTrackingRequest(undefined, undefined, { rawBody: JSON.stringify({ reference: "A", email: "x@y.com", extra: "x".repeat(9000) }) }),
+    env: { DB: makeDb() },
+  });
+  assert.equal(response.status, 413);
 });
 
 test("tracking returns only the matching request status for reference and email", async () => {
