@@ -193,3 +193,14 @@
 - Updated `tests/api-request-flows.test.js` for POST tracking and added focused checks for wrong content type, malformed JSON, cross-origin/cross-site rejection and oversized bodies. The test suite has not yet been executed in this environment; exact-head CI must be checked before claiming these tests pass.
 - Implementation commits: `6b68867` (endpoint), `33f295f` (frontend), `5ee6be0` (tests).
 - No customer records, Preview/Production databases, R2 objects, Cloudflare settings or deployments were changed. PR #2 remains Open/Draft/unmerged. Product-image work remains excluded.
+
+## Exact-head Preview verification and release gaps — 26 November 2026
+
+- Workflow `45755724485` completed successfully for exact commit `22386ed3dbbea20fcf537be338a98d2d73df304a`: https://github.com/yrproservice/yrproservice/actions/runs/45755724485
+- Confirmed passing stages: locked dependency install, high-severity dependency audit, automated tests, Vite build, Cloudflare Pages Functions build, Preview D1 schema readiness, Preview deployment/build-asset verification, Preview security/Access audit, desktop/mobile screenshot capture and customer request journey audit.
+- Customer-flow artifact reports 4/4 passed: product cart to quotation; separate dental-chair request; service request validation/submission; HR-only contact. Submission requests were intercepted; no test request was written to Preview D1.
+- Read-only Services content artifact reports `no-published-services-page` and `fallbackExpected: true`. The fallback behavior is expected by the audit; this does not establish that the final Services copy/CTA has been reconciled and approved.
+- Backup/recovery review: repository workflows/scripts contain Preview migrations, schema checks and CMS recovery-bin retention, but no D1/R2 backup-and-restore rehearsal workflow or script was found. This remains an operational release-readiness gap; do not treat the CMS recovery bin as a database/media backup.
+- Production CMS R2 binding/public URL configuration remains outstanding. No Cloudflare Production configuration or resource was changed.
+- Product image acquisition/assignment remains explicitly excluded and user-owned.
+- PR #2 remains Open/Draft/unmerged. No Production deployment, PR merge, or customer data write was performed during this verification.
