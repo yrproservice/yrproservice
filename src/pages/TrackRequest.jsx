@@ -87,27 +87,12 @@ export default function TrackRequest() {
           </p>
         </div>
 
-        <section className="form track-request-form customer-request-access-form" aria-labelledby="view-all-requests-title">
-          <h2 id="view-all-requests-title">View all your requests</h2>
-          <p className="customer-request-access-copy">
-            Enter the email address you used when submitting your requests.
+        <section className="form track-request-form customer-request-access-form" aria-labelledby="request-history-title">
+          <h2 id="request-history-title">Email-based request history</h2>
+          <p className="customer-request-access-notice" role="status">
+            This feature is not available yet. Use the reference number and email
+            address below to check an individual request.
           </p>
-          <label>
-            Email Address
-            <input
-              type="email"
-              name="email"
-              disabled
-              aria-describedby="customer-request-verification-notice"
-              placeholder="Email verification unavailable"
-            />
-          </label>
-          <p className="customer-request-access-notice" id="customer-request-verification-notice" role="status">
-            Email verification is not enabled yet. Please use your request reference for now.
-          </p>
-          <button className="button" type="button" disabled aria-disabled="true">
-            Continue
-          </button>
         </section>
 
         <details className="customer-reference-tracking" open>
