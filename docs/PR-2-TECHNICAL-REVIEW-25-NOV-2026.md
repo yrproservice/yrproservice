@@ -219,5 +219,13 @@
 
 - Source review of `functions/api/requests.js` confirmed that successful public submissions are inserted into the Preview/Production-bound D1 database and return a reference; this handler does not send an email or otherwise notify staff.
 - Updated `src/pages/ServiceRequest.jsx` so the success page says the request has been saved and instructs the customer to keep the reference to check its status. Removed the inaccurate statement that it had also been sent to YR Proservice.
-- Implementation commit: `1698175095ca7db3d7add9a25ddfd33f4cde434f`. Exact-head Preview CI is pending and must pass before this wording correction is considered verified.
+- Implementation commit: `1698175095ca7db3d7add9a25ddfd33f4cde434f`. The subsequent documentation commit `e909b16eb838294aae2196587517b100b956b096` includes this code and passed Preview workflow #2144 (`45758661568`): https://github.com/yrproservice/yrproservice/actions/runs/45758661568. The workflow completed the automated tests, dependency audit, Vite and Pages Functions builds, Preview D1 readiness, Preview deployment verification, security/Access checks and customer-flow audit.
 - No customer submission, database write, R2 change, Cloudflare configuration, Production deployment, PR merge, or product-image work was performed.
+
+
+## Quotation and dental-chair confirmation copy review — 26 November 2026
+
+- Read-only review of `src/pages/Quote.jsx` and `src/pages/DentalChairRequest.jsx` confirmed both success pages accurately state that the request has been saved and tell customers to retain the reference; neither claims that an email or staff notification was sent. No copy change was needed.
+- Rechecked `src/pages/TrackRequest.jsx`: the active reference-plus-email lookup uses same-origin POST with a JSON body; the unavailable email-history feature is explicitly labelled unavailable.
+- Rechecked `wrangler.toml`: Preview has its D1, R2 and public media-base configuration. Production currently has its D1 binding but no CMS R2 bucket binding or public media-base variable. This remains an operational Cloudflare configuration task requiring explicit Production approval; no config was changed.
+- No customer submissions, D1/R2 writes, Cloudflare changes, Production deployment, PR merge or product-image work were performed.
