@@ -1,8 +1,54 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "../components/Layout";
-import { products } from "../data/products";
+import { loadPublishedCatalogue } from "../data/publishedCatalogue";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
+import ProductMediaFrame from "../components/ProductMediaFrame";
+import { getProductRequestFlow, PRODUCT_REQUEST_FLOWS } from "../data/productWorkflow";
+
+function safeHttpsUrl(value) {
+  if (typeof value !== "string") return "";
+  try {
+    const parsed = new URL(value.trim());
+    return parsed.protocol === "https:" ? parsed.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function safeDocumentUrl(value) {
+  if (typeof value !== "string" || value.length > 1000) return "";
+  const trimmed = value.trim();
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//") && !/[\\?#\u0000-\u001f]/.test(trimmed)) return trimmed;
+  return safeHttpsUrl(trimmed);
+}
+
+function formatSpecification(item) {
+  if (typeof item === "string") return item;
+  if (!item || typeof item !== "object" || Array.isArray(item)) return "";
+  const labelKey = ["label", "name", "key", "title"].find((key) => Object.prototype.hasOwnProperty.call(item, key));
+  const valueKey = ["value", "detail", "text", "description"].find((key) => Object.prototype.hasOwnProperty.call(item, key));
+  const label = labelKey ? String(item[labelKey] ?? "").trim() : "";
+  const value = valueKey ? String(item[valueKey] ?? "").trim() : "";
+  return [label, value].filter(Boolean).join(": ");
+}
+
+function getProductDocuments(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map((document) => {
+    if (typeof document === "string") {
+      const url = safeDocumentUrl(document);
+      const label = document.split("/").filter(Boolean).pop() || "Product document";
+      return url ? { url, label } : null;
+    }
+    if (!document || typeof document !== "object" || Array.isArray(document)) return null;
+    const labelKey = ["name", "title", "label", "filename", "fileName"].find((key) => Object.prototype.hasOwnProperty.call(document, key));
+    const urlKey = ["url", "href", "path", "src", "file"].find((key) => Object.prototype.hasOwnProperty.call(document, key));
+    const url = urlKey ? safeDocumentUrl(document[urlKey]) : "";
+    const label = labelKey ? String(document[labelKey] || "").trim() : "Product document";
+    return url ? { url, label: label || "Product document" } : null;
+  }).filter(Boolean);
+}
 
 function stockLabel(status) {
   if (status === "in-stock") return "In Stock";
@@ -10,14 +56,57 @@ function stockLabel(status) {
   return "Availability to be updated";
 }
 
-export default function ProductDetails({ product, navigate }) {
+function formatProductPrice(price) {
+  if (price === null || price === undefined || price === "") {
+    return "Price on request";
+  }
+
+  const numericPrice =
+    typeof price === "number"
+      ? price
+      : Number(String(price).replace(/[^0-9.-]/g, ""));
+
+  if (!Number.isFinite(numericPrice)) return String(price);
+
+  return new Intl.NumberFormat("en-MY", {
+    style: "currency",
+    currency: "MYR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numericPrice);
+}
+
+export default function ProductDetails({ product: initialProduct, navigate, previewMode = false }) {
   const { addToCart } = useCart();
   const { addChair } = useChairRequests();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [tab, setTab] = useState("description");
-  const chair = product.purchaseType === "quote";
-  const related = products
+  const [catalogueProducts, setCatalogueProducts] = useState(previewMode ? [initialProduct] : []);
+  const [catalogueLoading, setCatalogueLoading] = useState(!previewMode);
+  const [catalogueError, setCatalogueError] = useState("");
+  useEffect(() => {
+    let active = true;
+    if (previewMode) return () => { active = false; };
+    loadPublishedCatalogue()
+      .then((catalogue) => {
+        if (active) setCatalogueProducts(catalogue);
+      })
+      .catch((error) => {
+        if (active) setCatalogueError(error.message || "Unable to load the published product catalogue.");
+      })
+      .finally(() => {
+        if (active) setCatalogueLoading(false);
+      });
+    return () => { active = false; };
+  }, [previewMode, initialProduct?.slug]);
+  const publishedProduct = catalogueProducts.find((item) => item.slug === initialProduct?.slug);
+  const product = previewMode ? initialProduct : publishedProduct || initialProduct;
+  const [activeProductImage, setActiveProductImage] = useState(initialProduct?.img || "");
+  useEffect(() => { setActiveProductImage(product?.img || ""); }, [product?.slug, product?.img]);
+  const requestFlow = getProductRequestFlow(product);
+  const chair = requestFlow === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR;
+  const related = catalogueProducts
     .filter((p) => p.slug !== product.slug && p.category === product.category)
     .slice(0, 4);
 
@@ -28,12 +117,45 @@ export default function ProductDetails({ product, navigate }) {
       return;
     }
     addToCart(product, quantity);
+    if (requestFlow === PRODUCT_REQUEST_FLOWS.QUOTATION) {
+      navigate("/quote");
+      return;
+    }
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1500);
   }
 
-  const description = product.description || product.summary;
-  const specifications = product.specifications || product.highlights || [];
+  const summary = product.summary || "";
+  const description = product.description || "";
+  const specifications = Array.isArray(product.specifications)
+    ? product.specifications
+    : Array.isArray(product.highlights) ? product.highlights : [];
+  const documents = getProductDocuments(product.docs);
+  const galleryImages = [
+    ...(product.img ? [{ url: product.img, alt: product.name || "Product image", key: "primary" }] : []),
+    ...(Array.isArray(product.gallery) ? product.gallery : [])
+      .filter((image) => image && typeof image.url === "string" && image.url.trim())
+      .map((image, index) => ({
+        url: image.url.trim(),
+        alt: typeof image.alt === "string" && image.alt.trim() ? image.alt.trim() : product.name || "Product image",
+        key: "gallery-" + index,
+      })),
+  ].filter((image, index, all) => all.findIndex((candidate) => candidate.url === image.url) === index);
+  const displayedProductImage = galleryImages.some((image) => image.url === activeProductImage)
+    ? activeProductImage
+    : product.img || galleryImages[0]?.url || "";
+
+  const manufacturerSource = safeHttpsUrl(product.manufacturerSource);
+
+  if (catalogueLoading) {
+    return <main className="bp-detail"><div className="container bp-empty"><p>Loading published product details…</p></div></main>;
+  }
+  if (catalogueError) {
+    return <main className="bp-detail"><div className="container bp-empty"><h2>Product details unavailable</h2><p>{catalogueError}</p><button className="button" type="button" onClick={() => window.location.reload()}>Reload Product</button></div></main>;
+  }
+  if (!previewMode && !publishedProduct && !initialProduct?.name) {
+    return <main className="bp-detail"><div className="container bp-empty"><h2>Product not found</h2><p>This product is not available in the published catalogue.</p><Link to="/products" navigate={navigate}>Browse Products</Link></div></main>;
+  }
 
   return (
     <main className="bp-detail">
@@ -49,27 +171,28 @@ export default function ProductDetails({ product, navigate }) {
       <section className="container bp-detail-main">
         <div className="bp-detail-photo">
           <div className="bp-detail-photo-frame">
-            <img
-              src={product.img}
-              onError={(event) => {
-                event.currentTarget.src = "/favicon.png";
-                event.currentTarget.onerror = null;
-              }}
-              alt={product.name}
+            <ProductMediaFrame
+              src={displayedProductImage}
+              alt={displayedProductImage ? (galleryImages.find((image) => image.url === displayedProductImage)?.alt || product.name) : `${product.name} image unavailable`}
+              variant="detail"
             />
           </div>
-          <div className="bp-thumb-row">
-            <span className="active">
-              <img
-                src={product.img}
-                onError={(event) => {
-                  event.currentTarget.src = "/favicon.png";
-                  event.currentTarget.onerror = null;
-                }}
-                alt="Product view"
-              />
-            </span>
-          </div>
+          {galleryImages.length > 1 && (
+            <div className="bp-product-gallery-thumbnails" role="group" aria-label="Product image gallery">
+              {galleryImages.map((image, index) => (
+                <button
+                  type="button"
+                  key={image.key}
+                  className={displayedProductImage === image.url ? "active" : ""}
+                  aria-label={`Show product image ${index + 1}`}
+                  aria-pressed={displayedProductImage === image.url}
+                  onClick={() => setActiveProductImage(image.url)}
+                >
+                  <img src={image.url} alt={image.alt} loading="lazy" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="bp-detail-info">
           <p className="bp-eyebrow">{product.brand || "YR Proservice"}</p>
@@ -81,7 +204,7 @@ export default function ProductDetails({ product, navigate }) {
           <div className="bp-detail-commercial">
             <div>
               <small>PRICE</small>
-              <strong>{product.price || "Price on request"}</strong>
+              <strong>{formatProductPrice(product.price)}</strong>
             </div>
             <div>
               <small>AVAILABILITY</small>
@@ -90,8 +213,8 @@ export default function ProductDetails({ product, navigate }) {
               </strong>
             </div>
           </div>
-          <p className="bp-detail-summary">{description}</p>
-          <div className="bp-detail-qty">
+          <p className="bp-detail-summary">{summary}</p>
+          {!previewMode && <div className="bp-detail-qty">
             <span>Quantity</span>
             <button
               type="button"
@@ -103,23 +226,26 @@ export default function ProductDetails({ product, navigate }) {
             <button type="button" onClick={() => setQuantity((q) => q + 1)}>
               +
             </button>
-          </div>
+          </div>}
           <button
             className="bp-btn bp-btn-primary bp-detail-main-action"
             type="button"
             onClick={submitSelection}
+            disabled={previewMode}
           >
-            {chair
-              ? "Request a Quote →"
-              : added
-                ? "Added to Cart ✓"
-                : "Add to Cart →"}
+            {previewMode
+              ? "Preview only — ordering disabled"
+              : chair
+                ? "Request Chair Consultation →"
+                : requestFlow === PRODUCT_REQUEST_FLOWS.QUOTATION
+                  ? "Request a Quote →"
+                  : added
+                    ? "Added to Cart ✓"
+                    : "Add to Cart →"}
           </button>
-          <p className="bp-admin-note">
-            Price and availability are catalogue fields reserved for future
-            admin updates. Manufacturer-specific technical details are shown
-            below when verified.
-          </p>
+          {previewMode ? <p className="bp-admin-note">This is an administrator preview. No cart or quotation action will be submitted.</p> : <p className="bp-admin-note">
+            Price and availability reflect the latest information published to the catalogue. Manufacturer-specific technical details are shown below when verified.
+          </p>}
         </div>
       </section>
 
@@ -157,17 +283,31 @@ export default function ProductDetails({ product, navigate }) {
               <p className="bp-eyebrow">PRODUCT DESCRIPTION</p>
               <h2>Designed for the way the clinic works.</h2>
               <p>{description}</p>
-              {product.manufacturerSource && (
+              {manufacturerSource && (
                 <p className="bp-source-note">
                   Manufacturer information:{" "}
                   <a
-                    href={product.manufacturerSource}
+                    href={manufacturerSource}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    View official product page ↗
+                    View manufacturer information ↗
                   </a>
                 </p>
+              )}
+              {documents.length > 0 && (
+                <div className="bp-product-documents">
+                  <h3>Product documents</h3>
+                  <ul>
+                    {documents.map((document, index) => (
+                      <li key={index}>
+                        <a href={document.url} target="_blank" rel="noreferrer">
+                          {document.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
           )}
@@ -180,7 +320,7 @@ export default function ProductDetails({ product, navigate }) {
                   specifications.map((item, index) => (
                     <li key={index}>
                       <span>{String(index + 1).padStart(2, "0")}</span>
-                      {item}
+                      {formatSpecification(item)}
                     </li>
                   ))
                 ) : (
@@ -236,7 +376,9 @@ export default function ProductDetails({ product, navigate }) {
         </aside>
       </section>
 
-      {related.length > 0 && (
+      {catalogueError ? (
+        <section className="bp-related"><div className="container"><p role="status">{catalogueError}</p></div></section>
+      ) : related.length > 0 && (
         <section className="bp-related">
           <div className="container">
             <div className="bp-section-head">
@@ -261,13 +403,10 @@ export default function ProductDetails({ product, navigate }) {
                   className="bp-product-card"
                 >
                   <div className="bp-product-img">
-                    <img
+                    <ProductMediaFrame
                       src={item.img}
-                      onError={(event) => {
-                        event.currentTarget.src = "/favicon.png";
-                        event.currentTarget.onerror = null;
-                      }}
                       alt={item.name}
+                      variant="related"
                     />
                   </div>
                   <div className="bp-product-body">

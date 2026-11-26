@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import HomeCmsRenderer from "../components/HomeCmsRenderer";
 import { Link } from "../components/Layout";
 import { products } from "../data/products";
+import ProductMediaFrame from "../components/ProductMediaFrame";
 
 const brands = [
   "morita.png",
@@ -37,7 +39,7 @@ const provide = [
     "02",
     "Installation",
     "Professional setup and installation support for dental equipment and clinic systems.",
-    "⌁",
+    "↗",
     "/services/dental-chair-installation",
   ],
   [
@@ -56,7 +58,7 @@ const provide = [
   ],
 ];
 
-export default function Home({ navigate }) {
+function StaticHome({ navigate }) {
   return (
     <main className="bp-home">
       <section className="bp-home-hero">
@@ -101,25 +103,6 @@ export default function Home({ navigate }) {
               <i>•</i>
               <span>Technical support</span>
             </div>
-          </div>
-        </div>
-        <div className="bp-hero-cards container">
-          <div>
-            <strong>01</strong>
-            <h3>Trusted Products</h3>
-            <p>Established dental equipment brands selected for clinic use.</p>
-          </div>
-          <div>
-            <strong>02</strong>
-            <h3>Technical Know-how</h3>
-            <p>
-              Practical knowledge for installation, maintenance and support.
-            </p>
-          </div>
-          <div>
-            <strong>03</strong>
-            <h3>One Reliable Partner</h3>
-            <p>Equipment supply and technical support through one team.</p>
           </div>
         </div>
       </section>
@@ -207,7 +190,7 @@ export default function Home({ navigate }) {
               <article className="bp-product-card" key={p.slug}>
                 <Link to={`/products/${p.slug}`} navigate={navigate}>
                   <div className="bp-product-img">
-                    <img src={p.img} alt={p.name} />
+                    <ProductMediaFrame src={p.img} alt={p.name} variant="featured" />
                   </div>
                   <div className="bp-product-body">
                     <small>{p.brand || "YR Proservice"}</small>
@@ -234,7 +217,7 @@ export default function Home({ navigate }) {
               the dental field.
             </p>
           </div>
-          <div className="bp-brand-grid">
+          <div className="yr-brand-grid">
             {brands.map((file) => (
               <div className="bp-brand-card" key={file}>
                 <img
@@ -341,4 +324,46 @@ export default function Home({ navigate }) {
       </section>
     </main>
   );
+}
+
+
+export default function Home({ navigate }) {
+  const [publishedContent, setPublishedContent] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadPublishedHome() {
+      try {
+        const response = await fetch("/api/cms/public/pages?key=home", {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+
+        const result = await response.json();
+        const sections = result?.page?.content?.sections;
+
+        if (
+          active &&
+          result?.ok &&
+          Array.isArray(sections) &&
+          sections.length > 0
+        ) {
+          setPublishedContent(result.page.content);
+        }
+      } catch {
+        // Keep the static homepage if published CMS content cannot be loaded.
+      }
+    }
+
+    loadPublishedHome();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return publishedContent
+    ? <HomeCmsRenderer content={publishedContent} navigate={navigate} />
+    : <StaticHome navigate={navigate} />;
 }

@@ -1,0 +1,92 @@
+name: Apply Request Rate-Limit Migration to Preview D1
+
+on:
+  push:
+    branches: [cms-development]
+    paths:
+      - migrations/0008_request_rate_limits.sql
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: request-rate-limit-preview-d1-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate-preview:
+    name: Apply rate-limit schema to yr-proservice-test-db only
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/cms-development'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out selected branch
+        uses: actions/checkout@v7.0.1
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+      - name: Verify Preview database identity (fail closed)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4.157.0 d1 info yr-proservice-test-db --json > d1-preview-info.json
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const expectedName = 'yr-proservice-test-db';
+          const expectedId = '7fca4ad0-3baa-4148-ad28-bfd2ef416c16';
+          let info;
+          try {
+            info = JSON.parse(fs.readFileSync('d1-preview-info.json', 'utf8'));
+          } catch {
+            throw new Error('Could not parse Wrangler D1 info JSON; refusing to run migration.');
+          }
+          const values = [];
+          const visit = (value) => {
+            if (typeof value === 'string') values.push(value);
+            else if (Array.isArray(value)) value.forEach(visit);
+            else if (value && typeof value === 'object') Object.values(value).forEach(visit);
+          };
+          visit(info);
+          if (!values.includes(expectedName) || !values.includes(expectedId)) {
+            throw new Error('Preview D1 identity mismatch. Refusing to execute SQL.');
+          }
+          console.log('Verified Preview D1 identity:', expectedName, expectedId);
+          NODE
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Apply request rate-limit migration to Preview only
+        run: npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --file=migrations/0008_request_rate_limits.sql
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Verify request rate-limit schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          verification_sql="$(cat <<'SQL'
+          SELECT
+            (SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name IN ('request_submission_attempts', 'request_tracking_attempts')) AS rate_limit_tables,
+            (SELECT COUNT(*) FROM pragma_table_info('request_submission_attempts') WHERE name IN ('id', 'ip_hash', 'email_hash', 'created_at')) AS submission_columns,
+            (SELECT COUNT(*) FROM pragma_table_info('request_tracking_attempts') WHERE name IN ('id', 'ip_hash', 'email_hash', 'created_at')) AS tracking_columns,
+            (SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name IN ('idx_request_submission_ip_time', 'idx_request_submission_email_time', 'idx_request_tracking_ip_time', 'idx_request_tracking_email_time')) AS rate_limit_indexes;
+          SQL
+          )"
+          npx wrangler@4.157.0 d1 execute yr-proservice-test-db --remote --command "$verification_sql" --json > request-rate-limit-verification.json
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const parsed = JSON.parse(fs.readFileSync('request-rate-limit-verification.json', 'utf8'));
+          const sets = Array.isArray(parsed) ? parsed : [parsed];
+          const rows = sets.flatMap((item) => Array.isArray(item?.results) ? item.results : []);
+          if (rows.length !== 1) throw new Error('Request rate-limit verification returned an unexpected result.');
+          const row = rows[0];
+          if (Number(row.rate_limit_tables) !== 2 || Number(row.submission_columns) !== 4 ||
+              Number(row.tracking_columns) !== 4 || Number(row.rate_limit_indexes) !== 4) {
+            throw new Error('Preview request rate-limit schema verification failed: ' + JSON.stringify(row));
+          }
+          console.log('Verified Preview request rate-limit schema:', row);
+          NODE
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

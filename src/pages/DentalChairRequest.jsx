@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useChairRequests } from "../components/ChairRequestContext";
 import { useCart } from "../components/CartContext";
 import { Link } from "../components/Layout";
+import { downloadRequestConfirmationPdf } from "../utils/requestConfirmationPdf";
 
 export default function DentalChairRequest({ navigate }) {
   const {
@@ -11,16 +12,22 @@ export default function DentalChairRequest({ navigate }) {
     updateChairQuantity,
     modelCount,
     count,
+    migrationReady,
+    migrationError,
+    retryLegacyChairMigration,
+    storageReady,
+    storageError,
+    retryChairPersistence,
   } = useChairRequests();
   const { cartCount } = useCart();
   const [sent, setSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
-  const selectedProducts = useMemo(
-    () => items.map((item) => `${item.name} x${item.quantity || 1}`).join(", "),
-    [items],
-  );
+  const [confirmationData, setConfirmationData] = useState(null);
+  const selectedProducts = items
+    .map((item) => `${item.name} x${item.quantity || 1}`)
+    .join(", ");
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -57,6 +64,7 @@ export default function DentalChairRequest({ navigate }) {
       }
 
       setReference(result.reference);
+      setConfirmationData({ ...payload, reference: result.reference, submittedAt: new Date().toISOString() });
       setSent(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (submitError) {
@@ -83,6 +91,13 @@ export default function DentalChairRequest({ navigate }) {
             <strong>Reference: {reference}</strong>
           </p>
           <div className="bp-actions" style={{ justifyContent: "center" }}>
+            <button
+              type="button"
+              className="bp-btn bp-btn-primary"
+              onClick={() => downloadRequestConfirmationPdf(confirmationData)}
+            >
+              Download PDF
+            </button>
             <button
               className="bp-btn bp-btn-primary"
               onClick={() => navigate("/cart")}
@@ -124,6 +139,18 @@ export default function DentalChairRequest({ navigate }) {
             Dental Chair Requests <span>{count}</span>
           </Link>
         </div>
+        {(!migrationReady || migrationError) && (
+          <div className="bp-chair-note" role="alert">
+            <p>{migrationError || "The saved chair requests are being moved into this separate list. Changes are paused until this finishes."}</p>
+            <button type="button" onClick={retryLegacyChairMigration}>Retry safe storage migration</button>
+          </div>
+        )}
+        {storageError && (
+          <div className="bp-chair-note" role="alert">
+            <p>{storageError}</p>
+            <button type="button" onClick={retryChairPersistence}>Retry saving chair requests</button>
+          </div>
+        )}
         {!items.length ? (
           <div className="chair-request-empty">
             <h2>No dental chairs selected</h2>
@@ -148,7 +175,7 @@ export default function DentalChairRequest({ navigate }) {
               {items.map((item) => (
                 <div className="request-item" key={item.slug}>
                   <div className="request-item-image">
-                    <img src={item.img} alt={item.name} />
+                    <img src={item.img || "/favicon.png"} alt={item.img ? item.name : `${item.name} image unavailable`} />
                   </div>
                   <div className="request-item-info">
                     <small>
@@ -159,6 +186,7 @@ export default function DentalChairRequest({ navigate }) {
                     <div className="quantity-control">
                       <button
                         type="button"
+                        disabled={!migrationReady || !storageReady}
                         onClick={() =>
                           updateChairQuantity(item.slug, item.quantity - 1)
                         }
@@ -168,6 +196,7 @@ export default function DentalChairRequest({ navigate }) {
                       <span>{item.quantity}</span>
                       <button
                         type="button"
+                        disabled={!migrationReady || !storageReady}
                         onClick={() =>
                           updateChairQuantity(item.slug, item.quantity + 1)
                         }
@@ -178,6 +207,7 @@ export default function DentalChairRequest({ navigate }) {
                   </div>
                   <button
                     className="text-button request-remove"
+                    disabled={!migrationReady || !storageReady}
                     onClick={() => removeChair(item.slug)}
                   >
                     Remove
@@ -187,6 +217,7 @@ export default function DentalChairRequest({ navigate }) {
               <div className="request-actions">
                 <button
                   className="text-button clear-action"
+                  disabled={!migrationReady || !storageReady}
                   onClick={clearChairs}
                 >
                   Clear Chair Requests
@@ -205,13 +236,6 @@ export default function DentalChairRequest({ navigate }) {
             <aside className="bp-cart-summary request-form-card">
               <p className="bp-eyebrow bp-eyebrow-light">CHAIR QUOTATION</p>
               <h2>Tell Us About Your Clinic</h2>
-              <Link
-                to="/quote"
-                navigate={navigate}
-                className="bp-btn bp-btn-outline-blue request-quote-link"
-              >
-                Continue to Quotation →
-              </Link>
               <form className="form" onSubmit={handleSubmit}>
                 <input
                   type="hidden"
@@ -260,7 +284,7 @@ export default function DentalChairRequest({ navigate }) {
                 <button
                   className="bp-btn bp-btn-primary"
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !migrationReady || !storageReady}
                 >
                   {isSubmitting
                     ? "Submitting Request…"

@@ -1,51 +1,78 @@
-import React, { useMemo, useState } from "react";
-import { products } from "../data/products";
+import React, { useEffect, useState } from "react";
 import { useCart } from "../components/CartContext";
 import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
+import { loadPublishedCatalogue } from "../data/publishedCatalogue";
+import ShowroomProductCard from "../components/ShowroomProductCard";
+import ProductMediaFrame from "../components/ProductMediaFrame";
+import { getProductRequestFlow, isDentalChairProduct, PRODUCT_REQUEST_FLOWS } from "../data/productWorkflow";
+import { matchesProductSearch } from "../data/productSearch";
 
 export default function Products({ navigate }) {
   const [search, setSearch] = useState("");
+  const [catalogueProducts, setCatalogueProducts] = useState([]);
+  const [catalogueLoading, setCatalogueLoading] = useState(true);
+  const [catalogueError, setCatalogueError] = useState("");
+  useEffect(() => {
+    let active = true;
+    loadPublishedCatalogue()
+      .then((catalogue) => {
+        if (active) setCatalogueProducts(catalogue);
+      })
+      .catch((error) => {
+        if (active) setCatalogueError(error.message || "Unable to load the published product catalogue.");
+      })
+      .finally(() => {
+        if (active) setCatalogueLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
+
   const [category, setCategory] = useState("All");
   const [brand, setBrand] = useState("All");
   const [addedSlug, setAddedSlug] = useState("");
   const { addToCart } = useCart();
   const { addChair } = useChairRequests();
 
-  const categories = useMemo(
-    () => ["All", ...new Set(products.map((p) => p.category).filter(Boolean))],
-    [],
-  );
-  const brands = useMemo(
-    () => ["All", ...new Set(products.map((p) => p.brand || "Other"))],
-    [],
-  );
-  const filtered = useMemo(
-    () =>
-      products.filter(
-        (p) =>
-          (category === "All" || p.category === category) &&
-          (brand === "All" || (p.brand || "Other") === brand) &&
-          `${p.name} ${p.brand || ""} ${p.summary || ""}`
-            .toLowerCase()
-            .includes(search.toLowerCase()),
-      ),
-    [search, category, brand],
-  );
-  const chairs = products.filter((p) => p.purchaseType === "quote");
+  if (catalogueLoading) {
+    return <main className="bp-products"><div className="container bp-empty"><p>Loading published products…</p></div></main>;
+  }
+  if (catalogueError) {
+    return <main className="bp-products"><div className="container bp-empty"><h2>Product catalogue unavailable</h2><p>{catalogueError}</p><button className="button" type="button" onClick={() => window.location.reload()}>Reload Catalogue</button></div></main>;
+  }
+
+  const categories = [
+    "All",
+    ...new Set(catalogueProducts.map((product) => product.category).filter(Boolean)),
+  ];
+  const brands = [
+    "All",
+    ...new Set(catalogueProducts.map((product) => product.brand || "Other")),
+  ];
+  const filtered = catalogueProducts.filter((product) => {
+    const matchesCategory = category === "All" || product.category === category;
+    const matchesBrand = brand === "All" || (product.brand || "Other") === brand;
+    return matchesCategory && matchesBrand && matchesProductSearch(product, search);
+  });
+  const chairs = catalogueProducts.filter(isDentalChairProduct);
   const showcaseChair =
     chairs.find((p) => p.slug === "signo-t100") || chairs[0];
-  const spotlight = products.filter((p) =>
+  const spotlight = catalogueProducts.filter((p) =>
     ["mocom-m10", "signo-t100", "cingol-x3"].includes(p.slug),
   );
 
   function handleAction(product) {
-    if (product.purchaseType === "quote") {
+    const flow = getProductRequestFlow(product);
+    if (flow === PRODUCT_REQUEST_FLOWS.DENTAL_CHAIR) {
       addChair(product);
       navigate("/dental-chair-request");
       return;
     }
     addToCart(product);
+    if (flow === PRODUCT_REQUEST_FLOWS.QUOTATION) {
+      navigate("/quote");
+      return;
+    }
     setAddedSlug(product.slug);
     window.setTimeout(
       () =>
@@ -71,20 +98,21 @@ export default function Products({ navigate }) {
             </p>
             <div className="products-hero-stats">
               <span>
-                <b>{products.length}</b> products
+                <b>{catalogueProducts.length}</b> products
               </span>
               <span>
                 <b>{chairs.length}</b> chair models
               </span>
               <span>
-                <b>{new Set(products.map((p) => p.brand)).size}</b> brands
+                <b>{new Set(catalogueProducts.map((p) => p.brand)).size}</b> brands
               </span>
             </div>
           </div>
           <div className="products-hero-image">
-            <img
+            <ProductMediaFrame
               src={showcaseChair?.img}
-              alt={showcaseChair?.name || "Dental chair"}
+              alt={showcaseChair?.name || "Featured dental chair"}
+              variant="hero"
             />
             <div className="products-hero-label">
               <small>{showcaseChair?.brand}</small>
@@ -112,8 +140,10 @@ export default function Products({ navigate }) {
           <div className="bp-filter-tabs">
             {categories.map((item) => (
               <button
+                type="button"
                 key={item}
                 className={category === item ? "active" : ""}
+                aria-pressed={category === item}
                 onClick={() => setCategory(item)}
               >
                 {item}
@@ -130,13 +160,13 @@ export default function Products({ navigate }) {
                 aria-label="Search products"
               />
             </label>
-            <select value={brand} onChange={(e) => setBrand(e.target.value)}>
+            <select aria-label="Filter products by brand" value={brand} onChange={(e) => setBrand(e.target.value)}>
               <option value="All">All Brands</option>
               {brands.slice(1).map((item) => (
                 <option key={item}>{item}</option>
               ))}
             </select>
-            <span>{filtered.length} products</span>
+            <span aria-live="polite" aria-atomic="true">{filtered.length} products</span>
           </div>
 
           <div className="spotlight-row">
@@ -152,7 +182,11 @@ export default function Products({ navigate }) {
                   <h3>{p.name}</h3>
                   <span>{p.brandLine}</span>
                 </div>
-                <img src={p.img} alt={p.name} />
+                <ProductMediaFrame
+                  src={p.img}
+                  alt={p.name}
+                  variant="spotlight"
+                />
                 <b>Explore →</b>
               </Link>
             ))}
@@ -160,57 +194,13 @@ export default function Products({ navigate }) {
 
           <div className="bp-catalog-grid">
             {filtered.map((product) => (
-              <article className="bp-catalog-card" key={product.slug}>
-                <Link
-                  to={`/products/${product.slug}`}
-                  navigate={navigate}
-                  className="bp-catalog-main-link"
-                >
-                  <div className="bp-catalog-image">
-                    <img
-                      src={product.img}
-                      onError={(event) => {
-                        event.currentTarget.src = "/favicon.png";
-                        event.currentTarget.onerror = null;
-                      }}
-                      alt={product.name}
-                    />
-                    <span className="bp-image-badge">
-                      {product.purchaseType === "quote"
-                        ? "Request"
-                        : "Catalogue"}
-                    </span>
-                  </div>
-                  <div className="bp-catalog-body">
-                    <small>{product.brand || "YR Proservice"}</small>
-                    <h3>{product.name}</h3>
-                    <span className="bp-product-type">
-                      {product.brandLine || product.category}
-                    </span>
-                    <p>{product.summary}</p>
-                  </div>
-                </Link>
-                <div className="bp-card-actions">
-                  <Link
-                    to={`/products/${product.slug}`}
-                    navigate={navigate}
-                    className="bp-card-detail"
-                  >
-                    View Details <span>→</span>
-                  </Link>
-                  <button
-                    type="button"
-                    className="bp-card-action-primary"
-                    onClick={() => handleAction(product)}
-                  >
-                    {product.purchaseType === "quote"
-                      ? "Request Chair"
-                      : addedSlug === product.slug
-                        ? "Added ✓"
-                        : "Add to Cart"}
-                  </button>
-                </div>
-              </article>
+              <ShowroomProductCard
+                key={product.slug}
+                product={product}
+                navigate={navigate}
+                onPrimaryAction={handleAction}
+                added={addedSlug === product.slug}
+              />
             ))}
           </div>
 

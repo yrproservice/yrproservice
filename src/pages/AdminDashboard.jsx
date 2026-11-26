@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const TYPE_LABELS = {
   service: "Service Request",
@@ -25,68 +25,140 @@ function formatDate(value) {
       });
 }
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ onAuthenticated }) {
   const [requests, setRequests] = useState([]);
+  const [statusCounts, setStatusCounts] = useState({});
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
   const [draftStatus, setDraftStatus] = useState("");
+  const [requestHistory, setRequestHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
+  const [historyNote, setHistoryNote] = useState("");
+  const [historyHasMore, setHistoryHasMore] = useState(false);
+  const [pageCursor, setPageCursor] = useState("");
+  const [cursorStack, setCursorStack] = useState([]);
+  const [nextCursor, setNextCursor] = useState("");
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  const loadRequests = useCallback(async () => {
+  function resetPagination() {
+    setPageCursor("");
+    setCursorStack([]);
+  }
+
+  async function loadRequests(signal) {
     setLoading(true);
     setError("");
+
     try {
       const params = new URLSearchParams();
       if (type) params.set("type", type);
       if (status) params.set("status", status);
       if (search.trim()) params.set("search", search.trim());
-      const response = await fetch(`/api/admin/requests?${params.toString()}`, {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
+      if (pageCursor) params.set("cursor", pageCursor);
+
+      const response = await fetch(
+        `/api/admin/requests?${params.toString()}`,
+        {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          signal,
+        }
+      );
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok)
+
+      if (signal?.aborted) return;
+
+      if (!response.ok || !result.ok) {
         throw new Error(
-          result.error || `Unable to load requests (HTTP ${response.status}).`,
+          result.error || `Unable to load requests (HTTP ${response.status}).`
         );
+      }
+
       const loadedRequests = Array.isArray(result.requests)
         ? result.requests
         : [];
+
       setRequests(loadedRequests);
+      setStatusCounts(result.statusCounts && typeof result.statusCounts === "object" ? result.statusCounts : {});
+      setHasMore(Boolean(result.hasMore));
+      setNextCursor(result.nextCursor || "");
+      onAuthenticated?.();
       setSelected((current) =>
         current
           ? loadedRequests.find(
-              (item) => item.reference === current.reference,
+              (item) => item.reference === current.reference
             ) || null
-          : null,
+          : null
       );
     } catch (loadError) {
-      setError(loadError.message || "Unable to load requests.");
+      if (!signal?.aborted) {
+        setError(loadError.message || "Unable to load requests.");
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
-  }, [type, status, search]);
+  }
 
   useEffect(() => {
-    loadRequests();
-  }, [loadRequests]);
+    const controller = new AbortController();
+    loadRequests(controller.signal);
 
-  const counts = useMemo(
-    () =>
-      STATUSES.reduce(
-        (result, key) => ({
-          ...result,
-          [key]: requests.filter((item) => item.status === key).length,
-        }),
-        {},
-      ),
-    [requests],
-  );
+    return () => {
+      controller.abort();
+    };
+  }, [type, status, search, pageCursor, onAuthenticated]);
+
+  useEffect(() => {
+    if (!selected?.reference) {
+      setRequestHistory([]);
+      setHistoryError("");
+      setHistoryNote("");
+      setHistoryHasMore(false);
+      setHistoryLoading(false);
+      return undefined;
+    }
+    const controller = new AbortController();
+    setRequestHistory([]);
+    setHistoryNote("");
+    setHistoryHasMore(false);
+    setHistoryLoading(true);
+    setHistoryError("");
+    fetch(`/api/admin/request-history?reference=${encodeURIComponent(selected.reference)}`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || `Unable to load request history (HTTP ${response.status}).`);
+        }
+        setRequestHistory(Array.isArray(result.history) ? result.history : []);
+        setHistoryNote(typeof result.note === "string" ? result.note : "");
+        setHistoryHasMore(Boolean(result.hasMore));
+      })
+      .catch((loadError) => {
+        if (!controller.signal.aborted) {
+          setRequestHistory([]);
+          setHistoryNote("");
+          setHistoryHasMore(false);
+          setHistoryError(loadError.message || "Unable to load request history.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setHistoryLoading(false);
+      });
+    return () => controller.abort();
+  }, [selected?.reference, selected?.status]);
 
   async function saveStatus() {
     if (!selected || !STATUSES.includes(draftStatus) || saving) return;
@@ -123,6 +195,10 @@ export default function AdminDashboard() {
     }
   }
 
+  function handleAdminNavigation(event) {
+    if (saving) event.preventDefault();
+  }
+
   function openRequest(item) {
     setSelected(item);
     setDraftStatus(item.status);
@@ -142,9 +218,10 @@ export default function AdminDashboard() {
               reflect the current filters.
             </p>
           </div>
-          <a className="admin-public-link" href="/">
-            View public website ↗
-          </a>
+          <div className="admin-header-actions">
+            <a className="admin-public-link" href="/admin/cms" onClick={handleAdminNavigation}>Open Visual CMS ↗</a>
+            <a className="admin-public-link" href="/" onClick={handleAdminNavigation}>View public website ↗</a>
+          </div>
         </header>
 
         {error && (
@@ -162,7 +239,7 @@ export default function AdminDashboard() {
           {STATUSES.map((key) => (
             <article className="admin-stat" key={key}>
               <span>{STATUS_LABELS[key]}</span>
-              <strong>{counts[key] ?? 0}</strong>
+              <strong>{statusCounts[key] ?? 0}</strong>
             </article>
           ))}
         </div>
@@ -171,13 +248,13 @@ export default function AdminDashboard() {
           <div className="admin-panel-heading">
             <div>
               <h2>Incoming requests</h2>
-              <p>Showing up to 200 matching records, newest first.</p>
+              <p>Showing 50 matching records per page, newest first.</p>
             </div>
             <button
               type="button"
               className="admin-secondary-button"
-              onClick={loadRequests}
-              disabled={loading}
+              onClick={() => loadRequests()}
+              disabled={loading || saving}
             >
               {loading ? "Refreshing…" : "Refresh"}
             </button>
@@ -187,7 +264,8 @@ export default function AdminDashboard() {
               Search
               <input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => { resetPagination(); setSearch(event.target.value); }}
+                disabled={saving}
                 maxLength={100}
                 placeholder="Reference, customer, email or company"
               />
@@ -196,7 +274,8 @@ export default function AdminDashboard() {
               Request type
               <select
                 value={type}
-                onChange={(event) => setType(event.target.value)}
+                onChange={(event) => { resetPagination(); setType(event.target.value); }}
+                disabled={saving}
               >
                 <option value="">All types</option>
                 <option value="service">Service</option>
@@ -208,7 +287,8 @@ export default function AdminDashboard() {
               Status
               <select
                 value={status}
-                onChange={(event) => setStatus(event.target.value)}
+                onChange={(event) => { resetPagination(); setStatus(event.target.value); }}
+                disabled={saving}
               >
                 <option value="">All statuses</option>
                 {STATUSES.map((key) => (
@@ -269,6 +349,7 @@ export default function AdminDashboard() {
                         type="button"
                         className="admin-open-button"
                         onClick={() => openRequest(item)}
+                        disabled={saving}
                       >
                         View
                       </button>
@@ -278,6 +359,33 @@ export default function AdminDashboard() {
               </tbody>
             </table>
             {loading && <p className="admin-loading">Loading requests…</p>}
+          </div>
+          <div className="admin-pagination" aria-label="Request pages">
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => {
+                const previous = cursorStack[cursorStack.length - 1] || "";
+                setCursorStack((stack) => stack.slice(0, -1));
+                setPageCursor(previous);
+              }}
+              disabled={loading || saving || cursorStack.length === 0}
+            >
+              Previous
+            </button>
+            <span>Page {cursorStack.length + 1}{hasMore ? " · More results available" : " · End of results"}</span>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => {
+                if (!nextCursor) return;
+                setCursorStack((stack) => [...stack, pageCursor]);
+                setPageCursor(nextCursor);
+              }}
+              disabled={loading || saving || !hasMore || !nextCursor}
+            >
+              Next
+            </button>
           </div>
         </section>
 
@@ -299,6 +407,7 @@ export default function AdminDashboard() {
                 type="button"
                 className="admin-secondary-button"
                 onClick={() => setSelected(null)}
+                disabled={saving}
               >
                 Close details
               </button>
@@ -343,6 +452,7 @@ export default function AdminDashboard() {
                 <select
                   value={draftStatus}
                   onChange={(event) => setDraftStatus(event.target.value)}
+                  disabled={saving}
                 >
                   {STATUSES.map((key) => (
                     <option key={key} value={key}>
@@ -359,6 +469,32 @@ export default function AdminDashboard() {
               >
                 {saving ? "Saving…" : "Save status"}
               </button>
+            </div>
+            <div className="admin-request-history">
+              <div className="admin-panel-heading">
+                <div>
+                  <h3>Status history</h3>
+                  <p>{historyNote || "Recorded status changes and the authorized account that made each change."}</p>
+                  {historyHasMore && <p>Showing the latest 50 status changes. Older entries are available in the stored history but are not displayed here.</p>}
+                </div>
+              </div>
+              {historyLoading ? (
+                <p className="admin-loading" role="status">Loading status history…</p>
+              ) : historyError ? (
+                <p className="admin-alert admin-alert-error" role="alert">{historyError}</p>
+              ) : requestHistory.length ? (
+                <ol className="admin-request-history-list">
+                  {requestHistory.map((entry) => (
+                    <li key={entry.id}>
+                      <strong>{STATUS_LABELS[entry.previousStatus] || entry.previousStatus} → {STATUS_LABELS[entry.newStatus] || entry.newStatus}</strong>
+                      <span>{entry.actorEmail || "Authorized Admin"}</span>
+                      <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="admin-empty">No status changes have been recorded since request history was enabled.</p>
+              )}
             </div>
           </section>
         )}

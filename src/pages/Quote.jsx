@@ -1,27 +1,22 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useCart } from "../components/CartContext";
-import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
+import { downloadRequestConfirmationPdf } from "../utils/requestConfirmationPdf";
 
 export default function Quote({ navigate }) {
   const { items } = useCart();
-  const { items: chairItems } = useChairRequests();
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
+  const [confirmationData, setConfirmationData] = useState(null);
   const initial =
     new URLSearchParams(window.location.search).get("product") || "";
   const [product, setProduct] = useState(initial);
-  const selected = useMemo(() => {
-    const lines = [
-      ...items.map((i) => `${i.name} (Qty: ${i.quantity})`),
-      ...chairItems.map(
-        (i) => `${i.name} (Chair request · Qty: ${i.quantity})`,
-      ),
-    ];
-    return product || lines.join("\n");
-  }, [items, chairItems, product]);
+  const selectedLines = items.map(
+    (item) => `${item.name} (Qty: ${item.quantity})`,
+  );
+  const selected = product || selectedLines.join("\n");
   async function submit(e) {
     e.preventDefault();
     if (submitting) return;
@@ -41,7 +36,7 @@ export default function Quote({ navigate }) {
     };
     if (!payload.product && !payload.message) {
       setError(
-        "Please select a product or chair, or describe your quotation requirements.",
+        "Please select a catalogue product or describe your quotation requirements.",
       );
       setSubmitting(false);
       return;
@@ -60,6 +55,7 @@ export default function Quote({ navigate }) {
         );
       }
       setReference(result.reference);
+      setConfirmationData({ ...payload, reference: result.reference, submittedAt: new Date().toISOString() });
       setSent(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (submitError) {
@@ -85,6 +81,13 @@ export default function Quote({ navigate }) {
             <strong>Reference: {reference}</strong>
           </p>
           <div className="bp-actions">
+            <button
+              type="button"
+              className="bp-btn bp-btn-primary"
+              onClick={() => downloadRequestConfirmationPdf(confirmationData)}
+            >
+              Download PDF
+            </button>
             <Link
               to="/products"
               navigate={navigate}
@@ -110,8 +113,7 @@ export default function Quote({ navigate }) {
           <p className="bp-eyebrow bp-eyebrow-light">REQUEST A QUOTATION</p>
           <h1>Tell Us What Your Clinic Needs</h1>
           <p>
-            This is the final quotation step after selecting products or dental
-            chairs.
+            This is the final quotation step for products selected from the catalogue.
           </p>
         </div>
       </section>
@@ -147,13 +149,13 @@ export default function Quote({ navigate }) {
               <input name="location" placeholder="City / State" />
             </label>
             <label>
-              Product / Chair Selection
+              Product Selection
               <textarea
                 name="product"
                 rows="4"
                 value={selected}
                 onChange={(e) => setProduct(e.target.value)}
-                placeholder="Your selected products will appear here..."
+                placeholder="Your selected catalogue products will appear here..."
               />
             </label>
           </div>
@@ -179,15 +181,21 @@ export default function Quote({ navigate }) {
           </button>
         </form>
         <aside className="bp-quote-help">
-          <img src="/assets/about-team.jpg" alt="YR Proservice team" />
+          <div className="bp-quote-help-brand" role="img" aria-label="YR Proservice brand graphic">
+            <strong>YR</strong>
+            <span>YR PROSERVICE</span>
+            <small>DENTAL EQUIPMENT · TECHNICAL SUPPORT</small>
+          </div>
           <div>
             <p className="bp-eyebrow">NEED HELP?</p>
             <h3>Our team can help clarify the requirement.</h3>
             <p>
-              For product and service questions, use this quotation route. For
-              other enquiries, call or email our team using the contact details
-              in the page footer.
+              This quotation form is for catalogue products only. Dental chairs use
+              the separate Dental Chair Request form.
             </p>
+            <Link to="/dental-chair-request" navigate={navigate} className="bp-summary-link">
+              Dental Chair Requests →
+            </Link>
             <strong>
               <a href="tel:+601116080623">011-1608 0623</a>
             </strong>

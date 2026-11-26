@@ -4,8 +4,24 @@ import { useChairRequests } from "../components/ChairRequestContext";
 import { Link } from "../components/Layout";
 
 export default function Cart({ navigate }) {
-  const { items, removeFromCart, updateQuantity, clearCart } = useCart();
-  const { count: chairCount, modelCount } = useChairRequests();
+  const {
+    items,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    migrationReady,
+    migrationError,
+    retryLegacyChairMigration,
+    cartStorageReady,
+    cartStorageError,
+    retryCartPersistence,
+  } = useCart();
+  const {
+    count: chairCount,
+    modelCount,
+    storageError: chairStorageError,
+    retryChairPersistence,
+  } = useChairRequests();
   const productCount = items.reduce((sum, item) => sum + item.quantity, 0);
   return (
     <main className="bp-cart">
@@ -30,6 +46,24 @@ export default function Cart({ navigate }) {
             Dental Chair Requests <span>{chairCount}</span>
           </Link>
         </div>
+        {(!migrationReady || migrationError) && (
+          <div className="bp-chair-note" role="alert">
+            <p>{migrationError || "The saved chair requests are being moved to their separate list. Cart changes are paused until this finishes."}</p>
+            <button type="button" onClick={retryLegacyChairMigration}>Retry safe storage migration</button>
+          </div>
+        )}
+        {cartStorageError && (
+          <div className="bp-chair-note" role="alert">
+            <p>{cartStorageError}</p>
+            <button type="button" onClick={retryCartPersistence}>Retry saving product cart</button>
+          </div>
+        )}
+        {chairStorageError && (
+          <div className="bp-chair-note" role="alert">
+            <p>{chairStorageError}</p>
+            <button type="button" onClick={retryChairPersistence}>Retry saving chair requests</button>
+          </div>
+        )}
         <div className="bp-cart-layout">
           <section>
             {items.length ? (
@@ -43,7 +77,7 @@ export default function Cart({ navigate }) {
                 {items.map((item) => (
                   <div className="bp-cart-row" key={item.slug}>
                     <div className="bp-cart-product">
-                      <img src={item.img} alt={item.name} />
+                      <img src={item.img || "/favicon.png"} alt={item.img ? item.name : `${item.name} image unavailable`} />
                       <div>
                         <small>{item.brand}</small>
                         <h3>{item.name}</h3>
@@ -129,7 +163,7 @@ export default function Cart({ navigate }) {
             </dl>
             <button
               className="bp-btn bp-btn-primary"
-              disabled={!items.length}
+              disabled={!items.length || !migrationReady || !cartStorageReady || Boolean(cartStorageError)}
               onClick={() => navigate("/quote")}
             >
               Proceed to Quote →
