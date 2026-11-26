@@ -37,3 +37,29 @@
 - Customer-flow audit: 4 passed, 0 failed. This audit uses intercepted customer POSTs and is not D1 persistence evidence; retain separate real browser-to-Preview-D1 verification [#45569677497](https://github.com/yrproservice/yrproservice/actions/runs/45569677497).
 - This remains a focused source review plus automated verification, not a complete independent security audit. Assistant did not perform authenticated live CMS media upload/restore browser acceptance. User-confirmed Recovery Bin acceptance remains the live manual evidence for section recovery.
 - No Production code, D1/R2 data, bindings, secrets, Cloudflare Access configuration or Production deployment was changed. PR #2 remains Draft/unmerged. Branch protection and repository rulesets remain absent and require a separate approved governance plan.
+
+
+## Focused PR #2 security and data-integrity review — 26 November 2026
+
+### Exact head and CI
+- Reviewed branch head: `97fd5a7433d1b43e931c81e1c431b2b68335c30f`.
+- Exact-head Preview workflow [#45744936516](https://github.com/yrproservice/yrproservice/actions/runs/45744936516) completed successfully. The workflow's single build job succeeded.
+- PR #2 remains Open, Draft and unmerged; head is `cms-development`, base is `main`. GitHub currently reports 1,483 commits, 183 changed files, 33,411 additions and 1,768 deletions. GitHub's current `mergeable` field is false; treat mergeability as unresolved and do not merge.
+- The PR description still contains an older 25 November checkpoint and must not be treated as the current head/status record.
+
+### Files and behaviors inspected
+- `functions/_utils/admin-auth.js` and `tests/admin-auth.test.js`: Cloudflare Access JWT RS256 signature, key ID, issuer, audience, expiry, not-before, fixed single-admin identity and fail-closed certificate retrieval; unsafe-method Origin/Fetch Metadata checks; read-only compatibility. Existing tests cover malformed/unsupported JWTs, wrong claims/key/signature/identity, missing or broadened admin configuration, cross-origin rejection, same-origin acceptance and GET compatibility.
+- `functions/api/cms/admin/publish.js`: only current drafts can be published; entity ownership, content/schema, media references, team approval and route conflicts are validated; publish pointer and previous published state are updated through conditional D1 batch statements with audit confirmation.
+- `functions/api/cms/admin/history.js`: revision restore validates entity ownership and archived content, route/destination conflicts and the expected draft snapshot; restore creates a new draft and does not directly publish the archived revision.
+- `functions/api/cms/admin/media.js` and `tests/cms-media-api-sqlite.test.js`: upload checks byte signatures/type and size before R2 write; D1 registration and audit are batched; ambiguous batch outcomes retain the R2 object for reconciliation; archive checks references across saved page/product/setting revisions; metadata changes are concurrency-guarded and audited; orphan inspection is bounded/read-only.
+- `functions/api/cms/public/pages.js` and `functions/api/cms/public/products.js`: public reads join through each entity's published-version pointer and require the selected version state to be `published`; drafts and archived revisions are not directly exposed by these handlers.
+- `functions/api/cms/admin/settings.js` and `functions/_utils/cms-settings-validation.js`: setting keys are constrained to supported navigation/footer/page-design keys; links are restricted to safe internal routes; design values are type/range/enum checked.
+- `.github/workflows/cms-preview-migration.yml`: migration target is the named Preview database and workflow verifies both the Preview database name and UUID before executing migrations. The workflow's dispatch guard restricts manual execution to `cms-development`.
+- `wrangler.toml`: Preview has the CMS R2 binding and public base; Production still has no `CMS_MEDIA` binding or `CMS_MEDIA_PUBLIC_BASE`. This remains a Production CMS media launch blocker, not a finding that public static catalogue images are unavailable.
+
+### Findings and limits
+- No new exploitable defect was confirmed in this focused source review. This is not a complete independent security audit, full PR diff review, authenticated live acceptance test or Production readiness sign-off.
+- No source code, D1/R2 data, bindings, secrets, Access settings, branch protection or Production deployment was changed.
+- Remaining high-impact review areas include customer request submission/tracking and access-code endpoints, all migration/workflow paths, request status updates, CMS section recovery concurrency/retention, and broader UI-to-API authorization/data-flow coverage.
+- Product image acquisition/assignment and product pricing/stock work remain explicitly excluded and user-owned.
+- Keep PR #2 Open/Draft/unmerged and Production untouched pending the remaining review and explicit release approval.
