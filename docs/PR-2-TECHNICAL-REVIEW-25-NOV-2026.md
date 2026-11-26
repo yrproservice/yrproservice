@@ -131,3 +131,34 @@
 - This was a source-level review of the repository workflows and migration SQL, not a live Cloudflare account audit. It does not prove actual secret scopes, dashboard settings, or Production resource state.
 - No workflow was dispatched, no Preview or Production data was changed, no Cloudflare configuration or secret was changed, no code was modified, and no Production deployment or PR merge was performed. Product-image acquisition/assignment remains excluded and user-owned.
 - PR #2 remains Open and Draft. Despite GitHub currently reporting `mergeable=true`, do not merge or deploy Production without completion of the remaining review/release gates and separate explicit approval.
+
+
+## UI-to-API authorization and data-flow review — 26 November 2026
+
+### Verified PR state for this checkpoint
+- Re-read PR #2 metadata before continuing. It remains Open, Draft and unmerged. At the start of this review the head was `b3dd553162ecc4686096d4c2e9b8103718c8fc1e`; after the focused UI/API fix below, the head is `6f635932aca107195b651f2fc48f9a096eea6d56`.
+- GitHub reports `mergeable=false` at the post-fix check. Treat mergeability as unresolved; no merge was attempted.
+- The PR description contains an older project checkpoint and is not authoritative for the live head. The PR metadata and branch file reads were used for this review.
+
+### Confirmed UI/API contract defect and correction
+- Compared `src/pages/PageVisualDesignManager.jsx` with `functions/api/cms/admin/settings.js`.
+- The settings API requires both `expectedDraftId` and `expectedDraftCreatedAt` on every settings save, including an explicit `null` when no draft exists. The visual design manager sent the draft ID but omitted the timestamp.
+- Result: saving a visual design draft through that manager was rejected by the server with HTTP 409 before it could create the draft. This was a confirmed client/server contract mismatch, not an authentication bypass or data-loss defect.
+- Corrected the request payload to include `expectedDraftCreatedAt: draftCreatedAt || null`. The manager already loads and maintains this timestamp, and refreshes it after a successful save.
+- Fix commit: `6f635932aca107195b651f2fc48f9a096eea6d56` (`fix(cms): include design draft timestamp on save`). The updated file was fetched again from `cms-development` and the exact payload was verified.
+- The parallel settings-save flow in `src/pages/CMSManagement.jsx` already supplies both expected draft ID and timestamp; product saves and revision publish/restore flows also include their expected snapshot fields.
+
+### Authorization and data-flow checks performed
+- Reviewed the shared Admin authentication helper and the CMS settings, products, pages, draft, publish, history, Preview, request-list, request-history, public request-submission and public tracking handlers alongside their principal UI callers.
+- Each inspected Admin API handler calls `requireAdmin`; that helper validates the Cloudflare Access JWT signature, issuer, audience, expiry and the single configured authorized email. Unsafe Admin methods also use same-origin Origin validation and reject cross-site Fetch Metadata when Origin is absent.
+- CMS publish handlers independently verify that the selected revision belongs to the selected entity, is the current saved draft, and matches the expected draft timestamp. They revalidate content, route/destination and media references server-side before a guarded D1 batch updates the published pointer and audit log.
+- CMS save/restore/delete handlers use parameterized SQL and expected-draft snapshots to detect stale concurrent edits. Public CMS read endpoints are separate from the Admin endpoints.
+- Admin request listing and history are authenticated. Request filters and cursors are validated, SQL values are bound, status updates use an allowlist and write a status-history record in the same D1 batch.
+- Public request submission validates request type, required fields, service slug and email, limits body size, and applies database-backed rate limits. Public tracking requires both reference and email, returns only request status metadata, and applies a separate rate limit.
+- No confirmed authorization bypass, unauthenticated customer-data read, SQL injection path, or cross-entity revision operation was identified in these inspected paths. This is a focused source review, not a full penetration test or live browser/API acceptance run.
+
+### Verification boundary and remaining work
+- The visual-design payload correction is committed, but the combined commit-status and PR-workflow-run lookups returned no CI records for exact head `6f635932aca107195b651f2fc48f9a096eea6d56`. Do not treat the fix as CI-verified until an exact-head workflow is independently confirmed.
+- The review did not authenticate to Preview, submit live customer data, write to D1/R2, inspect Cloudflare dashboard settings or secret scopes, or touch Production.
+- Follow-up review can continue across remaining UI callers and endpoint pairs, especially CMS media/recovery and customer-access flows; then exact-head CI and release gates must be checked separately.
+- Product-image sourcing, acquisition, replacement and assignment remain excluded and user-owned. PR #2 remains Open/Draft/unmerged; no Production deployment or merge was performed.
