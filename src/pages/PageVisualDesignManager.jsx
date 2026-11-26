@@ -160,7 +160,7 @@ export default function PageVisualDesignManager({ pageKey: initialPageKey = "pro
     try {
       const result = await api("/api/cms/admin/settings", {
         method: "POST",
-        body: JSON.stringify({ key, value: design, changeNote: `Visual design draft for ${pageKey}`, expectedDraftId: draftId || null })
+        body: JSON.stringify({ key, value: design, changeNote: `Visual design draft for ${pageKey}`, expectedDraftId: draftId || null, expectedDraftCreatedAt: draftCreatedAt || null })
       });
       setDraftId(result.draftId);
       setDraftVersion(result.version);
