@@ -183,3 +183,22 @@ A read-only review of the `.github/workflows` directory on `cms-development` was
 **Conclusion:** Preview D1+R2 backup/restore readiness remains unverified and the isolated restore rehearsal remains open. Do not treat the scheduled retention job, Media Library archive/restore, or request-persistence integration tests as backups.
 
 **Safe next implementation gate:** before adding or running a backup workflow, establish an approved isolated recovery target and a least-privilege credential plan. The workflow must fail closed on exact Preview D1 name/UUID and R2 bucket identity, write backup artifacts only to an explicitly designated isolated destination, verify integrity, and never target Production. No such resources or credentials were created or changed during this review.
+
+
+## 10. Cloudflare resource provisioning checkpoint — 26 November 2026
+
+The user has now confirmed the following Cloudflare resources in the account dashboard:
+
+| Purpose | Resource | Identity / status |
+|---|---|---|
+| Preview CMS media | R2 bucket `yrproservice-cms-preview` | Existing; user-provided dashboard listing showed 3 objects (73.9 kB) |
+| Production CMS media | R2 bucket `yrproservice-cms-production` | Created; user confirmed bucket listing. No custom domain is assigned and the Public Development URL is disabled. |
+| Recovery database | D1 database `yrproservice-recovery` | Created; database UUID `edbacdd0-efb0-4b52-8fe3-2002ec01e1af` (provided by user) |
+| Recovery copy destination | R2 bucket `yrproservice-cms-recovery` | Created; user confirmed it appears in the bucket listing. Public-access configuration has not been independently inspected. |
+| Separate inventory system | R2 bucket `yrproservice-inventory-media` | Explicitly identified by the user as belonging to the separate inventory system; do not bind, copy to, or modify it for the website CMS. |
+
+The user does not yet own a business custom domain. The user selected the option to wait for a business domain rather than enable the R2 Public Development URL. Therefore Production CMS public media delivery remains intentionally unconfigured: do not add a Production `CMS_MEDIA_PUBLIC_BASE` or expose the bucket until a suitable domain is available and the user approves the configuration. The new Production bucket is not yet bound in `wrangler.toml`.
+
+No backup/export, object copy, migration, restore, or data write has been performed. The Recovery D1 and R2 resources are provisioned but empty/unverified; their existence is not evidence of a backup. No Cloudflare API token or GitHub secret has been supplied or configured. Do not create a scheduled or executable backup workflow until its least-privilege credential design, exact resource identity checks, consistency procedure, and retention/RPO/RTO approvals are in place.
+
+The next safe steps are to verify the Recovery R2 bucket's access configuration in the dashboard, then design and review the isolated Preview-to-Recovery backup procedure. Production remains out of scope for this rehearsal. Keep PR #2 Draft and unmerged; do not perform Production configuration or release operations without explicit approval.
