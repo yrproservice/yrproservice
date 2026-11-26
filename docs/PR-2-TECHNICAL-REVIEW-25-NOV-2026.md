@@ -213,3 +213,11 @@
 - Exact-head Preview workflow #2141 for `18c0c3c6294024cc8453319e8ae8177dc51bb5b4` was still in progress at the time of this note: https://github.com/yrproservice/yrproservice/actions/runs/45757923664. Do not treat the changes as CI-passed until that run completes successfully.
 - Read-only Services review confirmed the five-section CMS template, all eight established service entries, and the primary CTA labels “Request a Service” and “Contact Us”. The Contact Us CTA routes to `/quote`, preserving `/contact` for HR-only enquiries. Existing `tests/services-template.test.js` explicitly covers the CTA destination and legacy `/contact` normalization.
 - No additional Services code change was needed. No Production deployment/configuration, customer submission, database write, R2 change, PR merge, or product-image work was performed.
+
+
+## Service request confirmation wording correction — 26 November 2026
+
+- Source review of `functions/api/requests.js` confirmed that successful public submissions are inserted into the Preview/Production-bound D1 database and return a reference; this handler does not send an email or otherwise notify staff.
+- Updated `src/pages/ServiceRequest.jsx` so the success page says the request has been saved and instructs the customer to keep the reference to check its status. Removed the inaccurate statement that it had also been sent to YR Proservice.
+- Implementation commit: `1698175095ca7db3d7add9a25ddfd33f4cde434f`. Exact-head Preview CI is pending and must pass before this wording correction is considered verified.
+- No customer submission, database write, R2 change, Cloudflare configuration, Production deployment, PR merge, or product-image work was performed.
