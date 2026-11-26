@@ -169,3 +169,17 @@ References:
 - [ ] Confirm the supported D1 export-to-R2 process and whether the export destination is independent of the source account/bucket.
 - [ ] Inspect the actual R2 bucket-lock configuration read-only for each relevant bucket; decide whether a retention rule is appropriate only after reviewing upload, replacement, archive and cleanup behavior.
 - [ ] Design an independent R2 object copy and manifest. R2's built-in durability and bucket locks do not replace this copy.
+
+
+## 9. Repository workflow inventory — 26 November 2026
+
+A read-only review of the `.github/workflows` directory on `cms-development` was completed on 26 November 2026.
+
+- The repository contains the scheduled `cms-preview-recovery-retention.yml` workflow. It verifies the Preview D1 database name and UUID, then purges expired section-recovery payloads from Preview D1. It does **not** export or back up D1, copy R2 objects, create a recovery manifest, or perform a restore.
+- No dedicated D1 backup/export, R2 independent-copy, or combined D1+R2 restore-rehearsal workflow was present in the reviewed workflow directory.
+- The user-confirmed Preview Media Library upload/archive/restore acceptance test verifies the application-level media lifecycle for a temporary non-product image. It is not evidence of an independent R2 backup or a D1+R2 disaster-recovery restore.
+- Existing automated Preview D1 request-persistence tests verify application data persistence and cleanup; they are not backup or restore evidence.
+
+**Conclusion:** Preview D1+R2 backup/restore readiness remains unverified and the isolated restore rehearsal remains open. Do not treat the scheduled retention job, Media Library archive/restore, or request-persistence integration tests as backups.
+
+**Safe next implementation gate:** before adding or running a backup workflow, establish an approved isolated recovery target and a least-privilege credential plan. The workflow must fail closed on exact Preview D1 name/UUID and R2 bucket identity, write backup artifacts only to an explicitly designated isolated destination, verify integrity, and never target Production. No such resources or credentials were created or changed during this review.
