@@ -79,8 +79,16 @@ async function checkTrackingRateLimit(db, request, email) {
 }
 
 export async function onRequest({ request, env }) {
-  if (request.method !== "GET") {
+  if (request.method !== "POST") {
     return json({ error: "Method not allowed." }, 405);
+  }
+
+  const origin = request.headers.get("Origin");
+  if (origin && origin !== new URL(request.url).origin) {
+    return json({ error: "Cross-origin tracking requests are not allowed." }, 403);
+  }
+  if ((request.headers.get("Sec-Fetch-Site") || "").toLowerCase() === "cross-site") {
+    return json({ error: "Cross-origin tracking requests are not allowed." }, 403);
   }
   if (!env.DB) {
     return json(
@@ -92,9 +100,39 @@ export async function onRequest({ request, env }) {
     );
   }
 
-  const url = new URL(request.url);
-  const reference = clean(url.searchParams.get("reference"), 40).toUpperCase();
-  const email = clean(url.searchParams.get("email"), 254).toLowerCase();
+  const contentType = request.headers.get("content-type") || "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    return json({ error: "Please submit tracking details using the website form." }, 415);
+  }
+
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > 8192) {
+    return json({ error: "The tracking request is too large." }, 413);
+  }
+
+  let body;
+  try {
+    const raw = await request.text();
+    if (new TextEncoder().encode(raw).byteLength > 8192) {
+      return json({ error: "The tracking request is too large." }, 413);
+    }
+    body = JSON.parse(raw);
+  } catch {
+    return json({ error: "Enter a valid reference number and email address." }, 400);
+  }
+
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return json({ error: "Enter a valid reference number and email address." }, 400);
+  }
+
+  const reference = clean(body.reference, 40).toUpperCase();
+  const email = clean(body.email, 254).toLowerCase();
+  if (!reference || !email || !validEmail(email)) {
+    return json({
+      error: "Enter a valid reference number and the email address used for the request.",
+    }, 400);
+  }
+
   try {
     const allowed = await checkTrackingRateLimit(env.DB, request, email);
     if (!allowed) {
@@ -104,16 +142,6 @@ export async function onRequest({ request, env }) {
     console.error("Unable to apply request tracking rate limit", error);
     return json({ error: "Request tracking is temporarily unavailable. Please try again later." }, 503);
   }
-  if (!reference || !email || !validEmail(email)) {
-    return json(
-      {
-        error:
-          "Enter a valid reference number and the email address used for the request.",
-      },
-      400,
-    );
-  }
-
   try {
     const row = await env.DB.prepare(
       `
