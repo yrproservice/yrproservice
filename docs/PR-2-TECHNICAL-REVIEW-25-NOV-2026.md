@@ -184,3 +184,12 @@
 - Frontend Track Request uses `GET /api/track?reference=...&email=...`. This places the customer's email address in the request URL, which may be retained in browser/network/proxy logs. This is a privacy-hardening follow-up rather than a confirmed cross-customer disclosure: the endpoint still requires the matching reference and returns limited status metadata. Recommended before launch: move tracking lookup to a same-origin POST with a bounded JSON body so email is not carried in the URL, then update the UI caller and add focused tests. No change was made in this checkpoint to avoid an untested API contract change.
 - The current PR head `a85a101bef18d2199f63dba47942fced5af977fa` was checked for combined commit statuses and PR workflow runs; both lookups returned empty arrays. Exact-head CI therefore remains unverified, and no earlier workflow result is being treated as proof for this head.
 - PR #2 was re-read before this checkpoint and remains Open, Draft and unmerged. No Production deployment, merge, live request submission, D1/R2 write, or product-image work was performed.
+
+## Request-tracking privacy fix — 26 November 2026
+
+- Changed the public `/api/track` lookup from GET query parameters to same-origin POST with a bounded JSON body. The customer email and request reference are no longer placed in the request URL.
+- Updated `src/pages/TrackRequest.jsx` to submit the lookup as JSON via POST.
+- The endpoint now requires JSON, caps the body at 8 KiB (checking both declared and actual byte length), rejects malformed/non-object payloads, rejects mismatched Origin and cross-site Fetch Metadata, retains the existing reference + matching-email check, rate limiting, minimal response fields and no-store/referrer protections.
+- Updated `tests/api-request-flows.test.js` for POST tracking and added focused checks for wrong content type, malformed JSON, cross-origin/cross-site rejection and oversized bodies. The test suite has not yet been executed in this environment; exact-head CI must be checked before claiming these tests pass.
+- Implementation commits: `6b68867` (endpoint), `33f295f` (frontend), `5ee6be0` (tests).
+- No customer records, Preview/Production databases, R2 objects, Cloudflare settings or deployments were changed. PR #2 remains Open/Draft/unmerged. Product-image work remains excluded.
