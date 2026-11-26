@@ -88,3 +88,46 @@
 - The scheduled retention workflow verifies the exact Preview D1 name/UUID before clearing expired payloads. It never targets Production D1. Once this workflow is present on the repository's default branch, the schedule will run against the explicitly named Preview database; this is not a backup mechanism.
 - No confirmed defect was found in this focused review. No Preview or Production data was changed and no retention job was dispatched.
 - This review does not close the independent D1/R2 backup and restore rehearsal requirement.
+
+
+## Migration and deployment workflow review — 26 November 2026
+
+### Live PR state and CI boundary
+- Re-read PR #2 metadata directly from GitHub. It remains Open, Draft and unmerged; current GitHub metadata reports `mergeable=true` (this is a mergeability indicator, not approval or authorization to merge).
+- Current PR head is `c5fba6058a2d83e3b6d800e4a3bad11e712d2ed4` on `cms-development`; base is `main` at `0c86d03d3c479a511c48f33f1b9eedbfbd050cd6`. PR metadata reports 1,486 commits, 183 changed files, 33,462 additions and 1,768 deletions.
+- Preview CI #2126 / run `45744936516` was independently checked and passed all substantive steps on the earlier commit `97fd5a7433d1b43e931c81e1c431b2b68335c30f`. It is not exact-head evidence for the current documentation commit `c5fba60`.
+- The current technical-review document includes the `c5fba60` section-recovery review. The separate workflow run reference `139663693341` could not be resolved by the available GitHub job lookup, and the combined commit-status endpoint returned no legacy status entries for `c5fba60`; do not claim this current head has passed CI until its exact-head run is independently confirmed.
+
+### Workflows inspected
+- `.github/workflows/cms-preview-migration.yml`
+- `.github/workflows/request-history-preview-migration.yml`
+- `.github/workflows/customer-request-access-preview-migration.yml`
+- `.github/workflows/request-rate-limit-preview-migration.yml`
+- `.github/workflows/request-history-preview-schema-check.yml`
+- `.github/workflows/cms-preview-recovery-retention.yml`
+- `.github/workflows/cms-build-check.yml`
+- `.github/workflows/worker-preview.yml`
+- `.github/workflows/preview-request-persistence-integration.yml`
+
+### Migration safety observations
+- CMS migrations 0002/0003/0005, request-history migration 0004, customer-access migrations 0006/0007, and request-rate-limit migration 0008 all use the explicit Preview D1 database name `yr-proservice-test-db`; the write workflows verify the expected Preview database UUID `7fca4ad0-3baa-4148-ad28-bfd2ef416c16` before SQL execution.
+- Push triggers are scoped to `cms-development` and their corresponding migration-file paths. Manual dispatch jobs are guarded to `refs/heads/cms-development`. Migration steps use the Preview D1 API token and account ID secrets; no Production D1 name or Production migration target was found in the inspected workflows.
+- Table/index creation uses `IF NOT EXISTS`. The non-idempotent column additions in migrations 0003 and 0007 are preceded by schema checks: 0003 refuses a partially migrated title/route state and only applies the ALTER when both columns are absent; 0007 checks for the email column and skips the ALTER if it is already present.
+- Migration jobs use separate concurrency groups by migration family. The current migrations create separate schema areas; no conflicting operation was confirmed. There is no single global lock serializing every migration family.
+- Identity checks recursively collect string values from Wrangler's JSON output and check for the expected name and UUID. This is a fail-closed guard in normal output, but a stricter check against the exact documented JSON fields would reduce the chance of an unrelated matching string satisfying the guard. Treat this as defense-in-depth, not a confirmed bypass.
+- The request-history schema-check workflow performs SELECT/schema inspection only; it does not apply migrations or write customer data.
+- The manual Preview request-persistence workflow verifies the exact Preview D1 name/UUID and required tables before synthetic submissions; the test script is responsible for verification and cleanup. This review did not dispatch it.
+
+### Retention and deployment observations
+- The recovery-retention workflow verifies the Preview D1 name/UUID, then clears expired recovery payload JSON and marks expired active entries discarded. Scheduled execution is enabled only when the workflow exists on the default branch; manual dispatch is restricted to `cms-development`. This is expected 30-day retention cleanup, not a backup. It does not perform a D1/R2 backup or restore rehearsal, and no retention run was dispatched.
+- `cms-build-check.yml` runs on pushes to `cms-development`; manual dispatch is branch-guarded. It performs a read-only Preview D1 schema query and, when a Pages token is configured, deploys explicitly with `--branch=cms-development`. Its fallback compares the deployed Preview HTML asset references against the current build. No Production Pages deployment command was found.
+- The Preview D1 schema query inside `cms-build-check.yml` is read-only but does not independently repeat the database UUID preflight used by the migration workflows. Adding that check would improve defense-in-depth; no write or Production target is involved in this step.
+- `worker-preview.yml` triggers on pushes to `production-release`, but its command is `wrangler preview --config wrangler.worker-preview.toml`, not `wrangler deploy`. The referenced config contains an assets directory and an empty `[previews]` block, with no D1/R2 bindings or Production environment block. Cloudflare documents `wrangler preview` as creating/updating a Worker Preview and `wrangler deploy` as the Production deployment command (https://developers.cloudflare.com/workers/wrangler/commands/workers/ and https://developers.cloudflare.com/workers/previews/). The workflow is therefore a Preview operation by source inspection. Dashboard-managed Preview base settings and the actual scope of the generic `CLOUDFLARE_API_TOKEN` secret are not visible in Git and were not independently inspected.
+- `preview-request-persistence-integration.yml` is manually dispatched only and its job permits `cms-development` or the isolated test branch; it uses the fixed Preview D1 identity and Preview URL. No Production endpoint or D1 name is used in the workflow.
+
+### Findings and limits
+- No confirmed accidental Production access, Production D1 migration target, Production Pages deployment command, or Production Worker deployment command was found in the nine inspected workflow files.
+- Follow-ups: validate Wrangler D1 identity using exact JSON fields; add the same read-only UUID preflight to the CMS build schema check; consider a shared migration concurrency group if future migrations become dependent; and independently inspect Cloudflare dashboard Preview base settings/token scopes before relying on Worker Preview resource isolation.
+- This was a source-level review of the repository workflows and migration SQL, not a live Cloudflare account audit. It does not prove actual secret scopes, dashboard settings, or Production resource state.
+- No workflow was dispatched, no Preview or Production data was changed, no Cloudflare configuration or secret was changed, no code was modified, and no Production deployment or PR merge was performed. Product-image acquisition/assignment remains excluded and user-owned.
+- PR #2 remains Open and Draft. Despite GitHub currently reporting `mergeable=true`, do not merge or deploy Production without completion of the remaining review/release gates and separate explicit approval.
