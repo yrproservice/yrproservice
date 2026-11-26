@@ -63,3 +63,17 @@
 - Remaining high-impact review areas include customer request submission/tracking and access-code endpoints, all migration/workflow paths, request status updates, CMS section recovery concurrency/retention, and broader UI-to-API authorization/data-flow coverage.
 - Product image acquisition/assignment and product pricing/stock work remain explicitly excluded and user-owned.
 - Keep PR #2 Open/Draft/unmerged and Production untouched pending the remaining review and explicit release approval.
+
+
+## Customer request, tracking and email-access review — 26 November 2026
+
+- Reviewed `functions/api/requests.js`, `functions/api/track.js`, `functions/api/customer/requests.js`, the customer access request-code/verify/logout handlers, `functions/_utils/customer-request-access.js`, `functions/api/admin/requests.js`, the Preview rate-limit migration workflow and the related customer-access tests.
+- Public request submission validates request type, required fields, email format and service slugs; caps request-body and field sizes; and records rate-limit attempts through a single conditional INSERT statement. Per-email and per-IP hourly limits are 5 and 20 respectively when the client IP is available.
+- Public tracking requires both reference and email, returns only request status/type/date, uses no-store response headers, and applies atomic per-IP/per-email attempt limits (30/10 per 15 minutes). It does not return customer message or contact details.
+- Customer history requires a server-side session token stored as an HMAC, with an HttpOnly, Secure, SameSite=Strict cookie and an eight-hour expiry. Email verification checks are single-use and capped at five attempts per code; request-code creation has per-email/IP issuance limits and same-origin checks.
+- Customer email-code access remains deliberately disabled until the private `CUSTOMER_REQUEST_MAILER` binding exists. The request-code handler fails closed before generating or storing a code when the mailer is absent. Existing customer history therefore must not be advertised as available.
+- Admin request listing/status changes require Admin authentication. Status updates use a conditional status compare-and-swap and insert the corresponding audit history in the same D1 batch; the history endpoint returns bounded status history.
+- The reviewed request-rate-limit migration workflow targets Preview D1 only and verifies the exact Preview database name/UUID before applying schema. No Production database target was found in that workflow.
+- No confirmed exploitable defect was found in this focused review. Automated customer-access tests verify disabled-by-default behavior, cross-origin rejection, session requirement, unsupported methods and cookie clearing; they do not constitute an end-to-end mailer delivery or enabled customer-history acceptance test.
+- Privacy note retained: public submission/tracking rate-limit tables use plain SHA-256 hashes of email/IP values; predictable values can be guessed offline. Customer email-access identifiers use keyed HMAC via the private secret. Consider keyed HMAC for public rate-limit identifiers as a privacy-hardening follow-up before broader rollout.
+- No code, customer data, D1/R2 resources, bindings, secrets or Production configuration was changed. Product image work remains excluded and user-owned.
