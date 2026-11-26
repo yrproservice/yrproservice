@@ -50,13 +50,16 @@ export default function TrackRequest() {
     setReferenceError("");
     setRequest(null);
     try {
-      const params = new URLSearchParams({
-        reference: reference.trim(),
-        email: referenceEmail.trim(),
-      });
-      const response = await fetch(`/api/track?${params.toString()}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
+      const response = await fetch("/api/track", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reference: reference.trim(),
+          email: referenceEmail.trim(),
+        }),
         cache: "no-store",
       });
       const result = await response.json().catch(() => ({}));
