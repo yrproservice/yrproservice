@@ -162,3 +162,15 @@
 - The review did not authenticate to Preview, submit live customer data, write to D1/R2, inspect Cloudflare dashboard settings or secret scopes, or touch Production.
 - Follow-up review can continue across remaining UI callers and endpoint pairs, especially CMS media/recovery and customer-access flows; then exact-head CI and release gates must be checked separately.
 - Product-image sourcing, acquisition, replacement and assignment remain excluded and user-owned. PR #2 remains Open/Draft/unmerged; no Production deployment or merge was performed.
+
+
+## CMS media and customer request-access flow review — 26 November 2026
+
+- Continued the source review across `functions/api/cms/admin/media.js`, `functions/api/cms/admin/section-recovery.js`, customer email-code/session handlers, `functions/_utils/customer-request-access.js`, and the customer request-history endpoint.
+- Media upload is Admin-authenticated, capped at 12 MiB, validates image bytes against JPEG/PNG/GIF/WebP signatures and dimensions, rejects SVG/unknown formats and mismatched declared MIME types, and writes an R2 object plus D1 media/audit rows. If the D1 batch outcome is ambiguous, the R2 object is deliberately retained for reconciliation rather than risking a broken committed row.
+- Media archive checks references across all saved page/product/site-setting revisions, repeats the reference guard in the conditional D1 update, records an audit event, and keeps the R2 object for reversible restore. Restore verifies the R2 object still exists before unarchiving. No confirmed archive/delete race or unauthorized media operation was identified in the inspected code.
+- Customer email-code access is fail-closed when the private mailer binding or DB is unavailable. It requires a same-origin POST, uses HMAC-derived email/code/IP values, limits code issuance, expires codes after ten minutes, limits verification attempts, consumes a code conditionally, and creates a random eight-hour session token stored only as an HMAC in D1. The cookie is HttpOnly, Secure, SameSite=Strict and scoped to `/api/customer`.
+- Customer request history requires the server-side session and queries only rows matching the verified email. The response is bounded to 100 records and omits internal staff history/notes. Logout removes the matching session token hash and clears the cookie.
+- No confirmed authorization bypass, cross-customer data disclosure, unsafe R2 deletion, or customer-session weakness was identified in this focused source review. This is not a live penetration test and does not verify Cloudflare bindings/secrets or mailer configuration.
+- The customer email-code path remains unavailable until the private mailer binding is configured; the existing reference-plus-email tracking flow remains the active customer tracking method. This is a known capability boundary, not a newly discovered defect.
+- No live customer code was requested, no email sent, no customer record queried, no D1/R2 data changed, and no Production or Cloudflare configuration was touched. Product-image acquisition/assignment remains excluded and user-owned.
